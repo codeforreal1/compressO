@@ -6,6 +6,8 @@ use tauri::api::path::cache_dir;
 /**
 Create cache directory if not exists.
  */
+
+// TODO: Do not allow compressing the same file that is in the cache directory
 pub fn create_cache_dir() -> Result<PathBuf, String> {
     let cache_dir = match cache_dir() {
         Some(path) => path,

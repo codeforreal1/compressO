@@ -7,7 +7,7 @@
     "distDir": "../dist"
   },
   "package": {
-    "productName": "tauri-next",
+    "productName": "CompressorX",
     "version": "0.1.0"
   },
   "tauri": {

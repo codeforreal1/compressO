@@ -4,32 +4,32 @@ import million from 'million/compiler'
 import analyzeBundle from '@next/bundle-analyzer'
 
 const withBundleAnalyzer = analyzeBundle({
-  enabled: process.env.ANALYZE === 'true',
+    enabled: process.env.ANALYZE === 'true',
 })
 
 const nextConfig = withBundleAnalyzer({
-  webpack(config, { webpack }) {
-    config.module.rules.push({
-      test: /\.svg$/,
-      use: ['@svgr/webpack'],
-    })
-
-    if (process.env.NODE_ENV === 'production') {
-      config.plugins.push(
-        new webpack.DefinePlugin({
-          'globalThis.__DEV__': false,
+    output: 'export',
+    distDir: "./dist",
+    webpack(config, {webpack}) {
+        config.module.rules.push({
+            test: /\.svg$/,
+            use: ['@svgr/webpack'],
         })
-      )
-    }
 
-    return config
-  },
+        if (process.env.NODE_ENV === 'production') {
+            config.plugins.push(
+                new webpack.DefinePlugin({
+                    'globalThis.__DEV__': false,
+                })
+            )
+        }
+
+        return config
+    },
 })
 
 const millionConfig = {
-  auto: true,
-  // if you're using RSC:
-  // auto: { rsc: true },
+    auto: true,
 }
 
 export default million.next(nextConfig, millionConfig)
