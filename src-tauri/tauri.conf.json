@@ -1,8 +1,8 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/schema.json",
   "build": {
-    "beforeBuildCommand": "pnpm build",
-    "beforeDevCommand": "pnpm dev",
+    "beforeBuildCommand": "pnpm next:build",
+    "beforeDevCommand": "pnpm next:dev",
     "devPath": "http://localhost:3000",
     "distDir": "../dist"
   },
@@ -12,7 +12,20 @@
   },
   "tauri": {
     "allowlist": {
-      "all": false
+      "all": false,
+      "shell": {
+        "sidecar": true,
+        "scope": [
+          {
+            "name": "./bin/ffmpeg",
+            "sidecar": true
+          }
+        ]
+      },
+      "dialog": {
+        "open": true,
+        "save": true
+      }
     },
     "bundle": {
       "active": true,
@@ -21,7 +34,9 @@
       "deb": {
         "depends": []
       },
-      "externalBin": [],
+      "externalBin": [
+        "./bin/ffmpeg"
+      ],
       "icon": [
         "icons/32x32.png",
         "icons/128x128.png",
@@ -29,7 +44,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "com.blazingfast.dev",
+      "identifier": "com.compressorx.dev",
       "longDescription": "",
       "macOS": {
         "entitlements": null,
@@ -56,10 +71,10 @@
     "windows": [
       {
         "fullscreen": false,
-        "height": 600,
+        "height": 720,
         "resizable": true,
-        "title": "tauri-next",
-        "width": 800
+        "title": "CompressorX",
+        "width": 1280
       }
     ]
   }
