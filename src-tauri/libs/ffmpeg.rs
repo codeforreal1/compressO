@@ -15,8 +15,7 @@ pub async fn compress(video_path: &str) -> Result<String, String> {
     };
 
     let output_file: PathBuf = [output_dir, PathBuf::from("didThisWork.mp4")].iter().collect();
-    println!("--{:?}", output_file);
-    let (mut rx, _) = match ffmpeg.args(["-i", video_path, "-vcodec", "libx264", "-crf", " 28", "-vf", "pad=ceil(iw/2)*2:ceil(ih/2)*2", &output_file.display().to_string()]).spawn() {
+    let (mut rx, _) = match ffmpeg.args(["-i", video_path, "-vcodec", "libx264", "-crf", " 28", "-vf", "pad=ceil(iw/2)*2:ceil(ih/2)*2", &output_file.display().to_string(), "-y"]).spawn() {
         Ok(ok) => ok,
         Err(err) => {
             return Err(err.to_string());
