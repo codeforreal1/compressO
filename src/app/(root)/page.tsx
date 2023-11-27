@@ -1,5 +1,4 @@
 import React from 'react'
-import dynamic from "next/dynamic"
 import ThemeSwitcher from '@/components/ThemeSwitcher'
 import Dialog from "./Dialog"
 
@@ -15,4 +14,4 @@ function Home() {
 }
 
 
-export default dynamic(() => Promise.resolve(Home), {ssr: false})
+export default Home
