@@ -12,7 +12,7 @@ rust-version = "1.60"
 
 [lib]
 name = "libs"
-path = "libs/mod.rs"
+path = "src/libs/mod.rs"
 
 [build-dependencies]
 tauri-build = { version = "1.5.0", features = [] }
