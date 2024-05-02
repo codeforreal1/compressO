@@ -38,7 +38,7 @@ const config: Config = {
         white1: "#ffffff",
       },
       fontFamily: {
-        Poppins: ["var(--font-Poppins)"],
+        poppins: ["var(--font-poppins)"],
       },
       screens: WIDTHS,
       maxWidth: WIDTHS,

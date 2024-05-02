@@ -1,13 +1,24 @@
-import { Poppins as GooglePoppins } from 'next/font/google'
+import localFont from "next/font/local";
 
-const Poppins = GooglePoppins({
-  weight: ['400', '500'],
-  variable: '--font-Poppins',
-  subsets: ['latin'],
-})
+const kayakRegular = localFont({
+  preload: true,
+  variable: "--font-poppins",
+  src: [
+    {
+      path: "./poppins/Poppins-Regular.ttf",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "./poppins/Poppins-Italic.ttf",
+      weight: "400",
+      style: "italic",
+    },
+  ],
+});
 
-const fonts = [Poppins]
+const fonts = [kayakRegular];
 
 export const combinedFonts = fonts
   .map((font) => `${font.className} ${font.variable}`)
-  .join(' ')
+  .join(" ");

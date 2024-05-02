@@ -1,18 +1,46 @@
-import React from 'react'
-import dynamic from 'next/dynamic'
+"use client";
+import React from "react";
+import dynamic from "next/dynamic";
+import { invoke } from "@tauri-apps/api";
 
-import ThemeSwitcher from '@/components/ThemeSwitcher'
-import Dialog from './Dialog'
+import ThemeSwitcher from "@/components/ThemeSwitcher";
+import VideoPicker from "@/tauri/VideoPicker";
+import { mergeClasses } from "@/utils/tailwind";
+import Icon from "@/components/Icon";
 
-function Home() {
+function Root() {
+  const handleSuccess = async ({ path }: { path: string }) => {
+    const result = await invoke("compress", { path });
+    console.log("--Result", result);
+  };
   return (
     <div>
-      <div className="absolute bottom-4 left-4">
+      <div className="absolute bottom-4 left-4 z-10">
         <ThemeSwitcher />
       </div>
-      <Dialog />
+      <VideoPicker onSuccess={handleSuccess}>
+        {({ onClick }) => (
+          <div
+            role="button"
+            tabIndex={0}
+            className={mergeClasses([
+              "h-[100vh] w-full flex justify-center items-center z-0 flex-col",
+            ])}
+            onClick={onClick}
+          >
+            <Icon
+              name={"videoFile"}
+              className={mergeClasses(["text-black1 dark:text-gray1"])}
+              size={70}
+            />
+            <p className="italic text-sm mt-4">
+              Click anywhere to select a video
+            </p>
+          </div>
+        )}
+      </VideoPicker>
     </div>
-  )
+  );
 }
 
-export default dynamic(() => Promise.resolve(Home), { ssr: false })
+export default dynamic(() => Promise.resolve(Root), { ssr: false });

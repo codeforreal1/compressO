@@ -1,4 +1,4 @@
-import React from 'react'
+import React from "react";
 
 function Head() {
   return (
@@ -25,7 +25,7 @@ function Head() {
       <meta name="msapplication-TileColor" content="#da532c" />
       <meta name="theme-color" content="#000000" />
     </head>
-  )
+  );
 }
 
-export default Head
+export default Head;

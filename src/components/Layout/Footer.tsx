@@ -1,21 +1,21 @@
-import React from 'react'
+import React from "react";
 
-import { LayoutContext } from './index'
+import { LayoutContext } from "./index";
 
 interface FooterProps {
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
 function Footer(props: FooterProps) {
-  const { children } = props
+  const { children } = props;
 
-  const { isValid } = React.useContext(LayoutContext)
+  const { isValid } = React.useContext(LayoutContext);
 
   if (!isValid) {
-    throw new Error('`Layout.Header` must be used inside `Layout` component.')
+    throw new Error("`Layout.Header` must be used inside `Layout` component.");
   }
 
-  return <div>{children}</div>
+  return <div>{children}</div>;
 }
 
-export default Footer
+export default Footer;
