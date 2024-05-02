@@ -2,7 +2,6 @@
   "$schema": "../node_modules/@tauri-apps/cli/schema.json",
   "build": {
     "beforeBuildCommand": "pnpm next:build",
-    "beforeDevCommand": "pnpm next:dev",
     "devPath": "http://localhost:3000",
     "distDir": "../dist"
   },
@@ -42,7 +41,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "com.compressorx.dev",
+      "identifier": "com.compressO.dev",
       "longDescription": "",
       "macOS": {
         "entitlements": null,
@@ -71,7 +70,7 @@
         "fullscreen": false,
         "height": 720,
         "resizable": true,
-        "title": "CompressorX",
+        "title": "CompressO",
         "width": 1280
       }
     ]

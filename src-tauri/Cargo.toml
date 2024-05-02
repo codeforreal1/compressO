@@ -27,6 +27,7 @@ tauri = { version = "1.5.2", features = [
     "process-command-api",
 ] }
 tokio = { version = "1.34.0", features = ["rt", "rt-multi-thread", "macros"] }
+nanoid = "0.4.0"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem and the built-in dev server is disabled.

@@ -5,7 +5,7 @@ use lib::ffmpeg;
 
 #[tauri::command]
 async fn compress(path: &str) -> Result<String, String> {
-    println!("[info] File received");
+    println!("[info] File received {:?}", path);
     return match ffmpeg::compress(path).await {
         Ok(result) => Ok(result),
         Err(err) => Err(err),
