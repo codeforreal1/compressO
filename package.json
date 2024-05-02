@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "pnpm:devPreinstall": "fnm use",
     "next:dev": "next dev",
     "next:build": "next build",
     "next:start": "next start",
