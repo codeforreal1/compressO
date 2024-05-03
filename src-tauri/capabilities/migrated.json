@@ -1,0 +1,34 @@
+{
+  "identifier": "migrated",
+  "description": "permissions that were migrated from v1",
+  "local": true,
+  "windows": [
+    "main"
+  ],
+  "permissions": [
+    "path:default",
+    "event:default",
+    "window:default",
+    "app:default",
+    "resources:default",
+    "menu:default",
+    "tray:default",
+    "fs:allow-read-file",
+    {
+      "identifier": "shell:allow-execute",
+      "allow": [
+        {
+          "args": false,
+          "cmd": "",
+          "name": "./bin/ffmpeg",
+          "sidecar": true
+        }
+      ]
+    },
+    "dialog:allow-open",
+    "dialog:allow-save",
+    "shell:default",
+    "dialog:default",
+    "fs:default"
+  ]
+}

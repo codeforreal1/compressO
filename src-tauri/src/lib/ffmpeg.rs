@@ -2,9 +2,11 @@ use nanoid::nanoid;
 use std::path::PathBuf;
 use tauri::api::process::Command;
 
+use crate::domain::CompressionResult;
+
 use super::filesystem::create_cache_dir;
 
-pub async fn compress(video_path: &str) -> Result<String, String> {
+pub async fn compress(video_path: &str) -> Result<CompressionResult, String> {
     let output_dir = create_cache_dir()?;
 
     let ffmpeg = match Command::new_sidecar("ffmpeg") {
@@ -14,30 +16,31 @@ pub async fn compress(video_path: &str) -> Result<String, String> {
         }
     };
 
-    let output_file: PathBuf = [output_dir, PathBuf::from(format!("{}.mp4", nanoid!()))]
-        .iter()
-        .collect();
+    let file_name = format!("{}.mp4", nanoid!());
+    let output_file: PathBuf = [output_dir, PathBuf::from(&file_name)].iter().collect();
 
-    // ffmpeg -i "inputVideoFile.mp4" -pix_fmt yuv420p -an -c:v libx264 -b:v 1M -speed 1 -movflags +faststart -preset slow -qp 0 -crf 32 outputVideoFile.mp4
     // [
-    //     "-i",
-    //     video_path,
-    //     "-pix_fmt",
-    //     "yuv420p",
-    //     "-c:v",
-    //     "libx264",
-    //     "1M",
-    //     "-movflags",
-    //     "+faststart",
-    //     "-preset",
-    //     "slow",
-    //     "-qp",
-    //     "0",
-    //     "-crf",
-    //     "32",
-    //     &output_file.display().to_string(),
-    //     "-y",
-    // ]
+    //         "-i",
+    //         video_path,
+    //         "-pix_fmt",
+    //         "yuv420p",
+    //         "-c:v",
+    //         "libx264",
+    //         "-b:v",
+    //         "1M",
+    //         "-movflags",
+    //         "+faststart",
+    //         "-preset",
+    //         "slow",
+    //         "-qp",
+    //         "0",
+    //         "-crf",
+    //         "32",
+    //         "-vf",
+    //         "pad=ceil(iw/2)*2:ceil(ih/2)*2",
+    //         &output_file.display().to_string(),
+    //         "-y",
+    //     ]
 
     // [
     //         "-i",
@@ -68,7 +71,9 @@ pub async fn compress(video_path: &str) -> Result<String, String> {
             "-qp",
             "0",
             "-crf",
-            "28",
+            "32",
+            "-vf",
+            "pad=ceil(iw/2)*2:ceil(ih/2)*2",
             &output_file.display().to_string(),
             "-y",
         ])
@@ -91,5 +96,8 @@ pub async fn compress(video_path: &str) -> Result<String, String> {
         return Err(err.to_string());
     }
 
-    Ok(String::from("Complete"))
+    Ok(CompressionResult {
+        file_name,
+        output_path: output_file.display().to_string(),
+    })
 }

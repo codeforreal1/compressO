@@ -13,11 +13,10 @@ function Root() {
   const handleSuccess = async ({ path }: { path: string }) => {
     try {
       console.log(path);
-      throw new Error();
-      // const result = await invoke("compress", { path });
-      // console.log("--Result", result);
+      const result = await invoke("compress", { path });
+      console.log("--Result", result);
     } catch (error) {
-      toast.error("Something went wrong...");
+      toast.error("Conversion failed. Try again with a different preset.");
     }
   };
   return (

@@ -13,24 +13,24 @@ rust-version = "1.60"
 [lib]
 name = "lib"
 path = "src/lib/mod.rs"
+crate-type = ["lib", "staticlib", "cdylib"]
 
 [build-dependencies]
-tauri-build = { version = "1.5.0", features = [] }
+tauri-build = { version = "2.0.0-beta", features = [] }
 
 [dependencies]
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
-tauri = { version = "1.5.2", features = [ "fs-read-file",
-    "dialog-save",
-    "dialog-open",
-    "shell-sidecar",
-    "process-command-api",
+tauri = { version = "2.0.0-beta", features = [
 ] }
 tokio = { version = "1.34.0", features = ["rt", "rt-multi-thread", "macros"] }
 nanoid = "0.4.0"
+tauri-plugin-dialog = "2.0.0-beta.7"
+tauri-plugin-shell = "2.0.0-beta.4"
+tauri-plugin-fs = "2.0.0-beta.7"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem and the built-in dev server is disabled.
 # If you use cargo directly instead of tauri's cli you can use this feature flag to switch between tauri's `dev` and `build` modes.
-# DO NOT REMOVE!!
+# DO NOT REMOVE!!z
 custom-protocol = ["tauri/custom-protocol"]
