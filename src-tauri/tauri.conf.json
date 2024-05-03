@@ -24,6 +24,9 @@
       "dialog": {
         "open": true,
         "save": true
+      },
+      "fs": {
+        "readFile": true
       }
     },
     "bundle": {

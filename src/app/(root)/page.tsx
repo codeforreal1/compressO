@@ -2,6 +2,7 @@
 import React from "react";
 import dynamic from "next/dynamic";
 import { invoke } from "@tauri-apps/api";
+import { toast } from "sonner";
 
 import ThemeSwitcher from "@/components/ThemeSwitcher";
 import VideoPicker from "@/tauri/VideoPicker";
@@ -10,8 +11,14 @@ import Icon from "@/components/Icon";
 
 function Root() {
   const handleSuccess = async ({ path }: { path: string }) => {
-    const result = await invoke("compress", { path });
-    console.log("--Result", result);
+    try {
+      console.log(path);
+      throw new Error();
+      // const result = await invoke("compress", { path });
+      // console.log("--Result", result);
+    } catch (error) {
+      toast.error("Something went wrong...");
+    }
   };
   return (
     <div>

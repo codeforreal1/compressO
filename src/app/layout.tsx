@@ -1,12 +1,13 @@
+"use client";
+
 import React from "react";
-import type { Metadata } from "next";
-import { Toaster } from "sonner";
 
 import "./globals.css";
 import UIProvider from "../providers/UIProvider";
 import ThemeProvider from "../providers/ThemeProvider";
 import { combinedFonts } from "@/assets/fonts";
 import Head from "./head";
+import Toaster from "@/components/Toast/Toaster";
 
 export default function RootLayout({
   children,
@@ -18,17 +19,10 @@ export default function RootLayout({
       <Head />
       <body className={combinedFonts}>
         <ThemeProvider>
-          <UIProvider>
-            {children}
-            <Toaster />
-          </UIProvider>
+          <UIProvider>{children}</UIProvider>
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>
   );
 }
-
-export const metadata: Metadata = {
-  title: "CompressO",
-  description: "Compress your video to smallest size possible.",
-};

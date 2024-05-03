@@ -1,5 +1,3 @@
-"use client";
-
 import { open } from "@tauri-apps/api/dialog";
 
 type ChildrenFnParams = { onClick: () => void };
