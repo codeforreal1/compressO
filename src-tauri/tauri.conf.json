@@ -9,6 +9,7 @@
     "devUrl": "http://localhost:3000"
   },
   "bundle": {
+    "longDescription": "",
     "active": true,
     "category": "DeveloperTool",
     "copyright": "",
@@ -26,7 +27,6 @@
       "digestAlgorithm": "sha256",
       "timestampUrl": ""
     },
-    "longDescription": "",
     "macOS": {
       "entitlements": null,
       "exceptionDomain": "",
@@ -56,7 +56,14 @@
       }
     ],
     "security": {
-      "csp": null
+      "csp": "default-src 'self'; img-src 'self' asset: https://asset.localhost",
+      "assetProtocol": {
+        "enable": true,
+        "scope": {
+          "allow": ["**/*"],
+          "requireLiteralLeadingDot": false
+        }
+      }
     }
   }
 }
