@@ -29,10 +29,13 @@
     "dialog:allow-save",
     "shell:default",
     "dialog:default",
-    "fs:scope-appdata-recursive",
     {
       "identifier": "fs:default",
-      "allow": [{ "path": "**/*" }]
+      "allow": [{ "path": "$APPDATA/**" }]
+    },
+    {
+      "identifier": "fs:scope",
+      "allow": [{ "path": "$APPDATA/*" }]
     }
   ]
 }

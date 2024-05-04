@@ -12,11 +12,14 @@
   },
   "dependencies": {
     "@nextui-org/button": "^2.0.26",
+    "@nextui-org/code": "^2.0.27",
+    "@nextui-org/divider": "^2.0.27",
     "@nextui-org/image": "^2.0.24",
     "@nextui-org/link": "^2.0.26",
+    "@nextui-org/select": "^2.1.27",
     "@nextui-org/spinner": "^2.0.28",
-    "@nextui-org/system": "^2.0.10",
-    "@nextui-org/theme": "^2.1.9",
+    "@nextui-org/system": "^2.1.2",
+    "@nextui-org/theme": "^2.2.3",
     "@tauri-apps/api": ">=2.0.0-beta.0",
     "@tauri-apps/plugin-dialog": "2.0.0-beta.3",
     "@tauri-apps/plugin-fs": "2.0.0-beta.3",
@@ -26,6 +29,7 @@
     "million": "^2.6.4",
     "next": "14.0.2",
     "next-themes": "^0.2.1",
+    "pretty-bytes": "^6.1.1",
     "react": "^18",
     "react-dom": "^18",
     "sonner": "^1.4.41",
@@ -42,7 +46,7 @@
     "eslint": "^8",
     "eslint-config-next": "14.0.2",
     "postcss": "^8.4.31",
-    "tailwindcss": "^3.3.5",
+    "tailwindcss": "^3.4.0",
     "typescript": "^5"
   }
 }

@@ -7,6 +7,9 @@
 }
 
 * {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
   user-select: none;
 }
 
@@ -23,4 +26,14 @@ body {
 
 [class="light"] body {
   background-color: theme("colors.white1");
+}
+
+/* Limit text to 1 line */
+.clamp-1 {
+  overflow-x: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  white-space: pre-wrap;
 }

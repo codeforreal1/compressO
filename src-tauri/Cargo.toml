@@ -27,6 +27,8 @@ nanoid = "0.4.0"
 tauri-plugin-dialog = "2.0.0-beta.7"
 tauri-plugin-shell = "2.0.0-beta.4"
 tauri-plugin-fs = "2.0.0-beta.7"
+infer = "0.15.0"
+image = "0.25.1"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem and the built-in dev server is disabled.

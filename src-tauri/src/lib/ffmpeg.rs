@@ -7,7 +7,6 @@ use crate::domain::CompressionResult;
 
 pub struct FFMPEG {
     ffmpeg: Command,
-    app_data_dir: PathBuf,
     assets_dir: PathBuf,
 }
 
@@ -28,7 +27,6 @@ impl FFMPEG {
                     .collect();
                 return Ok(Self {
                     ffmpeg: command,
-                    app_data_dir: PathBuf::from(&app_data_dir),
                     assets_dir,
                 });
             }
