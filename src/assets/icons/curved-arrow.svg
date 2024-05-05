@@ -1,0 +1,13 @@
+<svg fill="currentColor" viewBox="0 0 24 24" id="curve-arrow-down-7" data-name="Flat Line"
+    xmlns="http://www.w3.org/2000/svg" class="icon flat-line">
+    <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+    <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+    <g id="SVGRepo_iconCarrier">
+        <path id="primary" d="M6,3a13.17,13.17,0,0,1,9,12.49V21"
+            style="fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2;">
+        </path>
+        <polyline id="primary-2" data-name="primary" points="12 18 15 21 18 18"
+            style="fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2;">
+        </polyline>
+    </g>
+</svg>

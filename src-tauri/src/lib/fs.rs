@@ -34,18 +34,6 @@ pub fn get_file_metadata(path: &str) -> Result<FileMetadata, String> {
     let file_path = Path::new(path);
     let mime_type = infer::get_from_path(path).unwrap();
 
-    println!(
-        ">>{}",
-        String::from(file_path.file_name().unwrap().to_str().unwrap())
-    );
-    println!(
-        ">>{}",
-        match mime_type {
-            Some(m) => m.to_string(),
-            None => String::from(""),
-        }
-    );
-
     return Ok(FileMetadata {
         path: String::from(path),
         file_name: String::from(file_path.file_name().unwrap().to_str().unwrap()),

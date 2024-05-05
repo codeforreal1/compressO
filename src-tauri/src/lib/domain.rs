@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 #[serde(rename_all = "camelCase")]
 pub struct CompressionResult {
     pub file_name: String,
-    pub output_path: String,
+    pub file_path: String,
 }
 
 #[derive(Serialize, Deserialize)]

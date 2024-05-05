@@ -1,6 +1,6 @@
 export type CompressionResult = {
-  file_name: string;
-  file_path: string;
+  fileName: string;
+  filePath: string;
 };
 
 export const extensions = {

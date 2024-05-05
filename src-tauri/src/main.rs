@@ -4,6 +4,7 @@
 use lib::domain::FileMetadata;
 use lib::fs as file_system;
 use lib::{domain::CompressionResult, ffmpeg};
+use tauri_plugin_log::{Target as LogTarget, TargetKind as LogTargetKind};
 
 #[tauri::command]
 async fn compress_video(
@@ -41,8 +42,19 @@ async fn get_image_dimension(image_path: &str) -> Result<(u32, u32), String> {
     file_system::get_image_dimension(image_path)
 }
 
+#[cfg(debug_assertions)]
+const LOG_TARGETS: [LogTarget; 1] = [LogTarget::new(LogTargetKind::Stdout)];
+
+#[cfg(not(debug_assertions))]
+const LOG_TARGETS: [LogTarget; 0] = [];
+
 fn main() {
     tauri::Builder::default()
+        .plugin(
+            tauri_plugin_log::Builder::new()
+                .targets(LOG_TARGETS)
+                .build(),
+        )
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_shell::init())

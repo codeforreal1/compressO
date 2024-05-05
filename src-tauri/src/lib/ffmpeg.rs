@@ -1,9 +1,11 @@
+use crate::domain::CompressionResult;
 use nanoid::nanoid;
 use std::path::{Path, PathBuf};
 use tauri::Manager;
-use tauri_plugin_shell::{process::Command, ShellExt};
-
-use crate::domain::CompressionResult;
+use tauri_plugin_shell::{
+    process::{Command, CommandEvent},
+    ShellExt,
+};
 
 pub struct FFMPEG {
     ffmpeg: Command,
@@ -112,7 +114,7 @@ impl FFMPEG {
                 let (mut rx, _) = ok;
                 if let Err(err) = tauri::async_runtime::spawn(async move {
                     while let Some(event) = rx.recv().await {
-                        println!("[event] {:?}", event);
+                        log::debug!("[event] {:?}", event);
                     }
                 })
                 .await
@@ -127,7 +129,7 @@ impl FFMPEG {
 
         Ok(CompressionResult {
             file_name,
-            output_path: output_file.display().to_string(),
+            file_path: output_file.display().to_string(),
         })
     }
 
@@ -161,7 +163,13 @@ impl FFMPEG {
                 let (mut rx, _) = ok;
                 if let Err(err) = tauri::async_runtime::spawn(async move {
                     while let Some(event) = rx.recv().await {
-                        println!("[event] {:?}", event);
+                        log::debug!("[event] {:?}", event);
+                        match event {
+                            CommandEvent::Terminated(payload) => {
+                                log::debug!("Terminated payload {:?}", payload);
+                            }
+                            _ => {}
+                        }
                     }
                 })
                 .await

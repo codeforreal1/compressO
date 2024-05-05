@@ -29,6 +29,8 @@ tauri-plugin-shell = "2.0.0-beta.4"
 tauri-plugin-fs = "2.0.0-beta.7"
 infer = "0.15.0"
 image = "0.25.1"
+log = "0.4.21"
+tauri-plugin-log = "2.0.0-beta"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem and the built-in dev server is disabled.
