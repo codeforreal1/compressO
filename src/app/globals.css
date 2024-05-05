@@ -35,5 +35,5 @@ body {
   display: -webkit-box;
   -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
-  white-space: pre-wrap;
+  white-space: pre-line;
 }

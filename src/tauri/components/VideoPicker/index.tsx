@@ -1,4 +1,5 @@
 import { FileResponse, open } from "@tauri-apps/plugin-dialog";
+import { extensions } from "@/types/compression";
 
 type ChildrenFnParams = { onClick: () => void };
 
@@ -13,7 +14,7 @@ type VideoPickerProps = {
   onError?: (_: Error) => void;
 };
 
-export const extensions = ["mp4", "mov", "mkv", "avi", "webm"];
+const videoExtensions = Object.keys(extensions?.video);
 
 export default function VideoPicker({
   children,
@@ -26,7 +27,7 @@ export default function VideoPicker({
         directory: false,
         multiple: false,
         title: "Select video to compress",
-        filters: [{ name: "video", extensions }],
+        filters: [{ name: "video", extensions: videoExtensions }],
       });
       if (file == null) {
         const message = "File selection config is invalid.";

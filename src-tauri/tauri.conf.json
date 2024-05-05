@@ -48,10 +48,10 @@
       {
         "fullscreen": false,
         "title": "CompressO",
-        "height": 720,
+        "height": 992,
         "width": 1280,
         "minWidth": 1080,
-        "minHeight": 720,
+        "minHeight": 992,
         "resizable": true
       }
     ],

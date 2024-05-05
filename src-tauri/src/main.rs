@@ -9,9 +9,14 @@ use lib::{domain::CompressionResult, ffmpeg};
 async fn compress_video(
     app: tauri::AppHandle,
     video_path: &str,
+    convert_to_extension: &str,
+    preset_name: &str,
 ) -> Result<CompressionResult, String> {
     let ffmpeg = ffmpeg::FFMPEG::new(&app)?;
-    return match ffmpeg.compress_video(video_path).await {
+    return match ffmpeg
+        .compress_video(video_path, convert_to_extension, preset_name)
+        .await
+    {
         Ok(result) => Ok(result),
         Err(err) => Err(err),
     };

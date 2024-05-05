@@ -2,8 +2,20 @@ import { CompressionResult } from "@/types/compression";
 import { FileMetadata } from "@/types/fs";
 import { core } from "@tauri-apps/api";
 
-export function compressVideo(videoPath: string): Promise<CompressionResult> {
-  return core.invoke("compress_video", { videoPath });
+export function compressVideo({
+  videoPath,
+  convertToExtension,
+  presetName,
+}: {
+  videoPath: string;
+  convertToExtension?: string;
+  presetName?: string;
+}): Promise<CompressionResult> {
+  return core.invoke("compress_video", {
+    videoPath,
+    convertToExtension: convertToExtension ?? "mp4",
+    presetName: presetName ?? "ironclad",
+  });
 }
 
 export function generateVideoThumbnail(videoPath: string): Promise<string> {
