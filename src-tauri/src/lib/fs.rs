@@ -62,3 +62,14 @@ pub fn get_image_dimension(image_path: &str) -> Result<(u32, u32), String> {
         Err(err) => return Err(err.to_string()),
     };
 }
+
+/// Copies file from one path to another path
+pub async fn copy_file(from: &str, to: &str) -> std::io::Result<u64> {
+    let result = tokio::fs::copy(from, to).await?;
+    Ok(result)
+}
+
+/// Deletes file from the given path
+pub async fn delete_file(path: &str) -> std::io::Result<()> {
+    Ok(tokio::fs::remove_file(path).await?)
+}

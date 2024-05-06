@@ -36,6 +36,8 @@
     {
       "identifier": "fs:scope",
       "allow": [{ "path": "$APPDATA/*" }]
-    }
+    },
+    "shell:allow-open",
+    "log:default"
   ]
 }

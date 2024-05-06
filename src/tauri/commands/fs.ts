@@ -10,3 +10,7 @@ export function getImageDimension(
 ): Promise<[number, number]> {
   return core.invoke("get_image_dimension", { imagePath });
 }
+
+export function moveFile(from: string, to: string) {
+  return core.invoke("move_file", { from, to });
+}

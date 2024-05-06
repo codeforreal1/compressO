@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { SelectItem } from "@nextui-org/select";
 import { FileResponse, save } from "@tauri-apps/plugin-dialog";
 import { useDisclosure } from "@nextui-org/modal";
+import { open } from "@tauri-apps/plugin-shell";
 
 import Modal, {
   ModalHeader,
@@ -26,8 +27,11 @@ import { mergeClasses } from "@/utils/tailwind";
 import Icon from "@/components/Icon";
 import { formatBytes } from "@/utils/fs";
 import { compressVideo, generateVideoThumbnail } from "@/tauri/commands/ffmpeg";
-import { getFileMetadata, getImageDimension } from "@/tauri/commands/fs";
-import IconButton from "@/components/IconButton";
+import {
+  getFileMetadata,
+  getImageDimension,
+  moveFile,
+} from "@/tauri/commands/fs";
 import { compressionPresets, extensions } from "@/types/compression";
 
 type Video = {
@@ -52,6 +56,9 @@ type Video = {
     sizeInBytes?: number | null;
     size?: string | null;
     extension?: null | string;
+    isSaved?: boolean;
+    isSaving?: boolean;
+    savedPath?: string;
   } | null;
 };
 
@@ -113,6 +120,9 @@ const initialState: Video = {
 //     size: "172 kB",
 //     sizeInBytes: 172,
 //     extension: "webm",
+//     // isSaving: true,
+//     isSaved: true,
+//     savedPath: "/home/niraj/Downloads",
 //   },
 // };
 
@@ -125,14 +135,13 @@ function Root() {
     React.useState<keyof typeof extensions.video>("mp4");
   const [presetName, setPresetName] =
     React.useState<keyof typeof compressionPresets>("ironclad");
-  const [isDismissModalVisible, setIsDismissModalVisible] =
-    React.useState<boolean>(false);
 
   const { isOpen, onOpenChange, onOpen } = useDisclosure();
 
   const handleSuccess = async ({ file }: { file: FileResponse }) => {
     if (video?.isCompressing) return;
     try {
+      // Remove leftover files from data url
       if (!file) {
         toast.error("Invalid file selected.");
         return;
@@ -264,11 +273,43 @@ function Root() {
         defaultPath: `compressO-${fileNameDisplay}`,
       });
       if (pathToSave) {
-        console.log("--", pathToSave);
+        setVideo((previousState) => ({
+          ...previousState,
+          compressedVideo: {
+            ...(previousState?.compressedVideo ?? {}),
+            isSaving: true,
+            isSaved: false,
+          },
+        }));
+        await moveFile(video?.compressedVideo?.pathRaw as string, pathToSave);
+        setVideo((previousState) => ({
+          ...previousState,
+          compressedVideo: {
+            ...(previousState?.compressedVideo ?? {}),
+            savedPath: pathToSave,
+            isSaving: false,
+            isSaved: true,
+          },
+        }));
       }
-    } catch (error) {
-      console.log(error);
+    } catch (_) {
+      toast.error("Could not save video to the given path.");
+      setVideo((previousState) => ({
+        ...previousState,
+        compressedVideo: {
+          ...(previousState?.compressedVideo ?? {}),
+          isSaving: false,
+          isSaved: false,
+        },
+      }));
     }
+  };
+
+  const handleFileOpen = async () => {
+    if (!video?.compressedVideo?.savedPath) return;
+    try {
+      await open(video?.compressedVideo?.savedPath);
+    } catch (_) {}
   };
 
   return (
@@ -296,20 +337,23 @@ function Root() {
                         )}...${fileNameDisplay?.slice(-10)}`
                       : fileNameDisplay}
                   </Code>
-                  <IconButton
-                    iconProps={{ name: "cross", size: 22 }}
-                    buttonProps={{
-                      disableAnimation: true,
-                      size: "sm",
-                      onClick: () => {
-                        if (video?.isCompressionSuccessful) {
-                          onOpen();
-                        } else {
-                          reset();
-                        }
-                      },
+                  <Button
+                    isIconOnly
+                    size="sm"
+                    onClick={() => {
+                      if (
+                        video?.isCompressionSuccessful &&
+                        !video?.compressedVideo?.isSaved
+                      ) {
+                        onOpen();
+                      } else {
+                        reset();
+                      }
                     }}
-                  />
+                    className="bg-transparent"
+                  >
+                    <Icon name="cross" size={22} />
+                  </Button>
                 </div>
               ) : null}
               {video?.isCompressing ? (
@@ -382,10 +426,32 @@ function Root() {
                         className="flex justify-center items-center"
                         color="success"
                         onClick={handleCompressedVideoSave}
+                        isLoading={video?.compressedVideo?.isSaving}
+                        isDisabled={
+                          video?.compressedVideo?.isSaving ||
+                          video?.compressedVideo?.isSaved
+                        }
                       >
-                        save video
-                        <Icon name="save" className="text-green-300" />
+                        {video?.compressedVideo?.isSaved
+                          ? "saved"
+                          : "save video"}
+                        <Icon
+                          name={
+                            video?.compressedVideo?.isSaved ? "tick" : "save"
+                          }
+                          className="text-green-300"
+                        />
                       </Button>
+                      {video?.compressedVideo?.isSaved &&
+                      video?.compressedVideo?.savedPath ? (
+                        <Button
+                          isIconOnly
+                          className="ml-2 text-green-500"
+                          onClick={handleFileOpen}
+                        >
+                          <Icon name="play" />
+                        </Button>
+                      ) : null}
                     </div>
                   </section>
                 ) : (
@@ -514,7 +580,7 @@ function Root() {
               <ModalHeader>Video not saved.</ModalHeader>
               <ModalBody className="gap-0">
                 <div className="mb-4">
-                  Your compressed video is not saved yet.
+                  Your compressed video is not yet saved.
                   <span className="block">
                     Are you sure you want to discard it?
                   </span>

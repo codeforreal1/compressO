@@ -42,17 +42,40 @@ async fn get_image_dimension(image_path: &str) -> Result<(u32, u32), String> {
     file_system::get_image_dimension(image_path)
 }
 
-#[cfg(debug_assertions)]
-const LOG_TARGETS: [LogTarget; 1] = [LogTarget::new(LogTargetKind::Stdout)];
+#[tauri::command]
+async fn move_file(from: &str, to: &str) -> Result<(), String> {
+    if let Err(err) = file_system::copy_file(from, to).await {
+        return Err(err.to_string());
+    }
 
-#[cfg(not(debug_assertions))]
-const LOG_TARGETS: [LogTarget; 0] = [];
+    if let Err(err) = file_system::delete_file(from).await {
+        return Err(err.to_string());
+    }
+
+    Ok(())
+}
+
+// #[cfg(debug_assertions)]
+// const LOG_TARGETS: [LogTarget; 2] = [
+//     LogTarget::new(LogTargetKind::LogDir {
+//         file_name: Some(String::from("log")),
+//     }),
+//     LogTarget::new(LogTargetKind::Stdout),
+// ];
+
+// #[cfg(not(debug_assertions))]
+// const LOG_TARGETS: [LogTarget; 1] = [LogTarget::new(LogTargetKind::Stdout)];
 
 fn main() {
     tauri::Builder::default()
         .plugin(
             tauri_plugin_log::Builder::new()
-                .targets(LOG_TARGETS)
+                .targets([
+                    LogTarget::new(LogTargetKind::LogDir {
+                        file_name: Some(String::from("log")),
+                    }),
+                    LogTarget::new(LogTargetKind::Stdout),
+                ])
                 .build(),
         )
         .plugin(tauri_plugin_fs::init())
@@ -66,7 +89,8 @@ fn main() {
             compress_video,
             generate_video_thumbnail,
             get_file_metadata,
-            get_image_dimension
+            get_image_dimension,
+            move_file
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

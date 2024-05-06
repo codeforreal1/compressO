@@ -9,12 +9,12 @@
     "devUrl": "http://localhost:3000"
   },
   "bundle": {
-    "longDescription": "",
+    "longDescription": "Compress any video file to a tiny size.",
     "active": true,
     "category": "DeveloperTool",
     "copyright": "",
-    "targets": "all",
-    "externalBin": ["./bin/ffmpeg"],
+    "targets": ["deb"],
+    "externalBin": ["./bin/xbin_ffmpeg"],
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
@@ -56,7 +56,7 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self'; img-src 'self' asset: https://asset.localhost",
+      "csp": null,
       "assetProtocol": {
         "enable": true,
         "scope": {

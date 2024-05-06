@@ -1,7 +1,8 @@
 import React from "react";
 import { useTheme } from "next-themes";
 
-import IconButton from "../IconButton";
+import Button from "../Button";
+import Icon from "../Icon";
 
 interface ThemeSwitcherChildrenProps {
   theme: string | undefined;
@@ -28,14 +29,15 @@ function ThemeSwitcher(props: ThemeSwitcherProps) {
   }
 
   return children == null ? (
-    <IconButton
-      iconProps={{ name: theme === "light" ? "moon" : "sun" }}
-      buttonProps={{
-        onClick: function () {
-          setTheme(theme === "light" ? "dark" : "light");
-        },
+    <Button
+      isIconOnly
+      size="sm"
+      onClick={function () {
+        setTheme(theme === "light" ? "dark" : "light");
       }}
-    />
+    >
+      <Icon name={theme === "light" ? "moon" : "sun"} />
+    </Button>
   ) : (
     children({ theme, setTheme })
   );
