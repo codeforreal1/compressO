@@ -2,7 +2,6 @@
 import React from "react";
 import dynamic from "next/dynamic";
 import { core } from "@tauri-apps/api";
-import { toast } from "sonner";
 import { SelectItem } from "@nextui-org/select";
 import { FileResponse, save } from "@tauri-apps/plugin-dialog";
 import { useDisclosure } from "@nextui-org/modal";
@@ -25,6 +24,7 @@ import ThemeSwitcher from "@/components/ThemeSwitcher";
 import VideoPicker from "@/tauri/components/VideoPicker";
 import { mergeClasses } from "@/utils/tailwind";
 import Icon from "@/components/Icon";
+import { toast } from "@/components/Toast";
 import { formatBytes } from "@/utils/fs";
 import { compressVideo, generateVideoThumbnail } from "@/tauri/commands/ffmpeg";
 import {
@@ -62,69 +62,70 @@ type Video = {
   } | null;
 };
 
+// const initialState: Video = {
+//   isFileSelected: false,
+//   pathRaw: null,
+//   path: null,
+//   fileName: null,
+//   mimeType: null,
+//   sizeInBytes: null,
+//   size: null,
+//   thumbnailPathRaw: null,
+//   thumbnailPath: null,
+//   isThumbnailGenerating: false,
+//   extension: null,
+//   isCompressing: false,
+//   isCompressionSuccessful: false,
+//   compressedVideo: null,
+// };
+
+// TODO: Remove this
 const initialState: Video = {
-  isFileSelected: false,
-  pathRaw: null,
-  path: null,
-  fileName: null,
-  mimeType: null,
-  sizeInBytes: null,
-  size: null,
-  thumbnailPathRaw: null,
-  thumbnailPath: null,
+  extension: "mov",
+
+  fileName:
+    "copy_34992E05-461C-4F84-8447-FA4B3F3452DCasasasasasasasasasasasasasaasaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.mov",
+
+  isFileSelected: true,
+
   isThumbnailGenerating: false,
-  extension: null,
+
+  mimeType: "video/quicktime",
+
+  path: "asset://localhost/%2Fhome%2Fniraj%2FDownloads%2Fcopy_34992E05-461C-4F84-8447-FA4B3F3452DC.mov",
+
+  pathRaw:
+    "/home/niraj/Downloads/copy_34992E05-461C-4F84-8447-FA4B3F3452DC.mov",
+
+  size: "70.9 MB",
+
+  sizeInBytes: 70872137,
+
+  thumbnailPath:
+    "asset://localhost/%2Fhome%2Fniraj%2F.local%2Fshare%2Fcom.compressO.dev%2Fassets%2FTwCAOvBGdHUzAnwPernMm.jpg",
+
+  thumbnailPathRaw:
+    "/home/niraj/.local/share/com.compressO.dev/assets/TwCAOvBGdHUzAnwPernMm.jpg",
   isCompressing: false,
   isCompressionSuccessful: false,
-  compressedVideo: null,
+  compressedVideo: {
+    fileName: "7d4SufnlvuCxSm77Agic7.webm",
+
+    mimeType: "video/webm",
+
+    path: "asset://localhost/%2Fhome%2Fniraj%2F.local%2Fshare%2Fcom.compressO.dev%2Fassets%2F7d4SufnlvuCxSm77Agic7.webm",
+
+    pathRaw:
+      "/home/niraj/.local/share/com.compressO.dev/assets/7d4SufnlvuCxSm77Agic7.webm",
+
+    size: "172 kB",
+    sizeInBytes: 172,
+    extension: "webm",
+    // isSaving: true,
+    isSaved: true,
+    savedPath: "/home/niraj/Downloads",
+  },
 };
-
-// const initialState: Video = {
-//   extension: "mov",
-
-//   fileName:
-//     "copy_34992E05-461C-4F84-8447-FA4B3F3452DCasasasasasasasasasasasasasaasaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.mov",
-
-//   isFileSelected: true,
-
-//   isThumbnailGenerating: false,
-
-//   mimeType: "video/quicktime",
-
-//   path: "asset://localhost/%2Fhome%2Fniraj%2FDownloads%2Fcopy_34992E05-461C-4F84-8447-FA4B3F3452DC.mov",
-
-//   pathRaw:
-//     "/home/niraj/Downloads/copy_34992E05-461C-4F84-8447-FA4B3F3452DC.mov",
-
-//   size: "70.9 MB",
-
-//   sizeInBytes: 70872137,
-
-//   thumbnailPath:
-//     "asset://localhost/%2Fhome%2Fniraj%2F.local%2Fshare%2Fcom.compressO.dev%2Fassets%2FTwCAOvBGdHUzAnwPernMm.jpg",
-
-//   thumbnailPathRaw:
-//     "/home/niraj/.local/share/com.compressO.dev/assets/TwCAOvBGdHUzAnwPernMm.jpg",
-//   isCompressing: false,
-//   isCompressionSuccessful: true,
-//   compressedVideo: {
-//     fileName: "7d4SufnlvuCxSm77Agic7.webm",
-
-//     mimeType: "video/webm",
-
-//     path: "asset://localhost/%2Fhome%2Fniraj%2F.local%2Fshare%2Fcom.compressO.dev%2Fassets%2F7d4SufnlvuCxSm77Agic7.webm",
-
-//     pathRaw:
-//       "/home/niraj/.local/share/com.compressO.dev/assets/7d4SufnlvuCxSm77Agic7.webm",
-
-//     size: "172 kB",
-//     sizeInBytes: 172,
-//     extension: "webm",
-//     // isSaving: true,
-//     isSaved: true,
-//     savedPath: "/home/niraj/Downloads",
-//   },
-// };
 
 const videoExtensions = Object.keys(extensions?.video);
 const presets = Object.keys(compressionPresets);
@@ -141,7 +142,7 @@ function Root() {
   const handleSuccess = async ({ file }: { file: FileResponse }) => {
     if (video?.isCompressing) return;
     try {
-      // Remove leftover files from data url
+      // TODO: Remove leftover files from data directory
       if (!file) {
         toast.error("Invalid file selected.");
         return;
@@ -196,7 +197,7 @@ function Root() {
       }
     } catch (error) {
       setVideo(initialState);
-      toast.error("Conversion failed. File seems to be corrupted.");
+      toast.error("File seems to be corrupted.");
     }
   };
 
@@ -384,10 +385,10 @@ function Root() {
                     }}
                   />
                   <p className="italic text-sm mt-4 text-gray-500 text-center animate-pulse">
-                    compressing...
+                    Compressing...
                     {convertToExtension === "webm" ? (
                       <span className="block">
-                        webm conversion takes longer than the other formats.
+                        Webm conversion takes longer than the other formats.
                       </span>
                     ) : null}
                   </p>
@@ -458,13 +459,13 @@ function Root() {
                   <>
                     <section className="my-6 flex items-center space-x-4 justify-center gap-4">
                       <div>
-                        <p className="italic text-sm text-gray-500">size</p>
+                        <p className="italic text-sm text-gray-500">Size</p>
                         <h1 className="text-4xl font-black">{video?.size}</h1>
                       </div>
                       <Divider orientation="vertical" className="h-10" />
                       <div>
                         <p className="italic text-sm text-gray-500">
-                          extension
+                          Extension
                         </p>
                         <h1 className="text-4xl font-black">
                           {video?.extension ?? "-"}
@@ -474,7 +475,7 @@ function Root() {
                     <Divider />
                     <section className="my-8 flex justify-center items-center gap-4">
                       <Select
-                        label="compression preset"
+                        label="Compression preset:"
                         className="w-[300px] flex-shrink-0 rounded-2xl"
                         size="sm"
                         selectedKeys={[presetName]}
@@ -509,7 +510,7 @@ function Root() {
                       </Select>
                       <Divider orientation="vertical" className="h-10" />
                       <Select
-                        label="convert to"
+                        label="Convert to:"
                         className="w-[300px] flex-shrink-0 rounded-2xl"
                         size="sm"
                         value={convertToExtension}
@@ -567,7 +568,7 @@ function Root() {
                 size={70}
               />
               <p className="italic text-sm mt-4 text-gray-500 text-center">
-                click anywhere to select a video
+                Click anywhere to select a video
               </p>
             </div>
           )}
@@ -577,7 +578,7 @@ function Root() {
         <ModalContent className="max-w-[500px]">
           {(closeModal) => (
             <>
-              <ModalHeader>Video not saved.</ModalHeader>
+              <ModalHeader>Video not saved</ModalHeader>
               <ModalBody className="gap-0">
                 <div className="mb-4">
                   Your compressed video is not yet saved.

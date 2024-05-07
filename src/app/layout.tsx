@@ -1,13 +1,15 @@
 "use client";
 
 import React from "react";
+import Script from "next/script";
 
 import "./globals.css";
+
 import UIProvider from "../providers/UIProvider";
 import ThemeProvider from "../providers/ThemeProvider";
 import { combinedFonts } from "@/assets/fonts";
 import Head from "./head";
-import Toaster from "@/components/Toast/Toaster";
+import { Toaster } from "@/components/Toast";
 
 export default function RootLayout({
   children,
@@ -22,6 +24,8 @@ export default function RootLayout({
           <UIProvider>{children}</UIProvider>
           <Toaster />
         </ThemeProvider>
+        <Script src="/scripts/accessibility-only-when-focused.js?nonce=jnasknaks" />
+        <Script src="/scripts/disable-context-menu.js" />
       </body>
     </html>
   );

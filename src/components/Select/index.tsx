@@ -9,6 +9,8 @@ import {
 interface SelectProps extends NextUISelectProps {}
 
 function Select(props: SelectProps) {
+  const selectRef =
+    React.useRef<React.MutableRefObject<HTMLSelectElement | null>>();
   return <NextUISelect {...props} />;
 }
 

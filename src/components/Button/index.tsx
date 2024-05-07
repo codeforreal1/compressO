@@ -16,9 +16,10 @@ function Button(props: ButtonProps) {
 
   return (
     <NextButton
-      {...nextButtonProps}
+      disableRipple={false}
       color={color ?? "default"}
       variant={variant ?? "flat"}
+      {...nextButtonProps}
       className={mergeClasses(["font-medium", nextButtonProps.className])}
     />
   );

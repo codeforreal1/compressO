@@ -11,6 +11,12 @@
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+*:focus {
+  outline-color: theme("colors.primary") !important;
 }
 
 body {
@@ -26,6 +32,18 @@ body {
 
 [class="light"] body {
   background-color: theme("colors.white1");
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+code,
+pre {
+  cursor: default;
 }
 
 /* Limit text to 1 line */

@@ -55,27 +55,17 @@ async fn move_file(from: &str, to: &str) -> Result<(), String> {
     Ok(())
 }
 
-// #[cfg(debug_assertions)]
-// const LOG_TARGETS: [LogTarget; 2] = [
-//     LogTarget::new(LogTargetKind::LogDir {
-//         file_name: Some(String::from("log")),
-//     }),
-//     LogTarget::new(LogTargetKind::Stdout),
-// ];
+#[cfg(debug_assertions)]
+const LOG_TARGETS: [LogTarget; 1] = [LogTarget::new(LogTargetKind::Stdout)];
 
-// #[cfg(not(debug_assertions))]
-// const LOG_TARGETS: [LogTarget; 1] = [LogTarget::new(LogTargetKind::Stdout)];
+#[cfg(not(debug_assertions))]
+const LOG_TARGETS: [LogTarget; 0] = [];
 
 fn main() {
     tauri::Builder::default()
         .plugin(
             tauri_plugin_log::Builder::new()
-                .targets([
-                    LogTarget::new(LogTargetKind::LogDir {
-                        file_name: Some(String::from("log")),
-                    }),
-                    LogTarget::new(LogTargetKind::Stdout),
-                ])
+                .targets(LOG_TARGETS)
                 .build(),
         )
         .plugin(tauri_plugin_fs::init())

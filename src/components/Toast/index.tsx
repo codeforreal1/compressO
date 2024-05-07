@@ -1,12 +1,12 @@
 import React from "react";
-import { Toaster as NativeToaster } from "sonner";
+import { Toaster as NativeToaster, toast } from "sonner";
 import { useTheme } from "next-themes";
 
-function Toaster() {
+export function Toaster() {
   const { theme } = useTheme();
   return (
     <NativeToaster richColors theme={theme === "dark" ? "dark" : "light"} />
   );
 }
 
-export default Toaster;
+export { toast as toast };
