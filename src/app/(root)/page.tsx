@@ -6,6 +6,7 @@ import { SelectItem } from "@nextui-org/select";
 import { FileResponse, save } from "@tauri-apps/plugin-dialog";
 import { useDisclosure } from "@nextui-org/modal";
 import { open } from "@tauri-apps/plugin-shell";
+import { listen } from "@tauri-apps/api/event";
 
 import Modal, {
   ModalHeader,
@@ -62,70 +63,70 @@ type Video = {
   } | null;
 };
 
-// const initialState: Video = {
-//   isFileSelected: false,
-//   pathRaw: null,
-//   path: null,
-//   fileName: null,
-//   mimeType: null,
-//   sizeInBytes: null,
-//   size: null,
-//   thumbnailPathRaw: null,
-//   thumbnailPath: null,
-//   isThumbnailGenerating: false,
-//   extension: null,
-//   isCompressing: false,
-//   isCompressionSuccessful: false,
-//   compressedVideo: null,
-// };
-
-// TODO: Remove this
 const initialState: Video = {
-  extension: "mov",
-
-  fileName:
-    "copy_34992E05-461C-4F84-8447-FA4B3F3452DCasasasasasasasasasasasasasaasaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.mov",
-
-  isFileSelected: true,
-
+  isFileSelected: false,
+  pathRaw: null,
+  path: null,
+  fileName: null,
+  mimeType: null,
+  sizeInBytes: null,
+  size: null,
+  thumbnailPathRaw: null,
+  thumbnailPath: null,
   isThumbnailGenerating: false,
-
-  mimeType: "video/quicktime",
-
-  path: "asset://localhost/%2Fhome%2Fniraj%2FDownloads%2Fcopy_34992E05-461C-4F84-8447-FA4B3F3452DC.mov",
-
-  pathRaw:
-    "/home/niraj/Downloads/copy_34992E05-461C-4F84-8447-FA4B3F3452DC.mov",
-
-  size: "70.9 MB",
-
-  sizeInBytes: 70872137,
-
-  thumbnailPath:
-    "asset://localhost/%2Fhome%2Fniraj%2F.local%2Fshare%2Fcom.compressO.dev%2Fassets%2FTwCAOvBGdHUzAnwPernMm.jpg",
-
-  thumbnailPathRaw:
-    "/home/niraj/.local/share/com.compressO.dev/assets/TwCAOvBGdHUzAnwPernMm.jpg",
+  extension: null,
   isCompressing: false,
   isCompressionSuccessful: false,
-  compressedVideo: {
-    fileName: "7d4SufnlvuCxSm77Agic7.webm",
-
-    mimeType: "video/webm",
-
-    path: "asset://localhost/%2Fhome%2Fniraj%2F.local%2Fshare%2Fcom.compressO.dev%2Fassets%2F7d4SufnlvuCxSm77Agic7.webm",
-
-    pathRaw:
-      "/home/niraj/.local/share/com.compressO.dev/assets/7d4SufnlvuCxSm77Agic7.webm",
-
-    size: "172 kB",
-    sizeInBytes: 172,
-    extension: "webm",
-    // isSaving: true,
-    isSaved: true,
-    savedPath: "/home/niraj/Downloads",
-  },
+  compressedVideo: null,
 };
+
+// TODO: Remove this
+// const initialState: Video = {
+//   extension: "mov",
+
+//   fileName:
+//     "copy_34992E05-461C-4F84-8447-FA4B3F3452DCasasasasasasasasasasasasasaasaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.mov",
+
+//   isFileSelected: true,
+
+//   isThumbnailGenerating: false,
+
+//   mimeType: "video/quicktime",
+
+//   path: "asset://localhost/%2Fhome%2Fniraj%2FDownloads%2Fcopy_34992E05-461C-4F84-8447-FA4B3F3452DC.mov",
+
+//   pathRaw:
+//     "/home/niraj/Downloads/copy_34992E05-461C-4F84-8447-FA4B3F3452DC.mov",
+
+//   size: "70.9 MB",
+
+//   sizeInBytes: 70872137,
+
+//   thumbnailPath:
+//     "asset://localhost/%2Fhome%2Fniraj%2F.local%2Fshare%2Fcom.compressO.dev%2Fassets%2FTwCAOvBGdHUzAnwPernMm.jpg",
+
+//   thumbnailPathRaw:
+//     "/home/niraj/.local/share/com.compressO.dev/assets/TwCAOvBGdHUzAnwPernMm.jpg",
+//   isCompressing: false,
+//   isCompressionSuccessful: false,
+//   compressedVideo: {
+//     fileName: "7d4SufnlvuCxSm77Agic7.webm",
+
+//     mimeType: "video/webm",
+
+//     path: "asset://localhost/%2Fhome%2Fniraj%2F.local%2Fshare%2Fcom.compressO.dev%2Fassets%2F7d4SufnlvuCxSm77Agic7.webm",
+
+//     pathRaw:
+//       "/home/niraj/.local/share/com.compressO.dev/assets/7d4SufnlvuCxSm77Agic7.webm",
+
+//     size: "172 kB",
+//     sizeInBytes: 172,
+//     extension: "webm",
+//     // isSaving: true,
+//     isSaved: true,
+//     savedPath: "/home/niraj/Downloads",
+//   },
+// };
 
 const videoExtensions = Object.keys(extensions?.video);
 const presets = Object.keys(compressionPresets);
@@ -138,6 +139,17 @@ function Root() {
     React.useState<keyof typeof compressionPresets>("ironclad");
 
   const { isOpen, onOpenChange, onOpen } = useDisclosure();
+
+  React.useEffect(() => {
+    (async () => {
+      const unListen = await listen("tauri://close-requested", () => {
+        console.log("closing the app");
+      });
+      return async () => {
+        unListen();
+      };
+    })();
+  }, []);
 
   const handleSuccess = async ({ file }: { file: FileResponse }) => {
     if (video?.isCompressing) return;

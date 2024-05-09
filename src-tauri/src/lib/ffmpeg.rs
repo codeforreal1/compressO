@@ -1,13 +1,18 @@
 use crate::domain::CompressionResult;
 use nanoid::nanoid;
-use std::path::{Path, PathBuf};
-use tauri::Manager;
-use tauri_plugin_shell::{
-    process::{Command, CommandEvent},
-    ShellExt,
+use shared_child::SharedChild;
+use std::{
+    io::{BufRead, BufReader},
+    path::{Path, PathBuf},
+    process::{Command, Stdio},
+    sync::Arc,
+    thread,
 };
+use tauri::{AppHandle, Manager, WindowEvent};
+use tauri_plugin_shell::ShellExt;
 
 pub struct FFMPEG {
+    app: AppHandle,
     ffmpeg: Command,
     assets_dir: PathBuf,
 }
@@ -29,8 +34,10 @@ impl FFMPEG {
                 let assets_dir: PathBuf = [PathBuf::from(&app_data_dir), PathBuf::from("assets")]
                     .iter()
                     .collect();
+
                 return Ok(Self {
-                    ffmpeg: command,
+                    app: app.to_owned(),
+                    ffmpeg: Command::from(command),
                     assets_dir,
                 });
             }
@@ -40,7 +47,7 @@ impl FFMPEG {
 
     /// Compresses a video from a path
     pub async fn compress_video(
-        self,
+        &mut self,
         video_path: &str,
         convert_to_extension: &str,
         preset_name: &str,
@@ -50,77 +57,124 @@ impl FFMPEG {
         }
 
         let file_name = format!("{}.{}", nanoid!(), convert_to_extension);
-        let output_file: PathBuf = [self.assets_dir, PathBuf::from(&file_name)]
+        let output_file: PathBuf = [self.assets_dir.clone(), PathBuf::from(&file_name)]
             .iter()
             .collect();
 
         let output_path = &output_file.display().to_string();
 
-        match self
+        let preset = match preset_name {
+            "thunderbolt" => {
+                let mut args = vec![
+                    "-i",
+                    &video_path,
+                    "-vcodec",
+                    "libx264",
+                    "-crf",
+                    " 28",
+                    "-vf",
+                    "pad=ceil(iw/2)*2:ceil(ih/2)*2",
+                ];
+                if convert_to_extension == "webm" {
+                    args.push("-c:v");
+                    args.push("libvpx-vp9");
+                }
+                args.push(&output_path);
+                args.push("-y");
+                args
+            }
+            _ => {
+                let mut args = vec![
+                    "-i",
+                    &video_path,
+                    "-pix_fmt",
+                    "yuv420p",
+                    "-c:v",
+                    "libx264",
+                    "-b:v",
+                    "0",
+                    "-movflags",
+                    "+faststart",
+                    "-preset",
+                    "slow",
+                    "-qp",
+                    "0",
+                    "-crf",
+                    "32",
+                    "-vf",
+                    "pad=ceil(iw/2)*2:ceil(ih/2)*2",
+                ];
+                if convert_to_extension == "webm" {
+                    args.push("-c:v");
+                    args.push("libvpx-vp9");
+                }
+                args.push(&output_path);
+                args.push("-y");
+                args
+            }
+        };
+
+        let mut command = self
             .ffmpeg
-            .args(match preset_name {
-                "thunderbolt" => {
-                    let mut args = vec![
-                        "-i",
-                        &video_path,
-                        "-vcodec",
-                        "libx264",
-                        "-crf",
-                        " 28",
-                        "-vf",
-                        "pad=ceil(iw/2)*2:ceil(ih/2)*2",
-                    ];
-                    if convert_to_extension == "webm" {
-                        args.push("-c:v");
-                        args.push("libvpx-vp9");
-                    }
-                    args.push(&output_path);
-                    args.push("-y");
-                    args
+            .args(preset)
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped());
+
+        match SharedChild::spawn(&mut command) {
+            Ok(child) => {
+                let cp = Arc::new(child);
+                let cp_clone = cp.clone();
+
+                if let Some(window) = self.app.get_webview_window("main") {
+                    window.on_window_event(move |event| match event {
+                        WindowEvent::Destroyed => {
+                            if let Err(err) = cp_clone.kill() {
+                                log::error!(
+                                    "[ffmpeg] Child process could not be killed {}",
+                                    err.to_string()
+                                );
+                            }
+                        }
+                        _ => {}
+                    });
                 }
-                _ => {
-                    let mut args = vec![
-                        "-i",
-                        &video_path,
-                        "-pix_fmt",
-                        "yuv420p",
-                        "-c:v",
-                        "libx264",
-                        "-b:v",
-                        "0",
-                        "-movflags",
-                        "+faststart",
-                        "-preset",
-                        "slow",
-                        "-qp",
-                        "0",
-                        "-crf",
-                        "32",
-                        "-vf",
-                        "pad=ceil(iw/2)*2:ceil(ih/2)*2",
-                    ];
-                    if convert_to_extension == "webm" {
-                        args.push("-c:v");
-                        args.push("libvpx-vp9");
+
+                let thread = std::thread::spawn(move || {
+                    #[cfg(debug_assertions)]
+                    if let Some(stdout) = cp.take_stdout() {
+                        let lines = BufReader::new(stdout).lines();
+                        for line in lines {
+                            if let Ok(out) = line {
+                                log::debug!("[ffmpeg] stdout: {:?}", out);
+                            }
+                        }
                     }
-                    args.push(&output_path);
-                    args.push("-y");
-                    args
+
+                    #[cfg(debug_assertions)]
+                    if let Some(stderr) = cp.take_stderr() {
+                        let lines = BufReader::new(stderr).lines();
+                        for line in lines {
+                            if let Ok(out) = line {
+                                log::debug!("[ffmpeg] stderr: {:?}", out);
+                            }
+                        }
+                    }
+                    if let Ok(_) = cp.wait() {
+                        return 0;
+                    }
+                    return 1;
+                });
+
+                match thread.join() {
+                    Ok(exit_status) => {
+                        if exit_status == 1 {
+                            return Err(String::from("Video corrupted."));
+                        }
+                    }
+                    Err(_) => {
+                        return Err(String::from("Thread panicked."));
+                    }
                 }
-            })
-            .spawn()
-        {
-            Ok(ok) => {
-                let (mut rx, _) = ok;
-                if let Err(err) = tauri::async_runtime::spawn(async move {
-                    while let Some(event) = rx.recv().await {
-                        log::debug!("[event] {:?}", event);
-                    }
-                })
-                .await
-                {
-                    return Err(err.to_string());
-                };
             }
             Err(err) => {
                 return Err(err.to_string());
@@ -134,16 +188,16 @@ impl FFMPEG {
     }
 
     /// Generates a .jpeg thumbnail image from a video path
-    pub async fn generate_video_thumbnail(self, video_path: &str) -> Result<String, String> {
+    pub async fn generate_video_thumbnail(&mut self, video_path: &str) -> Result<String, String> {
         if !Path::exists(Path::new(video_path)) {
             return Err(String::from("File does not exists."));
         }
         let file_name = format!("{}.jpg", nanoid!());
-        let output_path: PathBuf = [self.assets_dir, PathBuf::from(&file_name)]
+        let output_path: PathBuf = [self.assets_dir.clone(), PathBuf::from(&file_name)]
             .iter()
             .collect();
 
-        match self
+        let command = self
             .ffmpeg
             .args([
                 "-i",
@@ -157,29 +211,65 @@ impl FFMPEG {
                 &output_path.display().to_string(),
                 "-y",
             ])
-            .spawn()
-        {
-            Ok(ok) => {
-                let (mut rx, _) = ok;
-                if let Err(err) = tauri::async_runtime::spawn(async move {
-                    while let Some(event) = rx.recv().await {
-                        log::debug!("[event] {:?}", event);
-                        match event {
-                            CommandEvent::Terminated(payload) => {
-                                log::debug!("Terminated payload {:?}", payload);
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped());
+
+        match SharedChild::spawn(command) {
+            Ok(child) => {
+                let cp = Arc::new(child);
+                let cp_clone = cp.clone();
+
+                if let Some(window) = self.app.get_webview_window("main") {
+                    window.on_window_event(move |event| match event {
+                        WindowEvent::Destroyed => {
+                            if let Err(err) = cp.kill() {
+                                log::error!(
+                                    "[ffmpeg] Child process could not be killed {}",
+                                    err.to_string()
+                                );
                             }
-                            _ => {}
+                        }
+                        _ => {}
+                    })
+                }
+
+                let thread = thread::spawn(move || {
+                    #[cfg(debug_assertions)]
+                    if let Some(stdout) = cp_clone.take_stdout() {
+                        let lines = BufReader::new(stdout).lines();
+                        for line in lines {
+                            if let Ok(out) = line {
+                                log::debug!("[ffmpeg] stdout: {}", out)
+                            }
                         }
                     }
-                })
-                .await
-                {
-                    return Err(err.to_string());
-                };
+
+                    #[cfg(debug_assertions)]
+                    if let Some(stderr) = cp_clone.take_stderr() {
+                        let lines = BufReader::new(stderr).lines();
+                        for line in lines {
+                            if let Ok(out) = line {
+                                log::debug!("[ffmpeg] stderr: {}", out)
+                            }
+                        }
+                    }
+                    if let Ok(_) = cp_clone.wait() {
+                        return 0;
+                    }
+                    return 1;
+                });
+
+                match thread.join() {
+                    Ok(exit_status) => {
+                        if exit_status == 1 {
+                            return Err(String::from("Video is corrupted."));
+                        }
+                    }
+                    Err(_) => return Err(String::from("Thread panicked.")),
+                }
             }
             Err(err) => return Err(err.to_string()),
         };
-
         return Ok(output_path.display().to_string());
     }
 }

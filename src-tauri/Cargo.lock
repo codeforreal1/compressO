@@ -107,6 +107,7 @@ dependencies = [
  "nanoid",
  "serde",
  "serde_json",
+ "shared_child",
  "tauri",
  "tauri-build",
  "tauri-plugin-dialog",

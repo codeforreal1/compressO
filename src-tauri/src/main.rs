@@ -13,7 +13,7 @@ async fn compress_video(
     convert_to_extension: &str,
     preset_name: &str,
 ) -> Result<CompressionResult, String> {
-    let ffmpeg = ffmpeg::FFMPEG::new(&app)?;
+    let mut ffmpeg = ffmpeg::FFMPEG::new(&app)?;
     return match ffmpeg
         .compress_video(video_path, convert_to_extension, preset_name)
         .await
@@ -28,7 +28,7 @@ async fn generate_video_thumbnail(
     app: tauri::AppHandle,
     video_path: &str,
 ) -> Result<String, String> {
-    let ffmpeg = ffmpeg::FFMPEG::new(&app)?;
+    let mut ffmpeg = ffmpeg::FFMPEG::new(&app)?;
     return Ok(ffmpeg.generate_video_thumbnail(video_path).await?);
 }
 
