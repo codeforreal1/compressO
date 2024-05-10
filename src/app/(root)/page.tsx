@@ -6,7 +6,6 @@ import { SelectItem } from "@nextui-org/select";
 import { FileResponse, save } from "@tauri-apps/plugin-dialog";
 import { useDisclosure } from "@nextui-org/modal";
 import { open } from "@tauri-apps/plugin-shell";
-import { listen } from "@tauri-apps/api/event";
 
 import Modal, {
   ModalHeader,
@@ -34,6 +33,7 @@ import {
   moveFile,
 } from "@/tauri/commands/fs";
 import { compressionPresets, extensions } from "@/types/compression";
+import { Meteors } from "./Meteor";
 
 type Video = {
   isFileSelected: boolean;
@@ -103,10 +103,10 @@ const initialState: Video = {
 //   sizeInBytes: 70872137,
 
 //   thumbnailPath:
-//     "asset://localhost/%2Fhome%2Fniraj%2F.local%2Fshare%2Fcom.compressO.dev%2Fassets%2FTwCAOvBGdHUzAnwPernMm.jpg",
+//     "asset://localhost/%2Fhome%2Fniraj%2F.local%2Fshare%2Fcom.compresso.app%2Fassets%2F4pbx74rtxYPJSDmON5BlE.jpg",
 
 //   thumbnailPathRaw:
-//     "/home/niraj/.local/share/com.compressO.dev/assets/TwCAOvBGdHUzAnwPernMm.jpg",
+//     "/home/niraj/.local/share/com.compressO.dev/assets/main-qimg-e2a12be20d4730ee7264b32999845c40-lq.jpeg",
 //   isCompressing: false,
 //   isCompressionSuccessful: false,
 //   compressedVideo: {
@@ -139,17 +139,6 @@ function Root() {
     React.useState<keyof typeof compressionPresets>("ironclad");
 
   const { isOpen, onOpenChange, onOpen } = useDisclosure();
-
-  React.useEffect(() => {
-    (async () => {
-      const unListen = await listen("tauri://close-requested", () => {
-        console.log("closing the app");
-      });
-      return async () => {
-        unListen();
-      };
-    })();
-  }, []);
 
   const handleSuccess = async ({ file }: { file: FileResponse }) => {
     if (video?.isCompressing) return;
@@ -326,7 +315,7 @@ function Root() {
   };
 
   return (
-    <div>
+    <>
       <div className="absolute top-4 left-4 z-10 flex justify-center items-center">
         <h1 className="mr-2 font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
           compressO
@@ -446,8 +435,8 @@ function Root() {
                         }
                       >
                         {video?.compressedVideo?.isSaved
-                          ? "saved"
-                          : "save video"}
+                          ? "Saved"
+                          : "Save Video"}
                         <Icon
                           name={
                             video?.compressedVideo?.isSaved ? "tick" : "save"
@@ -537,7 +526,6 @@ function Root() {
                         disallowEmptySelection
                       >
                         {videoExtensions?.map((ext) => (
-                          // Right now if we use SelectItem it breaks the code so opting for SelectItem from NextUI directly
                           <SelectItem
                             key={ext}
                             value={ext}
@@ -615,7 +603,7 @@ function Root() {
           )}
         </ModalContent>
       </Modal>
-    </div>
+    </>
   );
 }
 

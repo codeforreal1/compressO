@@ -1,6 +1,7 @@
 use std::{
-    fs::{self},
+    fs,
     path::{Path, PathBuf},
+    time::{self, Duration, SystemTime},
 };
 use tauri::Manager;
 use tauri_plugin_fs::FsExt;
@@ -72,4 +73,30 @@ pub async fn copy_file(from: &str, to: &str) -> std::io::Result<u64> {
 /// Deletes file from the given path
 pub async fn delete_file(path: &str) -> std::io::Result<()> {
     Ok(tokio::fs::remove_file(path).await?)
+}
+
+/// Deletes all files that were (now - created) > duration_in_millis
+pub async fn delete_stale_files(
+    path: &str,
+    duration_in_millis: u64,
+) -> std::io::Result<Vec<PathBuf>> {
+    let mut entries = tokio::fs::read_dir(path).await?;
+    let now = SystemTime::now().duration_since(time::UNIX_EPOCH).unwrap();
+    let mut deleted_files: Vec<PathBuf> = vec![];
+    while let Some(entry) = entries.next_entry().await? {
+        let metadata = entry.metadata().await?;
+        if metadata.is_file() {
+            if let Ok(created_at) = metadata.created() {
+                if let Ok(created_at_since_epoch) = created_at.duration_since(time::UNIX_EPOCH) {
+                    println!("DIFF {:?}", now - created_at_since_epoch);
+                    println!("File {:?}", entry.path());
+                    if (now - created_at_since_epoch) > Duration::from_millis(duration_in_millis) {
+                        tokio::fs::remove_file(entry.path()).await?;
+                        deleted_files.push(entry.path());
+                    }
+                }
+            }
+        }
+    }
+    return Ok(deleted_files);
 }

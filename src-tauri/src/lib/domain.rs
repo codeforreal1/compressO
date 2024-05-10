@@ -16,3 +16,7 @@ pub struct FileMetadata {
     pub extension: String,
     pub size: u64,
 }
+
+// pub struct AppState {
+//     app_dir:
+// }

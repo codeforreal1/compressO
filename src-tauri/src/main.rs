@@ -2,7 +2,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use lib::domain::FileMetadata;
-use lib::fs as file_system;
+use lib::fs::{self as file_system, delete_stale_files};
 use lib::{domain::CompressionResult, ffmpeg};
 use tauri_plugin_log::{Target as LogTarget, TargetKind as LogTargetKind};
 
@@ -13,7 +13,16 @@ async fn compress_video(
     convert_to_extension: &str,
     preset_name: &str,
 ) -> Result<CompressionResult, String> {
+    // Delete stale files
     let mut ffmpeg = ffmpeg::FFMPEG::new(&app)?;
+    if let Ok(files) =
+        delete_stale_files(ffmpeg.get_asset_dir().as_str(), 24 * 60 * 60 * 1000).await
+    {
+        log::debug!(
+            "[main] Stale files deleted. Number of deleted files = {}",
+            files.len()
+        )
+    };
     return match ffmpeg
         .compress_video(video_path, convert_to_extension, preset_name)
         .await
@@ -61,7 +70,8 @@ const LOG_TARGETS: [LogTarget; 1] = [LogTarget::new(LogTargetKind::Stdout)];
 #[cfg(not(debug_assertions))]
 const LOG_TARGETS: [LogTarget; 0] = [];
 
-fn main() {
+#[tokio::main]
+async fn main() {
     tauri::Builder::default()
         .plugin(
             tauri_plugin_log::Builder::new()

@@ -127,14 +127,17 @@ impl FFMPEG {
 
                 if let Some(window) = self.app.get_webview_window("main") {
                     window.on_window_event(move |event| match event {
-                        WindowEvent::Destroyed => {
-                            if let Err(err) = cp_clone.kill() {
+                        WindowEvent::Destroyed => match cp_clone.kill() {
+                            Ok(_) => {
+                                log::error!("[ffmpeg] child process killed.");
+                            }
+                            Err(err) => {
                                 log::error!(
-                                    "[ffmpeg] Child process could not be killed {}",
+                                    "[ffmpeg] child process could not be killed {}",
                                     err.to_string()
                                 );
                             }
-                        }
+                        },
                         _ => {}
                     });
                 }
@@ -221,21 +224,24 @@ impl FFMPEG {
 
                 if let Some(window) = self.app.get_webview_window("main") {
                     window.on_window_event(move |event| match event {
-                        WindowEvent::Destroyed => {
-                            if let Err(err) = cp.kill() {
+                        WindowEvent::Destroyed => match cp_clone.kill() {
+                            Ok(_) => {
+                                log::error!("[ffmpeg] child process killed.");
+                            }
+                            Err(err) => {
                                 log::error!(
-                                    "[ffmpeg] Child process could not be killed {}",
+                                    "[ffmpeg] child process could not be killed {}",
                                     err.to_string()
                                 );
                             }
-                        }
+                        },
                         _ => {}
                     })
                 }
 
                 let thread = thread::spawn(move || {
                     #[cfg(debug_assertions)]
-                    if let Some(stdout) = cp_clone.take_stdout() {
+                    if let Some(stdout) = cp.take_stdout() {
                         let lines = BufReader::new(stdout).lines();
                         for line in lines {
                             if let Ok(out) = line {
@@ -245,7 +251,7 @@ impl FFMPEG {
                     }
 
                     #[cfg(debug_assertions)]
-                    if let Some(stderr) = cp_clone.take_stderr() {
+                    if let Some(stderr) = cp.take_stderr() {
                         let lines = BufReader::new(stderr).lines();
                         for line in lines {
                             if let Ok(out) = line {
@@ -253,7 +259,7 @@ impl FFMPEG {
                             }
                         }
                     }
-                    if let Ok(_) = cp_clone.wait() {
+                    if let Ok(_) = cp.wait() {
                         return 0;
                     }
                     return 1;
@@ -271,5 +277,9 @@ impl FFMPEG {
             Err(err) => return Err(err.to_string()),
         };
         return Ok(output_path.display().to_string());
+    }
+
+    pub fn get_asset_dir(&self) -> String {
+        return self.assets_dir.display().to_string();
     }
 }
