@@ -88,8 +88,6 @@ pub async fn delete_stale_files(
         if metadata.is_file() {
             if let Ok(created_at) = metadata.created() {
                 if let Ok(created_at_since_epoch) = created_at.duration_since(time::UNIX_EPOCH) {
-                    println!("DIFF {:?}", now - created_at_since_epoch);
-                    println!("File {:?}", entry.path());
                     if (now - created_at_since_epoch) > Duration::from_millis(duration_in_millis) {
                         tokio::fs::remove_file(entry.path()).await?;
                         deleted_files.push(entry.path());

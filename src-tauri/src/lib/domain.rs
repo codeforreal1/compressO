@@ -17,6 +17,10 @@ pub struct FileMetadata {
     pub size: u64,
 }
 
-// pub struct AppState {
-//     app_dir:
-// }
+#[derive(Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct VideoCompressionProgress {
+    pub file_name: String,
+    pub file_path: String,
+    pub out_time: String,
+}

@@ -3,6 +3,7 @@ import { useTheme } from "next-themes";
 
 import Button from "../Button";
 import Icon from "../Icon";
+import Tooltip from "../Tooltip";
 
 interface ThemeSwitcherChildrenProps {
   theme: string | undefined;
@@ -29,15 +30,17 @@ function ThemeSwitcher(props: ThemeSwitcherProps) {
   }
 
   return children == null ? (
-    <Button
-      isIconOnly
-      size="sm"
-      onClick={function () {
-        setTheme(theme === "light" ? "dark" : "light");
-      }}
-    >
-      <Icon name={theme === "light" ? "moon" : "sun"} />
-    </Button>
+    <Tooltip content="Toggle theme" placement="right">
+      <Button
+        isIconOnly
+        size="sm"
+        onClick={function () {
+          setTheme(theme === "light" ? "dark" : "light");
+        }}
+      >
+        <Icon name={theme === "light" ? "moon" : "sun"} />
+      </Button>
+    </Tooltip>
   ) : (
     children({ theme, setTheme })
   );

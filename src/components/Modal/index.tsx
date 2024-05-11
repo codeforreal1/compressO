@@ -15,7 +15,37 @@ import {
 interface ModalProps extends NextUIModalProps {}
 
 function Modal(props: ModalProps) {
-  return <NextUIModal {...props} />;
+  return (
+    <NextUIModal
+      motionProps={{
+        initial: {
+          rotate: -3,
+          scale: 0.9,
+        },
+        animate: {
+          scale: 1,
+          opacity: 1,
+          rotate: 0,
+          transition: {
+            type: "spring",
+            duration: 0.5,
+            bounce: 0.3,
+          },
+        },
+        exit: {
+          scale: 0.9,
+          opacity: 0,
+          rotate: 3,
+          transition: {
+            type: "spring",
+            duration: 0.5,
+            bounce: 0.3,
+          },
+        },
+      }}
+      {...props}
+    />
+  );
 }
 
 interface ModalHeaderProps extends NextUIModalHeaderProps {}

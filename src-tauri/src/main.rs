@@ -13,7 +13,6 @@ async fn compress_video(
     convert_to_extension: &str,
     preset_name: &str,
 ) -> Result<CompressionResult, String> {
-    // Delete stale files
     let mut ffmpeg = ffmpeg::FFMPEG::new(&app)?;
     if let Ok(files) =
         delete_stale_files(ffmpeg.get_asset_dir().as_str(), 24 * 60 * 60 * 1000).await

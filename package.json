@@ -23,6 +23,7 @@
     "@nextui-org/spinner": "^2.0.28",
     "@nextui-org/system": "^2.1.2",
     "@nextui-org/theme": "^2.2.3",
+    "@nextui-org/tooltip": "^2.0.33",
     "@tauri-apps/api": ">=2.0.0-beta.0",
     "@tauri-apps/plugin-dialog": "2.0.0-beta.3",
     "@tauri-apps/plugin-fs": "2.0.0-beta.3",

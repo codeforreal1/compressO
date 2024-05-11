@@ -1,12 +1,13 @@
-use crate::domain::CompressionResult;
+use crate::domain::{CompressionResult, VideoCompressionProgress};
+use crossbeam_channel::{Receiver, Sender};
 use nanoid::nanoid;
+use regex::Regex;
 use shared_child::SharedChild;
 use std::{
-    io::{BufRead, BufReader},
+    io::BufReader,
     path::{Path, PathBuf},
     process::{Command, Stdio},
     sync::Arc,
-    thread,
 };
 use tauri::{AppHandle, Manager, WindowEvent};
 use tauri_plugin_shell::ShellExt;
@@ -57,17 +58,26 @@ impl FFMPEG {
         }
 
         let file_name = format!("{}.{}", nanoid!(), convert_to_extension);
+        // let file_name_clone = Arc::new(file_name);
+
         let output_file: PathBuf = [self.assets_dir.clone(), PathBuf::from(&file_name)]
             .iter()
             .collect();
 
         let output_path = &output_file.display().to_string();
+        // let output_path_clone = Arc::new(output_path);
 
         let preset = match preset_name {
             "thunderbolt" => {
                 let mut args = vec![
                     "-i",
                     &video_path,
+                    "-hide_banner",
+                    "-progress",
+                    "-",
+                    "-nostats",
+                    "-loglevel",
+                    "error",
                     "-vcodec",
                     "libx264",
                     "-crf",
@@ -87,6 +97,12 @@ impl FFMPEG {
                 let mut args = vec![
                     "-i",
                     &video_path,
+                    "-hide_banner",
+                    "-progress",
+                    "-",
+                    "-nostats",
+                    "-loglevel",
+                    "error",
                     "-pix_fmt",
                     "yuv420p",
                     "-c:v",
@@ -123,11 +139,12 @@ impl FFMPEG {
         match SharedChild::spawn(&mut command) {
             Ok(child) => {
                 let cp = Arc::new(child);
-                let cp_clone = cp.clone();
+                let cp_clone1 = cp.clone();
+                let cp_clone2 = cp.clone();
 
                 if let Some(window) = self.app.get_webview_window("main") {
                     window.on_window_event(move |event| match event {
-                        WindowEvent::Destroyed => match cp_clone.kill() {
+                        WindowEvent::Destroyed => match cp.kill() {
                             Ok(_) => {
                                 log::error!("[ffmpeg] child process killed.");
                             }
@@ -142,40 +159,81 @@ impl FFMPEG {
                     });
                 }
 
-                let thread = std::thread::spawn(move || {
-                    #[cfg(debug_assertions)]
-                    if let Some(stdout) = cp.take_stdout() {
-                        let lines = BufReader::new(stdout).lines();
-                        for line in lines {
-                            if let Ok(out) = line {
-                                log::debug!("[ffmpeg] stdout: {:?}", out);
+                #[cfg(debug_assertions)]
+                tokio::spawn(async move {
+                    if let Some(stderr) = cp_clone1.take_stderr() {
+                        let mut reader = BufReader::new(stderr);
+
+                        loop {
+                            let mut buf: Vec<u8> = Vec::new();
+                            match tauri::utils::io::read_line(&mut reader, &mut buf) {
+                                Ok(n) => {
+                                    if n == 0 {
+                                        break;
+                                    }
+                                    if let Some(val) = std::str::from_utf8(&buf).ok() {
+                                        log::debug!("[ffmpeg] stderr: {:?}", val);
+                                    }
+                                }
+                                Err(_) => {
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                });
+
+                let (tx, rx): (Sender<String>, Receiver<String>) = crossbeam_channel::unbounded();
+
+                let thread: tokio::task::JoinHandle<u8> = tokio::spawn(async move {
+                    if let Some(stdout) = cp_clone2.take_stdout() {
+                        let mut reader = BufReader::new(stdout);
+                        loop {
+                            let mut buf: Vec<u8> = Vec::new();
+                            match tauri::utils::io::read_line(&mut reader, &mut buf) {
+                                Ok(n) => {
+                                    if n == 0 {
+                                        break;
+                                    }
+                                    if let Some(output) = std::str::from_utf8(&buf).ok() {
+                                        log::debug!("[ffmpeg] stdout: {:?}", output);
+                                        let re =
+                                            Regex::new("out_time=(?<out_time>.*?)\\n").unwrap();
+                                        if let Some(cap) = re.captures(output) {
+                                            let out_time = &cap["out_time"];
+                                            if out_time.len() > 0 {
+                                                tx.try_send(String::from(out_time)).ok();
+                                            }
+                                        }
+                                    }
+                                }
+                                Err(_) => {
+                                    break;
+                                }
                             }
                         }
                     }
 
-                    #[cfg(debug_assertions)]
-                    if let Some(stderr) = cp.take_stderr() {
-                        let lines = BufReader::new(stderr).lines();
-                        for line in lines {
-                            if let Ok(out) = line {
-                                log::debug!("[ffmpeg] stderr: {:?}", out);
-                            }
-                        }
-                    }
-                    if let Ok(_) = cp.wait() {
+                    if let Ok(_) = cp_clone2.wait() {
                         return 0;
                     }
                     return 1;
                 });
 
-                match thread.join() {
+                tokio::spawn(async move {
+                    while let Ok(msg) = rx.recv() {
+                        println!("Message received from worker = {}", msg)
+                    }
+                });
+
+                match thread.await {
                     Ok(exit_status) => {
                         if exit_status == 1 {
                             return Err(String::from("Video corrupted."));
                         }
                     }
-                    Err(_) => {
-                        return Err(String::from("Thread panicked."));
+                    Err(err) => {
+                        return Err(err.to_string());
                     }
                 }
             }
@@ -193,29 +251,28 @@ impl FFMPEG {
     /// Generates a .jpeg thumbnail image from a video path
     pub async fn generate_video_thumbnail(&mut self, video_path: &str) -> Result<String, String> {
         if !Path::exists(Path::new(video_path)) {
-            return Err(String::from("File does not exists."));
+            return Err(String::from("File does not exist in given path."));
         }
+
+        let duration = self.get_video_duration(video_path).await.unwrap();
+        println!("Duration is {:?}", duration);
         let file_name = format!("{}.jpg", nanoid!());
         let output_path: PathBuf = [self.assets_dir.clone(), PathBuf::from(&file_name)]
             .iter()
             .collect();
 
-        let command = self
-            .ffmpeg
-            .args([
-                "-i",
-                video_path,
-                "-ss",
-                "00:00:01.00",
-                "-vf",
-                "scale=1080:720:force_original_aspect_ratio=decrease",
-                "-vframes",
-                "1",
-                &output_path.display().to_string(),
-                "-y",
-            ])
-            .stdout(Stdio::piped())
-            .stderr(Stdio::piped());
+        let command = self.ffmpeg.args([
+            "-i",
+            video_path,
+            "-ss",
+            "00:00:01.00",
+            "-vf",
+            "scale=1080:720:force_original_aspect_ratio=decrease",
+            "-vframes",
+            "1",
+            &output_path.display().to_string(),
+            "-y",
+        ]);
 
         match SharedChild::spawn(command) {
             Ok(child) => {
@@ -224,7 +281,7 @@ impl FFMPEG {
 
                 if let Some(window) = self.app.get_webview_window("main") {
                     window.on_window_event(move |event| match event {
-                        WindowEvent::Destroyed => match cp_clone.kill() {
+                        WindowEvent::Destroyed => match cp.kill() {
                             Ok(_) => {
                                 log::error!("[ffmpeg] child process killed.");
                             }
@@ -239,39 +296,20 @@ impl FFMPEG {
                     })
                 }
 
-                let thread = thread::spawn(move || {
-                    #[cfg(debug_assertions)]
-                    if let Some(stdout) = cp.take_stdout() {
-                        let lines = BufReader::new(stdout).lines();
-                        for line in lines {
-                            if let Ok(out) = line {
-                                log::debug!("[ffmpeg] stdout: {}", out)
-                            }
-                        }
-                    }
-
-                    #[cfg(debug_assertions)]
-                    if let Some(stderr) = cp.take_stderr() {
-                        let lines = BufReader::new(stderr).lines();
-                        for line in lines {
-                            if let Ok(out) = line {
-                                log::debug!("[ffmpeg] stderr: {}", out)
-                            }
-                        }
-                    }
-                    if let Ok(_) = cp.wait() {
+                let thread: tokio::task::JoinHandle<u8> = tokio::spawn(async move {
+                    if let Ok(_) = cp_clone.wait() {
                         return 0;
                     }
                     return 1;
                 });
 
-                match thread.join() {
+                match thread.await {
                     Ok(exit_status) => {
                         if exit_status == 1 {
                             return Err(String::from("Video is corrupted."));
                         }
                     }
-                    Err(_) => return Err(String::from("Thread panicked.")),
+                    Err(err) => return Err(err.to_string()),
                 }
             }
             Err(err) => return Err(err.to_string()),
@@ -281,5 +319,81 @@ impl FFMPEG {
 
     pub fn get_asset_dir(&self) -> String {
         return self.assets_dir.display().to_string();
+    }
+
+    pub async fn get_video_duration(&mut self, video_path: &str) -> Result<Option<String>, String> {
+        if !Path::exists(Path::new(video_path)) {
+            return Err(String::from("File does not exist in given path."));
+        }
+
+        let command = self
+            .ffmpeg
+            .args(["-i", video_path, "-hide_banner"])
+            .stdout(Stdio::piped());
+
+        match SharedChild::spawn(command) {
+            Ok(child) => {
+                let cp = Arc::new(child);
+                let cp_clone = cp.clone();
+
+                if let Some(window) = self.app.get_webview_window("main") {
+                    window.on_window_event(move |event| match event {
+                        WindowEvent::Destroyed => match cp.kill() {
+                            Ok(_) => {
+                                log::error!("[ffmpeg] child process killed.");
+                            }
+                            Err(err) => {
+                                log::error!(
+                                    "[ffmpeg] child process could not be killed {}",
+                                    err.to_string()
+                                );
+                            }
+                        },
+                        _ => {}
+                    })
+                }
+
+                let thread: tokio::task::JoinHandle<(u8, Option<String>)> =
+                    tokio::spawn(async move {
+                        let mut duration: Option<String> = None;
+                        if let Some(stderr) = cp_clone.take_stderr() {
+                            let mut reader = BufReader::new(stderr);
+                            loop {
+                                let mut buf: Vec<u8> = Vec::new();
+                                match tauri::utils::io::read_line(&mut reader, &mut buf) {
+                                    Ok(n) => {
+                                        if n == 0 {
+                                            break;
+                                        }
+                                        let line = std::str::from_utf8(&buf).unwrap();
+                                        let re = Regex::new("Duration: (?<duration>.*?),").unwrap();
+                                        if let Some(cap) = re.captures(line) {
+                                            let matched_duration = &cap["duration"];
+                                            duration = Some(String::from(matched_duration));
+                                        };
+                                    }
+                                    Err(_) => {
+                                        break;
+                                    }
+                                };
+                            }
+                        }
+                        if let Ok(_) = cp_clone.wait() {
+                            return (0, duration);
+                        }
+                        return (1, duration);
+                    });
+                match thread.await {
+                    Ok((exit_status, duration)) => {
+                        if exit_status == 1 {
+                            return Err(String::from("Video file is corrupted"));
+                        }
+                        return Ok(duration);
+                    }
+                    Err(err) => return Err(err.to_string()),
+                }
+            }
+            Err(err) => return Err(err.to_string()),
+        };
     }
 }

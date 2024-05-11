@@ -1,11 +1,12 @@
 "use client";
 import React from "react";
 import dynamic from "next/dynamic";
-import { core } from "@tauri-apps/api";
+import { core, event } from "@tauri-apps/api";
 import { SelectItem } from "@nextui-org/select";
 import { FileResponse, save } from "@tauri-apps/plugin-dialog";
 import { useDisclosure } from "@nextui-org/modal";
 import { open } from "@tauri-apps/plugin-shell";
+import { motion } from "framer-motion";
 
 import Modal, {
   ModalHeader,
@@ -33,7 +34,7 @@ import {
   moveFile,
 } from "@/tauri/commands/fs";
 import { compressionPresets, extensions } from "@/types/compression";
-import { Meteors } from "./Meteor";
+import Tooltip from "@/components/Tooltip";
 
 type Video = {
   isFileSelected: boolean;
@@ -103,7 +104,7 @@ const initialState: Video = {
 //   sizeInBytes: 70872137,
 
 //   thumbnailPath:
-//     "asset://localhost/%2Fhome%2Fniraj%2F.local%2Fshare%2Fcom.compresso.app%2Fassets%2F4pbx74rtxYPJSDmON5BlE.jpg",
+//     "asset://localhost/%2Fhome%2Fniraj%2F.local%2Fshare%2Fcom.compresso.app%2Fassets%2FSS-ZKFbLghjPswZfFOHr1.jpg",
 
 //   thumbnailPathRaw:
 //     "/home/niraj/.local/share/com.compressO.dev/assets/main-qimg-e2a12be20d4730ee7264b32999845c40-lq.jpeg",
@@ -139,6 +140,21 @@ function Root() {
     React.useState<keyof typeof compressionPresets>("ironclad");
 
   const { isOpen, onOpenChange, onOpen } = useDisclosure();
+
+  React.useEffect(() => {
+    let unListen: event.UnlistenFn;
+    (async function () {
+      unListen = await event.listen<string>(
+        "VIDEO_COMPRESSION_PROGRESS",
+        (evt) => {
+          console.log("EVENT", evt);
+        }
+      );
+    })();
+    return () => {
+      unListen?.();
+    };
+  }, []);
 
   const handleSuccess = async ({ file }: { file: FileResponse }) => {
     if (video?.isCompressing) return;
@@ -236,6 +252,7 @@ function Root() {
         },
       }));
     } catch (error) {
+      console.log(error);
       toast.error("Something went wrong during compression.");
       setVideo((previousState) => ({
         ...previousState,
@@ -354,12 +371,20 @@ function Root() {
                     }}
                     className="bg-transparent"
                   >
-                    <Icon name="cross" size={22} />
+                    <Tooltip content="Cancel compression">
+                      <Icon name="cross" size={22} />
+                    </Tooltip>
                   </Button>
                 </div>
               ) : null}
+
               {video?.isCompressing ? (
-                <div className="relative flex-shrink-0 w-[550px] h-[550px]">
+                <motion.div
+                  className="relative flex-shrink-0 w-[550px] h-[550px]"
+                  initial={{ scale: 0.9 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring", duration: 0.6 }}
+                >
                   <Progress
                     isIndeterminate
                     classNames={{
@@ -389,16 +414,16 @@ function Root() {
                     Compressing...
                     {convertToExtension === "webm" ? (
                       <span className="block">
-                        Webm conversion takes longer than the other formats.
+                        webm conversion takes longer than the other formats.
                       </span>
                     ) : null}
                   </p>
-                </div>
+                </motion.div>
               ) : (
                 <Image
                   alt="video to compress"
                   src={video?.thumbnailPath as string}
-                  className="max-w-[60vw] max-h-[40vh] object-contain border-8 rounded-3xl border-primary"
+                  className="max-w-[60vw] max-h-[40vh] object-contain border-8 rounded-3xl border-primary "
                 />
               )}
               {!video?.isCompressing ? (
@@ -498,10 +523,12 @@ function Root() {
                             className="flex justify-center items-center"
                             endContent={
                               preset === compressionPresets.ironclad ? (
-                                <Icon
-                                  name="star"
-                                  className="inline-block ml-1 text-yellow-500"
-                                />
+                                <Tooltip content="Recommended">
+                                  <Icon
+                                    name="star"
+                                    className="inline-block ml-1 text-yellow-500"
+                                  />
+                                </Tooltip>
                               ) : null
                             }
                           >
@@ -562,11 +589,7 @@ function Root() {
               ])}
               onClick={onClick}
             >
-              <Icon
-                name={"videoFile"}
-                className={mergeClasses(["text-gray-500 dark:text-gray-500"])}
-                size={70}
-              />
+              <Icon name="videoFile" className="text-primary" size={70} />
               <p className="italic text-sm mt-4 text-gray-500 text-center">
                 Click anywhere to select a video
               </p>
