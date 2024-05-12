@@ -18,28 +18,24 @@ function Modal(props: ModalProps) {
   return (
     <NextUIModal
       motionProps={{
-        initial: {
-          rotate: -3,
-          scale: 0.9,
-        },
-        animate: {
-          scale: 1,
-          opacity: 1,
-          rotate: 0,
-          transition: {
-            type: "spring",
-            duration: 0.5,
-            bounce: 0.3,
+        variants: {
+          enter: {
+            scale: 1,
+            opacity: 1,
+            transition: {
+              type: "spring",
+              bounce: 0.3,
+              duration: 0.5,
+            },
           },
-        },
-        exit: {
-          scale: 0.9,
-          opacity: 0,
-          rotate: 3,
-          transition: {
-            type: "spring",
-            duration: 0.5,
-            bounce: 0.3,
+          exit: {
+            scale: 0.8,
+            opacity: 0,
+            transition: {
+              type: "spring",
+              bounce: 0.3,
+              duration: 0.5,
+            },
           },
         },
       }}

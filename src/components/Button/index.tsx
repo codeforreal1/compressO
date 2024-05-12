@@ -4,7 +4,7 @@ import {
   ButtonProps as NextButtonProps,
 } from "@nextui-org/button";
 
-import { mergeClasses } from "@/utils/tailwind";
+import { cn } from "@/utils/tailwind";
 
 export interface ButtonProps extends NextButtonProps {
   color?: NextButtonProps["color"];
@@ -20,7 +20,7 @@ function Button(props: ButtonProps) {
       color={color ?? "default"}
       variant={variant ?? "flat"}
       {...nextButtonProps}
-      className={mergeClasses(["font-medium", nextButtonProps.className])}
+      className={cn(["font-medium", nextButtonProps.className])}
     />
   );
 }

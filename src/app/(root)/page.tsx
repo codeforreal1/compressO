@@ -23,7 +23,7 @@ import Divider from "@/components/Divider";
 import Image from "@/components/Image";
 import ThemeSwitcher from "@/components/ThemeSwitcher";
 import VideoPicker from "@/tauri/components/VideoPicker";
-import { mergeClasses } from "@/utils/tailwind";
+import { cn } from "@/utils/tailwind";
 import Icon from "@/components/Icon";
 import { toast } from "@/components/Toast";
 import { formatBytes } from "@/utils/fs";
@@ -45,6 +45,7 @@ import {
 } from "@/types/compression";
 import Tooltip from "@/components/Tooltip";
 import { convertDurationToMilliseconds } from "@/utils/string";
+import DotPattern from "@/ui/Patterns/DotPattern";
 
 type Video = {
   id?: string | null;
@@ -125,7 +126,7 @@ const initialState: Video = {
 //   thumbnailPathRaw:
 //     "/home/niraj/.local/share/com.compressO.dev/assets/main-qimg-e2a12be20d4730ee7264b32999845c40-lq.jpeg",
 //   isCompressing: false,
-//   isCompressionSuccessful: false,
+//   isCompressionSuccessful: true,
 //   compressedVideo: {
 //     fileName: "7d4SufnlvuCxSm77Agic7.webm",
 
@@ -140,7 +141,7 @@ const initialState: Video = {
 //     sizeInBytes: 172,
 //     extension: "webm",
 //     // isSaving: true,
-//     isSaved: true,
+//     isSaved: false,
 //     savedPath: "/home/niraj/Downloads",
 //   },
 // };
@@ -378,10 +379,9 @@ function Root() {
     } catch (_) {}
   };
 
-  console.log(video);
-
   return (
     <>
+      {!video?.isFileSelected ? <DotPattern className="opacity-40" /> : null}
       <div className="absolute top-4 left-4 z-10 flex justify-center items-center">
         <h1 className="mr-2 font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
           compressO
@@ -529,13 +529,15 @@ function Root() {
                       </Button>
                       {video?.compressedVideo?.isSaved &&
                       video?.compressedVideo?.savedPath ? (
-                        <Button
-                          isIconOnly
-                          className="ml-2 text-green-500"
-                          onClick={handleFileOpen}
-                        >
-                          <Icon name="play" />
-                        </Button>
+                        <Tooltip content="Play video">
+                          <Button
+                            isIconOnly
+                            className="ml-2 text-green-500"
+                            onClick={handleFileOpen}
+                          >
+                            <Icon name="play" />
+                          </Button>
+                        </Tooltip>
                       ) : null}
                     </div>
                   </section>
@@ -642,7 +644,7 @@ function Root() {
             <div
               role="button"
               tabIndex={0}
-              className={mergeClasses([
+              className={cn([
                 "h-[100vh] w-full flex justify-center items-center z-0 flex-col animate-appearance-in",
               ])}
               onClick={onClick}

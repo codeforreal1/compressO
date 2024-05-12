@@ -3,7 +3,7 @@
 import React from "react";
 import { ClassValue } from "clsx";
 
-import { mergeClasses } from "@/utils/tailwind";
+import { cn } from "@/utils/tailwind";
 import Header from "./Header";
 import Footer from "./Footer";
 
@@ -50,11 +50,9 @@ const Layout = function (props: LayoutProps) {
 
   return (
     <LayoutContext.Provider value={{ isValid: true }}>
-      <section className={mergeClasses(["w-full", containerClassName])}>
+      <section className={cn(["w-full", containerClassName])}>
         {header}
-        <div className={mergeClasses(["max-w-2xl mx-auto", className])}>
-          {main}
-        </div>
+        <div className={cn(["max-w-2xl mx-auto", className])}>{main}</div>
         {footer}
       </section>
     </LayoutContext.Provider>
