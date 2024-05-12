@@ -81,6 +81,7 @@ const LOG_TARGETS: [LogTarget; 0] = [];
 
 #[tokio::main]
 async fn main() {
+    std::env::set_var("WEBKIT_DISABLE_COMPOSITING_MODE", "1");
     tauri::Builder::default()
         .plugin(
             tauri_plugin_log::Builder::new()
