@@ -1,7 +1,7 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use lib::domain::FileMetadata;
+use lib::domain::{FileMetadata, VideoThumbnail};
 use lib::fs::{self as file_system, delete_stale_files};
 use lib::{domain::CompressionResult, ffmpeg};
 use tauri_plugin_log::{Target as LogTarget, TargetKind as LogTargetKind};
@@ -12,6 +12,7 @@ async fn compress_video(
     video_path: &str,
     convert_to_extension: &str,
     preset_name: &str,
+    video_id: Option<&str>,
 ) -> Result<CompressionResult, String> {
     let mut ffmpeg = ffmpeg::FFMPEG::new(&app)?;
     if let Ok(files) =
@@ -23,7 +24,7 @@ async fn compress_video(
         )
     };
     return match ffmpeg
-        .compress_video(video_path, convert_to_extension, preset_name)
+        .compress_video(video_path, convert_to_extension, preset_name, video_id)
         .await
     {
         Ok(result) => Ok(result),
@@ -35,7 +36,7 @@ async fn compress_video(
 async fn generate_video_thumbnail(
     app: tauri::AppHandle,
     video_path: &str,
-) -> Result<String, String> {
+) -> Result<VideoThumbnail, String> {
     let mut ffmpeg = ffmpeg::FFMPEG::new(&app)?;
     return Ok(ffmpeg.generate_video_thumbnail(video_path).await?);
 }
@@ -63,6 +64,15 @@ async fn move_file(from: &str, to: &str) -> Result<(), String> {
     Ok(())
 }
 
+#[tauri::command]
+async fn get_vide_duration(
+    app: tauri::AppHandle,
+    video_path: &str,
+) -> Result<Option<String>, String> {
+    let mut ffmpeg = ffmpeg::FFMPEG::new(&app)?;
+    ffmpeg.get_video_duration(video_path).await
+}
+
 #[cfg(debug_assertions)]
 const LOG_TARGETS: [LogTarget; 1] = [LogTarget::new(LogTargetKind::Stdout)];
 
@@ -87,6 +97,7 @@ async fn main() {
         .invoke_handler(tauri::generate_handler![
             compress_video,
             generate_video_thumbnail,
+            get_vide_duration,
             get_file_metadata,
             get_image_dimension,
             move_file

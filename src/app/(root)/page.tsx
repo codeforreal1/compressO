@@ -27,16 +27,27 @@ import { mergeClasses } from "@/utils/tailwind";
 import Icon from "@/components/Icon";
 import { toast } from "@/components/Toast";
 import { formatBytes } from "@/utils/fs";
-import { compressVideo, generateVideoThumbnail } from "@/tauri/commands/ffmpeg";
+import {
+  compressVideo,
+  generateVideoThumbnail,
+  getVideoDuration,
+} from "@/tauri/commands/ffmpeg";
 import {
   getFileMetadata,
   getImageDimension,
   moveFile,
 } from "@/tauri/commands/fs";
-import { compressionPresets, extensions } from "@/types/compression";
+import {
+  CustomEvents,
+  VideoCompressionProgress,
+  compressionPresets,
+  extensions,
+} from "@/types/compression";
 import Tooltip from "@/components/Tooltip";
+import { convertDurationToMilliseconds } from "@/utils/string";
 
 type Video = {
+  id?: string | null;
   isFileSelected: boolean;
   pathRaw?: string | null;
   path?: string | null;
@@ -44,10 +55,12 @@ type Video = {
   mimeType?: string | null;
   sizeInBytes?: number | null;
   size?: string | null;
+  extension?: null | string;
   thumbnailPathRaw?: string | null;
   thumbnailPath?: string | null;
   isThumbnailGenerating?: boolean;
-  extension?: null | string;
+  videoDurationMilliseconds?: number | null;
+  videDurationRaw?: string | null;
   isCompressing?: boolean;
   isCompressionSuccessful?: boolean;
   compressedVideo?: {
@@ -65,6 +78,7 @@ type Video = {
 };
 
 const initialState: Video = {
+  id: null,
   isFileSelected: false,
   pathRaw: null,
   path: null,
@@ -72,10 +86,12 @@ const initialState: Video = {
   mimeType: null,
   sizeInBytes: null,
   size: null,
+  extension: null,
   thumbnailPathRaw: null,
   thumbnailPath: null,
   isThumbnailGenerating: false,
-  extension: null,
+  videoDurationMilliseconds: null,
+  videDurationRaw: null,
   isCompressing: false,
   isCompressionSuccessful: false,
   compressedVideo: null,
@@ -138,28 +154,43 @@ function Root() {
     React.useState<keyof typeof extensions.video>("mp4");
   const [presetName, setPresetName] =
     React.useState<keyof typeof compressionPresets>("ironclad");
+  const [progress, setProgress] = React.useState<number>(0);
 
   const { isOpen, onOpenChange, onOpen } = useDisclosure();
 
+  const { videoDurationMilliseconds, id: videoId } = video;
   React.useEffect(() => {
     let unListen: event.UnlistenFn;
-    (async function () {
-      unListen = await event.listen<string>(
-        "VIDEO_COMPRESSION_PROGRESS",
-        (evt) => {
-          console.log("EVENT", evt);
-        }
-      );
-    })();
+    videoDurationMilliseconds &&
+      (async function () {
+        unListen = await event.listen<VideoCompressionProgress>(
+          CustomEvents.VideoCompressionProgress,
+          (evt) => {
+            const payload = evt?.payload;
+            if (videoId === payload?.videoId) {
+              const currentDurationInMilliseconds =
+                convertDurationToMilliseconds(payload?.currentDuration);
+              if (
+                currentDurationInMilliseconds > 0 &&
+                videoDurationMilliseconds >= currentDurationInMilliseconds
+              ) {
+                setProgress(
+                  (currentDurationInMilliseconds * 100) /
+                    videoDurationMilliseconds
+                );
+              }
+            }
+          }
+        );
+      })();
     return () => {
       unListen?.();
     };
-  }, []);
+  }, [videoDurationMilliseconds, videoId]);
 
-  const handleSuccess = async ({ file }: { file: FileResponse }) => {
+  const handleVideoSelected = async ({ file }: { file: FileResponse }) => {
     if (video?.isCompressing) return;
     try {
-      // TODO: Remove leftover files from data directory
       if (!file) {
         toast.error("Invalid file selected.");
         return;
@@ -192,16 +223,20 @@ function Root() {
         );
       }
 
-      // Generate a thumbnail before processing
       const thumbnail = await generateVideoThumbnail(file?.path);
+
       setVideo((previousState) => ({
         ...previousState,
-        thumbnailPathRaw: thumbnail,
-        thumbnailPath: core.convertFileSrc(thumbnail),
         isThumbnailGenerating: false,
       }));
       if (thumbnail) {
-        const thumbnailDimension = await getImageDimension(thumbnail);
+        setVideo((previousState) => ({
+          ...previousState,
+          id: thumbnail?.id,
+          thumbnailPathRaw: thumbnail?.filePath,
+          thumbnailPath: core.convertFileSrc(thumbnail?.filePath),
+        }));
+        const thumbnailDimension = await getImageDimension(thumbnail?.filePath);
         if (
           Array.isArray(thumbnailDimension) &&
           thumbnailDimension?.length === 2
@@ -212,8 +247,19 @@ function Root() {
           }));
         }
       }
+      const duration = await getVideoDuration(file?.path);
+      const durationInMilliseconds = convertDurationToMilliseconds(
+        duration as string
+      );
+      if (durationInMilliseconds > 0) {
+        setVideo((state) => ({
+          ...state,
+          videDurationRaw: duration,
+          videoDurationMilliseconds: durationInMilliseconds,
+        }));
+      }
     } catch (error) {
-      setVideo(initialState);
+      reset();
       toast.error("File seems to be corrupted.");
     }
   };
@@ -229,6 +275,7 @@ function Root() {
         videoPath: video?.pathRaw as string,
         convertToExtension: convertToExtension ?? "mp4",
         presetName,
+        videoId: video?.id,
       });
       if (!result) {
         throw new Error();
@@ -252,7 +299,6 @@ function Root() {
         },
       }));
     } catch (error) {
-      console.log(error);
       toast.error("Something went wrong during compression.");
       setVideo((previousState) => ({
         ...previousState,
@@ -264,6 +310,7 @@ function Root() {
 
   const reset = () => {
     setVideo(initialState);
+    setProgress(0);
   };
 
   const sizeDiff: number = React.useMemo(
@@ -331,6 +378,8 @@ function Root() {
     } catch (_) {}
   };
 
+  console.log(video);
+
   return (
     <>
       <div className="absolute top-4 left-4 z-10 flex justify-center items-center">
@@ -386,7 +435,9 @@ function Root() {
                   transition={{ type: "spring", duration: 0.6 }}
                 >
                   <Progress
-                    isIndeterminate
+                    {...(video?.videDurationRaw == null
+                      ? { isIndeterminate: true }
+                      : { value: progress })}
                     classNames={{
                       base: "absolute top-0 left-0 translate-x-[-25px] translate-y-[-25px]",
                       svg: "w-[550px] h-[550px] drop-shadow-md",
@@ -399,7 +450,7 @@ function Root() {
                   <Image
                     alt="video to compress"
                     src={video?.thumbnailPath as string}
-                    className="max-w-[60vw] max-h-[40vh] object-cover rounded-3xl animate-pulse"
+                    className="max-w-[60vw] max-h-[40vh] object-cover rounded-3xl"
                     style={{
                       width: "500px",
                       height: "500px",
@@ -417,6 +468,13 @@ function Root() {
                         webm conversion takes longer than the other formats.
                       </span>
                     ) : null}
+                  </p>
+                  <p
+                    className={`not-italic text-xl text-center font-bold text-primary my-1 opacity-${
+                      progress > 0 ? 1 : 0
+                    }`}
+                  >
+                    {progress?.toFixed(2)}%
                   </p>
                 </motion.div>
               ) : (
@@ -579,7 +637,7 @@ function Root() {
           )}
         </div>
       ) : (
-        <VideoPicker onSuccess={handleSuccess}>
+        <VideoPicker onSuccess={handleVideoSelected}>
           {({ onClick }) => (
             <div
               role="button"

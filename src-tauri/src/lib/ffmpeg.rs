@@ -1,4 +1,4 @@
-use crate::domain::{CompressionResult, VideoCompressionProgress};
+use crate::domain::{CompressionResult, CustomEvents, VideoCompressionProgress, VideoThumbnail};
 use crossbeam_channel::{Receiver, Sender};
 use nanoid::nanoid;
 use regex::Regex;
@@ -52,20 +52,25 @@ impl FFMPEG {
         video_path: &str,
         convert_to_extension: &str,
         preset_name: &str,
+        video_id: Option<&str>,
     ) -> Result<CompressionResult, String> {
         if !EXTENSIONS.contains(&convert_to_extension) {
             return Err(String::from("Invalid convert to extension."));
         }
 
-        let file_name = format!("{}.{}", nanoid!(), convert_to_extension);
-        // let file_name_clone = Arc::new(file_name);
+        let id = match video_id {
+            Some(id) => String::from(id),
+            None => nanoid!(),
+        };
+        let id_clone = id.clone();
+        let file_name = format!("{}.{}", id, convert_to_extension);
+        let file_name_clone = file_name.clone();
 
         let output_file: PathBuf = [self.assets_dir.clone(), PathBuf::from(&file_name)]
             .iter()
             .collect();
 
         let output_path = &output_file.display().to_string();
-        // let output_path_clone = Arc::new(output_path);
 
         let preset = match preset_name {
             "thunderbolt" => {
@@ -220,16 +225,32 @@ impl FFMPEG {
                     return 1;
                 });
 
+                let app_clone = self.app.clone();
                 tokio::spawn(async move {
-                    while let Ok(msg) = rx.recv() {
-                        println!("Message received from worker = {}", msg)
+                    let file_name_clone_str = file_name_clone.as_str();
+                    let id_clone_str = id_clone.as_str();
+
+                    while let Ok(current_duration) = rx.recv() {
+                        let video_progress = VideoCompressionProgress {
+                            video_id: String::from(id_clone_str),
+                            file_name: String::from(file_name_clone_str),
+                            current_duration,
+                        };
+                        if let Some(window) = app_clone.get_webview_window("main") {
+                            window
+                                .emit(
+                                    CustomEvents::VideoCompressionProgress.as_ref(),
+                                    video_progress,
+                                )
+                                .ok();
+                        }
                     }
                 });
 
                 match thread.await {
                     Ok(exit_status) => {
                         if exit_status == 1 {
-                            return Err(String::from("Video corrupted."));
+                            return Err(String::from("Video is corrupted."));
                         }
                     }
                     Err(err) => {
@@ -249,14 +270,15 @@ impl FFMPEG {
     }
 
     /// Generates a .jpeg thumbnail image from a video path
-    pub async fn generate_video_thumbnail(&mut self, video_path: &str) -> Result<String, String> {
+    pub async fn generate_video_thumbnail(
+        &mut self,
+        video_path: &str,
+    ) -> Result<VideoThumbnail, String> {
         if !Path::exists(Path::new(video_path)) {
             return Err(String::from("File does not exist in given path."));
         }
-
-        let duration = self.get_video_duration(video_path).await.unwrap();
-        println!("Duration is {:?}", duration);
-        let file_name = format!("{}.jpg", nanoid!());
+        let id = nanoid!();
+        let file_name = format!("{}.jpg", id);
         let output_path: PathBuf = [self.assets_dir.clone(), PathBuf::from(&file_name)]
             .iter()
             .collect();
@@ -314,7 +336,11 @@ impl FFMPEG {
             }
             Err(err) => return Err(err.to_string()),
         };
-        return Ok(output_path.display().to_string());
+        return Ok(VideoThumbnail {
+            id,
+            file_name,
+            file_path: output_path.display().to_string(),
+        });
     }
 
     pub fn get_asset_dir(&self) -> String {
@@ -369,6 +395,7 @@ impl FFMPEG {
                                         let re = Regex::new("Duration: (?<duration>.*?),").unwrap();
                                         if let Some(cap) = re.captures(line) {
                                             let matched_duration = &cap["duration"];
+                                            // FFMPEG might return duration as N/A for files with invalid or unknown encoding
                                             duration = Some(String::from(matched_duration));
                                         };
                                     }
@@ -397,3 +424,5 @@ impl FFMPEG {
         };
     }
 }
+
+//

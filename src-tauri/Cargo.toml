@@ -39,6 +39,7 @@ tauri-plugin-log = "2.0.0-beta"
 shared_child = "1.0.0"
 regex = "1.10.4"
 crossbeam-channel = "0.5.12"
+strum = { version = "0.26.2", features = ["derive"] }
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem and the built-in dev server is disabled.
