@@ -13,7 +13,7 @@
     "active": true,
     "category": "DeveloperTool",
     "copyright": "",
-    "targets": ["deb", "appimage"],
+    "targets": ["deb", "appimage", "msi"],
     "externalBin": ["./bin/xbin_ffmpeg"],
     "icon": [
       "icons/32x32.png",
@@ -53,8 +53,7 @@
         "minWidth": 1080,
         "minHeight": 992,
         "resizable": true,
-        "hiddenTitle": true,
-        "transparent": true
+        "hiddenTitle": true
       }
     ],
     "security": {
