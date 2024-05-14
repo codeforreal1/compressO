@@ -1,4 +1,6 @@
-use crate::domain::{CompressionResult, CustomEvents, VideoCompressionProgress, VideoThumbnail};
+use crate::domain::{
+    CompressionResult, CustomEvents, TauriEvents, VideoCompressionProgress, VideoThumbnail,
+};
 use crossbeam_channel::{Receiver, Sender};
 use nanoid::nanoid;
 use regex::Regex;
@@ -9,7 +11,8 @@ use std::{
     process::{Command, Stdio},
     sync::Arc,
 };
-use tauri::{AppHandle, Manager, WindowEvent};
+use strum::EnumProperty;
+use tauri::{AppHandle, Manager};
 use tauri_plugin_shell::ShellExt;
 
 pub struct FFMPEG {
@@ -146,23 +149,26 @@ impl FFMPEG {
                 let cp = Arc::new(child);
                 let cp_clone1 = cp.clone();
                 let cp_clone2 = cp.clone();
+                let cp_clone3 = cp.clone();
 
-                if let Some(window) = self.app.get_webview_window("main") {
-                    window.on_window_event(move |event| match event {
-                        WindowEvent::Destroyed => match cp.kill() {
-                            Ok(_) => {
-                                log::error!("[ffmpeg] child process killed.");
-                            }
-                            Err(err) => {
-                                log::error!(
-                                    "[ffmpeg] child process could not be killed {}",
-                                    err.to_string()
-                                );
-                            }
-                        },
-                        _ => {}
-                    });
-                }
+                let window = match self.app.get_webview_window("main") {
+                    Some(window) => window,
+                    None => return Err(String::from("Could not attach to main window")),
+                };
+                let event_id = window.listen(
+                    TauriEvents::Destroyed.get_str("key").unwrap(),
+                    move |_| match cp.kill() {
+                        Ok(_) => {
+                            log::info!("[ffmpeg] child process killed.");
+                        }
+                        Err(err) => {
+                            log::error!(
+                                "[ffmpeg] child process could not be killed {}",
+                                err.to_string()
+                            );
+                        }
+                    },
+                );
 
                 #[cfg(debug_assertions)]
                 tokio::spawn(async move {
@@ -247,15 +253,33 @@ impl FFMPEG {
                     }
                 });
 
-                match thread.await {
+                let message: String = match thread.await {
                     Ok(exit_status) => {
                         if exit_status == 1 {
-                            return Err(String::from("Video is corrupted."));
+                            String::from("Video is corrupted.")
+                        } else {
+                            String::from("")
                         }
                     }
-                    Err(err) => {
-                        return Err(err.to_string());
+                    Err(err) => err.to_string(),
+                };
+
+                // Cleanup
+                window.unlisten(event_id);
+                match cp_clone3.kill() {
+                    Ok(_) => {
+                        log::info!("[ffmpeg] child process killed.");
                     }
+                    Err(err) => {
+                        log::error!(
+                            "[ffmpeg] child process could not be killed {}",
+                            err.to_string()
+                        );
+                    }
+                }
+
+                if message.len() > 0 {
+                    return Err(message);
                 }
             }
             Err(err) => {
@@ -299,39 +323,61 @@ impl FFMPEG {
         match SharedChild::spawn(command) {
             Ok(child) => {
                 let cp = Arc::new(child);
-                let cp_clone = cp.clone();
+                let cp_clone1 = cp.clone();
+                let cp_clone2 = cp.clone();
 
-                if let Some(window) = self.app.get_webview_window("main") {
-                    window.on_window_event(move |event| match event {
-                        WindowEvent::Destroyed => match cp.kill() {
-                            Ok(_) => {
-                                log::error!("[ffmpeg] child process killed.");
-                            }
-                            Err(err) => {
-                                log::error!(
-                                    "[ffmpeg] child process could not be killed {}",
-                                    err.to_string()
-                                );
-                            }
-                        },
-                        _ => {}
-                    })
-                }
+                let window = match self.app.get_webview_window("main") {
+                    Some(window) => window,
+                    None => return Err(String::from("Could not attach to main window")),
+                };
+                let event_id = window.listen(
+                    TauriEvents::Destroyed.get_str("key").unwrap(),
+                    move |_| match cp.kill() {
+                        Ok(_) => {
+                            log::info!("[ffmpeg] child process killed.");
+                        }
+                        Err(err) => {
+                            log::error!(
+                                "[ffmpeg] child process could not be killed {}",
+                                err.to_string()
+                            );
+                        }
+                    },
+                );
 
                 let thread: tokio::task::JoinHandle<u8> = tokio::spawn(async move {
-                    if let Ok(_) = cp_clone.wait() {
+                    if let Ok(_) = cp_clone1.wait() {
                         return 0;
                     }
                     return 1;
                 });
 
-                match thread.await {
+                let message: String = match thread.await {
                     Ok(exit_status) => {
                         if exit_status == 1 {
-                            return Err(String::from("Video is corrupted."));
+                            String::from("Video is corrupted.")
+                        } else {
+                            String::from("")
                         }
                     }
-                    Err(err) => return Err(err.to_string()),
+                    Err(err) => err.to_string(),
+                };
+
+                // Cleanup
+                window.unlisten(event_id);
+                match cp_clone2.kill() {
+                    Ok(_) => {
+                        log::info!("[ffmpeg] child process killed.");
+                    }
+                    Err(err) => {
+                        log::error!(
+                            "[ffmpeg] child process could not be killed {}",
+                            err.to_string()
+                        );
+                    }
+                }
+                if message.len() > 0 {
+                    return Err(message);
                 }
             }
             Err(err) => return Err(err.to_string()),
@@ -360,29 +406,32 @@ impl FFMPEG {
         match SharedChild::spawn(command) {
             Ok(child) => {
                 let cp = Arc::new(child);
-                let cp_clone = cp.clone();
+                let cp_clone1 = cp.clone();
+                let cp_clone2 = cp.clone();
 
-                if let Some(window) = self.app.get_webview_window("main") {
-                    window.on_window_event(move |event| match event {
-                        WindowEvent::Destroyed => match cp.kill() {
-                            Ok(_) => {
-                                log::error!("[ffmpeg] child process killed.");
-                            }
-                            Err(err) => {
-                                log::error!(
-                                    "[ffmpeg] child process could not be killed {}",
-                                    err.to_string()
-                                );
-                            }
-                        },
-                        _ => {}
-                    })
-                }
+                let window = match self.app.get_webview_window("main") {
+                    Some(window) => window,
+                    None => return Err(String::from("Could not attach to main window")),
+                };
+                let event_id = window.listen(
+                    TauriEvents::Destroyed.get_str("key").unwrap(),
+                    move |_| match cp.kill() {
+                        Ok(_) => {
+                            log::info!("[ffmpeg] child process killed.");
+                        }
+                        Err(err) => {
+                            log::error!(
+                                "[ffmpeg] child process could not be killed {}",
+                                err.to_string()
+                            );
+                        }
+                    },
+                );
 
                 let thread: tokio::task::JoinHandle<(u8, Option<String>)> =
                     tokio::spawn(async move {
                         let mut duration: Option<String> = None;
-                        if let Some(stderr) = cp_clone.take_stderr() {
+                        if let Some(stderr) = cp_clone1.take_stderr() {
                             let mut reader = BufReader::new(stderr);
                             loop {
                                 let mut buf: Vec<u8> = Vec::new();
@@ -405,24 +454,42 @@ impl FFMPEG {
                                 };
                             }
                         }
-                        if let Ok(_) = cp_clone.wait() {
+                        if let Ok(_) = cp_clone1.wait() {
                             return (0, duration);
                         }
                         return (1, duration);
                     });
-                match thread.await {
+
+                let result: Result<Option<String>, String> = match thread.await {
                     Ok((exit_status, duration)) => {
                         if exit_status == 1 {
-                            return Err(String::from("Video file is corrupted"));
+                            Err(String::from("Video file is corrupted"))
+                        } else {
+                            Ok(duration)
                         }
-                        return Ok(duration);
                     }
-                    Err(err) => return Err(err.to_string()),
+                    Err(err) => Err(err.to_string()),
+                };
+
+                // Cleanup
+                window.unlisten(event_id);
+                match cp_clone2.kill() {
+                    Ok(_) => {
+                        log::info!("[ffmpeg] child process killed.");
+                    }
+                    Err(err) => {
+                        log::error!(
+                            "[ffmpeg] child process could not be killed {}",
+                            err.to_string()
+                        );
+                    }
                 }
+                match result {
+                    Ok(duration) => return Ok(duration),
+                    Err(err) => return Err(err),
+                };
             }
             Err(err) => return Err(err.to_string()),
         };
     }
 }
-
-//

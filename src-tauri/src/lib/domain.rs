@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use strum::AsRefStr;
+use strum::{AsRefStr, EnumProperty};
 
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -37,4 +37,10 @@ pub struct VideoThumbnail {
 #[derive(Clone, AsRefStr)]
 pub enum CustomEvents {
     VideoCompressionProgress,
+}
+
+#[derive(EnumProperty)]
+pub enum TauriEvents {
+    #[strum(props(key = "tauri://destroyed"))]
+    Destroyed,
 }

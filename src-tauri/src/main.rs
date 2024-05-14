@@ -42,6 +42,15 @@ async fn generate_video_thumbnail(
 }
 
 #[tauri::command]
+async fn get_vide_duration(
+    app: tauri::AppHandle,
+    video_path: &str,
+) -> Result<Option<String>, String> {
+    let mut ffmpeg = ffmpeg::FFMPEG::new(&app)?;
+    ffmpeg.get_video_duration(video_path).await
+}
+
+#[tauri::command]
 async fn get_file_metadata(file_path: &str) -> Result<FileMetadata, String> {
     file_system::get_file_metadata(file_path)
 }
@@ -65,12 +74,11 @@ async fn move_file(from: &str, to: &str) -> Result<(), String> {
 }
 
 #[tauri::command]
-async fn get_vide_duration(
-    app: tauri::AppHandle,
-    video_path: &str,
-) -> Result<Option<String>, String> {
-    let mut ffmpeg = ffmpeg::FFMPEG::new(&app)?;
-    ffmpeg.get_video_duration(video_path).await
+async fn delete_file(path: &str) -> Result<(), String> {
+    if let Err(err) = file_system::delete_file(path).await {
+        return Err(err.to_string());
+    }
+    Ok(())
 }
 
 #[cfg(debug_assertions)]
@@ -81,7 +89,6 @@ const LOG_TARGETS: [LogTarget; 0] = [];
 
 #[tokio::main]
 async fn main() {
-    std::env::set_var("WEBKIT_DISABLE_COMPOSITING_MODE", "1");
     tauri::Builder::default()
         .plugin(
             tauri_plugin_log::Builder::new()
@@ -99,9 +106,10 @@ async fn main() {
             compress_video,
             generate_video_thumbnail,
             get_vide_duration,
-            get_file_metadata,
             get_image_dimension,
-            move_file
+            get_file_metadata,
+            move_file,
+            delete_file
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
