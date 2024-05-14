@@ -9,6 +9,7 @@
     "devUrl": "http://localhost:3000"
   },
   "bundle": {
+    "shortDescription": "Compress any video.",
     "longDescription": "Compress any video file to a tiny size.",
     "active": true,
     "category": "DeveloperTool",
@@ -35,7 +36,6 @@
       "signingIdentity": null
     },
     "resources": [],
-    "shortDescription": "",
     "linux": {
       "deb": {
         "depends": []
@@ -47,7 +47,6 @@
     "windows": [
       {
         "fullscreen": false,
-        "title": "",
         "height": 992,
         "width": 1280,
         "minWidth": 1080,
