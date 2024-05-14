@@ -652,7 +652,7 @@ function Root() {
                       color="primary"
                       onClick={handleCompression}
                     >
-                      Compress 🤏
+                      Compress <Icon name="logo" size={25} />
                     </Button>
                   </>
                 )

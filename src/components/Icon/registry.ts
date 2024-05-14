@@ -1,5 +1,6 @@
 import React from "react";
 
+import Logo from "@/assets/icons/logo.svg";
 import Moon from "@/assets/icons/moon.svg";
 import Sun from "@/assets/icons/sun.svg";
 import VideoFile from "@/assets/icons/video-file.svg";
@@ -20,6 +21,7 @@ function asRegistry<T extends string>(
 }
 
 const registry = asRegistry({
+  logo: Logo,
   moon: Moon,
   sun: Sun,
   videoFile: VideoFile,
