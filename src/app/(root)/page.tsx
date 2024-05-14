@@ -33,6 +33,7 @@ import {
   getVideoDuration,
 } from "@/tauri/commands/ffmpeg";
 import {
+  deleteFile,
   getFileMetadata,
   getImageDimension,
   moveFile,
@@ -379,6 +380,22 @@ function Root() {
     } catch (_) {}
   };
 
+  console.log(video);
+
+  const handleDiscard = async ({ closeModal }: { closeModal: () => void }) => {
+    try {
+      const result = await Promise.allSettled([
+        deleteFile(video?.compressedVideo?.pathRaw as string),
+        deleteFile(video?.thumbnailPathRaw as string),
+      ]);
+      console.log("---", result);
+      closeModal?.();
+      reset();
+    } catch (_) {
+      console.log("error", _);
+    }
+  };
+
   return (
     <>
       {!video?.isFileSelected ? <DotPattern className="opacity-40" /> : null}
@@ -420,7 +437,10 @@ function Root() {
                     }}
                     className="bg-transparent"
                   >
-                    <Tooltip content="Cancel compression">
+                    <Tooltip
+                      content="Cancel compression"
+                      aria-label="Cancel compression"
+                    >
                       <Icon name="cross" size={22} />
                     </Tooltip>
                   </Button>
@@ -446,6 +466,7 @@ function Root() {
                       value: "text-3xl font-semibold text-primary",
                     }}
                     strokeWidth={2}
+                    aria-label={`Progress-${progress}%`}
                   />
                   <Image
                     alt="video to compress"
@@ -529,7 +550,7 @@ function Root() {
                       </Button>
                       {video?.compressedVideo?.isSaved &&
                       video?.compressedVideo?.savedPath ? (
-                        <Tooltip content="Play video">
+                        <Tooltip content="Play video" aria-label="Play video">
                           <Button
                             isIconOnly
                             className="ml-2 text-green-500"
@@ -583,7 +604,10 @@ function Root() {
                             className="flex justify-center items-center"
                             endContent={
                               preset === compressionPresets.ironclad ? (
-                                <Tooltip content="Recommended">
+                                <Tooltip
+                                  content="Recommended"
+                                  aria-label="Recommended"
+                                >
                                   <Icon
                                     name="star"
                                     className="inline-block ml-1 text-yellow-500"
@@ -673,10 +697,7 @@ function Root() {
                   <Button onClick={closeModal}>Go Back</Button>
                   <Button
                     color="danger"
-                    onClick={() => {
-                      closeModal();
-                      reset();
-                    }}
+                    onClick={() => handleDiscard({ closeModal })}
                   >
                     Yes
                   </Button>

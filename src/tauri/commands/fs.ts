@@ -14,3 +14,7 @@ export function getImageDimension(
 export function moveFile(from: string, to: string) {
   return core.invoke("move_file", { from, to });
 }
+
+export function deleteFile(path: string) {
+  return core.invoke("delete_file", { path });
+}

@@ -30,7 +30,7 @@ function ThemeSwitcher(props: ThemeSwitcherProps) {
   }
 
   return children == null ? (
-    <Tooltip content="Toggle theme" placement="right">
+    <Tooltip content="Toggle theme" aria-label="Toggle theme" placement="right">
       <Button
         isIconOnly
         size="sm"
