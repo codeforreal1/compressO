@@ -52,6 +52,7 @@
         "minWidth": 1080,
         "minHeight": 992,
         "resizable": true,
+        "title": "",
         "hiddenTitle": true
       }
     ],

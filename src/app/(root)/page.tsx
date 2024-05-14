@@ -380,20 +380,15 @@ function Root() {
     } catch (_) {}
   };
 
-  console.log(video);
-
   const handleDiscard = async ({ closeModal }: { closeModal: () => void }) => {
     try {
-      const result = await Promise.allSettled([
+      await Promise.allSettled([
         deleteFile(video?.compressedVideo?.pathRaw as string),
         deleteFile(video?.thumbnailPathRaw as string),
       ]);
-      console.log("---", result);
       closeModal?.();
       reset();
-    } catch (_) {
-      console.log("error", _);
-    }
+    } catch (_) {}
   };
 
   return (
