@@ -444,7 +444,7 @@ function Root() {
 
               {video?.isCompressing ? (
                 <motion.div
-                  className="relative flex-shrink-0 w-[550px] h-[550px]"
+                  className="relative flex-shrink-0 w-[500px] h-[500px]"
                   initial={{ scale: 0.9 }}
                   animate={{ scale: 1 }}
                   transition={{ type: "spring", duration: 0.6 }}
@@ -455,7 +455,7 @@ function Root() {
                       : { value: progress })}
                     classNames={{
                       base: "absolute top-0 left-0 translate-x-[-25px] translate-y-[-25px]",
-                      svg: "w-[550px] h-[550px] drop-shadow-md",
+                      svg: "w-[500px] h-[500px] drop-shadow-md",
                       indicator: "stroke-primary stroke-1",
                       track: "stroke-transparent stroke-1",
                       value: "text-3xl font-semibold text-primary",
@@ -468,12 +468,12 @@ function Root() {
                     src={video?.thumbnailPath as string}
                     className="max-w-[60vw] max-h-[40vh] object-cover rounded-3xl"
                     style={{
-                      width: "500px",
-                      height: "500px",
-                      minWidth: "500px",
-                      minHeight: "500px",
+                      width: "450px",
+                      height: "450px",
+                      minWidth: "450px",
+                      minHeight: "450px",
                       borderRadius: "50%",
-                      transform: "scale(0.9)",
+                      transform: "scale(0.92)",
                       flexShrink: 0,
                     }}
                   />
@@ -497,7 +497,7 @@ function Root() {
                 <Image
                   alt="video to compress"
                   src={video?.thumbnailPath as string}
-                  className="max-w-[60vw] max-h-[40vh] object-contain border-8 rounded-3xl border-primary "
+                  className="max-w-[60vw] max-h-[40vh] object-contain border-8 rounded-3xl border-primary"
                 />
               )}
               {!video?.isCompressing ? (
