@@ -9,11 +9,11 @@
     "devUrl": "http://localhost:3000"
   },
   "bundle": {
-    "shortDescription": "Compress any video.",
     "longDescription": "Compress any video file to a tiny size.",
+    "shortDescription": "CompressO.",
     "active": true,
     "category": "DeveloperTool",
-    "copyright": "",
+    "copyright": "Code For Real",
     "targets": ["deb", "appimage", "msi"],
     "externalBin": ["./bin/xbin_ffmpeg"],
     "icon": [

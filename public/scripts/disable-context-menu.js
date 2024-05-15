@@ -1,5 +1,5 @@
-(() => {
-  if (!window) {
+((document, window) => {
+  if (!document || !window) {
     return;
   }
   if (window.location.hostname !== "tauri.localhost") {
@@ -23,4 +23,4 @@
     },
     { capture: true }
   );
-})();
+})(document, window);
