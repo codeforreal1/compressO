@@ -26,6 +26,7 @@ export default function RootLayout({
         </ThemeProvider>
         <Script src="/scripts/accessibility-only-when-focused.js?nonce=jnasknaks" />
         <Script src="/scripts/disable-context-menu.js" />
+        <Script src="/scripts/disable-zoom.js" />
       </body>
     </html>
   );

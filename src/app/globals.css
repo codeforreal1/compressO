@@ -14,6 +14,10 @@
   -webkit-overflow-scrolling: touch;
   scroll-behavior: smooth;
   box-sizing: border-box;
+
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  touch-action: pan-x pan-y;
 }
 
 *:focus {
