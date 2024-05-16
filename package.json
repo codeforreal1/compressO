@@ -1,15 +1,22 @@
 {
-  "name": "tauri-next",
+  "name": "compresso",
   "version": "1.0.0",
   "private": true,
+  "author": {
+    "name": "Code For Real",
+    "url": "https://www.threads.net/@codeforreal"
+  },
+  "license": "LGPL-2.1-or-later",
   "scripts": {
-    "pnpm:devPreinstall": "fnm use",
     "next:dev": "next dev",
     "next:build": "next build",
     "next:start": "next start",
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build",
-    "tauri:build:debug": "tauri build --debug"
+    "tauri:build:debug": "tauri build --debug",
+    "pnpm:devPreinstall": "fnm use",
+    "postinstall": "husky install",
+    "lint-staged": "lint-staged"
   },
   "dependencies": {
     "@nextui-org/button": "^2.0.26",
@@ -30,6 +37,7 @@
     "@tauri-apps/plugin-shell": "2.0.0-beta.3",
     "clsx": "^2.0.0",
     "framer-motion": "^10.16.4",
+    "husky": "^8.0.1",
     "million": "^2.6.4",
     "next": "14.0.2",
     "next-themes": "^0.2.1",
@@ -48,10 +56,35 @@
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "autoprefixer": "^10.4.16",
-    "eslint": "^8",
-    "eslint-config-next": "14.0.2",
     "postcss": "^8.4.31",
     "tailwindcss": "^3.4.0",
-    "typescript": "^5"
+    "typescript": "^5",
+    "eslint-config-prettier": "^8.6.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-unused-imports": "^3.0.0",
+    "@next/eslint-plugin-next": "^12.1.0",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "eslint": "8.9.0",
+    "eslint-config-airbnb": "^19.0.4",
+    "eslint-config-airbnb-typescript": "^17.0.0",
+    "eslint-config-next": "^14.1.0",
+    "eslint-import-resolver-typescript": "^2.5.0",
+    "eslint-plugin-import": "^2.25.4",
+    "eslint-plugin-jsx-a11y": "^6.5.1",
+    "eslint-plugin-react": "^7.28.0",
+    "eslint-plugin-react-hooks": "^4.3.0",
+    "eslint-plugin-simple-import-sort": "^7.0.0"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "src/**/*.{js,ts,jsx,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ]
   }
 }

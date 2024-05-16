@@ -1,13 +1,13 @@
-import React from "react";
+import React from 'react'
 import {
   Code as NextUICode,
   type CodeProps as NextUICodeProps,
-} from "@nextui-org/code";
+} from '@nextui-org/code'
 
 interface CodeProps extends NextUICodeProps {}
 
 function Code(props: CodeProps) {
-  return <NextUICode {...props} />;
+  return <NextUICode {...props} />
 }
 
-export default Code;
+export default Code

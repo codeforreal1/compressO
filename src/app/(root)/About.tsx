@@ -1,8 +1,8 @@
-import React from "react";
-import { open } from "@tauri-apps/plugin-shell";
+import React from 'react'
+import { open } from '@tauri-apps/plugin-shell'
 
-import Image from "@/components/Image";
-import Icon from "@/components/Icon";
+import Image from '@/components/Image'
+import Icon from '@/components/Icon'
 
 function About() {
   return (
@@ -23,11 +23,12 @@ function About() {
       </section>
       <section className="my-8">
         <p className="text-center text-gray-600 dark:text-gray-400 text-sm my-1">
-          Powered by{" "}
+          Powered by{' '}
           <button
+            type="button"
             className="text-lg font-bold text-primary"
             onClick={() => {
-              open("https://ffmpeg.org/");
+              open('https://ffmpeg.org/')
             }}
           >
             FFmpeg
@@ -40,12 +41,13 @@ function About() {
       </section>
       <section>
         <p className="text-center text-gray-600 dark:text-gray-400 text-sm my-1">
-          Made with <Icon className="inline text-primary" name="lowResHeart" />{" "}
-          in public by{" "}
+          Made with <Icon className="inline text-primary" name="lowResHeart" />{' '}
+          in public by{' '}
           <button
+            type="button"
             className="font-bold text-primary"
             onClick={() => {
-              open("https://www.threads.net/@codeforreal");
+              open('https://www.threads.net/@codeforreal')
             }}
           >
             Code For Real
@@ -55,12 +57,13 @@ function About() {
       <section>
         <p className="text-sm text-center text-gray-600 dark:text-gray-400 my-2  flex items-center justify-center">
           <button
+            type="button"
             className="ml-2  flex items-center justify-center gap-2"
             onClick={() => {
-              open("https://github.com/codeforreal1/compressO");
+              open('https://github.com/codeforreal1/compressO')
             }}
           >
-            Free and open-sourced{" "}
+            Free and open-sourced{' '}
             <Icon
               name="github"
               size={25}
@@ -70,7 +73,7 @@ function About() {
         </p>
       </section>
     </section>
-  );
+  )
 }
 
-export default About;
+export default About

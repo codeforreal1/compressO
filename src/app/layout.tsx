@@ -1,20 +1,20 @@
-"use client";
+'use client'
 
-import React from "react";
-import Script from "next/script";
+import React from 'react'
+import Script from 'next/script'
 
-import "./globals.css";
+import './globals.css'
 
-import UIProvider from "../providers/UIProvider";
-import ThemeProvider from "../providers/ThemeProvider";
-import { combinedFonts } from "@/assets/fonts";
-import Head from "./head";
-import { Toaster } from "@/components/Toast";
+import { Toaster } from '@/components/Toast'
+import { combinedFonts } from '@/assets/fonts'
+import UIProvider from '../providers/UIProvider'
+import ThemeProvider from '../providers/ThemeProvider'
+import Head from './head'
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
   return (
     <html lang="en">
@@ -30,5 +30,5 @@ export default function RootLayout({
         <Script src="/scripts/disable-reload.js" />
       </body>
     </html>
-  );
+  )
 }

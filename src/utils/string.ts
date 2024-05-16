@@ -6,14 +6,14 @@
  */
 export function convertDurationToMilliseconds(duration: string) {
   try {
-    const [h, m, s] = duration.split(":");
-    const hours = Number.parseInt(h);
-    const minutes = Number.parseInt(m);
-    const seconds = Number.parseFloat(s);
+    const [h, m, s] = duration.split(':')
+    const hours = Number.parseInt(h, 10)
+    const minutes = Number.parseInt(m, 10)
+    const seconds = Number.parseFloat(s)
     const milliseconds =
-      hours * 60 * 60 * 1000 + minutes * 60 * 1000 + seconds * 1000;
-    return Number.isNaN(milliseconds) ? 0 : milliseconds;
+      hours * 60 * 60 * 1000 + minutes * 60 * 1000 + seconds * 1000
+    return Number.isNaN(milliseconds) ? 0 : milliseconds
   } catch (_) {
-    return 0;
+    return 0
   }
 }

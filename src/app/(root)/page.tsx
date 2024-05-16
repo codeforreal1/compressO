@@ -1,84 +1,85 @@
-"use client";
-import React from "react";
-import dynamic from "next/dynamic";
-import { core, event } from "@tauri-apps/api";
-import { SelectItem } from "@nextui-org/select";
-import { FileResponse, save } from "@tauri-apps/plugin-dialog";
-import { useDisclosure } from "@nextui-org/modal";
-import { open } from "@tauri-apps/plugin-shell";
-import { motion } from "framer-motion";
+'use client'
+
+import React from 'react'
+import dynamic from 'next/dynamic'
+import { core, event } from '@tauri-apps/api'
+import { SelectItem } from '@nextui-org/select'
+import { FileResponse, save } from '@tauri-apps/plugin-dialog'
+import { useDisclosure } from '@nextui-org/modal'
+import { open } from '@tauri-apps/plugin-shell'
+import { motion } from 'framer-motion'
 
 import Modal, {
   ModalHeader,
   ModalBody,
   ModalContent,
   ModalFooter,
-} from "@/components/Modal";
-import Progress from "@/components/Progress";
-import Button from "@/components/Button";
-import Select from "@/components/Select";
-import Code from "@/components/Code";
-import Spinner from "@/components/Spinner";
-import Divider from "@/components/Divider";
-import Image from "@/components/Image";
-import ThemeSwitcher from "@/components/ThemeSwitcher";
-import VideoPicker from "@/tauri/components/VideoPicker";
-import Icon from "@/components/Icon";
-import { toast } from "@/components/Toast";
-import { formatBytes } from "@/utils/fs";
+} from '@/components/Modal'
+import Progress from '@/components/Progress'
+import Button from '@/components/Button'
+import Select from '@/components/Select'
+import Code from '@/components/Code'
+import Spinner from '@/components/Spinner'
+import Divider from '@/components/Divider'
+import Image from '@/components/Image'
+import ThemeSwitcher from '@/components/ThemeSwitcher'
+import VideoPicker from '@/tauri/components/VideoPicker'
+import Icon from '@/components/Icon'
+import { toast } from '@/components/Toast'
+import { formatBytes } from '@/utils/fs'
 import {
   compressVideo,
   generateVideoThumbnail,
   getVideoDuration,
-} from "@/tauri/commands/ffmpeg";
+} from '@/tauri/commands/ffmpeg'
 import {
   deleteFile,
   getFileMetadata,
   getImageDimension,
   moveFile,
-} from "@/tauri/commands/fs";
+} from '@/tauri/commands/fs'
 import {
   CustomEvents,
   VideoCompressionProgress,
   compressionPresets,
   extensions,
-} from "@/types/compression";
-import Tooltip from "@/components/Tooltip";
-import { convertDurationToMilliseconds } from "@/utils/string";
-import DotPattern from "@/ui/Patterns/DotPattern";
-import Drawer from "@/components/Drawer";
-import About from "./About";
+} from '@/types/compression'
+import Tooltip from '@/components/Tooltip'
+import { convertDurationToMilliseconds } from '@/utils/string'
+import DotPattern from '@/ui/Patterns/DotPattern'
+import Drawer from '@/components/Drawer'
+import About from './About'
 
 type Video = {
-  id?: string | null;
-  isFileSelected: boolean;
-  pathRaw?: string | null;
-  path?: string | null;
-  fileName?: string | null;
-  mimeType?: string | null;
-  sizeInBytes?: number | null;
-  size?: string | null;
-  extension?: null | string;
-  thumbnailPathRaw?: string | null;
-  thumbnailPath?: string | null;
-  isThumbnailGenerating?: boolean;
-  videoDurationMilliseconds?: number | null;
-  videDurationRaw?: string | null;
-  isCompressing?: boolean;
-  isCompressionSuccessful?: boolean;
+  id?: string | null
+  isFileSelected: boolean
+  pathRaw?: string | null
+  path?: string | null
+  fileName?: string | null
+  mimeType?: string | null
+  sizeInBytes?: number | null
+  size?: string | null
+  extension?: null | string
+  thumbnailPathRaw?: string | null
+  thumbnailPath?: string | null
+  isThumbnailGenerating?: boolean
+  videoDurationMilliseconds?: number | null
+  videDurationRaw?: string | null
+  isCompressing?: boolean
+  isCompressionSuccessful?: boolean
   compressedVideo?: {
-    pathRaw?: string | null;
-    path?: string | null;
-    fileName?: string | null;
-    mimeType?: string | null;
-    sizeInBytes?: number | null;
-    size?: string | null;
-    extension?: null | string;
-    isSaved?: boolean;
-    isSaving?: boolean;
-    savedPath?: string;
-  } | null;
-};
+    pathRaw?: string | null
+    path?: string | null
+    fileName?: string | null
+    mimeType?: string | null
+    sizeInBytes?: number | null
+    size?: string | null
+    extension?: null | string
+    isSaved?: boolean
+    isSaving?: boolean
+    savedPath?: string
+  } | null
+}
 
 const initialState: Video = {
   id: null,
@@ -98,115 +99,69 @@ const initialState: Video = {
   isCompressing: false,
   isCompressionSuccessful: false,
   compressedVideo: null,
-};
+}
 
-// TODO: Remove this
-// const initialState: Video = {
-//   extension: "mov",
-
-//   fileName:
-//     "copy_34992E05-461C-4F84-8447-FA4B3F3452DCasasasasasasasasasasasasasaasaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.mov",
-
-//   isFileSelected: true,
-
-//   isThumbnailGenerating: false,
-
-//   mimeType: "video/quicktime",
-
-//   path: "asset://localhost/%2Fhome%2Fniraj%2FDownloads%2Fcopy_34992E05-461C-4F84-8447-FA4B3F3452DC.mov",
-
-//   pathRaw:
-//     "/home/niraj/Downloads/copy_34992E05-461C-4F84-8447-FA4B3F3452DC.mov",
-
-//   size: "70.9 MB",
-
-//   sizeInBytes: 70872137,
-
-//   thumbnailPath:
-//     "asset://localhost/%2Fhome%2Fniraj%2F.local%2Fshare%2Fcom.compresso.app%2Fassets%2FSS-ZKFbLghjPswZfFOHr1.jpg",
-
-//   thumbnailPathRaw:
-//     "/home/niraj/.local/share/com.compressO.dev/assets/main-qimg-e2a12be20d4730ee7264b32999845c40-lq.jpeg",
-//   isCompressing: false,
-//   isCompressionSuccessful: true,
-//   compressedVideo: {
-//     fileName: "7d4SufnlvuCxSm77Agic7.webm",
-
-//     mimeType: "video/webm",
-
-//     path: "asset://localhost/%2Fhome%2Fniraj%2F.local%2Fshare%2Fcom.compressO.dev%2Fassets%2F7d4SufnlvuCxSm77Agic7.webm",
-
-//     pathRaw:
-//       "/home/niraj/.local/share/com.compressO.dev/assets/7d4SufnlvuCxSm77Agic7.webm",
-
-//     size: "172 kB",
-//     sizeInBytes: 172,
-//     extension: "webm",
-//     // isSaving: true,
-//     isSaved: false,
-//     savedPath: "/home/niraj/Downloads",
-//   },
-// };
-
-const videoExtensions = Object.keys(extensions?.video);
-const presets = Object.keys(compressionPresets);
+const videoExtensions = Object.keys(extensions?.video)
+const presets = Object.keys(compressionPresets)
 
 function Root() {
-  const [video, setVideo] = React.useState<Video>(initialState);
+  const [video, setVideo] = React.useState<Video>(initialState)
   const [convertToExtension, setConvertToExtension] =
-    React.useState<keyof typeof extensions.video>("mp4");
+    React.useState<keyof typeof extensions.video>('mp4')
   const [presetName, setPresetName] =
-    React.useState<keyof typeof compressionPresets>("ironclad");
-  const [progress, setProgress] = React.useState<number>(0);
+    React.useState<keyof typeof compressionPresets>('ironclad')
+  const [progress, setProgress] = React.useState<number>(0)
 
-  const { isOpen, onOpenChange, onOpen } = useDisclosure();
+  const { isOpen, onOpenChange, onOpen } = useDisclosure()
 
-  const { videoDurationMilliseconds, id: videoId } = video;
+  const { videoDurationMilliseconds, id: videoId } = video
   React.useEffect(() => {
-    let unListen: event.UnlistenFn;
-    videoDurationMilliseconds &&
-      (async function () {
+    let unListen: event.UnlistenFn
+    if (videoDurationMilliseconds) {
+      ;(async function iife() {
         unListen = await event.listen<VideoCompressionProgress>(
           CustomEvents.VideoCompressionProgress,
           (evt) => {
-            const payload = evt?.payload;
+            const payload = evt?.payload
             if (videoId === payload?.videoId) {
               const currentDurationInMilliseconds =
-                convertDurationToMilliseconds(payload?.currentDuration);
+                convertDurationToMilliseconds(payload?.currentDuration)
               if (
                 currentDurationInMilliseconds > 0 &&
                 videoDurationMilliseconds >= currentDurationInMilliseconds
               ) {
                 setProgress(
                   (currentDurationInMilliseconds * 100) /
-                    videoDurationMilliseconds
-                );
+                    videoDurationMilliseconds,
+                )
               }
             }
-          }
-        );
-      })();
+          },
+        )
+      })()
+    }
+
     return () => {
-      unListen?.();
-    };
-  }, [videoDurationMilliseconds, videoId]);
+      unListen?.()
+    }
+  }, [videoDurationMilliseconds, videoId])
 
   const handleVideoSelected = async ({ file }: { file: FileResponse }) => {
-    if (video?.isCompressing) return;
+    if (video?.isCompressing) return
     try {
       if (!file) {
-        toast.error("Invalid file selected.");
-        return;
+        toast.error('Invalid file selected.')
+        return
       }
 
-      const fileMetadata = await getFileMetadata(file?.path);
+      const fileMetadata = await getFileMetadata(file?.path)
 
       if (
         !fileMetadata ||
-        (typeof fileMetadata?.size === "number" && fileMetadata?.size <= 1000)
+        (typeof fileMetadata?.size === 'number' && fileMetadata?.size <= 1000)
       ) {
-        toast.error("Invalid file.");
-        return;
+        toast.error('Invalid file.')
+        return
       }
 
       setVideo({
@@ -219,27 +174,27 @@ function Root() {
         size: formatBytes(fileMetadata?.size ?? 0),
         isThumbnailGenerating: true,
         extension: fileMetadata?.extension,
-      });
+      })
       if (fileMetadata?.extension) {
         setConvertToExtension(
-          fileMetadata?.extension as keyof (typeof extensions)["video"]
-        );
+          fileMetadata?.extension as keyof (typeof extensions)['video'],
+        )
       }
 
-      const thumbnail = await generateVideoThumbnail(file?.path);
+      const thumbnail = await generateVideoThumbnail(file?.path)
 
       setVideo((previousState) => ({
         ...previousState,
         isThumbnailGenerating: false,
-      }));
+      }))
       if (thumbnail) {
         setVideo((previousState) => ({
           ...previousState,
           id: thumbnail?.id,
           thumbnailPathRaw: thumbnail?.filePath,
           thumbnailPath: core.convertFileSrc(thumbnail?.filePath),
-        }));
-        const thumbnailDimension = await getImageDimension(thumbnail?.filePath);
+        }))
+        const thumbnailDimension = await getImageDimension(thumbnail?.filePath)
         if (
           Array.isArray(thumbnailDimension) &&
           thumbnailDimension?.length === 2
@@ -247,45 +202,45 @@ function Root() {
           setVideo((previousState) => ({
             ...previousState,
             thumbnailDimension,
-          }));
+          }))
         }
       }
-      const duration = await getVideoDuration(file?.path);
+      const duration = await getVideoDuration(file?.path)
       const durationInMilliseconds = convertDurationToMilliseconds(
-        duration as string
-      );
+        duration as string,
+      )
       if (durationInMilliseconds > 0) {
         setVideo((state) => ({
           ...state,
           videDurationRaw: duration,
           videoDurationMilliseconds: durationInMilliseconds,
-        }));
+        }))
       }
     } catch (error) {
-      reset();
-      toast.error("File seems to be corrupted.");
+      reset()
+      toast.error('File seems to be corrupted.')
     }
-  };
+  }
 
   const handleCompression = async () => {
-    if (video?.isCompressing) return;
+    if (video?.isCompressing) return
     setVideo((previousState) => ({
       ...previousState,
       isCompressing: true,
-    }));
+    }))
     try {
       const result = await compressVideo({
         videoPath: video?.pathRaw as string,
-        convertToExtension: convertToExtension ?? "mp4",
+        convertToExtension: convertToExtension ?? 'mp4',
         presetName,
         videoId: video?.id,
-      });
+      })
       if (!result) {
-        throw new Error();
+        throw new Error()
       }
-      const compressedVideoMetadata = await getFileMetadata(result?.filePath);
+      const compressedVideoMetadata = await getFileMetadata(result?.filePath)
       if (!compressedVideoMetadata) {
-        throw new Error();
+        throw new Error()
       }
       setVideo((previousState) => ({
         ...previousState,
@@ -294,53 +249,54 @@ function Root() {
         compressedVideo: {
           fileName: compressedVideoMetadata?.fileName,
           pathRaw: compressedVideoMetadata?.path,
-          path: core.convertFileSrc(compressedVideoMetadata?.path ?? ""),
+          path: core.convertFileSrc(compressedVideoMetadata?.path ?? ''),
           mimeType: compressedVideoMetadata?.mimeType,
           sizeInBytes: compressedVideoMetadata?.size,
           size: formatBytes(compressedVideoMetadata?.size ?? 0),
           extension: compressedVideoMetadata?.extension,
         },
-      }));
+      }))
     } catch (error) {
-      toast.error("Something went wrong during compression.");
+      toast.error('Something went wrong during compression.')
       setVideo((previousState) => ({
         ...previousState,
         isCompressing: false,
         isCompressionSuccessful: false,
-      }));
+      }))
     }
-  };
+  }
 
   const reset = () => {
-    setVideo(initialState);
-    setProgress(0);
-  };
+    setVideo(initialState)
+    setProgress(0)
+  }
 
   const sizeDiff: number = React.useMemo(
     () =>
-      typeof video?.compressedVideo?.sizeInBytes === "number" &&
-      typeof video?.sizeInBytes === "number"
+      typeof video?.compressedVideo?.sizeInBytes === 'number' &&
+      typeof video?.sizeInBytes === 'number' &&
+      !Number.isNaN(video?.sizeInBytes)
         ? (((video?.sizeInBytes ?? 0) -
             (video?.compressedVideo?.sizeInBytes ?? 0)) *
             100) /
-          video?.sizeInBytes
+          video.sizeInBytes
         : 0,
-    [video]
-  );
+    [video],
+  )
 
   const fileNameDisplay =
     (video?.isCompressionSuccessful
       ? `${video?.fileName?.slice(0, -((video?.extension?.length ?? 0) + 1))}.${
           video?.compressedVideo?.extension
         }`
-      : video?.fileName) ?? "";
+      : video?.fileName) ?? ''
 
   const handleCompressedVideoSave = async () => {
     try {
       const pathToSave = await save({
-        title: "Choose location to save the compressed video.",
+        title: 'Choose location to save the compressed video.',
         defaultPath: `compressO-${fileNameDisplay}`,
-      });
+      })
       if (pathToSave) {
         setVideo((previousState) => ({
           ...previousState,
@@ -349,8 +305,8 @@ function Root() {
             isSaving: true,
             isSaved: false,
           },
-        }));
-        await moveFile(video?.compressedVideo?.pathRaw as string, pathToSave);
+        }))
+        await moveFile(video?.compressedVideo?.pathRaw as string, pathToSave)
         setVideo((previousState) => ({
           ...previousState,
           compressedVideo: {
@@ -359,10 +315,10 @@ function Root() {
             isSaving: false,
             isSaved: true,
           },
-        }));
+        }))
       }
     } catch (_) {
-      toast.error("Could not save video to the given path.");
+      toast.error('Could not save video to the given path.')
       setVideo((previousState) => ({
         ...previousState,
         compressedVideo: {
@@ -370,27 +326,31 @@ function Root() {
           isSaving: false,
           isSaved: false,
         },
-      }));
+      }))
     }
-  };
+  }
 
   const handleFileOpen = async () => {
-    if (!video?.compressedVideo?.savedPath) return;
+    if (!video?.compressedVideo?.savedPath) return
     try {
-      await open(video?.compressedVideo?.savedPath);
-    } catch (_) {}
-  };
+      await open(video?.compressedVideo?.savedPath)
+    } catch {
+      //
+    }
+  }
 
   const handleDiscard = async ({ closeModal }: { closeModal: () => void }) => {
     try {
       await Promise.allSettled([
         deleteFile(video?.compressedVideo?.pathRaw as string),
         deleteFile(video?.thumbnailPathRaw as string),
-      ]);
-      closeModal?.();
-      reset();
-    } catch (_) {}
-  };
+      ])
+      closeModal?.()
+      reset()
+    } catch {
+      //
+    }
+  }
 
   return (
     <section className="w-full h-full relative">
@@ -402,10 +362,10 @@ function Root() {
         <ThemeSwitcher />
       </div>
       <Drawer
-        renderTriggerer={({ open }) => (
+        renderTriggerer={({ open: openDrawer }) => (
           <div className="absolute bottom-4 right-4 z-10 p-0">
             <Tooltip content="Info" aria-label="info" placement="left">
-              <Button onClick={open} isIconOnly size="sm">
+              <Button onClick={openDrawer} isIconOnly size="sm">
                 <Icon name="info" size={23} />
               </Button>
             </Tooltip>
@@ -419,13 +379,10 @@ function Root() {
           {!video?.isThumbnailGenerating ? (
             <div className="flex flex-col justify-center items-center">
               {video?.fileName && !video?.isCompressing ? (
-                <div className={`flex justify-center items-center mb-2 gap-1`}>
+                <div className="flex justify-center items-center mb-2 gap-1">
                   <Code className="ml-auto mr-auto text-center rounded-lg">
                     {fileNameDisplay?.length > 50
-                      ? `${fileNameDisplay?.slice(
-                          0,
-                          20
-                        )}...${fileNameDisplay?.slice(-10)}`
+                      ? `${fileNameDisplay?.slice(0, 20)}...${fileNameDisplay?.slice(-10)}`
                       : fileNameDisplay}
                   </Code>
                   <Button
@@ -436,9 +393,9 @@ function Root() {
                         video?.isCompressionSuccessful &&
                         !video?.compressedVideo?.isSaved
                       ) {
-                        onOpen();
+                        onOpen()
                       } else {
-                        reset();
+                        reset()
                       }
                     }}
                     className="bg-transparent"
@@ -458,18 +415,18 @@ function Root() {
                   className="relative flex-shrink-0 w-[500px] h-[500px]"
                   initial={{ scale: 0.9 }}
                   animate={{ scale: 1 }}
-                  transition={{ type: "spring", duration: 0.6 }}
+                  transition={{ type: 'spring', duration: 0.6 }}
                 >
                   <Progress
                     {...(video?.videDurationRaw == null
                       ? { isIndeterminate: true }
                       : { value: progress })}
                     classNames={{
-                      base: "absolute top-0 left-0 translate-x-[-25px] translate-y-[-25px]",
-                      svg: "w-[500px] h-[500px] drop-shadow-md",
-                      indicator: "stroke-primary stroke-1",
-                      track: "stroke-transparent stroke-1",
-                      value: "text-3xl font-semibold text-primary",
+                      base: 'absolute top-0 left-0 translate-x-[-25px] translate-y-[-25px]',
+                      svg: 'w-[500px] h-[500px] drop-shadow-md',
+                      indicator: 'stroke-primary stroke-1',
+                      track: 'stroke-transparent stroke-1',
+                      value: 'text-3xl font-semibold text-primary',
                     }}
                     strokeWidth={2}
                     aria-label={`Progress-${progress}%`}
@@ -479,18 +436,18 @@ function Root() {
                     src={video?.thumbnailPath as string}
                     className="max-w-[60vw] max-h-[40vh] object-cover rounded-3xl"
                     style={{
-                      width: "450px",
-                      height: "450px",
-                      minWidth: "450px",
-                      minHeight: "450px",
-                      borderRadius: "50%",
-                      transform: "scale(0.92)",
+                      width: '450px',
+                      height: '450px',
+                      minWidth: '450px',
+                      minHeight: '450px',
+                      borderRadius: '50%',
+                      transform: 'scale(0.92)',
                       flexShrink: 0,
                     }}
                   />
                   <p className="italic text-sm mt-4 text-gray-600 dark:text-gray-400 text-center animate-pulse">
                     Compressing...
-                    {convertToExtension === "webm" ? (
+                    {convertToExtension === 'webm' ? (
                       <span className="block">
                         webm conversion takes longer than the other formats.
                       </span>
@@ -527,7 +484,7 @@ function Root() {
                     </div>
                     {!(sizeDiff <= 0) ? (
                       <p className="block text-7xl text-center text-green-500 mt-5">
-                        {sizeDiff.toFixed(2)?.endsWith(".00")
+                        {sizeDiff.toFixed(2)?.endsWith('.00')
                           ? sizeDiff.toFixed(2)?.slice(0, -3)
                           : sizeDiff.toFixed(2)}
                         %<span className="text-large block">smaller</span>
@@ -545,11 +502,11 @@ function Root() {
                         }
                       >
                         {video?.compressedVideo?.isSaved
-                          ? "Saved"
-                          : "Save Video"}
+                          ? 'Saved'
+                          : 'Save Video'}
                         <Icon
                           name={
-                            video?.compressedVideo?.isSaved ? "tick" : "save"
+                            video?.compressedVideo?.isSaved ? 'tick' : 'save'
                           }
                           className="text-green-300"
                         />
@@ -583,7 +540,7 @@ function Root() {
                           Extension
                         </p>
                         <h1 className="text-4xl font-black">
-                          {video?.extension ?? "-"}
+                          {video?.extension ?? '-'}
                         </h1>
                       </div>
                     </section>
@@ -597,7 +554,7 @@ function Root() {
                         onChange={(evt) =>
                           setPresetName(
                             evt?.target
-                              ?.value as keyof typeof compressionPresets
+                              ?.value as keyof typeof compressionPresets,
                           )
                         }
                         radius="lg"
@@ -637,7 +594,7 @@ function Root() {
                         selectedKeys={[convertToExtension]}
                         onChange={(evt) =>
                           setConvertToExtension(
-                            evt?.target?.value as keyof typeof extensions.video
+                            evt?.target?.value as keyof typeof extensions.video,
                           )
                         }
                         radius="lg"
@@ -678,6 +635,11 @@ function Root() {
               tabIndex={0}
               className="h-full w-full flex justify-center items-center z-0 flex-col animate-appearance-in"
               onClick={onClick}
+              onKeyDown={(evt) => {
+                if (evt?.key === 'Enter') {
+                  onClick()
+                }
+              }}
             >
               <Icon name="videoFile" className="text-primary" size={70} />
               <p className="italic text-sm mt-4 text-gray-600 dark:text-gray-400 text-center">
@@ -714,7 +676,7 @@ function Root() {
         </ModalContent>
       </Modal>
     </section>
-  );
+  )
 }
 
-export default dynamic(() => Promise.resolve(Root), { ssr: false });
+export default dynamic(() => Promise.resolve(Root), { ssr: false })

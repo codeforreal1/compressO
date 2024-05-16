@@ -1,5 +1,5 @@
-import React from "react";
-import { NextUIProvider } from "@nextui-org/system";
+import React from 'react'
+import { NextUIProvider } from '@nextui-org/system'
 
 function UIProvider({ children }: { children: React.ReactNode }) {
   return (
@@ -7,7 +7,7 @@ function UIProvider({ children }: { children: React.ReactNode }) {
     <NextUIProvider vaul-drawer-wrapper="" className="w-full h-full">
       {children}
     </NextUIProvider>
-  );
+  )
 }
 
-export default UIProvider;
+export default UIProvider

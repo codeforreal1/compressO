@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { LayoutContext } from './index'
+import { LayoutContext } from './context'
 
 interface HeaderProps {
   children: React.ReactNode

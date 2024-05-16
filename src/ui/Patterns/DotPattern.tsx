@@ -1,18 +1,19 @@
-import { cn } from "@/utils/tailwind";
-import { useId } from "react";
+import { useId } from 'react'
+
+import { cn } from '@/utils/tailwind'
 
 interface DotPatternProps {
-  width?: any;
-  height?: any;
-  x?: any;
-  y?: any;
-  cx?: any;
-  cy?: any;
-  cr?: any;
-  className?: string;
-  [key: string]: any;
+  width?: any
+  height?: any
+  x?: any
+  y?: any
+  cx?: any
+  cy?: any
+  cr?: any
+  className?: string
+  [key: string]: any
 }
-export function DotPattern({
+function DotPattern({
   width = 50,
   height = 50,
   x = 0,
@@ -23,14 +24,14 @@ export function DotPattern({
   className,
   ...props
 }: DotPatternProps) {
-  const id = useId();
+  const id = useId()
 
   return (
     <svg
       aria-hidden="true"
       className={cn(
-        "pointer-events-none absolute inset-0 h-full w-full fill-neutral-400/80",
-        className
+        'pointer-events-none absolute inset-0 h-full w-full fill-neutral-400/80',
+        className,
       )}
       {...props}
     >
@@ -44,12 +45,12 @@ export function DotPattern({
           x={x}
           y={y}
         >
-          <circle id="pattern-circle" cx={cy} cy={cy} r={cr} />
+          <circle id="pattern-circle" cx={cx} cy={cy} r={cr} />
         </pattern>
       </defs>
       <rect width="100%" height="100%" strokeWidth={0} fill={`url(#${id})`} />
     </svg>
-  );
+  )
 }
 
-export default DotPattern;
+export default DotPattern

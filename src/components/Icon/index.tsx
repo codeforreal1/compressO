@@ -14,6 +14,7 @@ function Icon(props: IconProps) {
   const SVGComponent = registry[name]
 
   if (SVGComponent == null) {
+    // eslint-disable-next-line no-console
     console.warn(`No such icon named ${name}`)
     return null
   }

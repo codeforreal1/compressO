@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react'
 import {
   Modal as NextUIModal,
   ModalHeader as NextUIModalHeader,
@@ -10,7 +10,7 @@ import {
   type ModalBodyProps as NextUIModalBodyProps,
   type ModalContentProps as NextUIModalContentProps,
   type ModalFooterProps as NextUIModalFooterProps,
-} from "@nextui-org/modal";
+} from '@nextui-org/modal'
 
 interface ModalProps extends NextUIModalProps {}
 
@@ -24,7 +24,7 @@ function Modal(props: ModalProps) {
             scale: 1,
             opacity: 1,
             transition: {
-              type: "spring",
+              type: 'spring',
               bounce: 0.3,
               duration: 0.5,
             },
@@ -33,7 +33,7 @@ function Modal(props: ModalProps) {
             scale: 0.8,
             opacity: 0,
             transition: {
-              type: "spring",
+              type: 'spring',
               bounce: 0.3,
               duration: 0.5,
             },
@@ -42,31 +42,31 @@ function Modal(props: ModalProps) {
       }}
       {...props}
     />
-  );
+  )
 }
 
 interface ModalHeaderProps extends NextUIModalHeaderProps {}
 
 export function ModalHeader(props: ModalHeaderProps) {
-  return <NextUIModalHeader {...props} />;
+  return <NextUIModalHeader {...props} />
 }
 
 interface ModalBodyProps extends NextUIModalBodyProps {}
 
 export function ModalBody(props: ModalBodyProps) {
-  return <NextUIModalBody {...props} />;
+  return <NextUIModalBody {...props} />
 }
 
 interface ModalContentProps extends NextUIModalContentProps {}
 
 export function ModalContent(props: ModalContentProps) {
-  return <NextUIModalContent {...props} />;
+  return <NextUIModalContent {...props} />
 }
 
 interface ModalFooterProps extends NextUIModalFooterProps {}
 
 export function ModalFooter(props: ModalFooterProps) {
-  return <NextUIModalFooter {...props} />;
+  return <NextUIModalFooter {...props} />
 }
 
-export default Modal;
+export default Modal

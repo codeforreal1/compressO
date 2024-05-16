@@ -1,12 +1,12 @@
 import {
   Spinner as NextUISpinner,
   type SpinnerProps as NextUISpinnerProps,
-} from "@nextui-org/spinner";
+} from '@nextui-org/spinner'
 
 interface SpinnerPros extends NextUISpinnerProps {}
 
 function Spinner(props: SpinnerPros) {
-  return <NextUISpinner {...props} />;
+  return <NextUISpinner {...props} />
 }
 
-export default Spinner;
+export default Spinner

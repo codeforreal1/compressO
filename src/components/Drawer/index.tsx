@@ -1,22 +1,22 @@
-import React from "react";
-import { Drawer as NativeDrawer } from "vaul";
+import React from 'react'
+import { Drawer as NativeDrawer } from 'vaul'
 
 type RenderTriggererArgs = {
-  isOpened: boolean;
-  open: () => void;
-};
+  isOpened: boolean
+  open: () => void
+}
 
 type DrawerProps = {
-  children: React.ReactNode;
-  renderTriggerer: (_: RenderTriggererArgs) => React.ReactNode;
-};
+  children: React.ReactNode
+  renderTriggerer: (_: RenderTriggererArgs) => React.ReactNode
+}
 
 function Drawer({ children, renderTriggerer }: DrawerProps) {
-  const [isOpened, setIsOpened] = React.useState(false);
+  const [isOpened, setIsOpened] = React.useState(false)
 
   const open = () => {
-    setIsOpened(true);
-  };
+    setIsOpened(true)
+  }
 
   return (
     <NativeDrawer.Root
@@ -24,7 +24,7 @@ function Drawer({ children, renderTriggerer }: DrawerProps) {
       noBodyStyles
       open={isOpened}
       onClose={() => {
-        setIsOpened(false);
+        setIsOpened(false)
       }}
     >
       <NativeDrawer.Trigger asChild>
@@ -34,7 +34,7 @@ function Drawer({ children, renderTriggerer }: DrawerProps) {
         <NativeDrawer.Overlay
           className="fixed inset-0 bg-black/40"
           onClick={() => {
-            setIsOpened(false);
+            setIsOpened(false)
           }}
         />
         <NativeDrawer.Content className="z-10 bg-zinc-100 dark:bg-[#191919] flex flex-col rounded-t-[20px] mt-24 fixed bottom-0 left-0 right-0">
@@ -43,7 +43,7 @@ function Drawer({ children, renderTriggerer }: DrawerProps) {
         </NativeDrawer.Content>
       </NativeDrawer.Portal>
     </NativeDrawer.Root>
-  );
+  )
 }
 
-export default Drawer;
+export default Drawer

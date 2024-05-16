@@ -1,26 +1,26 @@
-import React from "react";
+import React from 'react'
 
-import Logo from "@/assets/icons/logo.svg";
-import Moon from "@/assets/icons/moon.svg";
-import Sun from "@/assets/icons/sun.svg";
-import VideoFile from "@/assets/icons/video-file.svg";
-import Star from "@/assets/icons/star.svg";
-import Cross from "@/assets/icons/cross.svg";
-import CurvedArrow from "@/assets/icons/curved-arrow.svg";
-import Save from "@/assets/icons/save.svg";
-import Tick from "@/assets/icons/tick.svg";
-import FileExplorer from "@/assets/icons/file-explorer.svg";
-import Play from "@/assets/icons/play.svg";
-import Info from "@/assets/icons/info.svg";
-import LowResheart from "@/assets/icons/low-res-heart.svg";
-import Github from "@/assets/icons/github.svg";
+import Logo from '@/assets/icons/logo.svg'
+import Moon from '@/assets/icons/moon.svg'
+import Sun from '@/assets/icons/sun.svg'
+import VideoFile from '@/assets/icons/video-file.svg'
+import Star from '@/assets/icons/star.svg'
+import Cross from '@/assets/icons/cross.svg'
+import CurvedArrow from '@/assets/icons/curved-arrow.svg'
+import Save from '@/assets/icons/save.svg'
+import Tick from '@/assets/icons/tick.svg'
+import FileExplorer from '@/assets/icons/file-explorer.svg'
+import Play from '@/assets/icons/play.svg'
+import Info from '@/assets/icons/info.svg'
+import LowResheart from '@/assets/icons/low-res-heart.svg'
+import Github from '@/assets/icons/github.svg'
 
-type SVGAsComponent = React.FC<React.SVGProps<SVGElement>>;
+type SVGAsComponent = React.FC<React.SVGProps<SVGElement>>
 
 function asRegistry<T extends string>(
-  arg: Record<T, SVGAsComponent>
+  arg: Record<T, SVGAsComponent>,
 ): Record<T, SVGAsComponent> {
-  return arg;
+  return arg
 }
 
 const registry = asRegistry({
@@ -38,6 +38,6 @@ const registry = asRegistry({
   info: Info,
   lowResHeart: LowResheart,
   github: Github,
-});
+})
 
-export default registry;
+export default registry

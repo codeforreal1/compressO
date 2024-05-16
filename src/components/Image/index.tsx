@@ -1,35 +1,35 @@
-import React from "react";
+import React from 'react'
 import {
   Image as NextUIImage,
   type ImageProps as NextUIImageProps,
-} from "@nextui-org/image";
+} from '@nextui-org/image'
 
 interface ImageProps {
-  src: string;
-  alt: string;
+  src: string
+  alt: string
 }
-function Image(props: ImageProps & Exclude<NextUIImageProps, "src">) {
-  const { ...nextImageProps } = props;
+function Image(props: ImageProps & Exclude<NextUIImageProps, 'src'>) {
+  const { ...nextImageProps } = props
 
-  const [isFallbackImage, setIsFallbackImage] = React.useState(false);
+  const [isFallbackImage, setIsFallbackImage] = React.useState(false)
   return (
     <NextUIImage
       onLoadedData={() => {
-        setIsFallbackImage(false);
+        setIsFallbackImage(false)
       }}
       onError={() => {
-        setIsFallbackImage(true);
+        setIsFallbackImage(true)
       }}
       {...nextImageProps}
       {...(isFallbackImage
         ? {
             src:
-              nextImageProps?.fallbackSrc?.toString() ?? "/default-blurred.jpg",
+              nextImageProps?.fallbackSrc?.toString() ?? '/default-blurred.jpg',
             fallbackSrc: null,
           }
         : {})}
     />
-  );
+  )
 }
 
-export default Image;
+export default Image
