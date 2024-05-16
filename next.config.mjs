@@ -10,7 +10,7 @@ const withBundleAnalyzer = analyzeBundle({
 const nextConfig = withBundleAnalyzer({
   output: "export",
   distDir: "./dist",
-  cleanDistDir:true,
+  cleanDistDir: true,
   webpack(config, { webpack }) {
     config.module.rules.push({
       test: /\.svg$/,

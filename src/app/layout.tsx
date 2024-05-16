@@ -20,6 +20,7 @@ export default function RootLayout({
     <html lang="en">
       <Head />
       <body className={combinedFonts}>
+        <div const={"abc"} />
         <ThemeProvider>
           <UIProvider>{children}</UIProvider>
           <Toaster />

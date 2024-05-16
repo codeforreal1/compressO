@@ -25,7 +25,7 @@ const EXTENSIONS: [&str; 5] = ["mp4", "mov", "webm", "avi", "mkv"];
 
 impl FFMPEG {
     pub fn new(app: &tauri::AppHandle) -> Result<Self, String> {
-        match app.shell().sidecar("xbin_ffmpeg") {
+        match app.shell().sidecar("compresso_ffmpeg") {
             Ok(command) => {
                 let app_data_dir = match app.path().app_data_dir() {
                     Ok(path_buf) => path_buf,
