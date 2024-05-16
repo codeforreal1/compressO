@@ -11,6 +11,8 @@ import UIProvider from '../providers/UIProvider'
 import ThemeProvider from '../providers/ThemeProvider'
 import Head from './head'
 
+const version = process.env.version
+
 export default function RootLayout({
   children,
 }: {
@@ -24,10 +26,12 @@ export default function RootLayout({
           <UIProvider>{children}</UIProvider>
           <Toaster />
         </ThemeProvider>
-        <Script src="/scripts/accessibility-only-when-focused.js" />
-        <Script src="/scripts/disable-context-menu.js" />
-        <Script src="/scripts/disable-zoom.js" />
-        <Script src="/scripts/disable-reload.js" />
+        <Script
+          src={`/scripts/accessibility-only-when-focused.js?nonce=${version}`}
+        />
+        <Script src={`/scripts/disable-context-menu.js?nonce=${version}`} />
+        <Script src={`/scripts/disable-zoom.js?nonce=${version}`} />
+        <Script src={`/scripts/disable-reload.js?nonce=${version}`} />
       </body>
     </html>
   )

@@ -59,13 +59,7 @@
         "allowExpressions": true
       }
     ],
-    "prefer-destructuring": [
-      1,
-      {
-        "object": true,
-        "array": false
-      }
-    ],
+    "prefer-destructuring": "off",
     "react/no-unstable-nested-components": [
       1,
       {

@@ -1,27 +1,22 @@
-// @ts-check
-((document, window) => {
+;((document, window) => {
   if (!document || !window) {
-    return;
-  }
-
-  if (window.location.hostname !== "tauri.localhost") {
-    return;
+    return
   }
 
   window.addEventListener(
-    "keydown",
+    'keydown',
     function (evt) {
       if (
         (evt.ctrlKey || evt.metaKey) &&
-        (evt.key === "r" ||
-          evt.key === "R" ||
-          (evt.shiftKey && (evt.key === "r" || evt.key === "R")))
+        (evt.key === 'r' ||
+          evt.key === 'R' ||
+          (evt.shiftKey && (evt.key === 'r' || evt.key === 'R')))
       ) {
-        evt.preventDefault();
-        evt.stopImmediatePropagation();
-        return false;
+        evt.preventDefault()
+        evt.stopImmediatePropagation()
+        return false
       }
     },
-    { passive: false }
-  );
-})(document, window);
+    { passive: false },
+  )
+})(document, window)
