@@ -1,6 +1,5 @@
+#[cfg(target_os = "linux")]
 use std::sync::Mutex;
-use tauri::State;
-
 #[cfg(target_os = "linux")]
 pub struct DbusState(pub Mutex<Option<dbus::blocking::SyncConnection>>);
 
@@ -8,6 +7,7 @@ pub struct DbusState(pub Mutex<Option<dbus::blocking::SyncConnection>>);
 #[tauri::command]
 pub fn show_item_in_file_manager(path: String, dbus_state: State<DbusState>) -> Result<(), String> {
     use std::{path::PathBuf, process::Command, time::Duration};
+    use tauri::State;
 
     let dbus_guard = dbus_state.0.lock().map_err(|e| e.to_string())?;
 
@@ -46,6 +46,7 @@ pub fn show_item_in_file_manager(path: String, dbus_state: State<DbusState>) -> 
 #[cfg(not(target_os = "linux"))]
 #[tauri::command]
 pub fn show_item_in_file_manager(path: String) -> Result<(), String> {
+    use std::process::Command;
     #[cfg(target_os = "windows")]
     {
         Command::new("explorer")

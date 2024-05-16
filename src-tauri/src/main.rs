@@ -1,16 +1,14 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::sync::Mutex;
-
 use lib::domain::{FileMetadata, VideoThumbnail};
 use lib::fs::{self as file_system, delete_stale_files};
-use lib::tauri_commands::command::{
-    show_item_in_file_manager, DbusState, __cmd__show_item_in_file_manager,
-};
+use lib::tauri_commands::command::{__cmd__show_item_in_file_manager, show_item_in_file_manager};
 use lib::{domain::CompressionResult, ffmpeg};
-use tauri::Manager;
 use tauri_plugin_log::{Target as LogTarget, TargetKind as LogTargetKind};
+
+#[cfg(target_os = "linux")]
+use lib::tauri_commands::command::DbusState;
 
 #[tauri::command]
 async fn compress_video(
