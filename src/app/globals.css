@@ -11,17 +11,20 @@
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
-  -webkit-overflow-scrolling: touch;
-  scroll-behavior: smooth;
   box-sizing: border-box;
 
-  -webkit-tap-highlight-color: transparent;
-  -webkit-touch-callout: none;
-  touch-action: pan-x pan-y;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
 }
 
 *:focus {
   outline-color: theme("colors.primary") !important;
+}
+
+:root {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  touch-action: pan-x pan-y;
 }
 
 body {
@@ -32,6 +35,11 @@ body {
   width: 100vw;
   height: 100vh;
   overflow: hidden;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
 }
 
 [class="light"] body {

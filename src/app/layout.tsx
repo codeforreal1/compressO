@@ -19,15 +19,15 @@ export default function RootLayout({
   return (
     <html lang="en">
       <Head />
-      <body className={combinedFonts}>
-        <div const={"abc"} />
+      <body className={`antialiased ${combinedFonts}`}>
         <ThemeProvider>
           <UIProvider>{children}</UIProvider>
           <Toaster />
         </ThemeProvider>
-        <Script src="/scripts/accessibility-only-when-focused.js?nonce=jnasknaks" />
+        <Script src="/scripts/accessibility-only-when-focused.js" />
         <Script src="/scripts/disable-context-menu.js" />
         <Script src="/scripts/disable-zoom.js" />
+        <Script src="/scripts/disable-reload.js" />
       </body>
     </html>
   );

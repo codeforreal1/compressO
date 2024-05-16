@@ -11,6 +11,9 @@ import Save from "@/assets/icons/save.svg";
 import Tick from "@/assets/icons/tick.svg";
 import FileExplorer from "@/assets/icons/file-explorer.svg";
 import Play from "@/assets/icons/play.svg";
+import Info from "@/assets/icons/info.svg";
+import LowResheart from "@/assets/icons/low-res-heart.svg";
+import Github from "@/assets/icons/github.svg";
 
 type SVGAsComponent = React.FC<React.SVGProps<SVGElement>>;
 
@@ -32,6 +35,9 @@ const registry = asRegistry({
   tick: Tick,
   fileExplorer: FileExplorer,
   play: Play,
+  info: Info,
+  lowResHeart: LowResheart,
+  github: Github,
 });
 
 export default registry;

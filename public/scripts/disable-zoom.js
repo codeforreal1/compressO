@@ -1,4 +1,3 @@
-// @ts-check
 ((document, window) => {
   if (!document || !window) {
     return;
@@ -14,32 +13,27 @@
     { passive: false }
   );
 
-  window.addEventListener(
-    "keydown",
-    function (evt) {
-      if (
-        ((evt.ctrlKey || evt.metaKey) &&
-          // Zoom
-          (evt.key === "-" || evt.key === "=" || evt.key === "0")) ||
-        // Reload
-        evt.key === "r" ||
-        evt.key === "R" ||
-        (evt.shiftKey && (evt.key === "r" || evt.key === "R"))
-      ) {
-        evt.preventDefault();
-        evt.stopImmediatePropagation();
-        return false;
-      }
-    },
-    { passive: false }
-  );
-
   document.addEventListener(
     "touchmove",
     (evt) => {
       evt.preventDefault();
       evt.stopImmediatePropagation();
       return false;
+    },
+    { passive: false }
+  );
+
+  window.addEventListener(
+    "keydown",
+    function (evt) {
+      if (
+        (evt.ctrlKey || evt.metaKey) &&
+        (evt.key === "-" || evt.key === "=" || evt.key === "0")
+      ) {
+        evt.preventDefault();
+        evt.stopImmediatePropagation();
+        return false;
+      }
     },
     { passive: false }
   );

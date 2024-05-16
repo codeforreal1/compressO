@@ -2,6 +2,7 @@
   if (!document || !window) {
     return;
   }
+
   if (window.location.hostname !== "tauri.localhost") {
     return;
   }

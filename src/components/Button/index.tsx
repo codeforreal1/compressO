@@ -16,7 +16,7 @@ function Button(props: ButtonProps) {
 
   return (
     <NextButton
-      disableRipple={false}
+      disableRipple
       color={color ?? "default"}
       variant={variant ?? "flat"}
       {...nextButtonProps}

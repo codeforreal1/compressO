@@ -23,7 +23,6 @@ import Divider from "@/components/Divider";
 import Image from "@/components/Image";
 import ThemeSwitcher from "@/components/ThemeSwitcher";
 import VideoPicker from "@/tauri/components/VideoPicker";
-import { cn } from "@/utils/tailwind";
 import Icon from "@/components/Icon";
 import { toast } from "@/components/Toast";
 import { formatBytes } from "@/utils/fs";
@@ -47,6 +46,8 @@ import {
 import Tooltip from "@/components/Tooltip";
 import { convertDurationToMilliseconds } from "@/utils/string";
 import DotPattern from "@/ui/Patterns/DotPattern";
+import Drawer from "@/components/Drawer";
+import About from "./About";
 
 type Video = {
   id?: string | null;
@@ -392,19 +393,29 @@ function Root() {
   };
 
   return (
-    <>
+    <section className="w-full h-full relative">
       {!video?.isFileSelected ? <DotPattern className="opacity-40" /> : null}
       <div className="absolute top-4 left-4 z-10 flex justify-center items-center">
-        <h1 className="mr-2 font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-          compressO
-        </h1>
-        <Image src="/logo.png" alt="logo" width={30} />
+        <Image src="/logo.png" alt="logo" width={30} height={30} />
       </div>
       <div className="absolute bottom-4 left-4 z-10">
         <ThemeSwitcher />
       </div>
+      <Drawer
+        renderTriggerer={({ open }) => (
+          <div className="absolute bottom-4 right-4 z-10 p-0">
+            <Tooltip content="Info" aria-label="info" placement="left">
+              <Button onClick={open} isIconOnly size="sm">
+                <Icon name="info" size={23} />
+              </Button>
+            </Tooltip>
+          </div>
+        )}
+      >
+        <About />
+      </Drawer>
       {video?.isFileSelected ? (
-        <div className="h-[100vh] w-full flex flex-col justify-center items-center">
+        <div className="h-full w-full flex flex-col justify-center items-center">
           {!video?.isThumbnailGenerating ? (
             <div className="flex flex-col justify-center items-center">
               {video?.fileName && !video?.isCompressing ? (
@@ -477,7 +488,7 @@ function Root() {
                       flexShrink: 0,
                     }}
                   />
-                  <p className="italic text-sm mt-4 text-gray-500 text-center animate-pulse">
+                  <p className="italic text-sm mt-4 text-gray-600 dark:text-gray-400 text-center animate-pulse">
                     Compressing...
                     {convertToExtension === "webm" ? (
                       <span className="block">
@@ -561,12 +572,14 @@ function Root() {
                   <>
                     <section className="my-6 flex items-center space-x-4 justify-center gap-4">
                       <div>
-                        <p className="italic text-sm text-gray-500">Size</p>
+                        <p className="italic text-sm text-gray-600 dark:text-gray-400">
+                          Size
+                        </p>
                         <h1 className="text-4xl font-black">{video?.size}</h1>
                       </div>
                       <Divider orientation="vertical" className="h-10" />
                       <div>
-                        <p className="italic text-sm text-gray-500">
+                        <p className="italic text-sm text-gray-600 dark:text-gray-400">
                           Extension
                         </p>
                         <h1 className="text-4xl font-black">
@@ -663,13 +676,11 @@ function Root() {
             <div
               role="button"
               tabIndex={0}
-              className={cn([
-                "h-[100vh] w-full flex justify-center items-center z-0 flex-col animate-appearance-in",
-              ])}
+              className="h-full w-full flex justify-center items-center z-0 flex-col animate-appearance-in"
               onClick={onClick}
             >
               <Icon name="videoFile" className="text-primary" size={70} />
-              <p className="italic text-sm mt-4 text-gray-500 text-center">
+              <p className="italic text-sm mt-4 text-gray-600 dark:text-gray-400 text-center">
                 Click anywhere to select a video
               </p>
             </div>
@@ -702,7 +713,7 @@ function Root() {
           )}
         </ModalContent>
       </Modal>
-    </>
+    </section>
   );
 }
 
