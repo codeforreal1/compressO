@@ -1,13 +1,12 @@
 #[cfg(target_os = "linux")]
 use std::sync::Mutex;
-#[cfg(target_os = "linux")]
+use tauri::State;
 pub struct DbusState(pub Mutex<Option<dbus::blocking::SyncConnection>>);
 
 #[cfg(target_os = "linux")]
 #[tauri::command]
 pub fn show_item_in_file_manager(path: String, dbus_state: State<DbusState>) -> Result<(), String> {
     use std::{path::PathBuf, process::Command, time::Duration};
-    use tauri::State;
 
     let dbus_guard = dbus_state.0.lock().map_err(|e| e.to_string())?;
 
