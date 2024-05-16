@@ -17,6 +17,7 @@ interface ModalProps extends NextUIModalProps {}
 function Modal(props: ModalProps) {
   return (
     <NextUIModal
+      hideCloseButton
       motionProps={{
         variants: {
           enter: {

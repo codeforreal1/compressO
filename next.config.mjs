@@ -3,6 +3,10 @@
 import million from "million/compiler";
 import analyzeBundle from "@next/bundle-analyzer";
 
+const packageJSON = await import("./package.json", {
+  assert: { type: "json" },
+});
+
 const withBundleAnalyzer = analyzeBundle({
   enabled: process.env.ANALYZE === "true",
 });
@@ -26,6 +30,9 @@ const nextConfig = withBundleAnalyzer({
     }
 
     return config;
+  },
+  env: {
+    version: packageJSON?.default?.version,
   },
 });
 
