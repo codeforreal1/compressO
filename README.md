@@ -32,6 +32,7 @@ The app works completely offline and no any network requests is made to/from the
 ### License
 
 <a href="./LICENSE">AGPL 3.0 License</a>
-<span className="block text-sm">
+
+<p className="block text-sm">
 This software uses libraries from the FFmpeg project under the LGPLv2.1.
-</span>
+</p>
