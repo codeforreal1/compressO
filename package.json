@@ -6,7 +6,7 @@
     "name": "Code For Real",
     "url": "https://www.threads.net/@codeforreal"
   },
-  "license": "LGPL-2.1-or-later",
+  "license": "AGPL-3.0-only",
   "scripts": {
     "next:dev": "next dev",
     "next:build": "next build",
