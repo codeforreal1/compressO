@@ -1,9 +1,15 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use std::sync::Mutex;
+
 use lib::domain::{FileMetadata, VideoThumbnail};
 use lib::fs::{self as file_system, delete_stale_files};
+use lib::tauri_commands::command::{
+    show_item_in_file_manager, DbusState, __cmd__show_item_in_file_manager,
+};
 use lib::{domain::CompressionResult, ffmpeg};
+use tauri::Manager;
 use tauri_plugin_log::{Target as LogTarget, TargetKind as LogTargetKind};
 
 #[tauri::command]
@@ -99,7 +105,13 @@ async fn main() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_shell::init())
         .setup(|app| {
+            #[cfg(target_os = "linux")]
+            app.manage(DbusState(Mutex::new(
+                dbus::blocking::SyncConnection::new_session().ok(),
+            )));
+
             file_system::setup_app_data_dir(app)?;
+
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -109,7 +121,8 @@ async fn main() {
             get_image_dimension,
             get_file_metadata,
             move_file,
-            delete_file
+            delete_file,
+            show_item_in_file_manager
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

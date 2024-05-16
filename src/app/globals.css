@@ -18,7 +18,7 @@
 }
 
 *:focus {
-  outline-color: theme("colors.primary") !important;
+  outline-color: theme('colors.primary') !important;
 }
 
 :root {
@@ -30,8 +30,8 @@
 body {
   margin: 0;
   padding: 0;
-  background-color: theme("colors.black1");
-  font-family: theme("fontFamily.poppins");
+  background-color: theme('colors.black1');
+  font-family: theme('fontFamily.poppins');
   width: 100vw;
   height: 100vh;
   overflow: hidden;
@@ -42,8 +42,20 @@ body {
   bottom: 0;
 }
 
-[class="light"] body {
-  background-color: theme("colors.white1");
+[class='light'] body {
+  background-color: theme('colors.white1');
+}
+
+body > h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+code,
+pre {
+  cursor: inherit;
 }
 
 h1,
@@ -55,5 +67,5 @@ h6,
 p,
 code,
 pre {
-  cursor: default;
+  cursor: inherit;
 }

@@ -12,6 +12,7 @@ import ThemeProvider from '../providers/ThemeProvider'
 import Head from './head'
 
 const version = process.env.version
+const env = process.env.NODE_ENV
 
 export default function RootLayout({
   children,
@@ -28,10 +29,20 @@ export default function RootLayout({
         </ThemeProvider>
         <Script
           src={`/scripts/accessibility-only-when-focused.js?nonce=${version}`}
+          data-env={env}
         />
-        <Script src={`/scripts/disable-context-menu.js?nonce=${version}`} />
-        <Script src={`/scripts/disable-zoom.js?nonce=${version}`} />
-        <Script src={`/scripts/disable-reload.js?nonce=${version}`} />
+        <Script
+          src={`/scripts/disable-context-menu.js?nonce=${version}`}
+          data-env={env}
+        />
+        <Script
+          src={`/scripts/disable-zoom.js?nonce=${version}`}
+          data-env={env}
+        />
+        <Script
+          src={`/scripts/disable-reload.js?nonce=${version}`}
+          data-env={env}
+        />
       </body>
     </html>
   )

@@ -18,3 +18,7 @@ export function moveFile(from: string, to: string) {
 export function deleteFile(path: string) {
   return core.invoke('delete_file', { path })
 }
+
+export function showItemInFileManager(path: string) {
+  return core.invoke('show_item_in_file_manager', { path })
+}

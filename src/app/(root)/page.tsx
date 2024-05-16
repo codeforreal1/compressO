@@ -6,7 +6,6 @@ import { core, event } from '@tauri-apps/api'
 import { SelectItem } from '@nextui-org/select'
 import { FileResponse, save } from '@tauri-apps/plugin-dialog'
 import { useDisclosure } from '@nextui-org/modal'
-import { open } from '@tauri-apps/plugin-shell'
 import { motion } from 'framer-motion'
 
 import Modal, {
@@ -37,6 +36,7 @@ import {
   getFileMetadata,
   getImageDimension,
   moveFile,
+  showItemInFileManager,
 } from '@/tauri/commands/fs'
 import {
   CustomEvents,
@@ -333,7 +333,7 @@ function Root() {
   const handleFileOpen = async () => {
     if (!video?.compressedVideo?.savedPath) return
     try {
-      await open(video?.compressedVideo?.savedPath)
+      await showItemInFileManager(video?.compressedVideo?.savedPath)
     } catch {
       //
     }
@@ -513,13 +513,16 @@ function Root() {
                       </Button>
                       {video?.compressedVideo?.isSaved &&
                       video?.compressedVideo?.savedPath ? (
-                        <Tooltip content="Play video" aria-label="Play video">
+                        <Tooltip
+                          content="Show in File Explorer"
+                          aria-label="Show in File Explorer"
+                        >
                           <Button
                             isIconOnly
                             className="ml-2 text-green-500"
                             onClick={handleFileOpen}
                           >
-                            <Icon name="play" />
+                            <Icon name="fileExplorer" />
                           </Button>
                         </Tooltip>
                       ) : null}

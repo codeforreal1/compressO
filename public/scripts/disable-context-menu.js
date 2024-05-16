@@ -3,10 +3,8 @@
     return
   }
 
-  const isReleaseMode = !(
-    window.location.hostname === 'tauri.localhost' ||
-    window.location.hostname === 'localhost'
-  )
+  const isReleaseMode =
+    document.currentScript.getAttribute('data-env') === 'production'
 
   if (isReleaseMode) {
     document.addEventListener(
