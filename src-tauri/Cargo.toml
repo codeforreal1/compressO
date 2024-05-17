@@ -1,5 +1,5 @@
 [package]
-name = "compressO"
+name = "app"
 version = "1.0.0"
 description = "Compress any video into a tiny size."
 authors = ["you"]
