@@ -570,11 +570,7 @@ function Root() {
                               className="flex justify-center items-center"
                             >
                               <button type="button">
-                                <Icon
-                                  name="question"
-                                  className="block"
-                                  size={25}
-                                />
+                                <Icon name="question" className="block" />
                               </button>
                             </Tooltip>
                           </div>
