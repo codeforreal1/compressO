@@ -475,7 +475,7 @@ function Root() {
                       <p className="text-4xl font-bold mx-4">{video?.size}</p>
                       <Icon
                         name="curvedArrow"
-                        className="text-white rotate-[-65deg] translate-y-[-8px]"
+                        className="text-white dark:text-black rotate-[-65deg] translate-y-[-8px]"
                         size={100}
                       />
                       <p className="text-4xl font-bold mx-4 text-primary">
