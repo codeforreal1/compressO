@@ -27,7 +27,7 @@ pub fn setup_app_data_dir(app: &mut tauri::App) -> Result<PathBuf, tauri::Error>
 pub fn get_file_metadata(path: &str) -> Result<FileMetadata, String> {
     let metadata_ref = fs::metadata(path);
 
-    if !metadata_ref.is_ok() {
+    if metadata_ref.is_err() {
         return Err(String::from("File does not exist in the given path."));
     }
 
@@ -49,7 +49,7 @@ pub fn get_file_metadata(path: &str) -> Result<FileMetadata, String> {
 
 /// Get [width, height] of an image
 pub fn get_image_dimension(image_path: &str) -> Result<(u32, u32), String> {
-    if !fs::metadata(image_path).is_ok() {
+    if fs::metadata(image_path).is_err() {
         return Err(String::from("Image does not exist in the given path."));
     }
 
@@ -59,9 +59,9 @@ pub fn get_image_dimension(image_path: &str) -> Result<(u32, u32), String> {
     };
 
     match image.into_dimensions() {
-        Ok(dimension) => return Ok((dimension.0, dimension.1)),
-        Err(err) => return Err(err.to_string()),
-    };
+        Ok(dimension) => Ok((dimension.0, dimension.1)),
+        Err(err) => Err(err.to_string()),
+    }
 }
 
 /// Copies file from one path to another path
@@ -72,7 +72,7 @@ pub async fn copy_file(from: &str, to: &str) -> std::io::Result<u64> {
 
 /// Deletes file from the given path
 pub async fn delete_file(path: &str) -> std::io::Result<()> {
-    Ok(tokio::fs::remove_file(path).await?)
+    tokio::fs::remove_file(path).await
 }
 
 /// Deletes all files that were (now - created) > duration_in_millis
@@ -96,5 +96,5 @@ pub async fn delete_stale_files(
             }
         }
     }
-    return Ok(deleted_files);
+    Ok(deleted_files)
 }

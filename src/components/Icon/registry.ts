@@ -14,6 +14,7 @@ import Play from '@/assets/icons/play.svg'
 import Info from '@/assets/icons/info.svg'
 import LowResheart from '@/assets/icons/low-res-heart.svg'
 import Github from '@/assets/icons/github.svg'
+import Question from '@/assets/icons/question.svg'
 
 type SVGAsComponent = React.FC<React.SVGProps<SVGElement>>
 
@@ -38,6 +39,7 @@ const registry = asRegistry({
   info: Info,
   lowResHeart: LowResheart,
   github: Github,
+  question: Question,
 })
 
 export default registry

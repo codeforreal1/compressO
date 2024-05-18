@@ -9,7 +9,7 @@ pub async fn compress_video(
     app: tauri::AppHandle,
     video_path: &str,
     convert_to_extension: &str,
-    preset_name: &str,
+    preset_name: Option<&str>,
     video_id: Option<&str>,
 ) -> Result<CompressionResult, String> {
     let mut ffmpeg = ffmpeg::FFMPEG::new(&app)?;
@@ -21,13 +21,13 @@ pub async fn compress_video(
             files.len()
         )
     };
-    return match ffmpeg
+    match ffmpeg
         .compress_video(video_path, convert_to_extension, preset_name, video_id)
         .await
     {
         Ok(result) => Ok(result),
         Err(err) => Err(err),
-    };
+    }
 }
 
 #[tauri::command]
@@ -36,7 +36,7 @@ pub async fn generate_video_thumbnail(
     video_path: &str,
 ) -> Result<VideoThumbnail, String> {
     let mut ffmpeg = ffmpeg::FFMPEG::new(&app)?;
-    return Ok(ffmpeg.generate_video_thumbnail(video_path).await?);
+    ffmpeg.generate_video_thumbnail(video_path).await
 }
 
 #[tauri::command]

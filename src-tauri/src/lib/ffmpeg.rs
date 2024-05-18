@@ -39,13 +39,13 @@ impl FFMPEG {
                     .iter()
                     .collect();
 
-                return Ok(Self {
+                Ok(Self {
                     app: app.to_owned(),
                     ffmpeg: Command::from(command),
                     assets_dir,
-                });
+                })
             }
-            Err(err) => return Err(format!("[ffmpeg-sidecar]: {:?}", err.to_string())),
+            Err(err) => Err(format!("[ffmpeg-sidecar]: {:?}", err.to_string())),
         }
     }
 
@@ -54,7 +54,7 @@ impl FFMPEG {
         &mut self,
         video_path: &str,
         convert_to_extension: &str,
-        preset_name: &str,
+        preset_name: Option<&str>,
         video_id: Option<&str>,
     ) -> Result<CompressionResult, String> {
         if !EXTENSIONS.contains(&convert_to_extension) {
@@ -76,7 +76,70 @@ impl FFMPEG {
         let output_path = &output_file.display().to_string();
 
         let preset = match preset_name {
-            "thunderbolt" => {
+            Some(preset) => match preset {
+                "thunderbolt" => {
+                    let mut args = vec![
+                        "-i",
+                        &video_path,
+                        "-hide_banner",
+                        "-progress",
+                        "-",
+                        "-nostats",
+                        "-loglevel",
+                        "error",
+                        "-vcodec",
+                        "libx264",
+                        "-crf",
+                        " 28",
+                        "-vf",
+                        "pad=ceil(iw/2)*2:ceil(ih/2)*2",
+                    ];
+                    if convert_to_extension == "webm" {
+                        args.push("-c:v");
+                        args.push("libvpx-vp9");
+                    }
+                    args.push(output_path);
+                    args.push("-y");
+                    args
+                }
+                _ => {
+                    let mut args = vec![
+                        "-i",
+                        &video_path,
+                        "-hide_banner",
+                        "-progress",
+                        "-",
+                        "-nostats",
+                        "-loglevel",
+                        "error",
+                        "-pix_fmt",
+                        "yuv420p",
+                        "-c:v",
+                        "libx264",
+                        "-b:v",
+                        "0",
+                        "-movflags",
+                        "+faststart",
+                        "-preset",
+                        "slow",
+                        "-qp",
+                        "0",
+                        "-crf",
+                        "32",
+                        "-vf",
+                        "pad=ceil(iw/2)*2:ceil(ih/2)*2",
+                    ];
+                    if convert_to_extension == "webm" {
+                        args.push("-c:v");
+                        args.push("libvpx-vp9");
+                    }
+                    args.push(output_path);
+                    args.push("-y");
+                    args
+                }
+            },
+            None => {
+                println!("Skipping compression. Only converting to given extension");
                 let mut args = vec![
                     "-i",
                     &video_path,
@@ -88,8 +151,6 @@ impl FFMPEG {
                     "error",
                     "-vcodec",
                     "libx264",
-                    "-crf",
-                    " 28",
                     "-vf",
                     "pad=ceil(iw/2)*2:ceil(ih/2)*2",
                 ];
@@ -97,54 +158,21 @@ impl FFMPEG {
                     args.push("-c:v");
                     args.push("libvpx-vp9");
                 }
-                args.push(&output_path);
-                args.push("-y");
-                args
-            }
-            _ => {
-                let mut args = vec![
-                    "-i",
-                    &video_path,
-                    "-hide_banner",
-                    "-progress",
-                    "-",
-                    "-nostats",
-                    "-loglevel",
-                    "error",
-                    "-pix_fmt",
-                    "yuv420p",
-                    "-c:v",
-                    "libx264",
-                    "-b:v",
-                    "0",
-                    "-movflags",
-                    "+faststart",
-                    "-preset",
-                    "slow",
-                    "-qp",
-                    "0",
-                    "-crf",
-                    "32",
-                    "-vf",
-                    "pad=ceil(iw/2)*2:ceil(ih/2)*2",
-                ];
-                if convert_to_extension == "webm" {
-                    args.push("-c:v");
-                    args.push("libvpx-vp9");
-                }
-                args.push(&output_path);
+                args.push(output_path);
                 args.push("-y");
                 args
             }
         };
 
-        let mut command = self
+        println!("Selected preset {:?}", preset);
+
+        let command = self
             .ffmpeg
             .args(preset)
             .stdout(Stdio::piped())
             .stderr(Stdio::piped());
 
-        match SharedChild::spawn(&mut command) {
+        match SharedChild::spawn(command) {
             Ok(child) => {
                 let cp = Arc::new(child);
                 let cp_clone1 = cp.clone();
@@ -182,7 +210,7 @@ impl FFMPEG {
                                     if n == 0 {
                                         break;
                                     }
-                                    if let Some(val) = std::str::from_utf8(&buf).ok() {
+                                    if let Ok(val) = std::str::from_utf8(&buf) {
                                         log::debug!("[ffmpeg] stderr: {:?}", val);
                                     }
                                 }
@@ -206,13 +234,13 @@ impl FFMPEG {
                                     if n == 0 {
                                         break;
                                     }
-                                    if let Some(output) = std::str::from_utf8(&buf).ok() {
+                                    if let Ok(output) = std::str::from_utf8(&buf) {
                                         log::debug!("[ffmpeg] stdout: {:?}", output);
                                         let re =
                                             Regex::new("out_time=(?<out_time>.*?)\\n").unwrap();
                                         if let Some(cap) = re.captures(output) {
                                             let out_time = &cap["out_time"];
-                                            if out_time.len() > 0 {
+                                            if !out_time.is_empty() {
                                                 tx.try_send(String::from(out_time)).ok();
                                             }
                                         }
@@ -225,10 +253,10 @@ impl FFMPEG {
                         }
                     }
 
-                    if let Ok(_) = cp_clone2.wait() {
+                    if cp_clone2.wait().is_ok() {
                         return 0;
                     }
-                    return 1;
+                    1
                 });
 
                 let app_clone = self.app.clone();
@@ -278,7 +306,7 @@ impl FFMPEG {
                     }
                 }
 
-                if message.len() > 0 {
+                if !message.is_empty() {
                     return Err(message);
                 }
             }
@@ -346,10 +374,10 @@ impl FFMPEG {
                 );
 
                 let thread: tokio::task::JoinHandle<u8> = tokio::spawn(async move {
-                    if let Ok(_) = cp_clone1.wait() {
+                    if cp_clone1.wait().is_ok() {
                         return 0;
                     }
-                    return 1;
+                    1
                 });
 
                 let message: String = match thread.await {
@@ -376,7 +404,7 @@ impl FFMPEG {
                         );
                     }
                 }
-                if message.len() > 0 {
+                if !message.is_empty() {
                     return Err(message);
                 }
             }
@@ -454,10 +482,10 @@ impl FFMPEG {
                                 };
                             }
                         }
-                        if let Ok(_) = cp_clone1.wait() {
+                        if cp_clone1.wait().is_ok() {
                             return (0, duration);
                         }
-                        return (1, duration);
+                        (1, duration)
                     });
 
                 let result: Result<Option<String>, String> = match thread.await {

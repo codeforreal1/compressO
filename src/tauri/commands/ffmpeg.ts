@@ -10,13 +10,13 @@ export function compressVideo({
 }: {
   videoPath: string
   convertToExtension?: string
-  presetName?: string
+  presetName?: string | null
   videoId?: string | null
 }): Promise<CompressionResult> {
   return core.invoke('compress_video', {
     videoPath,
     convertToExtension: convertToExtension ?? 'mp4',
-    presetName: presetName ?? 'ironclad',
+    presetName,
     videoId,
   })
 }

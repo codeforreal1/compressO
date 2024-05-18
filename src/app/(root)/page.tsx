@@ -34,7 +34,6 @@ import {
 import {
   deleteFile,
   getFileMetadata,
-  getImageDimension,
   moveFile,
   showItemInFileManager,
 } from '@/tauri/commands/fs'
@@ -48,6 +47,7 @@ import Tooltip from '@/components/Tooltip'
 import { convertDurationToMilliseconds } from '@/utils/string'
 import DotPattern from '@/ui/Patterns/DotPattern'
 import Drawer from '@/components/Drawer'
+import Checkbox from '@/components/Checkbox'
 import About from './About'
 
 type Video = {
@@ -111,6 +111,8 @@ function Root() {
   const [presetName, setPresetName] =
     React.useState<keyof typeof compressionPresets>('ironclad')
   const [progress, setProgress] = React.useState<number>(0)
+  const [isCompressionEnabled, setIsCompressionEnabled] =
+    React.useState<boolean>(true)
 
   const { isOpen, onOpenChange, onOpen } = useDisclosure()
 
@@ -194,16 +196,6 @@ function Root() {
           thumbnailPathRaw: thumbnail?.filePath,
           thumbnailPath: core.convertFileSrc(thumbnail?.filePath),
         }))
-        const thumbnailDimension = await getImageDimension(thumbnail?.filePath)
-        if (
-          Array.isArray(thumbnailDimension) &&
-          thumbnailDimension?.length === 2
-        ) {
-          setVideo((previousState) => ({
-            ...previousState,
-            thumbnailDimension,
-          }))
-        }
       }
       const duration = await getVideoDuration(file?.path)
       const durationInMilliseconds = convertDurationToMilliseconds(
@@ -217,7 +209,7 @@ function Root() {
         }))
       }
     } catch (error) {
-      reset()
+      resetVideoState()
       toast.error('File seems to be corrupted.')
     }
   }
@@ -232,7 +224,7 @@ function Root() {
       const result = await compressVideo({
         videoPath: video?.pathRaw as string,
         convertToExtension: convertToExtension ?? 'mp4',
-        presetName,
+        presetName: isCompressionEnabled ? presetName : null,
         videoId: video?.id,
       })
       if (!result) {
@@ -266,9 +258,10 @@ function Root() {
     }
   }
 
-  const reset = () => {
+  const resetVideoState = () => {
     setVideo(initialState)
     setProgress(0)
+    setIsCompressionEnabled(true)
   }
 
   const sizeDiff: number = React.useMemo(
@@ -346,7 +339,7 @@ function Root() {
         deleteFile(video?.thumbnailPathRaw as string),
       ])
       closeModal?.()
-      reset()
+      resetVideoState()
     } catch {
       //
     }
@@ -395,7 +388,7 @@ function Root() {
                       ) {
                         onOpen()
                       } else {
-                        reset()
+                        resetVideoState()
                       }
                     }}
                     className="bg-transparent"
@@ -475,7 +468,7 @@ function Root() {
                       <p className="text-4xl font-bold mx-4">{video?.size}</p>
                       <Icon
                         name="curvedArrow"
-                        className="text-white dark:text-black rotate-[-65deg] translate-y-[-8px]"
+                        className="text-black dark:text-white rotate-[-65deg] translate-y-[-8px]"
                         size={100}
                       />
                       <p className="text-4xl font-bold mx-4 text-primary">
@@ -548,72 +541,114 @@ function Root() {
                       </div>
                     </section>
                     <Divider />
-                    <section className="my-8 flex justify-center items-center gap-4">
-                      <Select
-                        label="Compression preset:"
-                        className="w-[300px] flex-shrink-0 rounded-2xl"
-                        size="sm"
-                        selectedKeys={[presetName]}
-                        onChange={(evt) =>
-                          setPresetName(
-                            evt?.target
-                              ?.value as keyof typeof compressionPresets,
-                          )
-                        }
-                        radius="lg"
-                        selectionMode="single"
-                        disallowEmptySelection
-                      >
-                        {presets?.map((preset) => (
-                          // Right now if we use SelectItem it breaks the code so opting for SelectItem from NextUI directly
-                          <SelectItem
-                            key={preset}
-                            value={preset}
-                            className="flex justify-center items-center"
-                            endContent={
-                              preset === compressionPresets.ironclad ? (
-                                <Tooltip
-                                  content="Recommended"
-                                  aria-label="Recommended"
-                                >
-                                  <Icon
-                                    name="star"
-                                    className="inline-block ml-1 text-yellow-500"
-                                  />
-                                </Tooltip>
-                              ) : null
-                            }
-                          >
-                            {preset}
-                          </SelectItem>
-                        ))}
-                      </Select>
-                      <Divider orientation="vertical" className="h-10" />
-                      <Select
-                        label="Convert to:"
-                        className="w-[300px] flex-shrink-0 rounded-2xl"
-                        size="sm"
-                        value={convertToExtension}
-                        selectedKeys={[convertToExtension]}
-                        onChange={(evt) =>
-                          setConvertToExtension(
-                            evt?.target?.value as keyof typeof extensions.video,
-                          )
-                        }
-                        radius="lg"
-                        selectionMode="single"
-                        disallowEmptySelection
-                      >
-                        {videoExtensions?.map((ext) => (
-                          <SelectItem
-                            key={ext}
-                            value={ext}
-                            className="flex justify-center items-center"
-                          >
-                            {ext}
-                          </SelectItem>
-                        ))}
-                      </Select>
+                    <section className="my-8">
+                      <div className="flex justify-center items-center mb-4">
+                        <Checkbox
+                          isSelected={isCompressionEnabled}
+                          onValueChange={() =>
+                            setIsCompressionEnabled((state) => !state)
+                          }
+                          className="flex justify-center items-center "
+                        >
+                          <div className="flex justify-center items-center">
+                            <span className="text-gray-600 dark:text-gray-400 block mr-2 text-sm">
+                              Enable Compression
+                            </span>
+                            <Tooltip
+                              delay={0}
+                              placement="right"
+                              content={
+                                <div className="max-w-[200px] p-2">
+                                  <p>
+                                    You can disable the compression if you just
+                                    want to change the extension of the video.
+                                  </p>
+                                </div>
+                              }
+                              aria-label="You can disable the compression if you just
+                              want to change the extension of the video"
+                              className="flex justify-center items-center"
+                            >
+                              <button type="button">
+                                <Icon
+                                  name="question"
+                                  className="block"
+                                  size={25}
+                                />
+                              </button>
+                            </Tooltip>
+                          </div>
+                        </Checkbox>
+                      </div>
+                      <div className="flex justify-center items-center gap-4">
+                        <Select
+                          label="Compression preset:"
+                          className="w-[300px] flex-shrink-0 rounded-2xl"
+                          size="sm"
+                          selectedKeys={[presetName]}
+                          onChange={(evt) =>
+                            setPresetName(
+                              evt?.target
+                                ?.value as keyof typeof compressionPresets,
+                            )
+                          }
+                          radius="lg"
+                          selectionMode="single"
+                          disallowEmptySelection
+                          isDisabled={!isCompressionEnabled}
+                        >
+                          {presets?.map((preset) => (
+                            // Right now if we use SelectItem it breaks the code so opting for SelectItem from NextUI directly
+                            <SelectItem
+                              key={preset}
+                              value={preset}
+                              className="flex justify-center items-center"
+                              endContent={
+                                preset === compressionPresets.ironclad ? (
+                                  <Tooltip
+                                    content="Recommended"
+                                    aria-label="Recommended"
+                                  >
+                                    <Icon
+                                      name="star"
+                                      className="inline-block ml-1 text-yellow-500"
+                                    />
+                                  </Tooltip>
+                                ) : null
+                              }
+                            >
+                              {preset}
+                            </SelectItem>
+                          ))}
+                        </Select>
+                        <Divider orientation="vertical" className="h-10" />
+                        <Select
+                          label="Convert to:"
+                          className="w-[300px] flex-shrink-0 rounded-2xl"
+                          size="sm"
+                          value={convertToExtension}
+                          selectedKeys={[convertToExtension]}
+                          onChange={(evt) =>
+                            setConvertToExtension(
+                              evt?.target
+                                ?.value as keyof typeof extensions.video,
+                            )
+                          }
+                          radius="lg"
+                          selectionMode="single"
+                          disallowEmptySelection
+                        >
+                          {videoExtensions?.map((ext) => (
+                            <SelectItem
+                              key={ext}
+                              value={ext}
+                              className="flex justify-center items-center"
+                            >
+                              {ext}
+                            </SelectItem>
+                          ))}
+                        </Select>
+                      </div>
                     </section>
                     <Button
                       size="lg"
