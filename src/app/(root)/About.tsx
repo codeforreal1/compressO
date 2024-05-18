@@ -6,7 +6,7 @@ import Icon from '@/components/Icon'
 
 function About() {
   return (
-    <section className="pt-8 px-4 pb-12">
+    <section className="px-4 w-full">
       <section>
         <div className="z-10 flex justify-center items-center">
           <h2 className="text-3xl mr-2 font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">

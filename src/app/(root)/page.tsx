@@ -21,7 +21,6 @@ import Code from '@/components/Code'
 import Spinner from '@/components/Spinner'
 import Divider from '@/components/Divider'
 import Image from '@/components/Image'
-import ThemeSwitcher from '@/components/ThemeSwitcher'
 import VideoPicker from '@/tauri/components/VideoPicker'
 import Icon from '@/components/Icon'
 import { toast } from '@/components/Toast'
@@ -48,7 +47,7 @@ import { convertDurationToMilliseconds } from '@/utils/string'
 import DotPattern from '@/ui/Patterns/DotPattern'
 import Drawer from '@/components/Drawer'
 import Checkbox from '@/components/Checkbox'
-import About from './About'
+import Setting from './Setting'
 
 type Video = {
   id?: string | null
@@ -351,21 +350,22 @@ function Root() {
       <div className="absolute top-4 left-4 z-10 flex justify-center items-center">
         <Image src="/logo.png" alt="logo" width={30} height={30} />
       </div>
-      <div className="absolute bottom-4 left-4 z-10">
-        <ThemeSwitcher />
-      </div>
       <Drawer
         renderTriggerer={({ open: openDrawer }) => (
-          <div className="absolute bottom-4 right-4 z-10 p-0">
-            <Tooltip content="Info" aria-label="info" placement="left">
+          <div className="absolute bottom-4 left-4 z-10 p-0">
+            <Tooltip
+              content="Open Settings"
+              aria-label="Open Settings"
+              placement="left"
+            >
               <Button onClick={openDrawer} isIconOnly size="sm">
-                <Icon name="info" size={23} />
+                <Icon name="setting" size={23} />
               </Button>
             </Tooltip>
           </div>
         )}
       >
-        <About />
+        <Setting />
       </Drawer>
       {video?.isFileSelected ? (
         <div className="h-full w-full flex flex-col justify-center items-center">

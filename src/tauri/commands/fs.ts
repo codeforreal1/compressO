@@ -22,3 +22,7 @@ export function deleteFile(path: string) {
 export function showItemInFileManager(path: string) {
   return core.invoke('show_item_in_file_manager', { path })
 }
+
+export function deleteCache() {
+  return core.invoke('delete_cache')
+}

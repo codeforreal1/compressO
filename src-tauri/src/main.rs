@@ -12,8 +12,9 @@ use lib::tauri_commands::{
         compress_video, generate_video_thumbnail, get_vide_duration,
     },
     fs::{
-        __cmd__delete_file, __cmd__get_file_metadata, __cmd__get_image_dimension, __cmd__move_file,
-        delete_file, get_file_metadata, get_image_dimension, move_file,
+        __cmd__delete_cache, __cmd__delete_file, __cmd__get_file_metadata,
+        __cmd__get_image_dimension, __cmd__move_file, delete_cache, delete_file, get_file_metadata,
+        get_image_dimension, move_file,
     },
 };
 
@@ -57,6 +58,7 @@ async fn main() {
             get_file_metadata,
             move_file,
             delete_file,
+            delete_cache,
             show_item_in_file_manager
         ])
         .run(tauri::generate_context!())

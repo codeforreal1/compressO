@@ -12,9 +12,11 @@ import Tick from '@/assets/icons/tick.svg'
 import FileExplorer from '@/assets/icons/file-explorer.svg'
 import Play from '@/assets/icons/play.svg'
 import Info from '@/assets/icons/info.svg'
-import LowResheart from '@/assets/icons/low-res-heart.svg'
+import LowResHeart from '@/assets/icons/low-res-heart.svg'
 import Github from '@/assets/icons/github.svg'
 import Question from '@/assets/icons/question.svg'
+import Setting from '@/assets/icons/setting.svg'
+import Trash from '@/assets/icons/trash.svg'
 
 type SVGAsComponent = React.FC<React.SVGProps<SVGElement>>
 
@@ -37,9 +39,11 @@ const registry = asRegistry({
   fileExplorer: FileExplorer,
   play: Play,
   info: Info,
-  lowResHeart: LowResheart,
+  lowResHeart: LowResHeart,
   github: Github,
   question: Question,
+  setting: Setting,
+  trash: Trash,
 })
 
 export default registry

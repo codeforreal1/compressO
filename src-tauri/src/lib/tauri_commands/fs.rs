@@ -1,4 +1,4 @@
-use crate::{domain::FileMetadata, fs};
+use crate::{domain::FileMetadata, ffmpeg, fs};
 
 #[tauri::command]
 pub async fn get_file_metadata(file_path: &str) -> Result<FileMetadata, String> {
@@ -26,6 +26,15 @@ pub async fn move_file(from: &str, to: &str) -> Result<(), String> {
 #[tauri::command]
 pub async fn delete_file(path: &str) -> Result<(), String> {
     if let Err(err) = fs::delete_file(path).await {
+        return Err(err.to_string());
+    }
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn delete_cache(app: tauri::AppHandle) -> Result<(), String> {
+    let ffmpeg = ffmpeg::FFMPEG::new(&app)?;
+    if let Err(err) = fs::delete_stale_files(&ffmpeg.get_asset_dir(), 0).await {
         return Err(err.to_string());
     }
     Ok(())
