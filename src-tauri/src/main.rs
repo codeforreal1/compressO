@@ -19,6 +19,7 @@ use lib::tauri_commands::{
 
 #[cfg(target_os = "linux")]
 use lib::tauri_commands::command::DbusState;
+#[cfg(target_os = "linux")]
 use std::sync::Mutex;
 
 #[cfg(debug_assertions)]
