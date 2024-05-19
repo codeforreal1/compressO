@@ -62,6 +62,9 @@ The app works completely offline and no any network requests is made to/from the
     This error is same as the one above on FAQ 1. It's just, Apple made the message different to scare the end user. Please have a look at the solution above.
       </p>
 
+3.  <strong>App not working on Debian 13 & Ubuntu 24 </strong>
+    Tauri seems to be missing some packages that was removed in Debian 13 and it's derivatives like Ubuntu 24. Tauri team is investigating the issue. No solution atm, unfortunately.
+
 ### License 🚨
 
 <a href="./LICENSE">AGPL 3.0 License</a>
