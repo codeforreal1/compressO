@@ -40,25 +40,27 @@ The app works completely offline and no any network requests is made to/from the
 
 ### FAQs ❓
 
-1. <strong> MacOS: "CompressO" is damaged and can't be opened. You should move it to trash. </strong>
-   !["CompressO" is damaged and can't be opened. You should move it to trash.](assets/image.png)
-   <p>
-   This error is shown by Apple to gatekeep app developers from using their apps unless it's signed by Apple after paying $100/year fee. The message is completely misleading since the app is not damaged at all. Since this is a free app, I'm not going to go Apple's route just to appease them to make people trust my app. Here's a simple solution for this issue. Open your terminal and run the command:
-   </p>
+1.  <strong> MacOS: "CompressO" is damaged and can't be opened. You should move it to trash. </strong>
+    !["CompressO" is damaged and can't be opened. You should move it to trash.](assets/image.png)
+    <p>
+    This error is shown by Apple to gatekeep app developers from using their apps unless it's signed by Apple after paying $100/year fee. The message is completely misleading since the app is not damaged at all. Since this is a free app, I'm not going to go Apple's route just to appease them to make people trust my app. Here's a simple solution for this issue. Open your terminal and run the command:
+    </p>
 
-   ```
-   xattr -cr /Applications/CompressO.app
-   ```
+    ```
+    xattr -cr /Applications/CompressO.app
+    ```
 
-   If you don't feel comfortable applying the above solution, you can simply move the app to trash (which also means you cannot use CompressO on your Mac).
+     <p>
+       If you don't feel comfortable applying the above solution, you can simply move the app to trash (which also means you cannot use CompressO on your Mac).
+     </p>
 
-<br />
+2.  <strong> MacOS: "CompressO" cannot be opened because developer cannot be verified. </strong>
 
-2. <strong> MacOS: "CompressO" cannot be opened because developer cannot be verified. </strong>
-!["CompressO" cannot be opened because developer cannot be verified.](assets/image-1.png)
-<p>
-This error is same as the one above on FAQ 1. It's just, Apple made the message different to scare the end user. Please have a look at the solution above.
-</p>
+    !["CompressO" cannot be opened because developer cannot be verified.](assets/image-1.png)
+
+      <p>
+    This error is same as the one above on FAQ 1. It's just, Apple made the message different to scare the end user. Please have a look at the solution above.
+      </p>
 
 ### License 🚨
 
