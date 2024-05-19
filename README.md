@@ -7,7 +7,7 @@
 		Compress any video into a tiny size.
     </p>
     <i align="center">
-		CompressO is a free and open-sourced cross-platform video compression app powered by FFmpeg.
+		CompressO (🔉 pronounced like "Espresso" ) is a free and open-sourced cross-platform video compression app powered by FFmpeg.
     </i>
     <br />
     <p align="center">
