@@ -54,9 +54,9 @@ Download installers for the specific platform can be accessed from the [releases
 ### Roadmap 🏁
 
 - [ ] Cancel during compression
-- [ ] Batch compression
 - [ ] Drag & Drop video
 - [ ] Mute video
+- [ ] Batch compression
       ...
 
 ### FAQs ❓
