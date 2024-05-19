@@ -46,21 +46,28 @@ The app works completely offline and no any network requests is made to/from the
     This error is shown by Apple to gatekeep app developers from using their apps unless it's signed by Apple after paying $100/year fee. The message is completely misleading since the app is not damaged at all. Since this is a free app, I'm not going to go Apple's route just to appease them to make people trust my app. Here's a simple solution for this issue. Open your terminal and run the command:
     </p>
 
-    ```
-    xattr -cr /Applications/CompressO.app
-    ```
+        ```
+        xattr -cr /Applications/CompressO.app
+        ```
 
-     <p>
-       If you don't feel comfortable applying the above solution, you can simply move the app to trash (which also means you cannot use CompressO on your Mac).
-     </p>
+      <p>
+           If you don't feel comfortable applying the above solution, you can simply move the app to trash (which also means you cannot use CompressO on your Mac).
+        </p>
 
 2.  <strong> MacOS: "CompressO" cannot be opened because developer cannot be verified. </strong>
 
     !["CompressO" cannot be opened because developer cannot be verified.](assets/image-1.png)
 
       <p>
-    This error is same as the one above on FAQ 1. It's just, Apple made the message different to scare the end user. Please have a look at the solution above.
-      </p>
+        This error is same as the one above on FAQ 1. It's just, Apple made the message different to scare the end user. Please have a look at the solution above.
+          </p>
+
+    <br />
+
+3.  <strong>Windows: Microsoft Defender SmartScreen prevented an unrecognized app from starting. Running this app might put your PC at risk.</strong>
+    ![alt text](assets/image-2.png)
+
+    This is because you downloaded the windows installer from outside source and Windows Defender is warning you before installation. You can simply click on "More Info" and proceed with the installation.
 
 ### License 🚨
 
