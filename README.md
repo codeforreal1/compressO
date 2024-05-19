@@ -51,6 +51,14 @@ Download installers for the specific platform can be accessed from the [releases
 - `CompressO_x64.exe`: Windows 64 bit
 - `CompressO_x86.exe`: Windows 32 bit
 
+### Roadmap 🏁
+
+- [ ] Cancel during compression
+- [ ] Batch compression
+- [ ] Drag & Drop video
+- [ ] Mute video
+      ...
+
 ### FAQs ❓
 
 1.  <strong> MacOS: "CompressO" is damaged and can't be opened. You should move it to trash. </strong>
