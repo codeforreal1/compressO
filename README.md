@@ -38,6 +38,19 @@
 This app is created using [Tauri](https://tauri.app/), a Rust🦀 framework for building a cross-platform desktop app. It uses [Next.js](https://nextjs.org/) as a frontend layer. The compression is done entirely by [FFmpeg](https://ffmpeg.org/) using platform specific standalone binaries.
 The app works completely offline and no any network requests is made to/from the app.
 
+### Downloads ⬇️
+
+Download installers for the specific platform can be accessed from the [releases](https://github.com/codeforreal1/compressO/releases) page.
+
+<strong>Installer Info:</strong>
+
+- `CompressO_amd64.deb`: Debian derivative of Linux like Ubuntu
+- `CompressO_amd64.AppImage`: Universal package for all Linux distros
+- `CompressO_aarch64.dmg` : For Macbooks with Apple Silicon Chips
+- `CompressO_x64.dmg` : For Macbooks with Intel Chip
+- `CompressO_x64.exe`: Windows 64 bit
+- `CompressO_x86.exe`: Windows 32 bit
+
 ### FAQs ❓
 
 1.  <strong> MacOS: "CompressO" is damaged and can't be opened. You should move it to trash. </strong>
