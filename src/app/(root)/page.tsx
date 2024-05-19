@@ -110,12 +110,14 @@ function Root() {
   const [presetName, setPresetName] =
     React.useState<keyof typeof compressionPresets>('ironclad')
   const [progress, setProgress] = React.useState<number>(0)
-  const [isCompressionEnabled, setIsCompressionEnabled] =
-    React.useState<boolean>(true)
+  const [shouldDisableCompression, setShouldDisableCompression] =
+    React.useState<boolean>(false)
+  const [shouldMuteVideo, setShouldMuteVideo] = React.useState(false)
 
   const { isOpen, onOpenChange, onOpen } = useDisclosure()
 
   const { videoDurationMilliseconds, id: videoId } = video
+
   React.useEffect(() => {
     let unListen: event.UnlistenFn
     if (videoDurationMilliseconds) {
@@ -223,8 +225,9 @@ function Root() {
       const result = await compressVideo({
         videoPath: video?.pathRaw as string,
         convertToExtension: convertToExtension ?? 'mp4',
-        presetName: isCompressionEnabled ? presetName : null,
+        presetName: !shouldDisableCompression ? presetName : null,
         videoId: video?.id,
+        shouldMuteVideo,
       })
       if (!result) {
         throw new Error()
@@ -260,7 +263,8 @@ function Root() {
   const resetVideoState = () => {
     setVideo(initialState)
     setProgress(0)
-    setIsCompressionEnabled(true)
+    setShouldDisableCompression(false)
+    setShouldMuteVideo(false)
   }
 
   const sizeDiff: number = React.useMemo(
@@ -441,7 +445,8 @@ function Root() {
                     }}
                   />
                   <p className="italic text-sm mt-4 text-gray-600 dark:text-gray-400 text-center animate-pulse">
-                    {isCompressionEnabled ? 'Compressing' : 'Converting'}...
+                    {!shouldDisableCompression ? 'Compressing' : 'Converting'}
+                    ...
                     {convertToExtension === 'webm' ? (
                       <span className="block">
                         webm conversion takes longer than the other formats.
@@ -543,18 +548,33 @@ function Root() {
                       </div>
                     </section>
                     <Divider />
-                    <section className="my-8">
-                      <div className="flex justify-center items-center mb-4">
+                    <section className="my-4">
+                      <div className="flex items-center my-2">
                         <Checkbox
-                          isSelected={isCompressionEnabled}
+                          isSelected={shouldMuteVideo}
                           onValueChange={() =>
-                            setIsCompressionEnabled((state) => !state)
+                            setShouldMuteVideo((state) => !state)
                           }
                           className="flex justify-center items-center "
                         >
                           <div className="flex justify-center items-center">
                             <span className="text-gray-600 dark:text-gray-400 block mr-2 text-sm">
-                              Enable Compression
+                              Mute Video
+                            </span>
+                          </div>
+                        </Checkbox>
+                      </div>
+                      <div className="flex items-center mb-4 my-2">
+                        <Checkbox
+                          isSelected={shouldDisableCompression}
+                          onValueChange={() =>
+                            setShouldDisableCompression((state) => !state)
+                          }
+                          className="flex justify-center items-center "
+                        >
+                          <div className="flex justify-center items-center">
+                            <span className="text-gray-600 dark:text-gray-400 block mr-2 text-sm">
+                              Disable Compression
                             </span>
                             <Tooltip
                               delay={0}
@@ -593,7 +613,7 @@ function Root() {
                           radius="lg"
                           selectionMode="single"
                           disallowEmptySelection
-                          isDisabled={!isCompressionEnabled}
+                          isDisabled={shouldDisableCompression}
                         >
                           {presets?.map((preset) => (
                             // Right now if we use SelectItem it breaks the code so opting for SelectItem from NextUI directly
@@ -652,6 +672,7 @@ function Root() {
                       size="lg"
                       color="primary"
                       onClick={handleCompression}
+                      className="mt-2"
                     >
                       Compress <Icon name="logo" size={25} />
                     </Button>
