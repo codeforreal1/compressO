@@ -441,7 +441,7 @@ function Root() {
                     }}
                   />
                   <p className="italic text-sm mt-4 text-gray-600 dark:text-gray-400 text-center animate-pulse">
-                    Compressing...
+                    {isCompressionEnabled ? 'Compressing' : 'Converting'}...
                     {convertToExtension === 'webm' ? (
                       <span className="block">
                         webm conversion takes longer than the other formats.
