@@ -350,23 +350,25 @@ function Root() {
       <div className="absolute top-4 left-4 z-10 flex justify-center items-center">
         <Image src="/logo.png" alt="logo" width={30} height={30} />
       </div>
-      <Drawer
-        renderTriggerer={({ open: openDrawer }) => (
-          <div className="absolute bottom-4 left-4 z-10 p-0">
-            <Tooltip
-              content="Open Settings"
-              aria-label="Open Settings"
-              placement="left"
-            >
-              <Button onClick={openDrawer} isIconOnly size="sm">
-                <Icon name="setting" size={23} />
-              </Button>
-            </Tooltip>
-          </div>
-        )}
-      >
-        <Setting />
-      </Drawer>
+      {!video?.isFileSelected ? (
+        <Drawer
+          renderTriggerer={({ open: openDrawer }) => (
+            <div className="absolute bottom-4 left-4 z-10 p-0">
+              <Tooltip
+                content="Open Settings"
+                aria-label="Open Settings"
+                placement="left"
+              >
+                <Button onClick={openDrawer} isIconOnly size="sm">
+                  <Icon name="setting" size={23} />
+                </Button>
+              </Tooltip>
+            </div>
+          )}
+        >
+          <Setting />
+        </Drawer>
+      ) : null}
       {video?.isFileSelected ? (
         <div className="h-full w-full flex flex-col justify-center items-center">
           {!video?.isThumbnailGenerating ? (
