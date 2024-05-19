@@ -82,8 +82,10 @@ Download installers for the specific platform can be accessed from the [releases
 
     This is because you downloaded the windows installer from outside source and Windows Defender is warning you before installation. You can simply click on "More Info" and proceed with the installation.
 
-3.  <strong>App not working on Debian 13 & Ubuntu 24 </strong>
+4.  <strong>App not working on Debian 13 & Ubuntu 24 </strong>
+    <p>
     Tauri seems to be missing some packages that was removed in Debian 13 and it's derivatives like Ubuntu 24. Tauri team is investigating the issue. No solution atm, unfortunately.
+    </p>
 
 ### License 🚨
 
