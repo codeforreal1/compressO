@@ -357,7 +357,7 @@ function Root() {
               <Tooltip
                 content="Open Settings"
                 aria-label="Open Settings"
-                placement="left"
+                placement="right"
               >
                 <Button onClick={openDrawer} isIconOnly size="sm">
                   <Icon name="setting" size={23} />
