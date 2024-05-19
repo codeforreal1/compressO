@@ -48,8 +48,8 @@ Download installers for the specific platform can be accessed from the [releases
 - `CompressO_amd64.AppImage`: Universal package for all Linux distros
 - `CompressO_aarch64.dmg` : For Macbooks with Apple Silicon Chips
 - `CompressO_x64.dmg` : For Macbooks with Intel Chip
-- `CompressO_x64.exe`: Windows 64 bit
-- `CompressO_x86.exe`: Windows 32 bit
+- `CompressO_x64.msi`: Windows 64 bit
+- `CompressO_x86.msi`: Windows 32 bit
 
 ### Roadmap 🏁
 
