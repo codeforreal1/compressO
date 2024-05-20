@@ -35,5 +35,5 @@ export function getFileMetadata(filePath: string): Promise<FileMetadata> {
 }
 
 export function getVideoDuration(videoPath: string): Promise<string | null> {
-  return core.invoke('get_vide_duration', { videoPath })
+  return core.invoke('get_video_duration', { videoPath })
 }

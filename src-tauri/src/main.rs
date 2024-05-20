@@ -8,8 +8,8 @@ use tauri_plugin_log::{Target as LogTarget, TargetKind as LogTargetKind};
 use lib::tauri_commands::{
     command::{__cmd__show_item_in_file_manager, show_item_in_file_manager},
     ffmpeg::{
-        __cmd__compress_video, __cmd__generate_video_thumbnail, __cmd__get_vide_duration,
-        compress_video, generate_video_thumbnail, get_vide_duration,
+        __cmd__compress_video, __cmd__generate_video_thumbnail, __cmd__get_video_duration,
+        compress_video, generate_video_thumbnail, get_video_duration,
     },
     fs::{
         __cmd__delete_cache, __cmd__delete_file, __cmd__get_file_metadata,
@@ -53,7 +53,7 @@ async fn main() {
         .invoke_handler(tauri::generate_handler![
             compress_video,
             generate_video_thumbnail,
-            get_vide_duration,
+            get_video_duration,
             get_image_dimension,
             get_file_metadata,
             move_file,
