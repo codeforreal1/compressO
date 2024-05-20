@@ -394,7 +394,7 @@ function Root() {
             <div className="flex flex-col justify-center items-center">
               {video?.fileName && !video?.isCompressing ? (
                 <div className="flex justify-center items-center mb-2 gap-1">
-                  <Code className="ml-auto mr-auto text-xs hlg:text-sm text-center rounded-lg">
+                  <Code className="ml-auto mr-auto text-center rounded-lg">
                     {fileNameDisplay?.length > 50
                       ? `${fileNameDisplay?.slice(0, 20)}...${fileNameDisplay?.slice(-10)}`
                       : fileNameDisplay}
@@ -486,8 +486,8 @@ function Root() {
               {!video?.isCompressing ? (
                 video?.isCompressionSuccessful ? (
                   <section className="animate-appearance-in">
-                    <div className="flex justify-center items-center mt-3 hlg:mt-6">
-                      <p className="text-2xl hlg:text-4xl font-bold mx-4">
+                    <div className="flex justify-center items-center mt-3 hslg:mt-6">
+                      <p className="text-2xl hslg:text-4xl font-bold mx-4">
                         {video?.size}
                       </p>
                       <Icon
@@ -495,19 +495,19 @@ function Root() {
                         className="text-black dark:text-white rotate-[-65deg] translate-y-[-8px]"
                         size={100}
                       />
-                      <p className="text-3xl hlg:text-4xl font-bold mx-4 text-primary">
+                      <p className="text-3xl hslg:text-4xl font-bold mx-4 text-primary">
                         {video?.compressedVideo?.size}
                       </p>
                     </div>
                     {!(sizeDiff <= 0) ? (
-                      <p className="block text-5xl hlg:text-7xl text-center text-green-500 hlg:mt-5">
+                      <p className="block text-5xl hslg:text-7xl text-center text-green-500 hslg:mt-5">
                         {sizeDiff.toFixed(2)?.endsWith('.00')
                           ? sizeDiff.toFixed(2)?.slice(0, -3)
                           : sizeDiff.toFixed(2)}
                         %<span className="text-large block">smaller</span>
                       </p>
                     ) : null}
-                    <div className="flex justify-center mt-5 hlg:mt-10">
+                    <div className="flex justify-center mt-5 hslg:mt-10">
                       <Button
                         className="flex justify-center items-center"
                         color="success"
@@ -547,12 +547,12 @@ function Root() {
                   </section>
                 ) : (
                   <>
-                    <section className="my-4 hlg:my-6 flex items-center space-x-4 justify-center gap-4">
+                    <section className="my-4 hslg:my-6 flex items-center space-x-4 justify-center gap-4">
                       <div>
                         <p className="italic text-sm text-gray-600 dark:text-gray-400">
                           Size
                         </p>
-                        <h1 className="text-2xl hlg:text-4xl font-black">
+                        <h1 className="text-2xl hslg:text-4xl font-black">
                           {video?.size}
                         </h1>
                       </div>
@@ -561,13 +561,13 @@ function Root() {
                         <p className="italic text-sm text-gray-600 dark:text-gray-400">
                           Extension
                         </p>
-                        <h1 className="text-2xl hlg:text-4xl font-black">
+                        <h1 className="text-2xl hslg:text-4xl font-black">
                           {video?.extension ?? '-'}
                         </h1>
                       </div>
                     </section>
                     <Divider />
-                    <section className="my-2 hlg:my-4">
+                    <section className="my-2 hslg:my-4">
                       <div className="flex items-center my-2">
                         <Checkbox
                           isSelected={shouldMuteVideo}
@@ -687,8 +687,8 @@ function Root() {
                         </Select>
                       </div>
                     </section>
-                    {renderCompressButton('md', 'hlg:hidden')}
-                    {renderCompressButton('lg', 'hidden hlg:flex hlg:mt-2')}
+                    {renderCompressButton('md', 'hslg:hidden')}
+                    {renderCompressButton('lg', 'hidden hslg:flex hslg:mt-2')}
                   </>
                 )
               ) : null}
