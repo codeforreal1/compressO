@@ -40,7 +40,7 @@ pub async fn generate_video_thumbnail(
 }
 
 #[tauri::command]
-pub async fn get_vide_duration(
+pub async fn get_video_duration(
     app: tauri::AppHandle,
     video_path: &str,
 ) -> Result<Option<String>, String> {
