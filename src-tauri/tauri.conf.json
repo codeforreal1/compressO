@@ -50,7 +50,7 @@
         "height": 992,
         "width": 1280,
         "minWidth": 1080,
-        "minHeight": 992,
+        "minHeight": 800,
         "resizable": true,
         "title": "",
         "hiddenTitle": true
