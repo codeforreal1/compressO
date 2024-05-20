@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/schema.json",
   "productName": "CompressO",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "identifier": "com.compresso.app",
   "build": {
     "beforeBuildCommand": "pnpm next:build",
@@ -50,7 +50,7 @@
         "height": 992,
         "width": 1280,
         "minWidth": 1080,
-        "minHeight": 992,
+        "minHeight": 800,
         "resizable": true,
         "title": "",
         "hiddenTitle": true

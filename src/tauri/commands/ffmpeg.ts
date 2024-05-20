@@ -7,17 +7,20 @@ export function compressVideo({
   convertToExtension,
   presetName,
   videoId,
+  shouldMuteVideo = false,
 }: {
   videoPath: string
   convertToExtension?: string
   presetName?: string | null
   videoId?: string | null
+  shouldMuteVideo?: boolean
 }): Promise<CompressionResult> {
   return core.invoke('compress_video', {
     videoPath,
     convertToExtension: convertToExtension ?? 'mp4',
     presetName,
     videoId,
+    shouldMuteVideo,
   })
 }
 

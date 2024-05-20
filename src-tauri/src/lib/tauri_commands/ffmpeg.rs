@@ -11,6 +11,7 @@ pub async fn compress_video(
     convert_to_extension: &str,
     preset_name: Option<&str>,
     video_id: Option<&str>,
+    should_mute_video: bool,
 ) -> Result<CompressionResult, String> {
     let mut ffmpeg = ffmpeg::FFMPEG::new(&app)?;
     if let Ok(files) =
@@ -22,7 +23,13 @@ pub async fn compress_video(
         )
     };
     match ffmpeg
-        .compress_video(video_path, convert_to_extension, preset_name, video_id)
+        .compress_video(
+            video_path,
+            convert_to_extension,
+            preset_name,
+            video_id,
+            should_mute_video,
+        )
         .await
     {
         Ok(result) => Ok(result),

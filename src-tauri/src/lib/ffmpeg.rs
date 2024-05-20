@@ -56,6 +56,7 @@ impl FFMPEG {
         convert_to_extension: &str,
         preset_name: Option<&str>,
         video_id: Option<&str>,
+        should_mute_video: bool,
     ) -> Result<CompressionResult, String> {
         if !EXTENSIONS.contains(&convert_to_extension) {
             return Err(String::from("Invalid convert to extension."));
@@ -98,6 +99,9 @@ impl FFMPEG {
                         args.push("-c:v");
                         args.push("libvpx-vp9");
                     }
+                    if should_mute_video {
+                        args.push("-an")
+                    }
                     args.push(output_path);
                     args.push("-y");
                     args
@@ -133,6 +137,9 @@ impl FFMPEG {
                         args.push("-c:v");
                         args.push("libvpx-vp9");
                     }
+                    if should_mute_video {
+                        args.push("-an")
+                    }
                     args.push(output_path);
                     args.push("-y");
                     args
@@ -157,6 +164,9 @@ impl FFMPEG {
                 if convert_to_extension == "webm" {
                     args.push("-c:v");
                     args.push("libvpx-vp9");
+                }
+                if should_mute_video {
+                    args.push("-an")
                 }
                 args.push(output_path);
                 args.push("-y");

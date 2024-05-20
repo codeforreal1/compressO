@@ -47,6 +47,7 @@ import { convertDurationToMilliseconds } from '@/utils/string'
 import DotPattern from '@/ui/Patterns/DotPattern'
 import Drawer from '@/components/Drawer'
 import Checkbox from '@/components/Checkbox'
+import { cn } from '@/utils/tailwind'
 import Setting from './Setting'
 
 type Video = {
@@ -110,12 +111,14 @@ function Root() {
   const [presetName, setPresetName] =
     React.useState<keyof typeof compressionPresets>('ironclad')
   const [progress, setProgress] = React.useState<number>(0)
-  const [isCompressionEnabled, setIsCompressionEnabled] =
-    React.useState<boolean>(true)
+  const [shouldDisableCompression, setShouldDisableCompression] =
+    React.useState<boolean>(false)
+  const [shouldMuteVideo, setShouldMuteVideo] = React.useState(false)
 
   const { isOpen, onOpenChange, onOpen } = useDisclosure()
 
   const { videoDurationMilliseconds, id: videoId } = video
+
   React.useEffect(() => {
     let unListen: event.UnlistenFn
     if (videoDurationMilliseconds) {
@@ -223,8 +226,9 @@ function Root() {
       const result = await compressVideo({
         videoPath: video?.pathRaw as string,
         convertToExtension: convertToExtension ?? 'mp4',
-        presetName: isCompressionEnabled ? presetName : null,
+        presetName: !shouldDisableCompression ? presetName : null,
         videoId: video?.id,
+        shouldMuteVideo,
       })
       if (!result) {
         throw new Error()
@@ -260,7 +264,8 @@ function Root() {
   const resetVideoState = () => {
     setVideo(initialState)
     setProgress(0)
-    setIsCompressionEnabled(true)
+    setShouldDisableCompression(false)
+    setShouldMuteVideo(false)
   }
 
   const sizeDiff: number = React.useMemo(
@@ -343,6 +348,20 @@ function Root() {
       //
     }
   }
+
+  const renderCompressButton = (
+    size: 'md' | 'lg' = 'lg',
+    className?: string,
+  ) => (
+    <Button
+      size={size}
+      color="primary"
+      onClick={handleCompression}
+      className={cn(['my-2', className ?? ''])}
+    >
+      Compress <Icon name="logo" size={size === 'md' ? 20 : 25} />
+    </Button>
+  )
 
   return (
     <section className="w-full h-full relative">
@@ -441,7 +460,8 @@ function Root() {
                     }}
                   />
                   <p className="italic text-sm mt-4 text-gray-600 dark:text-gray-400 text-center animate-pulse">
-                    {isCompressionEnabled ? 'Compressing' : 'Converting'}...
+                    {!shouldDisableCompression ? 'Compressing' : 'Converting'}
+                    ...
                     {convertToExtension === 'webm' ? (
                       <span className="block">
                         webm conversion takes longer than the other formats.
@@ -466,26 +486,28 @@ function Root() {
               {!video?.isCompressing ? (
                 video?.isCompressionSuccessful ? (
                   <section className="animate-appearance-in">
-                    <div className="flex justify-center items-center mt-6">
-                      <p className="text-4xl font-bold mx-4">{video?.size}</p>
+                    <div className="flex justify-center items-center mt-3 hslg:mt-6">
+                      <p className="text-2xl hslg:text-4xl font-bold mx-4">
+                        {video?.size}
+                      </p>
                       <Icon
                         name="curvedArrow"
                         className="text-black dark:text-white rotate-[-65deg] translate-y-[-8px]"
                         size={100}
                       />
-                      <p className="text-4xl font-bold mx-4 text-primary">
+                      <p className="text-3xl hslg:text-4xl font-bold mx-4 text-primary">
                         {video?.compressedVideo?.size}
                       </p>
                     </div>
                     {!(sizeDiff <= 0) ? (
-                      <p className="block text-7xl text-center text-green-500 mt-5">
+                      <p className="block text-5xl hslg:text-7xl text-center text-green-500 hslg:mt-5">
                         {sizeDiff.toFixed(2)?.endsWith('.00')
                           ? sizeDiff.toFixed(2)?.slice(0, -3)
                           : sizeDiff.toFixed(2)}
                         %<span className="text-large block">smaller</span>
                       </p>
                     ) : null}
-                    <div className="flex justify-center mt-10">
+                    <div className="flex justify-center mt-5 hslg:mt-10">
                       <Button
                         className="flex justify-center items-center"
                         color="success"
@@ -525,36 +547,53 @@ function Root() {
                   </section>
                 ) : (
                   <>
-                    <section className="my-6 flex items-center space-x-4 justify-center gap-4">
+                    <section className="my-4 hslg:my-6 flex items-center space-x-4 justify-center gap-4">
                       <div>
                         <p className="italic text-sm text-gray-600 dark:text-gray-400">
                           Size
                         </p>
-                        <h1 className="text-4xl font-black">{video?.size}</h1>
+                        <h1 className="text-2xl hslg:text-4xl font-black">
+                          {video?.size}
+                        </h1>
                       </div>
                       <Divider orientation="vertical" className="h-10" />
                       <div>
                         <p className="italic text-sm text-gray-600 dark:text-gray-400">
                           Extension
                         </p>
-                        <h1 className="text-4xl font-black">
+                        <h1 className="text-2xl hslg:text-4xl font-black">
                           {video?.extension ?? '-'}
                         </h1>
                       </div>
                     </section>
                     <Divider />
-                    <section className="my-8">
-                      <div className="flex justify-center items-center mb-4">
+                    <section className="my-2 hslg:my-4">
+                      <div className="flex items-center my-2">
                         <Checkbox
-                          isSelected={isCompressionEnabled}
+                          isSelected={shouldMuteVideo}
                           onValueChange={() =>
-                            setIsCompressionEnabled((state) => !state)
+                            setShouldMuteVideo((state) => !state)
                           }
                           className="flex justify-center items-center "
                         >
                           <div className="flex justify-center items-center">
                             <span className="text-gray-600 dark:text-gray-400 block mr-2 text-sm">
-                              Enable Compression
+                              Mute Video
+                            </span>
+                          </div>
+                        </Checkbox>
+                      </div>
+                      <div className="flex items-center mb-4 my-2">
+                        <Checkbox
+                          isSelected={shouldDisableCompression}
+                          onValueChange={() =>
+                            setShouldDisableCompression((state) => !state)
+                          }
+                          className="flex justify-center items-center "
+                        >
+                          <div className="flex justify-center items-center">
+                            <span className="text-gray-600 dark:text-gray-400 block mr-2 text-sm">
+                              Disable Compression
                             </span>
                             <Tooltip
                               delay={0}
@@ -593,7 +632,7 @@ function Root() {
                           radius="lg"
                           selectionMode="single"
                           disallowEmptySelection
-                          isDisabled={!isCompressionEnabled}
+                          isDisabled={shouldDisableCompression}
                         >
                           {presets?.map((preset) => (
                             // Right now if we use SelectItem it breaks the code so opting for SelectItem from NextUI directly
@@ -648,13 +687,8 @@ function Root() {
                         </Select>
                       </div>
                     </section>
-                    <Button
-                      size="lg"
-                      color="primary"
-                      onClick={handleCompression}
-                    >
-                      Compress <Icon name="logo" size={25} />
-                    </Button>
+                    {renderCompressButton('md', 'hslg:hidden')}
+                    {renderCompressButton('lg', 'hidden hslg:flex hslg:mt-2')}
                   </>
                 )
               ) : null}
