@@ -1,0 +1,17 @@
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+    viewBox="-3.2 -3.2 38.40 38.40" enable-background="new 0 0 32 32" xml:space="preserve" fill="currentColor"
+    stroke="currentColor" stroke-width="0.704" transform="rotate(-45)">
+    <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+    <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round" stroke="#CCCCCC" stroke-width="0.128">
+    </g>
+    <g id="SVGRepo_iconCarrier">
+        <g>
+            <path fill="currentColor"
+                d="M25.5,8h5C31.327,8,32,7.327,32,6.5v-5C32,0.673,31.327,0,30.5,0h-5C24.673,0,24,0.673,24,1.5v5 c0,0.24,0.062,0.464,0.163,0.665L13,19.258V12c0-0.276-0.224-0.5-0.5-0.5S12,11.724,12,12v8.5c0,0.276,0.224,0.5,0.5,0.5H20 c0.276,0,0.5-0.224,0.5-0.5S20.276,20,20,20h-6.324L24.88,7.862C25.07,7.949,25.278,8,25.5,8z M25,1.5C25,1.224,25.224,1,25.5,1h5 C30.776,1,31,1.224,31,1.5v5C31,6.776,30.776,7,30.5,7h-5C25.224,7,25,6.776,25,6.5V1.5z">
+            </path>
+            <path fill="currentColor"
+                d="M1.5,32h29c0.827,0,1.5-0.673,1.5-1.5V13c0-0.276-0.224-0.5-0.5-0.5S31,12.724,31,13v17.5 c0,0.276-0.224,0.5-0.5,0.5h-29C1.224,31,1,30.776,1,30.5v-29C1,1.224,1.224,1,1.5,1H19c0.276,0,0.5-0.224,0.5-0.5S19.276,0,19,0 H1.5C0.673,0,0,0.673,0,1.5v29C0,31.327,0.673,32,1.5,32z">
+            </path>
+        </g>
+    </g>
+</svg>

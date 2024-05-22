@@ -4,7 +4,7 @@ import React from 'react'
 import dynamic from 'next/dynamic'
 import { core, event } from '@tauri-apps/api'
 import { SelectItem } from '@nextui-org/select'
-import { FileResponse, save } from '@tauri-apps/plugin-dialog'
+import { save } from '@tauri-apps/plugin-dialog'
 import { useDisclosure } from '@nextui-org/modal'
 import { motion } from 'framer-motion'
 
@@ -49,6 +49,7 @@ import Drawer from '@/components/Drawer'
 import Checkbox from '@/components/Checkbox'
 import { cn } from '@/utils/tailwind'
 import Setting from './Setting'
+import DragAndDropOverlay from './DragAndDropOverlay'
 
 type Video = {
   id?: string | null
@@ -150,71 +151,73 @@ function Root() {
     }
   }, [videoDurationMilliseconds, videoId])
 
-  const handleVideoSelected = async ({ file }: { file: FileResponse }) => {
-    if (video?.isCompressing) return
-    try {
-      if (!file) {
-        toast.error('Invalid file selected.')
-        return
-      }
+  const handleVideoSelected = React.useCallback(
+    async (path: string) => {
+      if (video?.isCompressing) return
+      try {
+        if (!path) {
+          toast.error('Invalid file selected.')
+          return
+        }
+        const fileMetadata = await getFileMetadata(path)
 
-      const fileMetadata = await getFileMetadata(file?.path)
+        if (
+          !fileMetadata ||
+          (typeof fileMetadata?.size === 'number' && fileMetadata?.size <= 1000)
+        ) {
+          toast.error('Invalid file.')
+          return
+        }
 
-      if (
-        !fileMetadata ||
-        (typeof fileMetadata?.size === 'number' && fileMetadata?.size <= 1000)
-      ) {
-        toast.error('Invalid file.')
-        return
-      }
+        setVideo({
+          isFileSelected: true,
+          pathRaw: path,
+          path: core.convertFileSrc(path),
+          fileName: fileMetadata?.fileName,
+          mimeType: fileMetadata?.mimeType,
+          sizeInBytes: fileMetadata?.size,
+          size: formatBytes(fileMetadata?.size ?? 0),
+          isThumbnailGenerating: true,
+          extension: fileMetadata?.extension,
+        })
+        if (fileMetadata?.extension) {
+          setConvertToExtension(
+            fileMetadata?.extension as keyof (typeof extensions)['video'],
+          )
+        }
 
-      setVideo({
-        isFileSelected: true,
-        pathRaw: file?.path,
-        path: core.convertFileSrc(file?.path),
-        fileName: fileMetadata?.fileName,
-        mimeType: fileMetadata?.mimeType,
-        sizeInBytes: fileMetadata?.size,
-        size: formatBytes(fileMetadata?.size ?? 0),
-        isThumbnailGenerating: true,
-        extension: fileMetadata?.extension,
-      })
-      if (fileMetadata?.extension) {
-        setConvertToExtension(
-          fileMetadata?.extension as keyof (typeof extensions)['video'],
-        )
-      }
+        const thumbnail = await generateVideoThumbnail(path)
 
-      const thumbnail = await generateVideoThumbnail(file?.path)
-
-      setVideo((previousState) => ({
-        ...previousState,
-        isThumbnailGenerating: false,
-      }))
-      if (thumbnail) {
         setVideo((previousState) => ({
           ...previousState,
-          id: thumbnail?.id,
-          thumbnailPathRaw: thumbnail?.filePath,
-          thumbnailPath: core.convertFileSrc(thumbnail?.filePath),
+          isThumbnailGenerating: false,
         }))
+        if (thumbnail) {
+          setVideo((previousState) => ({
+            ...previousState,
+            id: thumbnail?.id,
+            thumbnailPathRaw: thumbnail?.filePath,
+            thumbnailPath: core.convertFileSrc(thumbnail?.filePath),
+          }))
+        }
+        const duration = await getVideoDuration(path)
+        const durationInMilliseconds = convertDurationToMilliseconds(
+          duration as string,
+        )
+        if (durationInMilliseconds > 0) {
+          setVideo((state) => ({
+            ...state,
+            videDurationRaw: duration,
+            videoDurationMilliseconds: durationInMilliseconds,
+          }))
+        }
+      } catch (error) {
+        resetVideoState()
+        toast.error('File seems to be corrupted.')
       }
-      const duration = await getVideoDuration(file?.path)
-      const durationInMilliseconds = convertDurationToMilliseconds(
-        duration as string,
-      )
-      if (durationInMilliseconds > 0) {
-        setVideo((state) => ({
-          ...state,
-          videDurationRaw: duration,
-          videoDurationMilliseconds: durationInMilliseconds,
-        }))
-      }
-    } catch (error) {
-      resetVideoState()
-      toast.error('File seems to be corrupted.')
-    }
-  }
+    },
+    [video?.isCompressing],
+  )
 
   const handleCompression = async () => {
     if (video?.isCompressing) return
@@ -365,14 +368,18 @@ function Root() {
 
   return (
     <section className="w-full h-full relative">
+      <DragAndDropOverlay
+        disable={video?.isFileSelected}
+        onFile={handleVideoSelected}
+      />
       {!video?.isFileSelected ? <DotPattern className="opacity-40" /> : null}
-      <div className="absolute top-4 left-4 z-10 flex justify-center items-center">
-        <Image src="/logo.png" alt="logo" width={30} height={30} />
+      <div className="absolute top-4 left-4 flex justify-center items-center">
+        <Image src="/logo.png" alt="logo" width={40} height={40} />
       </div>
       {!video?.isFileSelected ? (
         <Drawer
           renderTriggerer={({ open: openDrawer }) => (
-            <div className="absolute bottom-4 left-4 z-10 p-0">
+            <div className="absolute bottom-4 left-4 p-0 z-[1]">
               <Tooltip
                 content="Open Settings"
                 aria-label="Open Settings"
@@ -391,7 +398,19 @@ function Root() {
       {video?.isFileSelected ? (
         <div className="h-full w-full flex flex-col justify-center items-center">
           {!video?.isThumbnailGenerating ? (
-            <div className="flex flex-col justify-center items-center">
+            <motion.div
+              className="flex flex-col justify-center items-center"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{
+                scale: 1,
+                opacity: 1,
+                transition: {
+                  duration: 0.6,
+                  bounce: 0.3,
+                  type: 'spring',
+                },
+              }}
+            >
               {video?.fileName && !video?.isCompressing ? (
                 <div className="flex justify-center items-center mb-2 gap-1">
                   <Code className="ml-auto mr-auto text-center rounded-lg">
@@ -692,18 +711,28 @@ function Root() {
                   </>
                 )
               ) : null}
-            </div>
+            </motion.div>
           ) : (
             <Spinner size="lg" />
           )}
         </div>
       ) : (
-        <VideoPicker onSuccess={handleVideoSelected}>
+        <VideoPicker onSuccess={({ file }) => handleVideoSelected(file?.path)}>
           {({ onClick }) => (
-            <div
+            <motion.div
               role="button"
               tabIndex={0}
-              className="h-full w-full flex justify-center items-center z-0 flex-col animate-appearance-in"
+              className="h-full w-full flex flex-col justify-center items-center z-0"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{
+                scale: 1,
+                opacity: 1,
+                transition: {
+                  duration: 0.6,
+                  bounce: 0.3,
+                  type: 'spring',
+                },
+              }}
               onClick={onClick}
               onKeyDown={(evt) => {
                 if (evt?.key === 'Enter') {
@@ -711,11 +740,15 @@ function Root() {
                 }
               }}
             >
-              <Icon name="videoFile" className="text-primary" size={70} />
-              <p className="italic text-sm mt-4 text-gray-600 dark:text-gray-400 text-center">
-                Click anywhere to select a video
-              </p>
-            </div>
+              <div className="flex flex-col justify-center items-center py-16 px-20 border-2 border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl">
+                <Icon name="videoFile" className="text-primary" size={70} />
+                <p className="italic text-sm mt-4 text-gray-600 dark:text-gray-400 text-center">
+                  Drag & Drop
+                  <span className="block">Or</span>
+                  Click anywhere to select a video
+                </p>
+              </div>
+            </motion.div>
           )}
         </VideoPicker>
       )}

@@ -15,6 +15,7 @@ const nextConfig = withBundleAnalyzer({
   output: 'export',
   distDir: './dist',
   cleanDistDir: true,
+  reactStrictMode: false,
   webpack(config, { webpack }) {
     config.module.rules.push({
       test: /\.svg$/,

@@ -61,3 +61,11 @@ pre {
 body > * {
   cursor: default;
 }
+
+#main {
+  z-index: 999 !important;
+}
+
+#portal {
+  z-index: 1000 !important;
+}

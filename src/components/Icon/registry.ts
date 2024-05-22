@@ -17,6 +17,7 @@ import Github from '@/assets/icons/github.svg'
 import Question from '@/assets/icons/question.svg'
 import Setting from '@/assets/icons/setting.svg'
 import Trash from '@/assets/icons/trash.svg'
+import DragAndDrop from '@/assets/icons/drag-and-drop.svg'
 
 type SVGAsComponent = React.FC<React.SVGProps<SVGElement>>
 
@@ -44,6 +45,7 @@ const registry = asRegistry({
   question: Question,
   setting: Setting,
   trash: Trash,
+  dragAndDrop: DragAndDrop,
 })
 
 export default registry
