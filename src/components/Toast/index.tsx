@@ -9,11 +9,6 @@ export function Toaster() {
       position="bottom-center"
       richColors
       theme={theme === 'dark' ? 'dark' : 'light'}
-      toastOptions={{
-        classNames: {
-          toast: 'rounded-lg bg-red-800',
-        },
-      }}
     />
   )
 }
