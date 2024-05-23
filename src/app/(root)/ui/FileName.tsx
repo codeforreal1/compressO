@@ -1,10 +1,8 @@
 'use client'
 
 import React from 'react'
-import dynamic from 'next/dynamic'
 import { useDisclosure } from '@nextui-org/modal'
-import { useAtomValue } from 'jotai'
-import { useResetAtom } from 'jotai/utils'
+import { snapshot, useSnapshot } from 'valtio'
 
 import Button from '@/components/Button'
 import Code from '@/components/Code'
@@ -12,33 +10,52 @@ import Icon from '@/components/Icon'
 import AlertDialog, { AlertDialogButton } from '@/ui/Dialogs/AlertDialog'
 import Tooltip from '@/components/Tooltip'
 import { deleteFile } from '@/tauri/commands/fs'
-import { videoAtom } from '../state'
+import { videoProxy } from '../state'
 
 function FileName() {
-  const video = useAtomValue(videoAtom)
-  const resetVideo = useResetAtom(videoAtom)
+  const {
+    state: {
+      isCompressionSuccessful,
+      compressedVideo,
+      thumbnailPathRaw,
+      fileName,
+      isFileSelected,
+    },
+    resetState: resetVideoState,
+  } = useSnapshot(videoProxy)
 
   const alertDiscloser = useDisclosure()
 
   const handleDiscard = async ({ closeModal }: { closeModal: () => void }) => {
     try {
       await Promise.allSettled([
-        deleteFile(video?.compressedVideo?.pathRaw as string),
-        deleteFile(video?.thumbnailPathRaw as string),
+        deleteFile(compressedVideo?.pathRaw as string),
+        deleteFile(thumbnailPathRaw as string),
       ])
       closeModal?.()
-      resetVideo()
+      resetVideoState()
     } catch {
       //
     }
   }
 
-  const fileNameDisplay =
-    (video?.isCompressionSuccessful
-      ? video?.compressedVideo?.fileNameToDisplay
-      : video?.fileName) ?? ''
+  const handleCancelCompression = () => {
+    const videoSnapshot = snapshot(videoProxy)
+    if (
+      videoSnapshot.state.isCompressionSuccessful &&
+      !videoSnapshot.state.compressedVideo?.isSaved
+    ) {
+      alertDiscloser.onOpen()
+    } else {
+      resetVideoState()
+    }
+  }
 
-  return video?.isFileSelected ? (
+  const fileNameDisplay =
+    (isCompressionSuccessful ? compressedVideo?.fileNameToDisplay : fileName) ??
+    ''
+
+  return isFileSelected ? (
     <>
       <div className="flex justify-center items-center mb-2 gap-1">
         <Code className="ml-auto mr-auto text-center rounded-xl">
@@ -51,16 +68,7 @@ function FileName() {
         <Button
           isIconOnly
           size="sm"
-          onClick={() => {
-            if (
-              video?.isCompressionSuccessful &&
-              !video?.compressedVideo?.isSaved
-            ) {
-              alertDiscloser.onOpen()
-            } else {
-              resetVideo()
-            }
-          }}
+          onClick={handleCancelCompression}
           className="bg-transparent"
         >
           <Tooltip content="Cancel compression" aria-label="Cancel compression">
@@ -88,4 +96,4 @@ function FileName() {
   ) : null
 }
 
-export default dynamic(() => Promise.resolve(FileName), { ssr: false })
+export default React.memo(FileName)

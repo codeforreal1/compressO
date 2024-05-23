@@ -1,11 +1,10 @@
 'use client'
 
 import React from 'react'
-import dynamic from 'next/dynamic'
 import { core } from '@tauri-apps/api'
 import { SelectItem } from '@nextui-org/select'
 import { motion } from 'framer-motion'
-import { useAtom } from 'jotai'
+import { useSnapshot, snapshot } from 'valtio'
 
 import Button from '@/components/Button'
 import Select from '@/components/Select'
@@ -22,7 +21,7 @@ import { compressionPresets, extensions } from '@/types/compression'
 import Tooltip from '@/components/Tooltip'
 import Checkbox from '@/components/Checkbox'
 import { cn } from '@/utils/tailwind'
-import { videoAtom } from '../state'
+import { videoProxy } from '../state'
 import Compressing from './Compressing'
 import FileName from './FileName'
 import Success from './Success'
@@ -31,27 +30,37 @@ const videoExtensions = Object.keys(extensions?.video)
 const presets = Object.keys(compressionPresets)
 
 function VideoConfig() {
-  const [video, setVideo] = useAtom(videoAtom)
+  const {
+    state: {
+      isCompressing,
+      config,
+      pathRaw,
+      id: videoId,
+      isThumbnailGenerating,
+      fileName,
+      thumbnailPath,
+      isCompressionSuccessful,
+      size: videoSize,
+      extension: videoExtension,
+    },
+  } = useSnapshot(videoProxy)
 
   const {
     convertToExtension,
     presetName,
     shouldDisableCompression,
     shouldMuteVideo,
-  } = video.config
+  } = config
 
   const handleCompression = async () => {
-    if (video?.isCompressing) return
-    setVideo((previousState) => ({
-      ...previousState,
-      isCompressing: true,
-    }))
+    if (snapshot(videoProxy).state.isCompressing) return
+    videoProxy.state.isCompressing = true
     try {
       const result = await compressVideo({
-        videoPath: video?.pathRaw as string,
+        videoPath: pathRaw as string,
         convertToExtension: convertToExtension ?? 'mp4',
         presetName: !shouldDisableCompression ? presetName : null,
-        videoId: video?.id,
+        videoId,
         shouldMuteVideo,
       })
       if (!result) {
@@ -61,31 +70,27 @@ function VideoConfig() {
       if (!compressedVideoMetadata) {
         throw new Error()
       }
-      setVideo((previousState) => ({
-        ...previousState,
-        isCompressing: false,
-        isCompressionSuccessful: true,
-        compressedVideo: {
-          fileName: compressedVideoMetadata?.fileName,
-          fileNameToDisplay: `${previousState?.fileName?.slice(
-            0,
-            -((previousState?.extension?.length ?? 0) + 1),
-          )}.${compressedVideoMetadata?.extension}`,
-          pathRaw: compressedVideoMetadata?.path,
-          path: core.convertFileSrc(compressedVideoMetadata?.path ?? ''),
-          mimeType: compressedVideoMetadata?.mimeType,
-          sizeInBytes: compressedVideoMetadata?.size,
-          size: formatBytes(compressedVideoMetadata?.size ?? 0),
-          extension: compressedVideoMetadata?.extension,
-        },
-      }))
+      videoProxy.state.isCompressing = false
+      videoProxy.state.isCompressionSuccessful = true
+
+      const videoSnapshot = snapshot(videoProxy.state)
+      videoProxy.state.compressedVideo = {
+        fileName: compressedVideoMetadata?.fileName,
+        fileNameToDisplay: `${videoSnapshot?.fileName?.slice(
+          0,
+          -((videoSnapshot?.extension?.length ?? 0) + 1),
+        )}.${compressedVideoMetadata?.extension}`,
+        pathRaw: compressedVideoMetadata?.path,
+        path: core.convertFileSrc(compressedVideoMetadata?.path ?? ''),
+        mimeType: compressedVideoMetadata?.mimeType,
+        sizeInBytes: compressedVideoMetadata?.size,
+        size: formatBytes(compressedVideoMetadata?.size ?? 0),
+        extension: compressedVideoMetadata?.extension,
+      }
     } catch (error) {
       toast.error('Something went wrong during compression.')
-      setVideo((previousState) => ({
-        ...previousState,
-        isCompressing: false,
-        isCompressionSuccessful: false,
-      }))
+      videoProxy.state.isCompressing = false
+      videoProxy.state.isCompressionSuccessful = false
     }
   }
 
@@ -105,7 +110,7 @@ function VideoConfig() {
 
   return (
     <div className="h-full w-full flex flex-col justify-center items-center">
-      {!video?.isThumbnailGenerating ? (
+      {!isThumbnailGenerating ? (
         <motion.div
           className="flex flex-col justify-center items-center"
           initial={{ scale: 0.9, opacity: 0 }}
@@ -119,19 +124,19 @@ function VideoConfig() {
             },
           }}
         >
-          {video?.fileName && !video?.isCompressing ? <FileName /> : null}
+          {fileName && !isCompressing ? <FileName /> : null}
 
-          {video?.isCompressing ? (
+          {isCompressing ? (
             <Compressing />
           ) : (
             <Image
               alt="video to compress"
-              src={video?.thumbnailPath as string}
+              src={thumbnailPath as string}
               className="max-w-[60vw] max-h-[40vh] object-contain border-8 rounded-3xl border-primary"
             />
           )}
-          {!video?.isCompressing ? (
-            video?.isCompressionSuccessful ? (
+          {!isCompressing ? (
+            isCompressionSuccessful ? (
               <Success />
             ) : (
               <>
@@ -141,7 +146,7 @@ function VideoConfig() {
                       Size
                     </p>
                     <h1 className="text-2xl hslg:text-4xl font-black">
-                      {video?.size}
+                      {videoSize}
                     </h1>
                   </div>
                   <Divider orientation="vertical" className="h-10" />
@@ -150,7 +155,7 @@ function VideoConfig() {
                       Extension
                     </p>
                     <h1 className="text-2xl hslg:text-4xl font-black">
-                      {video?.extension ?? '-'}
+                      {videoExtension ?? '-'}
                     </h1>
                   </div>
                 </section>
@@ -159,15 +164,10 @@ function VideoConfig() {
                   <div className="flex items-center my-2">
                     <Checkbox
                       isSelected={shouldMuteVideo}
-                      onValueChange={() =>
-                        setVideo((state) => ({
-                          ...state,
-                          config: {
-                            ...state.config,
-                            shouldMuteVideo: !state.config.shouldMuteVideo,
-                          },
-                        }))
-                      }
+                      onValueChange={() => {
+                        videoProxy.state.config.shouldMuteVideo =
+                          !shouldMuteVideo
+                      }}
                       className="flex justify-center items-center "
                     >
                       <div className="flex justify-center items-center">
@@ -180,16 +180,10 @@ function VideoConfig() {
                   <div className="flex items-center mb-4 my-2">
                     <Checkbox
                       isSelected={shouldDisableCompression}
-                      onValueChange={() =>
-                        setVideo((state) => ({
-                          ...state,
-                          config: {
-                            ...state.config,
-                            shouldDisableCompression:
-                              !state.config.shouldDisableCompression,
-                          },
-                        }))
-                      }
+                      onValueChange={() => {
+                        videoProxy.state.config.shouldDisableCompression =
+                          !shouldDisableCompression
+                      }}
                       className="flex justify-center items-center "
                     >
                       <div className="flex justify-center items-center">
@@ -224,16 +218,10 @@ function VideoConfig() {
                       className="w-[300px] flex-shrink-0 rounded-2xl"
                       size="sm"
                       selectedKeys={[presetName]}
-                      onChange={(evt) =>
-                        setVideo((state) => ({
-                          ...state,
-                          config: {
-                            ...state.config,
-                            presetName: evt?.target
-                              ?.value as keyof typeof compressionPresets,
-                          },
-                        }))
-                      }
+                      onChange={(evt) => {
+                        videoProxy.state.config.presetName = evt?.target
+                          ?.value as keyof typeof compressionPresets
+                      }}
                       selectionMode="single"
                       disallowEmptySelection
                       isDisabled={shouldDisableCompression}
@@ -270,16 +258,10 @@ function VideoConfig() {
                       size="sm"
                       value={convertToExtension}
                       selectedKeys={[convertToExtension]}
-                      onChange={(evt) =>
-                        setVideo((state) => ({
-                          ...state,
-                          config: {
-                            ...state.config,
-                            convertToExtension: evt?.target
-                              ?.value as keyof typeof extensions.video,
-                          },
-                        }))
-                      }
+                      onChange={(evt) => {
+                        videoProxy.state.config.convertToExtension = evt?.target
+                          ?.value as keyof typeof extensions.video
+                      }}
                       selectionMode="single"
                       disallowEmptySelection
                     >
@@ -308,4 +290,4 @@ function VideoConfig() {
   )
 }
 
-export default dynamic(() => Promise.resolve(VideoConfig), { ssr: false })
+export default React.memo(VideoConfig)

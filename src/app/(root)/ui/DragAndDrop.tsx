@@ -123,4 +123,4 @@ function DragAndDrop({ disable = false, onFile }: DragAndDropProps) {
   )
 }
 
-export default DragAndDrop
+export default React.memo(DragAndDrop)

@@ -1,23 +1,31 @@
 'use client'
 
 import React from 'react'
-import dynamic from 'next/dynamic'
 import { event } from '@tauri-apps/api'
 import { motion } from 'framer-motion'
-import { useAtom } from 'jotai'
+import { useSnapshot } from 'valtio'
 
 import Progress from '@/components/Progress'
 import Image from '@/components/Image'
 
 import { CustomEvents, VideoCompressionProgress } from '@/types/compression'
 import { convertDurationToMilliseconds } from '@/utils/string'
-import { videoAtom } from '../state'
+import { videoProxy } from '../state'
 
 function Compressing() {
-  const [video, setVideo] = useAtom(videoAtom)
+  const {
+    state: {
+      isCompressing,
+      videDurationRaw,
+      thumbnailPath,
+      config,
+      videoDurationMilliseconds,
+      compressionProgress,
+      id: videoId,
+    },
+  } = useSnapshot(videoProxy)
 
-  const { videoDurationMilliseconds, id: videoId, compressionProgress } = video
-  const { convertToExtension, shouldDisableCompression } = video.config
+  const { convertToExtension, shouldDisableCompression } = config
 
   React.useEffect(() => {
     let unListen: event.UnlistenFn
@@ -34,12 +42,9 @@ function Compressing() {
                 currentDurationInMilliseconds > 0 &&
                 videoDurationMilliseconds >= currentDurationInMilliseconds
               ) {
-                setVideo((state) => ({
-                  ...state,
-                  compressionProgress:
-                    (currentDurationInMilliseconds * 100) /
-                    videoDurationMilliseconds,
-                }))
+                videoProxy.state.compressionProgress =
+                  (currentDurationInMilliseconds * 100) /
+                  videoDurationMilliseconds
               }
             }
           },
@@ -50,9 +55,9 @@ function Compressing() {
     return () => {
       unListen?.()
     }
-  }, [setVideo, videoDurationMilliseconds, videoId])
+  }, [videoDurationMilliseconds, videoId])
 
-  return video?.isCompressing ? (
+  return isCompressing ? (
     <motion.div
       className="relative flex-shrink-0 w-[500px] h-[500px]"
       initial={{ scale: 0.9 }}
@@ -60,7 +65,7 @@ function Compressing() {
       transition={{ type: 'spring', duration: 0.6 }}
     >
       <Progress
-        {...(video?.videDurationRaw == null
+        {...(videDurationRaw == null
           ? { isIndeterminate: true }
           : { value: compressionProgress })}
         classNames={{
@@ -75,7 +80,7 @@ function Compressing() {
       />
       <Image
         alt="video to compress"
-        src={video?.thumbnailPath as string}
+        src={thumbnailPath as string}
         className="max-w-[60vw] max-h-[40vh] object-cover rounded-3xl"
         style={{
           width: '450px',
@@ -107,10 +112,10 @@ function Compressing() {
   ) : (
     <Image
       alt="video to compress"
-      src={video?.thumbnailPath as string}
+      src={thumbnailPath as string}
       className="max-w-[60vw] max-h-[40vh] object-contain border-8 rounded-3xl border-primary"
     />
   )
 }
 
-export default dynamic(() => Promise.resolve(Compressing), { ssr: false })
+export default React.memo(Compressing)

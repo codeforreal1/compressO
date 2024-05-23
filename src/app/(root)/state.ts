@@ -1,15 +1,15 @@
-import { atomWithReset } from 'jotai/utils'
+import { proxy } from 'valtio'
 
 import { Video, VideoConfig } from './types'
 
-const videoConfig: VideoConfig = {
+const videoConfigInitialState: VideoConfig = {
   convertToExtension: 'mp4',
   presetName: 'ironclad',
   shouldDisableCompression: false,
   shouldMuteVideo: false,
 }
 
-const video: Video = {
+const videoInitialState: Video = {
   id: null,
   isFileSelected: false,
   pathRaw: null,
@@ -28,7 +28,12 @@ const video: Video = {
   isCompressionSuccessful: false,
   compressedVideo: null,
   compressionProgress: 0,
-  config: videoConfig,
+  config: videoConfigInitialState,
 }
 
-export const videoAtom = atomWithReset(video)
+export const videoProxy = proxy({
+  state: videoInitialState,
+  resetState() {
+    videoProxy.state = JSON.parse(JSON.stringify(videoInitialState))
+  },
+})

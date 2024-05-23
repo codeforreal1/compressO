@@ -1,9 +1,8 @@
 'use client'
 
 import React from 'react'
-import dynamic from 'next/dynamic'
 import { save } from '@tauri-apps/plugin-dialog'
-import { useAtom } from 'jotai'
+import { snapshot, useSnapshot } from 'valtio'
 
 import Button from '@/components/Button'
 import Icon from '@/components/Icon'
@@ -11,28 +10,33 @@ import { toast } from '@/components/Toast'
 
 import { moveFile, showItemInFileManager } from '@/tauri/commands/fs'
 import Tooltip from '@/components/Tooltip'
-import { videoAtom } from '../state'
+import { videoProxy } from '../state'
 
-function VideoConfig() {
-  const [video, setVideo] = useAtom(videoAtom)
+function Success() {
+  const {
+    state: {
+      sizeInBytes,
+      compressedVideo,
+      isCompressionSuccessful,
+      fileName,
+      size: videoSize,
+    },
+  } = useSnapshot(videoProxy)
 
   const sizeDiff: number = React.useMemo(
     () =>
-      typeof video?.compressedVideo?.sizeInBytes === 'number' &&
-      typeof video?.sizeInBytes === 'number' &&
-      !Number.isNaN(video?.sizeInBytes)
-        ? (((video?.sizeInBytes ?? 0) -
-            (video?.compressedVideo?.sizeInBytes ?? 0)) *
-            100) /
-          video.sizeInBytes
+      typeof compressedVideo?.sizeInBytes === 'number' &&
+      typeof sizeInBytes === 'number' &&
+      !Number.isNaN(sizeInBytes)
+        ? (((sizeInBytes ?? 0) - (compressedVideo?.sizeInBytes ?? 0)) * 100) /
+          sizeInBytes
         : 0,
-    [video],
+    [compressedVideo?.sizeInBytes, sizeInBytes],
   )
 
   const fileNameDisplay =
-    (video?.isCompressionSuccessful
-      ? video?.compressedVideo?.fileNameToDisplay
-      : video?.fileName) ?? ''
+    (isCompressionSuccessful ? compressedVideo?.fileNameToDisplay : fileName) ??
+    ''
 
   const handleCompressedVideoSave = async () => {
     try {
@@ -41,42 +45,33 @@ function VideoConfig() {
         defaultPath: `compressO-${fileNameDisplay}`,
       })
       if (pathToSave) {
-        setVideo((previousState) => ({
-          ...previousState,
-          compressedVideo: {
-            ...(previousState?.compressedVideo ?? {}),
-            isSaving: true,
-            isSaved: false,
-          },
-        }))
-        await moveFile(video?.compressedVideo?.pathRaw as string, pathToSave)
-        setVideo((previousState) => ({
-          ...previousState,
-          compressedVideo: {
-            ...(previousState?.compressedVideo ?? {}),
-            savedPath: pathToSave,
-            isSaving: false,
-            isSaved: true,
-          },
-        }))
+        videoProxy.state.compressedVideo = {
+          ...(snapshot(videoProxy).state.compressedVideo ?? {}),
+          isSaving: true,
+          isSaved: false,
+        }
+        await moveFile(compressedVideo?.pathRaw as string, pathToSave)
+        videoProxy.state.compressedVideo = {
+          ...(snapshot(videoProxy).state.compressedVideo ?? {}),
+          savedPath: pathToSave,
+          isSaving: false,
+          isSaved: true,
+        }
       }
     } catch (_) {
       toast.error('Could not save video to the given path.')
-      setVideo((previousState) => ({
-        ...previousState,
-        compressedVideo: {
-          ...(previousState?.compressedVideo ?? {}),
-          isSaving: false,
-          isSaved: false,
-        },
-      }))
+      videoProxy.state.compressedVideo = {
+        ...(snapshot(videoProxy).state.compressedVideo ?? {}),
+        isSaving: false,
+        isSaved: false,
+      }
     }
   }
 
   const openInFileManager = async () => {
-    if (!video?.compressedVideo?.savedPath) return
+    if (!compressedVideo?.savedPath) return
     try {
-      await showItemInFileManager(video?.compressedVideo?.savedPath)
+      await showItemInFileManager(compressedVideo?.savedPath)
     } catch {
       //
     }
@@ -85,14 +80,14 @@ function VideoConfig() {
   return (
     <section className="animate-appearance-in">
       <div className="flex justify-center items-center mt-3 hslg:mt-6">
-        <p className="text-2xl hslg:text-4xl font-bold mx-4">{video?.size}</p>
+        <p className="text-2xl hslg:text-4xl font-bold mx-4">{videoSize}</p>
         <Icon
           name="curvedArrow"
           className="text-black dark:text-white rotate-[-65deg] translate-y-[-8px]"
           size={100}
         />
         <p className="text-3xl hslg:text-4xl font-bold mx-4 text-primary">
-          {video?.compressedVideo?.size}
+          {compressedVideo?.size}
         </p>
       </div>
       {!(sizeDiff <= 0) ? (
@@ -108,19 +103,16 @@ function VideoConfig() {
           className="flex justify-center items-center"
           color="success"
           onClick={handleCompressedVideoSave}
-          isLoading={video?.compressedVideo?.isSaving}
-          isDisabled={
-            video?.compressedVideo?.isSaving || video?.compressedVideo?.isSaved
-          }
+          isLoading={compressedVideo?.isSaving}
+          isDisabled={compressedVideo?.isSaving || compressedVideo?.isSaved}
         >
-          {video?.compressedVideo?.isSaved ? 'Saved' : 'Save Video'}
+          {compressedVideo?.isSaved ? 'Saved' : 'Save Video'}
           <Icon
-            name={video?.compressedVideo?.isSaved ? 'tick' : 'save'}
+            name={compressedVideo?.isSaved ? 'tick' : 'save'}
             className="text-green-300"
           />
         </Button>
-        {video?.compressedVideo?.isSaved &&
-        video?.compressedVideo?.savedPath ? (
+        {compressedVideo?.isSaved && compressedVideo?.savedPath ? (
           <Tooltip
             content="Show in File Explorer"
             aria-label="Show in File Explorer"
@@ -139,4 +131,4 @@ function VideoConfig() {
   )
 }
 
-export default dynamic(() => Promise.resolve(VideoConfig), { ssr: false })
+export default React.memo(Success)

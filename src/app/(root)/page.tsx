@@ -4,10 +4,8 @@ import React from 'react'
 import dynamic from 'next/dynamic'
 import { core } from '@tauri-apps/api'
 import { motion } from 'framer-motion'
-import { useAtom } from 'jotai'
-import { useResetAtom } from 'jotai/utils'
+import { useSnapshot } from 'valtio'
 
-import Button from '@/components/Button'
 import Image from '@/components/Image'
 import VideoPicker from '@/tauri/components/VideoPicker'
 import Icon from '@/components/Icon'
@@ -19,19 +17,17 @@ import {
 } from '@/tauri/commands/ffmpeg'
 import { getFileMetadata } from '@/tauri/commands/fs'
 import { extensions } from '@/types/compression'
-import Tooltip from '@/components/Tooltip'
 import { convertDurationToMilliseconds } from '@/utils/string'
-import Drawer from '@/components/Drawer'
 import Setting from './ui/Setting'
 import DragAndDrop from './ui/DragAndDrop'
-import { videoAtom } from './state'
+import { videoProxy } from './state'
 import VideoConfig from './ui/VideoConfig'
 
 function Root() {
-  const [video, setVideo] = useAtom(videoAtom)
-  const resetVideo = useResetAtom(videoAtom)
-
-  const { isCompressing } = video
+  const {
+    state: { isFileSelected, isCompressing },
+    resetState: resetVideoState,
+  } = useSnapshot(videoProxy)
 
   const handleVideoSelected = React.useCallback(
     async (path: string) => {
@@ -50,60 +46,45 @@ function Root() {
           toast.error('Invalid file.')
           return
         }
-
-        setVideo((state) => ({
-          ...state,
-          isFileSelected: true,
-          pathRaw: path,
-          path: core.convertFileSrc(path),
-          fileName: fileMetadata?.fileName,
-          mimeType: fileMetadata?.mimeType,
-          sizeInBytes: fileMetadata?.size,
-          size: formatBytes(fileMetadata?.size ?? 0),
-          isThumbnailGenerating: true,
-          extension: fileMetadata?.extension,
-          ...(fileMetadata?.extension
-            ? {
-                config: {
-                  ...state.config,
-                  convertToExtension:
-                    fileMetadata?.extension as keyof (typeof extensions)['video'],
-                },
-              }
-            : {}),
-        }))
+        videoProxy.state.isFileSelected = true
+        videoProxy.state.pathRaw = path
+        videoProxy.state.path = core.convertFileSrc(path)
+        videoProxy.state.fileName = fileMetadata?.fileName
+        videoProxy.state.mimeType = fileMetadata?.mimeType
+        videoProxy.state.sizeInBytes = fileMetadata?.size
+        videoProxy.state.size = formatBytes(fileMetadata?.size ?? 0)
+        videoProxy.state.isThumbnailGenerating = true
+        videoProxy.state.extension = fileMetadata?.extension
+        if (fileMetadata?.extension) {
+          videoProxy.state.config.convertToExtension =
+            fileMetadata?.extension as keyof (typeof extensions)['video']
+        }
 
         const thumbnail = await generateVideoThumbnail(path)
 
-        setVideo((previousState) => ({
-          ...previousState,
-          isThumbnailGenerating: false,
-        }))
+        videoProxy.state.isThumbnailGenerating = false
+
         if (thumbnail) {
-          setVideo((previousState) => ({
-            ...previousState,
-            id: thumbnail?.id,
-            thumbnailPathRaw: thumbnail?.filePath,
-            thumbnailPath: core.convertFileSrc(thumbnail?.filePath),
-          }))
+          videoProxy.state.id = thumbnail?.id
+          videoProxy.state.thumbnailPathRaw = thumbnail?.filePath
+          videoProxy.state.thumbnailPath = core.convertFileSrc(
+            thumbnail?.filePath,
+          )
         }
         const duration = await getVideoDuration(path)
         const durationInMilliseconds = convertDurationToMilliseconds(
           duration as string,
         )
         if (durationInMilliseconds > 0) {
-          setVideo((state) => ({
-            ...state,
-            videDurationRaw: duration,
-            videoDurationMilliseconds: durationInMilliseconds,
-          }))
+          videoProxy.state.videDurationRaw = duration
+          videoProxy.state.videoDurationMilliseconds = durationInMilliseconds
         }
       } catch (error) {
-        resetVideo()
+        resetVideoState()
         toast.error('File seems to be corrupted.')
       }
     },
-    [isCompressing, resetVideo, setVideo],
+    [isCompressing, resetVideoState],
   )
 
   return (
@@ -111,26 +92,8 @@ function Root() {
       <div className="absolute top-4 left-4 flex justify-center items-center">
         <Image src="/logo.png" alt="logo" width={40} height={40} />
       </div>
-      {!video?.isFileSelected ? (
-        <Drawer
-          renderTriggerer={({ open: openDrawer }) => (
-            <div className="absolute bottom-4 left-4 p-0 z-[1]">
-              <Tooltip
-                content="Open Settings"
-                aria-label="Open Settings"
-                placement="right"
-              >
-                <Button onClick={openDrawer} isIconOnly size="sm">
-                  <Icon name="setting" size={23} />
-                </Button>
-              </Tooltip>
-            </div>
-          )}
-        >
-          <Setting />
-        </Drawer>
-      ) : null}
-      {video?.isFileSelected ? (
+      {!isFileSelected ? <Setting /> : null}
+      {isFileSelected ? (
         <VideoConfig />
       ) : (
         <VideoPicker onSuccess={({ file }) => handleVideoSelected(file?.path)}>
@@ -168,10 +131,7 @@ function Root() {
           )}
         </VideoPicker>
       )}
-      <DragAndDrop
-        disable={video?.isFileSelected}
-        onFile={handleVideoSelected}
-      />
+      <DragAndDrop disable={isFileSelected} onFile={handleVideoSelected} />
     </section>
   )
 }

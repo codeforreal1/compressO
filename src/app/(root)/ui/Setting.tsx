@@ -8,11 +8,34 @@ import Divider from '@/components/Divider'
 import Button from '@/components/Button'
 import Icon from '@/components/Icon'
 import Tooltip from '@/components/Tooltip'
+import Drawer from '@/components/Drawer'
 import { deleteCache as invokeDeleteCache } from '@/tauri/commands/fs'
 import { toast } from '@/components/Toast'
 import About from './About'
 
 function Setting() {
+  return (
+    <Drawer
+      renderTriggerer={({ open: openDrawer }) => (
+        <div className="absolute bottom-4 left-4 p-0 z-[1]">
+          <Tooltip
+            content="Open Settings"
+            aria-label="Open Settings"
+            placement="right"
+          >
+            <Button onClick={openDrawer} isIconOnly size="sm">
+              <Icon name="setting" size={23} />
+            </Button>
+          </Tooltip>
+        </div>
+      )}
+    >
+      <AppSetting />
+    </Drawer>
+  )
+}
+
+function AppSetting() {
   const [confirmClearCache, setConfirmClearCache] = React.useState(false)
   const [isCacheDeletePending, setIsCacheDeletePending] = React.useState(false)
 
@@ -29,7 +52,7 @@ function Setting() {
   }
 
   return (
-    <div className="min-h-[480px] ml-auto">
+    <div className="min-h-[550px] ml-auto">
       <Tabs className="absolute left-[50%] top-10 translate-x-[-50%]">
         <Tab key="setting" title="Setting">
           <div className="w-full absolute left-0 right-0 top-24">

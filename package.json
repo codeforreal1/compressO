@@ -40,7 +40,6 @@
     "clsx": "^2.0.0",
     "framer-motion": "^10.16.4",
     "husky": "^8.0.1",
-    "jotai": "^2.8.1",
     "million": "^2.6.4",
     "next": "14.0.2",
     "next-themes": "^0.2.1",
@@ -49,6 +48,7 @@
     "react-dom": "^18",
     "sonner": "^1.4.41",
     "tailwind-merge": "^1.14.0",
+    "valtio": "^1.13.2",
     "vaul": "^0.9.1"
   },
   "devDependencies": {
