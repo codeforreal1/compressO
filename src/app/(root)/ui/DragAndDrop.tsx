@@ -9,15 +9,12 @@ import Icon from '@/components/Icon'
 
 const videoExtensions = Object.keys(extensions?.video)
 
-type DragAndDropOverlayProps = {
+type DragAndDropProps = {
   disable?: boolean
   onFile?: (filePath: string) => void
 }
 
-function DragAndDropOverlay({
-  disable = false,
-  onFile,
-}: DragAndDropOverlayProps) {
+function DragAndDrop({ disable = false, onFile }: DragAndDropProps) {
   const [dragAndDropState, setDragAndDropState] = React.useState<
     'idle' | 'dragging' | 'dropped'
   >('idle')
@@ -110,7 +107,7 @@ function DragAndDropOverlay({
                   transition: { type: 'spring', bounce: 0.5, duration: 0.6 },
                 }}
                 exit={{ scale: 0.5, opacity: 0, transition: { duration: 0.1 } }}
-                className="flex justify-center items-center flex-col py-16 px-20 border-2 border-dashed border-zinc-300 dark:border-zinc-700 rounded-xl"
+                className="flex justify-center items-center flex-col py-16 px-20 border-2 border-dashed border-zinc-300 dark:border-zinc-700 rounded-3xl"
               >
                 <Icon name="dragAndDrop" className="text-primary" size={50} />
                 <p className="my-2 text-gray-600 dark:text-gray-400 italic text-sm">
@@ -126,4 +123,4 @@ function DragAndDropOverlay({
   )
 }
 
-export default DragAndDropOverlay
+export default DragAndDrop

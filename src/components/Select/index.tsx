@@ -9,7 +9,7 @@ import {
 interface SelectProps extends NextUISelectProps {}
 
 function Select(props: SelectProps) {
-  return <NextUISelect {...props} />
+  return <NextUISelect radius="lg" {...props} />
 }
 
 interface SelectItemProps extends NextUISelectItemProps {}
