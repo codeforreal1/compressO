@@ -24,10 +24,9 @@ import { videoProxy } from './state'
 import VideoConfig from './ui/VideoConfig'
 
 function Root() {
-  const {
-    state: { isFileSelected, isCompressing },
-    resetState: resetVideoState,
-  } = useSnapshot(videoProxy)
+  const { state, resetProxy } = useSnapshot(videoProxy)
+
+  const { isFileSelected, isCompressing } = state
 
   const handleVideoSelected = React.useCallback(
     async (path: string) => {
@@ -55,6 +54,7 @@ function Root() {
         videoProxy.state.size = formatBytes(fileMetadata?.size ?? 0)
         videoProxy.state.isThumbnailGenerating = true
         videoProxy.state.extension = fileMetadata?.extension
+
         if (fileMetadata?.extension) {
           videoProxy.state.config.convertToExtension =
             fileMetadata?.extension as keyof (typeof extensions)['video']
@@ -63,7 +63,6 @@ function Root() {
         const thumbnail = await generateVideoThumbnail(path)
 
         videoProxy.state.isThumbnailGenerating = false
-
         if (thumbnail) {
           videoProxy.state.id = thumbnail?.id
           videoProxy.state.thumbnailPathRaw = thumbnail?.filePath
@@ -71,6 +70,7 @@ function Root() {
             thumbnail?.filePath,
           )
         }
+
         const duration = await getVideoDuration(path)
         const durationInMilliseconds = convertDurationToMilliseconds(
           duration as string,
@@ -80,11 +80,11 @@ function Root() {
           videoProxy.state.videoDurationMilliseconds = durationInMilliseconds
         }
       } catch (error) {
-        resetVideoState()
+        resetProxy()
         toast.error('File seems to be corrupted.')
       }
     },
-    [isCompressing, resetVideoState],
+    [isCompressing, resetProxy],
   )
 
   return (

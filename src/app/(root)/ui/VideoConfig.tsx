@@ -53,9 +53,12 @@ function VideoConfig() {
   } = config
 
   const handleCompression = async () => {
-    if (snapshot(videoProxy).state.isCompressing) return
-    videoProxy.state.isCompressing = true
+    const videoSnapshot = snapshot(videoProxy)
+    if (videoSnapshot.state.isCompressing) return
     try {
+      videoProxy.takeSnapshot('beforeCompressionStarted')
+      videoProxy.state.isCompressing = true
+
       const result = await compressVideo({
         videoPath: pathRaw as string,
         convertToExtension: convertToExtension ?? 'mp4',
@@ -73,12 +76,12 @@ function VideoConfig() {
       videoProxy.state.isCompressing = false
       videoProxy.state.isCompressionSuccessful = true
 
-      const videoSnapshot = snapshot(videoProxy.state)
+      const videoSnapshot2 = snapshot(videoProxy.state)
       videoProxy.state.compressedVideo = {
         fileName: compressedVideoMetadata?.fileName,
-        fileNameToDisplay: `${videoSnapshot?.fileName?.slice(
+        fileNameToDisplay: `${videoSnapshot2?.fileName?.slice(
           0,
-          -((videoSnapshot?.extension?.length ?? 0) + 1),
+          -((videoSnapshot2?.extension?.length ?? 0) + 1),
         )}.${compressedVideoMetadata?.extension}`,
         pathRaw: compressedVideoMetadata?.path,
         path: core.convertFileSrc(compressedVideoMetadata?.path ?? ''),
@@ -88,9 +91,11 @@ function VideoConfig() {
         extension: compressedVideoMetadata?.extension,
       }
     } catch (error) {
-      toast.error('Something went wrong during compression.')
-      videoProxy.state.isCompressing = false
-      videoProxy.state.isCompressionSuccessful = false
+      if (error !== 'CANCELLED') {
+        toast.error('Something went wrong during compression.')
+        videoProxy.state.isCompressing = false
+        videoProxy.state.isCompressionSuccessful = false
+      }
     }
   }
 

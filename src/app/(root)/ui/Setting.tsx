@@ -37,10 +37,10 @@ function Setting() {
 
 function AppSetting() {
   const [confirmClearCache, setConfirmClearCache] = React.useState(false)
-  const [isCacheDeletePending, setIsCacheDeletePending] = React.useState(false)
+  const [isCacheDeleting, setIsCacheDeleting] = React.useState(false)
 
   const deleteCache = async () => {
-    setIsCacheDeletePending(true)
+    setIsCacheDeleting(true)
     try {
       await invokeDeleteCache()
       toast.success('All caches were cleared.')
@@ -48,7 +48,7 @@ function AppSetting() {
     } catch (_) {
       toast.error('Could not clear cache at the moment.')
     }
-    setIsCacheDeletePending(false)
+    setIsCacheDeleting(false)
   }
 
   return (
@@ -96,7 +96,7 @@ function AppSetting() {
                             deleteCache()
                           }
                         }}
-                        isLoading={isCacheDeletePending}
+                        isLoading={isCacheDeleting}
                       >
                         <motion.div
                           layout="preserve-aspect"

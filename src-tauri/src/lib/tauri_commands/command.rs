@@ -13,7 +13,7 @@ pub fn show_item_in_file_manager(path: String, dbus_state: State<DbusState>) -> 
 
     let dbus_guard = dbus_state.0.lock().map_err(|e| e.to_string())?;
 
-    if dbus_guard.is_none() || path.contains(",") {
+    if dbus_guard.is_none() || path.contains(',') {
         let mut path_buf = PathBuf::from(&path);
         let new_path = match path_buf.is_dir() {
             true => path,
@@ -48,7 +48,7 @@ pub fn show_item_in_file_manager(path: String, dbus_state: State<DbusState>) -> 
 #[cfg(not(target_os = "linux"))]
 #[tauri::command]
 pub fn show_item_in_file_manager(path: String) -> Result<(), String> {
-    use std::{process::Command, path::PathBuf};
+    use std::{path::PathBuf, process::Command};
     #[cfg(target_os = "windows")]
     {
         Command::new("explorer")

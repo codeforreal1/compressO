@@ -14,6 +14,7 @@ export type CompressionResult = {
 
 export enum CustomEvents {
   VideoCompressionProgress = 'VideoCompressionProgress',
+  CancelInProgressCompression = 'CancelInProgressCompression',
 }
 
 export type VideoCompressionProgress = {

@@ -68,6 +68,9 @@ dependencies:
   husky:
     specifier: ^8.0.1
     version: 8.0.3
+  lodash:
+    specifier: ^4.17.21
+    version: 4.17.21
   million:
     specifier: ^2.6.4
     version: 2.6.4
@@ -112,6 +115,9 @@ devDependencies:
   '@tauri-apps/cli':
     specifier: '>=2.0.0-beta.0'
     version: 2.0.0-beta.15
+  '@types/lodash':
+    specifier: ^4.17.4
+    version: 4.17.4
   '@types/node':
     specifier: ^20
     version: 20.9.0
@@ -4057,6 +4063,10 @@ packages:
     resolution: {integrity: sha512-dRLjCWHYg4oaA77cxO64oO+7JwCwnIzkZPdrrC71jQmQtlhM556pwKo5bUzqvZndkVbeFLIIi+9TC40JNF5hNQ==}
     dev: true
 
+  /@types/lodash@4.17.4:
+    resolution: {integrity: sha512-wYCP26ZLxaT3R39kiN2+HcJ4kTd3U1waI/cY7ivWYqFP6pW3ZNpvi6Wd6PHZx7T/t8z0vlkXMg3QYLa7DZ/IJQ==}
+    dev: true
+
   /@types/node@20.9.0:
     resolution: {integrity: sha512-nekiGu2NDb1BcVofVcEKMIwzlx4NjHlcjhoxxKBNLtz15Y1z7MYf549DFvkHSId02Ax6kGwWntIBPC3l/JZcmw==}
     dependencies:
@@ -6275,6 +6285,10 @@ packages:
 
   /lodash.omit@4.5.0:
     resolution: {integrity: sha512-XeqSp49hNGmlkj2EJlfrQFIzQ6lXdNro9sddtQzcJY8QaoC2GO0DT7xaIokHeyM+mIT0mPMlPvkYzg2xCuHdZg==}
+    dev: false
+
+  /lodash@4.17.21:
+    resolution: {integrity: sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==}
     dev: false
 
   /log-update@5.0.1:

@@ -21,7 +21,7 @@ function FileName() {
       fileName,
       isFileSelected,
     },
-    resetState: resetVideoState,
+    resetProxy,
   } = useSnapshot(videoProxy)
 
   const alertDiscloser = useDisclosure()
@@ -33,7 +33,7 @@ function FileName() {
         deleteFile(thumbnailPathRaw as string),
       ])
       closeModal?.()
-      resetVideoState()
+      resetProxy()
     } catch {
       //
     }
@@ -47,7 +47,7 @@ function FileName() {
     ) {
       alertDiscloser.onOpen()
     } else {
-      resetVideoState()
+      resetProxy()
     }
   }
 
@@ -58,7 +58,7 @@ function FileName() {
   return isFileSelected ? (
     <>
       <div className="flex justify-center items-center mb-2 gap-1">
-        <Code className="ml-auto mr-auto text-center rounded-xl">
+        <Code className="ml-auto mr-auto text-center rounded-xl px-4">
           {fileNameDisplay?.length > 50
             ? `${fileNameDisplay?.slice(0, 20)}...${fileNameDisplay?.slice(
                 -10,
