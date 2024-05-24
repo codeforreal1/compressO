@@ -44,7 +44,7 @@ function AlertDialog({
       onOpenChange={discloser?.onChange}
       onClose={discloser?.onClose}
     >
-      <ModalContent className="max-w-[450px] pb-2 rounded-2xl shadow-inner bg-zinc-100 dark:bg-zinc-900">
+      <ModalContent className="max-w-[400px] pb-2 rounded-2xl shadow-inner bg-zinc-100 dark:bg-zinc-900">
         {(closeModal) => (
           <>
             <ModalHeader className="flex flex-col justify-center items-center pt-1 pb-1 mt-4">
@@ -57,14 +57,14 @@ function AlertDialog({
             </ModalHeader>
             <ModalBody className="gap-0 px-0">
               {typeof description === 'string' ? (
-                <p className="mb-2 px-8 text-sm text-center text-zinc-700 dark:text-zinc-400">
+                <p className="mb-2 px-6 text-sm text-center text-zinc-700 dark:text-zinc-400">
                   {description}
                 </p>
               ) : (
                 description
               )}
               <Divider className="my-4" />
-              <ModalFooter className="px-8 py-1 pb-2">
+              <ModalFooter className="px-6 py-1 pb-2">
                 {renderFooter?.({ closeModal })}
               </ModalFooter>
             </ModalBody>

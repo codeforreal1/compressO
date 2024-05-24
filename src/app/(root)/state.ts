@@ -32,36 +32,6 @@ const videoInitialState: Video = {
   config: videoConfigInitialState,
 }
 
-// const videoInitialState: Video = {
-//   id: 'LFLmGvBmAu4wMF9JXP1Dt',
-//   isFileSelected: true,
-//   pathRaw:
-//     '/home/niraj/Downloads/copy_34992E05-461C-4F84-8447-FA4B3F3452DC.mov',
-//   path: 'asset://localhost/%2Fhome%2Fniraj%2FDownloads%2Fcopy_34992E05-461C-4F84-8447-FA4B3F3452DC.mov',
-//   fileName: 'copy_34992E05-461C-4F84-8447-FA4B3F3452DC.mov',
-//   mimeType: 'video/quicktime',
-//   sizeInBytes: 70872137,
-//   size: '70.9 MB',
-//   extension: 'mov',
-//   thumbnailPathRaw:
-//     '/home/niraj/.local/share/com.compresso.app/assets/LFLmGvBmAu4wMF9JXP1Dt.jpg',
-//   thumbnailPath:
-//     'asset://localhost/%2Fhome%2Fniraj%2F.local%2Fshare%2Fcom.compresso.app%2Fassets%2FLFLmGvBmAu4wMF9JXP1Dt.jpg',
-//   isThumbnailGenerating: false,
-//   videoDurationMilliseconds: 33790,
-//   videDurationRaw: '00:00:33.79',
-//   isCompressing: true,
-//   isCompressionSuccessful: false,
-//   compressedVideo: null,
-//   compressionProgress: 50,
-//   config: {
-//     convertToExtension: 'mp4',
-//     presetName: 'ironclad',
-//     shouldDisableCompression: false,
-//     shouldMuteVideo: false,
-//   },
-// }
-
 const snapshotMoment = {
   beforeCompressionStarted: 'beforeCompressionStarted',
 } as const

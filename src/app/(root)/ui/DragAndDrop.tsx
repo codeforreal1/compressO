@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from '@/components/Toast'
 import { extensions } from '@/types/compression'
 import Icon from '@/components/Icon'
+import { defaultEntryExitTransition } from '@/utils/animation'
 
 const videoExtensions = Object.keys(extensions?.video)
 
@@ -100,14 +101,8 @@ function DragAndDrop({ disable = false, onFile }: DragAndDropProps) {
               className="fixed top-0 right-0 bottom-0 left-0 w-screen h-screen bg-zinc-200 dark:bg-zinc-900 flex justify-center items-center flex-col z-[2]"
             >
               <motion.div
-                initial={{ scale: 1.1, opacity: 0 }}
-                animate={{
-                  scale: 1,
-                  opacity: 1,
-                  transition: { type: 'spring', bounce: 0.5, duration: 0.6 },
-                }}
-                exit={{ scale: 0.5, opacity: 0, transition: { duration: 0.1 } }}
                 className="flex justify-center items-center flex-col py-16 px-20 border-2 border-dashed border-zinc-300 dark:border-zinc-700 rounded-3xl"
+                {...defaultEntryExitTransition}
               >
                 <Icon name="dragAndDrop" className="text-primary" size={50} />
                 <p className="my-2 text-gray-600 dark:text-gray-400 italic text-sm">
