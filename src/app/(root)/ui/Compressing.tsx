@@ -138,7 +138,7 @@ function Compressing() {
       >
         {compressionProgress?.toFixed(2)}%
       </p>
-      <div className="flex justify-center mt-4">
+      <div className="flex justify-center mt-8">
         <AnimatePresence mode="wait">
           <motion.div
             layout="preserve-aspect"
@@ -151,6 +151,7 @@ function Compressing() {
           >
             <Button
               color="danger"
+              size="sm"
               variant={confirmCancellation ? 'solid' : 'flat'}
               onClick={() => {
                 if (!confirmCancellation) {
