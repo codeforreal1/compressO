@@ -1,4 +1,6 @@
 import React from 'react'
+import { ButtonProps } from '@nextui-org/button'
+import { UseDisclosureProps } from '@nextui-org/modal'
 
 import Modal, {
   ModalHeader,
@@ -7,10 +9,8 @@ import Modal, {
   ModalFooter,
 } from '@/components/Modal'
 import Button from '@/components/Button'
-import { UseDisclosureProps } from '@nextui-org/modal'
 import Icon from '@/components/Icon'
-import { ButtonProps } from '@nextui-org/button'
-import { Divider } from '@nextui-org/divider'
+import Divider from '@/components/Divider'
 
 type renderFooterArgs = { closeModal: () => void }
 
