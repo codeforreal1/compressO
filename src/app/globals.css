@@ -73,8 +73,13 @@ body > * {
   z-index: 1000 !important;
 }
 
+::-webkit-scrollbar-corner {
+  @apply bg-zinc-100 dark:bg-zinc-900;
+}
+
 ::-webkit-scrollbar {
   width: 10px;
+  height: 10px;
 }
 ::-webkit-scrollbar-track {
   @apply bg-zinc-100 dark:bg-zinc-900;
