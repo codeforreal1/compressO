@@ -18,6 +18,7 @@ import {
 import { getFileMetadata } from '@/tauri/commands/fs'
 import { extensions } from '@/types/compression'
 import { convertDurationToMilliseconds } from '@/utils/string'
+import Layout from '@/components/Layout'
 import Setting from './ui/Setting'
 import DragAndDrop from './ui/DragAndDrop'
 import { videoProxy } from './state'
@@ -88,7 +89,10 @@ function Root() {
   )
 
   return (
-    <section className="w-full h-full relative">
+    <Layout
+      containerProps={{ className: 'relative' }}
+      childrenProps={{ className: 'm-auto' }}
+    >
       <div className="absolute top-4 left-4 flex justify-center items-center">
         <Image src="/logo.png" alt="logo" width={40} height={40} />
       </div>
@@ -132,7 +136,7 @@ function Root() {
         </VideoPicker>
       )}
       <DragAndDrop disable={isFileSelected} onFile={handleVideoSelected} />
-    </section>
+    </Layout>
   )
 }
 

@@ -44,7 +44,7 @@ function AlertDialog({
       onOpenChange={discloser?.onChange}
       onClose={discloser?.onClose}
     >
-      <ModalContent className="max-w-[400px] pb-2 rounded-2xl shadow-inner bg-zinc-100 dark:bg-zinc-900">
+      <ModalContent className="max-w-[25rem] pb-2 rounded-2xl shadow-inner bg-zinc-100 dark:bg-zinc-900">
         {(closeModal) => (
           <>
             <ModalHeader className="flex flex-col justify-center items-center pt-1 pb-1 mt-4">

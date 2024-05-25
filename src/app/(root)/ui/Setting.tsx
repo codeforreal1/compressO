@@ -52,19 +52,19 @@ function AppSetting() {
   }
 
   return (
-    <div className="min-h-[550px] ml-auto">
+    <div className="min-h-[30rem] w-full ml-auto">
       <Tabs className="absolute left-[50%] top-10 translate-x-[-50%]" size="sm">
         <Tab
           key="setting"
           title={
-            <div className=" flex justify-center align-center gap-2">
+            <div className="flex justify-center align-center gap-2">
               <Icon name="setting" />
               <p>Setting</p>
             </div>
           }
         >
-          <div className="w-full absolute left-0 right-0 top-24">
-            <div className="max-w-[500px] mx-auto bg-zinc-300 dark:bg-zinc-800 rounded-lg px-4 py-3 overflow-hidden">
+          <div className="w-full absolute left-0 right-0 top-24 px-8">
+            <div className="max-w-[30rem] mx-auto bg-zinc-300 dark:bg-zinc-800 rounded-lg px-4 py-3 overflow-x-hidden">
               <div className="flex justify-between items-center">
                 <p className="text-gray-600 dark:text-gray-400 text-sm">
                   Theme

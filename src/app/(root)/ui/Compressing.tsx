@@ -87,7 +87,7 @@ function Compressing() {
 
   return isCompressing ? (
     <motion.div
-      className="w-full flex flex-col justify-center items-center flex-shrink-0 "
+      className="w-full flex flex-col justify-center items-center flex-shrink-0"
       initial={{ scale: 0.9 }}
       animate={{ scale: 1 }}
       transition={{ type: 'spring', duration: 0.6 }}

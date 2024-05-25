@@ -1,21 +1,15 @@
-import React from 'react'
+import React, { ComponentProps } from 'react'
 
 import { LayoutContext } from './context'
 
-interface FooterProps {
-  children: React.ReactNode
-}
-
-function Footer(props: FooterProps) {
-  const { children } = props
-
+function Footer(props: ComponentProps<'div'>) {
   const { isValid } = React.useContext(LayoutContext)
 
   if (!isValid) {
-    throw new Error('`Layout.Header` must be used inside `Layout` component.')
+    throw new Error('`Layout.Footer` must be used inside `Layout` component.')
   }
 
-  return <div>{children}</div>
+  return <div {...(props ?? {})} />
 }
 
 export default Footer

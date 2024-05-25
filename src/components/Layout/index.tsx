@@ -1,7 +1,6 @@
 'use client'
 
-import React from 'react'
-import { ClassValue } from 'clsx'
+import React, { ComponentProps } from 'react'
 
 import { cn } from '@/utils/tailwind'
 import Header from './Header'
@@ -10,12 +9,12 @@ import { LayoutContext } from './context'
 
 interface LayoutProps {
   children: React.ReactNode
-  containerClassName?: ClassValue
-  className?: ClassValue
+  containerProps?: ComponentProps<'section'>
+  childrenProps?: ComponentProps<'div'>
 }
 
 const Layout = (props: LayoutProps) => {
-  const { children, containerClassName, className } = props
+  const { children, containerProps, childrenProps } = props
 
   const main: React.ReactNode[] = []
   const header: React.ReactNode[] = []
@@ -25,7 +24,7 @@ const Layout = (props: LayoutProps) => {
     React.Children.forEach(children, (child) => {
       const _child = child as React.ReactNode & Record<'type', React.ReactNode>
 
-      switch (_child.type) {
+      switch (_child?.type) {
         case Header: {
           header.push(child)
           break
@@ -45,9 +44,15 @@ const Layout = (props: LayoutProps) => {
 
   return (
     <LayoutContext.Provider value={value}>
-      <section className={cn(['w-full', containerClassName])}>
+      <section
+        {...(containerProps ?? {})}
+        className={cn([
+          'w-full h-full flex flex-col overflow-y-auto',
+          containerProps?.className ?? '',
+        ])}
+      >
         {header}
-        <div className={cn(['max-w-2xl mx-auto', className])}>{main}</div>
+        <div {...childrenProps}>{main}</div>
         {footer}
       </section>
     </LayoutContext.Provider>

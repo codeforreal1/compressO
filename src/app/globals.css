@@ -13,7 +13,6 @@
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
-  box-sizing: border-box;
   -webkit-user-drag: none;
   -webkit-app-region: no-drag;
 
@@ -38,7 +37,7 @@ body {
   font-family: theme('fontFamily.poppins');
   width: 100vw;
   height: 100vh;
-  overflow: hidden;
+  overflow-x: auto;
   position: fixed;
   top: 0;
   left: 0;
@@ -72,4 +71,19 @@ body > * {
 
 #portal {
   z-index: 1000 !important;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-zinc-100 dark:bg-zinc-900;
+}
+
+::-webkit-scrollbar-thumb {
+  -webkit-border-radius: 10px;
+  border-radius: 10px;
+  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  @apply bg-zinc-400 dark:bg-zinc-700;
 }
