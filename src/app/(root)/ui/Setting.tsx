@@ -64,7 +64,7 @@ function AppSetting() {
           }
         >
           <div className="w-full absolute left-0 right-0 top-24 px-8">
-            <div className="max-w-[30rem] mx-auto bg-zinc-300 dark:bg-zinc-800 rounded-lg px-4 py-3 overflow-x-hidden">
+            <div className="max-w-[25rem] mx-auto bg-zinc-300 dark:bg-zinc-800 rounded-lg px-4 py-3 overflow-x-hidden">
               <div className="flex justify-between items-center">
                 <p className="text-gray-600 dark:text-gray-400 text-sm">
                   Theme
