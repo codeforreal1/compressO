@@ -128,7 +128,7 @@ function Root() {
                 <p className="italic text-sm mt-4 text-gray-600 dark:text-gray-400 text-center">
                   Drag & Drop
                   <span className="block">Or</span>
-                  Click anywhere to select a video
+                  Click to select a file.
                 </p>
               </div>
             </motion.div>
