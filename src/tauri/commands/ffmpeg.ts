@@ -8,12 +8,14 @@ export function compressVideo({
   presetName,
   videoId,
   shouldMuteVideo = false,
+  quality = 101, // quality should be within 0-100, but if you supply out of bound value, backend will automatically select optimum quality
 }: {
   videoPath: string
   convertToExtension?: string
   presetName?: string | null
   videoId?: string | null
   shouldMuteVideo?: boolean
+  quality?: number
 }): Promise<CompressionResult> {
   return core.invoke('compress_video', {
     videoPath,
@@ -21,6 +23,7 @@ export function compressVideo({
     presetName,
     videoId,
     shouldMuteVideo,
+    quality,
   })
 }
 

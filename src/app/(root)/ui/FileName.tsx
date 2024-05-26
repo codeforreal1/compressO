@@ -51,13 +51,17 @@ function FileName() {
     }
   }
 
+  const handleReconfigure = () => {
+    videoProxy.timeTravel('beforeCompressionStarted')
+  }
+
   const fileNameDisplay =
     (isCompressionSuccessful ? compressedVideo?.fileNameToDisplay : fileName) ??
     ''
 
   return isFileSelected ? (
     <>
-      <div className="flex justify-center items-center mb-2 gap-1">
+      <div className="mx-auto w-fit flex justify-center items-center mb-2 gap-1">
         <Code className="ml-auto mr-auto text-center rounded-xl px-4">
           {fileNameDisplay?.length > 50
             ? `${fileNameDisplay?.slice(0, 20)}...${fileNameDisplay?.slice(
@@ -65,16 +69,28 @@ function FileName() {
               )}`
             : fileNameDisplay}
         </Code>
-        <Button
-          isIconOnly
-          size="sm"
-          onClick={handleCancelCompression}
-          className="bg-transparent"
-        >
-          <Tooltip content="Cancel compression" aria-label="Cancel compression">
-            <Icon name="cross" size={22} />
+        {isCompressionSuccessful ? (
+          <Tooltip content="Reconfigure" aria-label="Reconfigure">
+            <Button
+              isIconOnly
+              size="sm"
+              onClick={handleReconfigure}
+              className="bg-transparent"
+            >
+              <Icon name="redo" size={22} />
+            </Button>
           </Tooltip>
-        </Button>
+        ) : null}
+        <Tooltip content="Cancel compression" aria-label="Cancel compression">
+          <Button
+            isIconOnly
+            size="sm"
+            onClick={handleCancelCompression}
+            className="bg-transparent"
+          >
+            <Icon name="cross" size={22} />
+          </Button>
+        </Tooltip>
       </div>
       <AlertDialog
         title="Video not saved!"

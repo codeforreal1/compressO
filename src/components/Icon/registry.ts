@@ -20,6 +20,7 @@ import Trash from '@/assets/icons/trash.svg'
 import DragAndDrop from '@/assets/icons/drag-and-drop.svg'
 import Warning from '@/assets/icons/warning.svg'
 import Error from '@/assets/icons/error.svg'
+import Redo from '@/assets/icons/redo.svg'
 
 type SVGAsComponent = React.FC<React.SVGProps<SVGElement>>
 
@@ -50,6 +51,7 @@ const registry = asRegistry({
   dragAndDrop: DragAndDrop,
   warning: Warning,
   error: Error,
+  redo: Redo,
 })
 
 export default registry

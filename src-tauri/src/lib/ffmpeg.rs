@@ -3,6 +3,7 @@ use crate::domain::{
     VideoCompressionProgress, VideoThumbnail,
 };
 use crossbeam_channel::{Receiver, Sender};
+use dbus::arg::RefArg;
 use nanoid::nanoid;
 use regex::Regex;
 use shared_child::SharedChild;
@@ -58,6 +59,7 @@ impl FFMPEG {
         preset_name: Option<&str>,
         video_id: Option<&str>,
         should_mute_video: bool,
+        quality: u16,
     ) -> Result<CompressionResult, String> {
         if !EXTENSIONS.contains(&convert_to_extension) {
             return Err(String::from("Invalid convert to extension."));
@@ -79,6 +81,21 @@ impl FFMPEG {
 
         let output_path = &output_file.display().to_string();
 
+        println!("Quality {}", quality);
+
+        let max_crf: u16 = 36;
+        let min_crf: u16 = 24; // Lower the CRF, higher the quality
+        let default_crf: u16 = 28;
+        let compression_quality = if (0..=100).contains(&quality) {
+            let diff = (max_crf - min_crf) - ((max_crf - min_crf) * quality) / 100;
+            format!("{}", min_crf + diff)
+        } else {
+            format!("{default_crf}")
+        };
+        let compression_quality_str = compression_quality.as_str();
+
+        println!(">>>compression_quality_str {}", compression_quality_str);
+
         let preset = match preset_name {
             Some(preset) => match preset {
                 "thunderbolt" => {
@@ -94,7 +111,7 @@ impl FFMPEG {
                         "-vcodec",
                         "libx264",
                         "-crf",
-                        " 28",
+                        compression_quality_str,
                         "-vf",
                         "pad=ceil(iw/2)*2:ceil(ih/2)*2",
                     ];
@@ -132,7 +149,7 @@ impl FFMPEG {
                         "-qp",
                         "0",
                         "-crf",
-                        "32",
+                        compression_quality_str,
                         "-vf",
                         "pad=ceil(iw/2)*2:ceil(ih/2)*2",
                     ];

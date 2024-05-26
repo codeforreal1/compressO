@@ -6,7 +6,6 @@ import { core } from '@tauri-apps/api'
 import { motion } from 'framer-motion'
 import { useSnapshot } from 'valtio'
 
-import Image from '@/components/Image'
 import VideoPicker from '@/tauri/components/VideoPicker'
 import Icon from '@/components/Icon'
 import { toast } from '@/components/Toast'
@@ -88,54 +87,49 @@ function Root() {
     [isCompressing, resetProxy],
   )
 
-  return (
+  return isFileSelected ? (
+    <VideoConfig />
+  ) : (
     <Layout
       containerProps={{ className: 'relative' }}
       childrenProps={{ className: 'm-auto' }}
     >
-      <div className="absolute top-4 left-4 flex justify-center items-center">
-        <Image src="/logo.png" alt="logo" width={40} height={40} />
-      </div>
-      {!isFileSelected ? <Setting /> : null}
-      {isFileSelected ? (
-        <VideoConfig />
-      ) : (
-        <VideoPicker onSuccess={({ file }) => handleVideoSelected(file?.path)}>
-          {({ onClick }) => (
-            <motion.div
-              role="button"
-              tabIndex={0}
-              className="h-full w-full flex flex-col justify-center items-center z-0"
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{
-                scale: 1,
-                opacity: 1,
-                transition: {
-                  duration: 0.6,
-                  bounce: 0.3,
-                  type: 'spring',
-                },
-              }}
-              onClick={onClick}
-              onKeyDown={(evt) => {
-                if (evt?.key === 'Enter') {
-                  onClick()
-                }
-              }}
-            >
-              <div className="flex flex-col justify-center items-center py-16 px-20 border-2 border-dashed border-zinc-200 dark:border-zinc-800 rounded-3xl">
-                <Icon name="videoFile" className="text-primary" size={60} />
-                <p className="italic text-sm mt-4 text-gray-600 dark:text-gray-400 text-center">
-                  Drag & Drop
-                  <span className="block">Or</span>
-                  Click anywhere to select a video
-                </p>
-              </div>
-            </motion.div>
-          )}
-        </VideoPicker>
-      )}
+      <VideoPicker onSuccess={({ file }) => handleVideoSelected(file?.path)}>
+        {({ onClick }) => (
+          <motion.div
+            role="button"
+            tabIndex={0}
+            className="h-full w-full flex flex-col justify-center items-center z-0"
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{
+              scale: 1,
+              opacity: 1,
+              transition: {
+                duration: 0.6,
+                bounce: 0.3,
+                type: 'spring',
+              },
+            }}
+            onClick={onClick}
+            onKeyDown={(evt) => {
+              if (evt?.key === 'Enter') {
+                onClick()
+              }
+            }}
+          >
+            <div className="flex flex-col justify-center items-center py-16 px-20 border-2 border-dashed border-zinc-200 dark:border-zinc-800 rounded-3xl">
+              <Icon name="videoFile" className="text-primary" size={60} />
+              <p className="italic text-sm mt-4 text-gray-600 dark:text-gray-400 text-center">
+                Drag & Drop
+                <span className="block">Or</span>
+                Click anywhere to select a video
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </VideoPicker>
       <DragAndDrop disable={isFileSelected} onFile={handleVideoSelected} />
+      <Setting />
     </Layout>
   )
 }

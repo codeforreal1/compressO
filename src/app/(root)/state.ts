@@ -8,6 +8,8 @@ const videoConfigInitialState: VideoConfig = {
   presetName: 'ironclad',
   shouldDisableCompression: false,
   shouldMuteVideo: false,
+  quality: 50,
+  shouldEnableQuality: false,
 }
 
 const videoInitialState: Video = {

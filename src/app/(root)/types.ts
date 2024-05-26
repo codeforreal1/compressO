@@ -5,6 +5,8 @@ export type VideoConfig = {
   presetName: keyof typeof compressionPresets
   shouldDisableCompression: boolean
   shouldMuteVideo: boolean
+  quality?: number | null
+  shouldEnableQuality?: boolean
 }
 
 export type Video = {
