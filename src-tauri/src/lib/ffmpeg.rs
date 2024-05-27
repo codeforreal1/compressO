@@ -3,7 +3,6 @@ use crate::domain::{
     VideoCompressionProgress, VideoThumbnail,
 };
 use crossbeam_channel::{Receiver, Sender};
-use dbus::arg::RefArg;
 use nanoid::nanoid;
 use regex::Regex;
 use shared_child::SharedChild;
@@ -497,7 +496,7 @@ impl FFMPEG {
             .args(["-i", video_path, "-hide_banner"])
             .stdout(Stdio::piped());
 
-        match SharedChild::spawn(command) {
+        return match SharedChild::spawn(command) {
             Ok(child) => {
                 let cp = Arc::new(child);
                 let cp_clone1 = cp.clone();
@@ -579,11 +578,11 @@ impl FFMPEG {
                     }
                 }
                 match result {
-                    Ok(duration) => return Ok(duration),
-                    Err(err) => return Err(err),
-                };
+                    Ok(duration) => Ok(duration),
+                    Err(err) => Err(err),
+                }
             }
-            Err(err) => return Err(err.to_string()),
+            Err(err) => Err(err.to_string()),
         };
     }
 }
