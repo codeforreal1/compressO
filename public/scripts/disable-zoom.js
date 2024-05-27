@@ -1,66 +1,68 @@
-((document, window) => {
+;((document, window) => {
   if (!document || !window) {
-    return;
+    return
   }
 
   document.body.addEventListener(
-    "wheel",
+    'wheel',
     (evt) => {
-      evt.preventDefault();
-      evt.stopImmediatePropagation();
-      return false;
+      if (evt.ctrlKey || evt.metaKey) {
+        evt.preventDefault()
+        evt.stopImmediatePropagation()
+        return false
+      }
     },
-    { passive: false }
-  );
+    { passive: false },
+  )
 
   document.addEventListener(
-    "touchmove",
+    'touchmove',
     (evt) => {
-      evt.preventDefault();
-      evt.stopImmediatePropagation();
-      return false;
+      evt.preventDefault()
+      evt.stopImmediatePropagation()
+      return false
     },
-    { passive: false }
-  );
+    { passive: false },
+  )
 
   window.addEventListener(
-    "keydown",
+    'keydown',
     function (evt) {
       if (
         (evt.ctrlKey || evt.metaKey) &&
-        (evt.key === "-" || evt.key === "=" || evt.key === "0")
+        (evt.key === '-' || evt.key === '=' || evt.key === '0')
       ) {
-        evt.preventDefault();
-        evt.stopImmediatePropagation();
-        return false;
+        evt.preventDefault()
+        evt.stopImmediatePropagation()
+        return false
       }
     },
-    { passive: false }
-  );
+    { passive: false },
+  )
 
   document.addEventListener(
-    "gesturestart",
+    'gesturestart',
     function (evt) {
-      evt.preventDefault();
-      return false;
+      evt.preventDefault()
+      return false
     },
-    { passive: false }
-  );
+    { passive: false },
+  )
 
   document.addEventListener(
-    "gesturechange",
+    'gesturechange',
     function (evt) {
-      evt.preventDefault();
-      return false;
+      evt.preventDefault()
+      return false
     },
-    { passive: false }
-  );
+    { passive: false },
+  )
   document.addEventListener(
-    "gestureend",
+    'gestureend',
     function (evt) {
-      evt.preventDefault();
-      return false;
+      evt.preventDefault()
+      return false
     },
-    { passive: false }
-  );
-})(document, window);
+    { passive: false },
+  )
+})(document, window)

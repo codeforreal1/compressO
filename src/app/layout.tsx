@@ -43,6 +43,7 @@ export default function RootLayout({
           src={`/scripts/disable-reload.js?nonce=${version}`}
           data-env={env}
         />
+        <div id="portal" />
       </body>
     </html>
   )

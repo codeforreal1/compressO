@@ -1,0 +1,23 @@
+<svg viewBox="0 0 24 24" id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" fill="#000000">
+    <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+    <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+    <g id="SVGRepo_iconCarrier">
+        <defs>
+            <style>
+                .cls-1 {
+                    fill: none;
+                    stroke: currentColor;
+                    stroke-miterlimit: 10;
+                    stroke-width: 1.91px;
+                }
+            </style>
+        </defs>
+        <path class="cls-1"
+            d="M13,22.48,7.82,17.34a2,2,0,0,1,2.86-2.86L12,15.8V6.36a2,2,0,0,1,1.74-2,1.92,1.92,0,0,1,2.08,1.9V12l5,.72a1.91,1.91,0,0,1,1.64,1.89h0a17.18,17.18,0,0,1-1.82,7.71l-.09.18">
+        </path>
+        <path class="cls-1" d="M15.82,10.62a4.54,4.54,0,0,0,1.47-1,4.78,4.78,0,1,0-6.76,0,4.54,4.54,0,0,0,1.47,1">
+        </path>
+        <polyline class="cls-1" points="7.23 7.21 4.36 10.07 1.5 7.21"></polyline>
+        <line class="cls-1" x1="4.36" y1="0.52" x2="4.36" y2="10.07"></line>
+    </g>
+</svg>

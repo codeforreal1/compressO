@@ -37,10 +37,17 @@ pub struct VideoThumbnail {
 #[derive(Clone, AsRefStr)]
 pub enum CustomEvents {
     VideoCompressionProgress,
+    CancelInProgressCompression,
 }
 
 #[derive(EnumProperty)]
 pub enum TauriEvents {
     #[strum(props(key = "tauri://destroyed"))]
     Destroyed,
+}
+
+#[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CancelInProgressCompressionPayload {
+    pub video_id: String,
 }

@@ -19,7 +19,13 @@ function Icon(props: IconProps) {
     return null
   }
 
-  return <SVGComponent className={className} width={size} height={size} />
+  return (
+    <SVGComponent
+      className={className}
+      width={`${size / 20}rem`}
+      height={`${size / 20}rem`}
+    />
+  )
 }
 
 export default Icon

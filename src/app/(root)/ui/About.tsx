@@ -13,9 +13,6 @@ function About() {
             compressO
           </h2>
           <Image src="/logo.png" alt="logo" width={50} height={50} />
-          <span className="self-end text-gray-400 ml-2 text-sm">
-            v{process.env.version}
-          </span>
         </div>
         <p className="text-center italic text-gray-600 dark:text-gray-400 text-sm my-1">
           Compress any video to a tiny size.
@@ -72,6 +69,9 @@ function About() {
           </button>
         </p>
       </section>
+      <p className="self-end text-gray-400 ml-2 text-lg font-bold text-center">
+        v{process.env.version}
+      </p>
     </section>
   )
 }

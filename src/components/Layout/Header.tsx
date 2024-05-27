@@ -1,21 +1,15 @@
-import React from 'react'
+import React, { ComponentProps } from 'react'
 
 import { LayoutContext } from './context'
 
-interface HeaderProps {
-  children: React.ReactNode
-}
-
-function Header(props: HeaderProps) {
-  const { children } = props
-
+function Header(props: ComponentProps<'div'>) {
   const { isValid } = React.useContext(LayoutContext)
 
   if (!isValid) {
     throw new Error('`Layout.Header` must be used inside `Layout` component.')
   }
 
-  return <div>{children}</div>
+  return <div {...(props ?? {})} />
 }
 
 export default Header

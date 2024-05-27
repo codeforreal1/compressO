@@ -1,6 +1,5 @@
 /** @type {import('next').NextConfig} */
 
-import million from 'million/compiler'
 import analyzeBundle from '@next/bundle-analyzer'
 
 const packageJSON = await import('./package.json', {
@@ -15,6 +14,7 @@ const nextConfig = withBundleAnalyzer({
   output: 'export',
   distDir: './dist',
   cleanDistDir: true,
+  reactStrictMode: false,
   webpack(config, { webpack }) {
     config.module.rules.push({
       test: /\.svg$/,
@@ -36,8 +36,4 @@ const nextConfig = withBundleAnalyzer({
   },
 })
 
-const millionConfig = {
-  auto: true,
-}
-
-export default million.next(nextConfig, millionConfig)
+export default nextConfig

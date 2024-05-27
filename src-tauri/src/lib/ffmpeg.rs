@@ -1,5 +1,6 @@
 use crate::domain::{
-    CompressionResult, CustomEvents, TauriEvents, VideoCompressionProgress, VideoThumbnail,
+    CancelInProgressCompressionPayload, CompressionResult, CustomEvents, TauriEvents,
+    VideoCompressionProgress, VideoThumbnail,
 };
 use crossbeam_channel::{Receiver, Sender};
 use nanoid::nanoid;
@@ -9,7 +10,7 @@ use std::{
     io::BufReader,
     path::{Path, PathBuf},
     process::{Command, Stdio},
-    sync::Arc,
+    sync::{Arc, Mutex},
 };
 use strum::EnumProperty;
 use tauri::{AppHandle, Manager};
@@ -57,6 +58,7 @@ impl FFMPEG {
         preset_name: Option<&str>,
         video_id: Option<&str>,
         should_mute_video: bool,
+        quality: u16,
     ) -> Result<CompressionResult, String> {
         if !EXTENSIONS.contains(&convert_to_extension) {
             return Err(String::from("Invalid convert to extension."));
@@ -66,7 +68,9 @@ impl FFMPEG {
             Some(id) => String::from(id),
             None => nanoid!(),
         };
-        let id_clone = id.clone();
+        let id_clone1 = id.clone();
+        let id_clone2 = id.clone();
+
         let file_name = format!("{}.{}", id, convert_to_extension);
         let file_name_clone = file_name.clone();
 
@@ -75,6 +79,21 @@ impl FFMPEG {
             .collect();
 
         let output_path = &output_file.display().to_string();
+
+        println!("Quality {}", quality);
+
+        let max_crf: u16 = 36;
+        let min_crf: u16 = 24; // Lower the CRF, higher the quality
+        let default_crf: u16 = 28;
+        let compression_quality = if (0..=100).contains(&quality) {
+            let diff = (max_crf - min_crf) - ((max_crf - min_crf) * quality) / 100;
+            format!("{}", min_crf + diff)
+        } else {
+            format!("{default_crf}")
+        };
+        let compression_quality_str = compression_quality.as_str();
+
+        println!(">>>compression_quality_str {}", compression_quality_str);
 
         let preset = match preset_name {
             Some(preset) => match preset {
@@ -91,7 +110,7 @@ impl FFMPEG {
                         "-vcodec",
                         "libx264",
                         "-crf",
-                        " 28",
+                        compression_quality_str,
                         "-vf",
                         "pad=ceil(iw/2)*2:ceil(ih/2)*2",
                     ];
@@ -129,7 +148,7 @@ impl FFMPEG {
                         "-qp",
                         "0",
                         "-crf",
-                        "32",
+                        compression_quality_str,
                         "-vf",
                         "pad=ceil(iw/2)*2:ceil(ih/2)*2",
                     ];
@@ -146,7 +165,6 @@ impl FFMPEG {
                 }
             },
             None => {
-                println!("Skipping compression. Only converting to given extension");
                 let mut args = vec![
                     "-i",
                     &video_path,
@@ -174,8 +192,6 @@ impl FFMPEG {
             }
         };
 
-        println!("Selected preset {:?}", preset);
-
         let command = self
             .ffmpeg
             .args(preset)
@@ -188,22 +204,55 @@ impl FFMPEG {
                 let cp_clone1 = cp.clone();
                 let cp_clone2 = cp.clone();
                 let cp_clone3 = cp.clone();
+                let cp_clone4 = cp.clone();
 
                 let window = match self.app.get_webview_window("main") {
                     Some(window) => window,
                     None => return Err(String::from("Could not attach to main window")),
                 };
-                let event_id = window.listen(
-                    TauriEvents::Destroyed.get_str("key").unwrap(),
-                    move |_| match cp.kill() {
-                        Ok(_) => {
-                            log::info!("[ffmpeg] child process killed.");
+                let destroy_event_id =
+                    window.listen(TauriEvents::Destroyed.get_str("key").unwrap(), move |_| {
+                        log::info!("[tauri] window destroyed");
+                        match cp.kill() {
+                            Ok(_) => {
+                                log::info!("[ffmpeg] child process killed.");
+                            }
+                            Err(err) => {
+                                log::error!(
+                                    "[ffmpeg] child process could not be killed {}",
+                                    err.to_string()
+                                );
+                            }
                         }
-                        Err(err) => {
-                            log::error!(
-                                "[ffmpeg] child process could not be killed {}",
-                                err.to_string()
-                            );
+                    });
+
+                let should_cancel = Arc::new(Mutex::new(false));
+                let should_cancel_clone = Arc::clone(&should_cancel);
+
+                let cancel_event_id = window.listen(
+                    CustomEvents::CancelInProgressCompression.as_ref(),
+                    move |evt| {
+                        let payload_str = evt.payload();
+                        let payload_opt: Option<CancelInProgressCompressionPayload> =
+                            serde_json::from_str(payload_str).ok();
+                        if let Some(payload) = payload_opt {
+                            let video_id = id_clone2.as_str();
+                            if payload.video_id == video_id {
+                                log::info!("[ffmpeg] compression requested to cancel.");
+                                match cp_clone4.kill() {
+                                    Ok(_) => {
+                                        log::info!("[ffmpeg] child process killed.");
+                                    }
+                                    Err(err) => {
+                                        log::error!(
+                                            "[ffmpeg] child process could not be killed {}",
+                                            err.to_string()
+                                        );
+                                    }
+                                };
+                                let mut _should_cancel = should_cancel_clone.lock().unwrap();
+                                *_should_cancel = true;
+                            }
                         }
                     },
                 );
@@ -272,7 +321,7 @@ impl FFMPEG {
                 let app_clone = self.app.clone();
                 tokio::spawn(async move {
                     let file_name_clone_str = file_name_clone.as_str();
-                    let id_clone_str = id_clone.as_str();
+                    let id_clone_str = id_clone1.as_str();
 
                     while let Ok(current_duration) = rx.recv() {
                         let video_progress = VideoCompressionProgress {
@@ -303,7 +352,8 @@ impl FFMPEG {
                 };
 
                 // Cleanup
-                window.unlisten(event_id);
+                window.unlisten(destroy_event_id);
+                window.unlisten(cancel_event_id);
                 match cp_clone3.kill() {
                     Ok(_) => {
                         log::info!("[ffmpeg] child process killed.");
@@ -314,6 +364,11 @@ impl FFMPEG {
                             err.to_string()
                         );
                     }
+                }
+
+                let is_cancelled = should_cancel.lock().unwrap();
+                if *is_cancelled {
+                    return Err(String::from("CANCELLED"));
                 }
 
                 if !message.is_empty() {
@@ -368,7 +423,7 @@ impl FFMPEG {
                     Some(window) => window,
                     None => return Err(String::from("Could not attach to main window")),
                 };
-                let event_id = window.listen(
+                let destroy_event_id = window.listen(
                     TauriEvents::Destroyed.get_str("key").unwrap(),
                     move |_| match cp.kill() {
                         Ok(_) => {
@@ -402,7 +457,7 @@ impl FFMPEG {
                 };
 
                 // Cleanup
-                window.unlisten(event_id);
+                window.unlisten(destroy_event_id);
                 match cp_clone2.kill() {
                     Ok(_) => {
                         log::info!("[ffmpeg] child process killed.");
@@ -441,7 +496,7 @@ impl FFMPEG {
             .args(["-i", video_path, "-hide_banner"])
             .stdout(Stdio::piped());
 
-        match SharedChild::spawn(command) {
+        return match SharedChild::spawn(command) {
             Ok(child) => {
                 let cp = Arc::new(child);
                 let cp_clone1 = cp.clone();
@@ -451,7 +506,7 @@ impl FFMPEG {
                     Some(window) => window,
                     None => return Err(String::from("Could not attach to main window")),
                 };
-                let event_id = window.listen(
+                let destroy_event_id = window.listen(
                     TauriEvents::Destroyed.get_str("key").unwrap(),
                     move |_| match cp.kill() {
                         Ok(_) => {
@@ -510,7 +565,7 @@ impl FFMPEG {
                 };
 
                 // Cleanup
-                window.unlisten(event_id);
+                window.unlisten(destroy_event_id);
                 match cp_clone2.kill() {
                     Ok(_) => {
                         log::info!("[ffmpeg] child process killed.");
@@ -523,11 +578,11 @@ impl FFMPEG {
                     }
                 }
                 match result {
-                    Ok(duration) => return Ok(duration),
-                    Err(err) => return Err(err),
-                };
+                    Ok(duration) => Ok(duration),
+                    Err(err) => Err(err),
+                }
             }
-            Err(err) => return Err(err.to_string()),
+            Err(err) => Err(err.to_string()),
         };
     }
 }
