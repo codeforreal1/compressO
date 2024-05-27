@@ -62,7 +62,7 @@ function FileName() {
   return isFileSelected ? (
     <>
       <div className="mx-auto w-fit flex justify-center items-center mb-2 gap-1">
-        <Code className="ml-auto mr-auto text-center rounded-xl px-4">
+        <Code className="ml-auto mr-auto text-center rounded-xl px-4 text-xs xl:text-sm">
           {fileNameDisplay?.length > 50
             ? `${fileNameDisplay?.slice(0, 20)}...${fileNameDisplay?.slice(
                 -10,

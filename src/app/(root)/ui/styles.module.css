@@ -1,0 +1,40 @@
+.videoConfigContainer {
+  display: grid;
+  grid-template-columns: 1fr minmax(18rem, auto);
+  gap: 1rem;
+}
+
+.videoMetadata {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 2rem;
+}
+
+.videoMetadata p {
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+.videoMetadata span {
+  white-space: nowrap;
+  font-size: 1.2rem;
+}
+
+.videoMetadata > div {
+  margin: 0 0.5rem;
+}
+
+@media screen and (min-width: 1280px) {
+  .videoMetadata p {
+    font-size: 1rem;
+  }
+  .videoMetadata span {
+    font-size: 1.6rem;
+  }
+  .videoMetadata > div {
+    margin: 0 0.8rem;
+  }
+  .videoConfigContainer {
+    grid-template-columns: 1fr minmax(22rem, auto);
+  }
+}

@@ -29,6 +29,7 @@ import Success from './Success'
 import CancelCompression from './CancelCompression'
 import SaveVideo from './SaveVideo'
 import CompressionQuality from './CompressionQuality'
+import styles from './styles.module.css'
 
 const videoExtensions = Object.keys(extensions?.video)
 const presets = Object.keys(compressionPresets)
@@ -128,14 +129,7 @@ function VideoConfig() {
       hideLogo
     >
       {!isThumbnailGenerating ? (
-        <div
-          className="h-full p-6"
-          style={{
-            display: 'grid',
-            gridTemplateColumns: '1fr minmax(22rem, auto)',
-            gap: '1rem',
-          }}
-        >
+        <div className={cn(['h-full p-6', styles.videoConfigContainer])}>
           <AnimatePresence>
             <section className="px-4 py-6 hlg:py-10 flex flex-col justify-center items-center rounded-xl border-2 border-zinc-200 dark:border-zinc-800">
               {fileName && !isCompressing ? <FileName /> : null}
@@ -152,38 +146,30 @@ function VideoConfig() {
                   {...defaultEntryExitTransition}
                 >
                   {renderThumbnail}
-                  <section className="whitespace-nowrap my-4 hslg:my-6 xl:flex justify-center items-center space-y-4 xl:space-y-0 xl:space-x-4 text-center xl:text-left">
+                  <section className={cn(['my-4', styles.videoMetadata])}>
                     <div>
-                      <p className="italic text-sm text-gray-600 dark:text-gray-400 text-center xl:text-left">
+                      <p className="italic text-gray-600 dark:text-gray-400">
                         Size
                       </p>
-                      <h1 className="text-xl lg:text-2xl hslg:text-4xl font-black">
-                        {videoSize}
-                      </h1>
+                      <span className="block font-black">{videoSize}</span>
                     </div>
-                    <Divider
-                      orientation="vertical"
-                      className="h-10 hidden xl:block"
-                    />
+                    <Divider orientation="vertical" className="h-10" />
                     <div>
-                      <p className="italic text-sm text-gray-600 dark:text-gray-400 text-center xl:text-left">
+                      <p className="italic text-gray-600 dark:text-gray-400">
                         Extension
                       </p>
-                      <h1 className="text-2xl hslg:text-4xl font-black">
+                      <span className="block font-black">
                         {videoExtension ?? '-'}
-                      </h1>
+                      </span>
                     </div>
-                    <Divider
-                      orientation="vertical"
-                      className="h-10 hidden xl:block"
-                    />{' '}
+                    <Divider orientation="vertical" className="h-10" />{' '}
                     <div>
-                      <p className="italic text-sm text-gray-600 dark:text-gray-400 text-center xl:text-left">
+                      <p className="italic text-gray-600 dark:text-gray-400">
                         Duration
                       </p>
-                      <h1 className="text-2xl hslg:text-4xl font-black">
+                      <span className="block font-black">
                         {videDurationRaw ?? '-'}
-                      </h1>
+                      </span>
                     </div>
                   </section>
                 </motion.div>
