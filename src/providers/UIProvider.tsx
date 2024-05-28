@@ -1,5 +1,5 @@
 import React from 'react'
-import { NextUIProvider } from '@nextui-org/system'
+import { NextUIProvider } from '@nextui-org/react'
 
 function UIProvider({ children }: { children: React.ReactNode }) {
   return (
