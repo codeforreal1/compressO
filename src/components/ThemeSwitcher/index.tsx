@@ -30,17 +30,21 @@ function ThemeSwitcher(props: ThemeSwitcherProps) {
   }
 
   return children == null ? (
-    <Tooltip content="Toggle theme" aria-label="Toggle theme" placement="right">
-      <Button
-        isIconOnly
-        size="sm"
-        onClick={() => {
-          setTheme(theme === 'light' ? 'dark' : 'light')
-        }}
+    <Button
+      isIconOnly
+      size="sm"
+      onClick={() => {
+        setTheme(theme === 'light' ? 'dark' : 'light')
+      }}
+    >
+      <Tooltip
+        content="Toggle theme"
+        aria-label="Toggle theme"
+        placement="right"
       >
         <Icon name={theme === 'light' ? 'moon' : 'sun'} />
-      </Button>
-    </Tooltip>
+      </Tooltip>
+    </Button>
   ) : (
     children({ theme, setTheme })
   )

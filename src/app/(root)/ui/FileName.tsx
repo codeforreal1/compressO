@@ -70,16 +70,16 @@ function FileName() {
             : fileNameDisplay}
         </Code>
         {isCompressionSuccessful ? (
-          <Tooltip content="Reconfigure" aria-label="Reconfigure">
-            <Button
-              isIconOnly
-              size="sm"
-              onClick={handleReconfigure}
-              className="bg-transparent"
-            >
+          <Button
+            isIconOnly
+            size="sm"
+            onClick={handleReconfigure}
+            className="bg-transparent"
+          >
+            <Tooltip content="Reconfigure" aria-label="Reconfigure">
               <Icon name="redo" size={22} />
-            </Button>
-          </Tooltip>
+            </Tooltip>
+          </Button>
         ) : null}
         <Tooltip content="Cancel compression" aria-label="Cancel compression">
           <Button

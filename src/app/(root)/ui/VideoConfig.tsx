@@ -240,11 +240,13 @@ function VideoConfig() {
               size="sm"
               selectedKeys={[presetName]}
               onChange={(evt) => {
-                videoProxy.state.config.presetName = evt?.target
+                const value = evt?.target
                   ?.value as keyof typeof compressionPresets
+                if (value?.length > 0) {
+                  videoProxy.state.config.presetName = value
+                }
               }}
               selectionMode="single"
-              disallowEmptySelection
               isDisabled={shouldDisableCompression || isCompressing}
             >
               {presets?.map((preset) => (
@@ -280,11 +282,13 @@ function VideoConfig() {
               value={convertToExtension}
               selectedKeys={[convertToExtension]}
               onChange={(evt) => {
-                videoProxy.state.config.convertToExtension = evt?.target
+                const value = evt?.target
                   ?.value as keyof typeof extensions.video
+                if (value?.length > 0) {
+                  videoProxy.state.config.convertToExtension = value
+                }
               }}
               selectionMode="single"
-              disallowEmptySelection
               isDisabled={isCompressing}
             >
               {videoExtensions?.map((ext) => (

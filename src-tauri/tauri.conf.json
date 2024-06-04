@@ -10,7 +10,7 @@
   },
   "bundle": {
     "longDescription": "Compress any video file to a tiny size.",
-    "shortDescription": "CompressO.",
+    "shortDescription": "Compress any video to a tiny size",
     "active": true,
     "category": "DeveloperTool",
     "copyright": "Code For Real",

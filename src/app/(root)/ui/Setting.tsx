@@ -18,15 +18,15 @@ function Setting() {
     <Drawer
       renderTriggerer={({ open: openDrawer }) => (
         <div className="absolute bottom-4 left-4 p-0 z-[1]">
-          <Tooltip
-            content="Open Settings"
-            aria-label="Open Settings"
-            placement="right"
-          >
-            <Button onClick={openDrawer} isIconOnly size="sm">
+          <Button onClick={openDrawer} isIconOnly size="sm">
+            <Tooltip
+              content="Open Settings"
+              aria-label="Open Settings"
+              placement="right"
+            >
               <Icon name="setting" size={23} />
-            </Button>
-          </Tooltip>
+            </Tooltip>
+          </Button>
         </div>
       )}
     >
