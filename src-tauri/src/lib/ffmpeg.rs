@@ -93,8 +93,6 @@ impl FFMPEG {
         };
         let compression_quality_str = compression_quality.as_str();
 
-        println!(">>>compression_quality_str {}", compression_quality_str);
-
         let preset = match preset_name {
             Some(preset) => match preset {
                 "thunderbolt" => {
