@@ -14,10 +14,11 @@ export function formatBytes(bytes: number): string {
  * @returns {string}: 'linux', 'macos', 'ios', 'freebsd', 'dragonfly', 'netbsd', 'openbsd', 'solaris', 'android', 'windows'. Returns null for unsupported platform.
  */
 export function getPlatform() {
-  const userAgent = window.navigator.userAgent
+  const userAgent =
+    typeof window === 'object' ? window?.navigator?.userAgent : undefined
   return {
-    isLinux: userAgent?.includes('Linux'),
-    isMacOS: userAgent?.includes('Mac'),
-    isWindows: userAgent?.includes('Win'),
+    isLinux: userAgent?.includes?.('Linux'),
+    isMacOS: userAgent?.includes?.('Mac'),
+    isWindows: userAgent?.includes?.('Win'),
   }
 }
