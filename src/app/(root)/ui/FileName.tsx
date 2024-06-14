@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { useDisclosure } from '@nextui-org/modal'
+import { useDisclosure, UseDisclosureProps } from '@nextui-org/modal'
 import { snapshot, useSnapshot } from 'valtio'
 
 import Button from '@/components/Button'
@@ -26,7 +26,11 @@ function FileName() {
 
   const alertDiscloser = useDisclosure()
 
-  const handleDiscard = async ({ closeModal }: { closeModal: () => void }) => {
+  const handleDiscard = async ({
+    closeModal,
+  }: {
+    closeModal: UseDisclosureProps['onClose']
+  }) => {
     try {
       await Promise.allSettled([
         deleteFile(compressedVideo?.pathRaw as string),
