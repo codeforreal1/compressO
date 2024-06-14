@@ -89,7 +89,7 @@ function AppSetting() {
       <section className="mb-6">
         <Title title="Settings" iconProps={{ name: 'setting' }} />
       </section>
-      <div className="mx-auto bg-zinc-100 dark:bg-zinc-800 rounded-lg px-4 py-3">
+      <div className="mx-auto bg-zinc-100 dark:bg-zinc-800 rounded-lg px-4 py-3 overflow-hidden">
         <div className="flex justify-between items-center">
           <p className="text-gray-600 dark:text-gray-400 text-sm">Theme</p>
           <ThemeSwitcher />
@@ -103,40 +103,48 @@ function AppSetting() {
             placement="right"
             isDisabled={confirmClearCache}
           >
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.div
-                layout="preserve-aspect"
-                className="flex items-center"
-                transition={{
-                  type: 'spring',
-                  bounce: 0.2,
-                  duration: 0.4,
+            <div className="flex items-center">
+              <Button
+                isIconOnly={!confirmClearCache}
+                size="sm"
+                color="danger"
+                variant={confirmClearCache ? 'solid' : 'flat'}
+                onClick={() => {
+                  if (!confirmClearCache) {
+                    setConfirmClearCache(true)
+                  } else {
+                    deleteCache()
+                  }
                 }}
+                isLoading={isCacheDeleting}
               >
-                <Button
-                  isIconOnly={!confirmClearCache}
-                  size="sm"
-                  color="danger"
-                  variant={confirmClearCache ? 'solid' : 'flat'}
-                  onClick={() => {
-                    if (!confirmClearCache) {
-                      setConfirmClearCache(true)
-                    } else {
-                      deleteCache()
-                    }
-                  }}
-                  isLoading={isCacheDeleting}
-                >
+                <AnimatePresence mode="wait" initial={false}>
+                  {confirmClearCache ? (
+                    <motion.div
+                      layout="preserve-aspect"
+                      transition={{
+                        type: 'spring',
+                        bounce: 0.2,
+                        duration: 0.5,
+                      }}
+                    >
+                      Clear Now
+                    </motion.div>
+                  ) : null}
                   <motion.div
                     layout="preserve-aspect"
                     className="flex items-center"
+                    transition={{
+                      type: 'spring',
+                      bounce: 0.2,
+                      duration: 0.2,
+                    }}
                   >
-                    {confirmClearCache ? 'Clear Now ' : ''}
                     <Icon name="trash" />
                   </motion.div>
-                </Button>
-              </motion.div>
-            </AnimatePresence>
+                </AnimatePresence>
+              </Button>
+            </div>
           </Tooltip>
         </div>
       </div>
