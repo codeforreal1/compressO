@@ -32,6 +32,7 @@ const LOG_TARGETS: [LogTarget; 0] = [];
 #[tokio::main]
 async fn main() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_os::init())
         .plugin(
             tauri_plugin_log::Builder::new()
                 .targets(LOG_TARGETS)

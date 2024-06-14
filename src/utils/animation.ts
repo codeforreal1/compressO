@@ -1,6 +1,6 @@
 import { Variants } from 'framer-motion'
 
-export const defaultEntryExitTransition: Variants = {
+export const zoomInTransition: Variants = {
   initial: { scale: 0.9, opacity: 0 },
   animate: {
     scale: 1,

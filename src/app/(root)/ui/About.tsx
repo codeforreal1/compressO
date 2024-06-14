@@ -3,10 +3,15 @@ import { open } from '@tauri-apps/plugin-shell'
 
 import Image from '@/components/Image'
 import Icon from '@/components/Icon'
+import TauriLink from '@/tauri/components/Link'
+import Title from '@/components/Title'
 
 function About() {
   return (
-    <section className="px-4 w-full">
+    <section className="px-4 py-10 w-full">
+      <section className="mb-6">
+        <Title title="About" iconProps={{ name: 'info' }} />
+      </section>
       <section>
         <div className="z-10 flex justify-center items-center">
           <h2 className="text-3xl mr-2 font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
@@ -21,15 +26,9 @@ function About() {
       <section className="my-8">
         <p className="text-center text-gray-600 dark:text-gray-400 text-sm my-1">
           Powered by{' '}
-          <button
-            type="button"
-            className="text-lg font-bold text-primary"
-            onClick={() => {
-              open('https://ffmpeg.org/')
-            }}
-          >
+          <TauriLink href="https://ffmpeg.org/" className="text-lg">
             FFmpeg
-          </button>
+          </TauriLink>
           <span className="block text-sm max-w-[450px] mx-auto">
             This software uses libraries from the FFmpeg project under the
             LGPLv2.1.
@@ -40,15 +39,9 @@ function About() {
         <p className="text-center text-gray-600 dark:text-gray-400 text-sm my-1">
           Made with <Icon className="inline text-primary" name="lowResHeart" />{' '}
           in public by{' '}
-          <button
-            type="button"
-            className="font-bold text-primary"
-            onClick={() => {
-              open('https://www.threads.net/@codeforreal')
-            }}
-          >
-            Code For Real
-          </button>
+          <TauriLink href="https://www.threads.net/@codeforreal">
+            Code For Real⚡
+          </TauriLink>
         </p>
       </section>
       <section>

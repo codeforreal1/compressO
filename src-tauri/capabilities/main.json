@@ -31,13 +31,22 @@
     "dialog:default",
     {
       "identifier": "fs:default",
-      "allow": [{ "path": "$APPDATA/**" }]
+      "allow": [
+        {
+          "path": "$APPDATA/**"
+        }
+      ]
     },
     {
       "identifier": "fs:scope",
-      "allow": [{ "path": "$APPDATA/*" }]
+      "allow": [
+        {
+          "path": "$APPDATA/*"
+        }
+      ]
     },
     "shell:allow-open",
-    "log:default"
+    "log:default",
+    "os:allow-platform"
   ]
 }

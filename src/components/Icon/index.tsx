@@ -8,7 +8,7 @@ export interface IconProps {
   className?: string
 }
 
-function Icon(props: IconProps) {
+function Icon(props: IconProps & React.SVGProps<SVGElement>) {
   const { name, size = 20, className } = props
 
   const SVGComponent = registry[name]
@@ -22,8 +22,7 @@ function Icon(props: IconProps) {
   return (
     <SVGComponent
       className={className}
-      width={`${size / 20}rem`}
-      height={`${size / 20}rem`}
+      style={{ width: `${size / 20}rem`, height: `${size / 20}rem` }}
     />
   )
 }

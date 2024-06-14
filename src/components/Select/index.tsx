@@ -7,13 +7,11 @@ import {
 } from '@nextui-org/select'
 
 interface SelectProps extends NextUISelectProps {}
-
 function Select(props: SelectProps) {
   return <NextUISelect radius="lg" {...props} />
 }
 
 interface SelectItemProps extends NextUISelectItemProps {}
-
 export function SelectItem(props: SelectItemProps) {
   return <NextUISelectItem {...props} />
 }

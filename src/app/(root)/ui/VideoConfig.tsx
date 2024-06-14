@@ -20,7 +20,7 @@ import { compressionPresets, extensions } from '@/types/compression'
 import Tooltip from '@/components/Tooltip'
 import Checkbox from '@/components/Checkbox'
 import { cn } from '@/utils/tailwind'
-import { defaultEntryExitTransition } from '@/utils/animation'
+import { zoomInTransition } from '@/utils/animation'
 import Layout from '@/components/Layout'
 import { videoProxy } from '../state'
 import Compressing from './Compressing'
@@ -143,7 +143,7 @@ function VideoConfig() {
               ) : (
                 <motion.div
                   className="flex flex-col justify-center items-center"
-                  {...defaultEntryExitTransition}
+                  {...zoomInTransition}
                 >
                   {renderThumbnail}
                   <section className={cn(['my-4', styles.videoMetadata])}>
@@ -179,7 +179,7 @@ function VideoConfig() {
 
           <section
             className="px-4 py-6 hlg:py-10 rounded-xl border-2 border-zinc-200 dark:border-zinc-800"
-            {...defaultEntryExitTransition}
+            {...zoomInTransition}
           >
             <p className="text-xl mb-6 font-bold">Output Settings</p>
             <div className="flex items-center my-2">
