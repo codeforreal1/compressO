@@ -19,8 +19,8 @@ function Select(props: SelectProps) {
       {...props}
       classNames={{
         popoverContent: cn([
-          isWindows || !isMacOS ? blurCSS : '',
-          props?.classNames?.popoverContent,
+          isWindows || isMacOS ? blurCSS : '',
+          props?.classNames?.popoverContent ?? '',
         ]),
         ...(props?.classNames ?? {}),
       }}

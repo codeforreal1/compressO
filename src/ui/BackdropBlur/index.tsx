@@ -2,7 +2,10 @@ import { cn } from '@/utils/tailwind'
 import React from 'react'
 
 export const blurCSS =
-  'backdrop-blur-lg backdrop-saturate-150 bg-white1/80 dark:bg-zinc-800/80'
+  'backdrop-blur-lg backdrop-saturate-150 bg-zinc-100/75 dark:bg-zinc-900/80'
+
+export const getBlurPseudoCSS = (type: 'before' | 'after') =>
+  `${type}:backdrop-blur-lg ${type}:backdrop-saturate-150  ${type}:bg-zinc-100/75 dark:${type}:bg-zinc-900/80`
 
 type BackdropBlurProps = {
   children?: React.ReactNode
