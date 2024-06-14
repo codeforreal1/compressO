@@ -89,7 +89,7 @@ function AppSetting() {
       <section className="mb-6">
         <Title title="Settings" iconProps={{ name: 'setting' }} />
       </section>
-      <div className="mx-auto bg-zinc-100 dark:bg-zinc-800 rounded-lg px-4 py-3 overflow-x-hidden">
+      <div className="mx-auto bg-zinc-100 dark:bg-zinc-800 rounded-lg px-4 py-3">
         <div className="flex justify-between items-center">
           <p className="text-gray-600 dark:text-gray-400 text-sm">Theme</p>
           <ThemeSwitcher />
@@ -103,7 +103,7 @@ function AppSetting() {
             placement="right"
             isDisabled={confirmClearCache}
           >
-            <AnimatePresence mode="wait">
+            <AnimatePresence mode="wait" initial={false}>
               <motion.div
                 layout="preserve-aspect"
                 className="flex items-center"
