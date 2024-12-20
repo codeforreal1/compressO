@@ -24,6 +24,11 @@ pub struct FFMPEG {
 
 const EXTENSIONS: [&str; 5] = ["mp4", "mov", "webm", "avi", "mkv"];
 
+#[cfg(not(target_os = "macos"))]
+const VCODEC: &str = "libx264";
+#[cfg(target_os = "macos")]
+const VCODEC: &str = "h264_videotoolbox";
+
 impl FFMPEG {
     pub fn new(app: &tauri::AppHandle) -> Result<Self, String> {
         match app.shell().sidecar("compresso_ffmpeg") {
@@ -108,7 +113,7 @@ impl FFMPEG {
                         "-loglevel",
                         "error",
                         "-vcodec",
-                        "libx264",
+                        VCODEC,
                         "-crf",
                         compression_quality_str,
                         "-vf",
@@ -138,7 +143,7 @@ impl FFMPEG {
                         "-pix_fmt",
                         "yuv420p",
                         "-c:v",
-                        "libx264",
+                        VCODEC,
                         "-b:v",
                         "0",
                         "-movflags",
@@ -175,7 +180,7 @@ impl FFMPEG {
                     "-loglevel",
                     "error",
                     "-vcodec",
-                    "libx264",
+                    VCODEC,
                     "-vf",
                     "pad=ceil(iw/2)*2:ceil(ih/2)*2",
                 ];
