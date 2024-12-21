@@ -35,7 +35,7 @@ pub fn get_file_metadata(path: &str) -> Result<FileMetadata, String> {
     let file_path = Path::new(path);
     let mime_type = infer::get_from_path(path).unwrap();
 
-    return Ok(FileMetadata {
+    Ok(FileMetadata {
         path: String::from(path),
         file_name: String::from(file_path.file_name().unwrap().to_str().unwrap()),
         mime_type: match mime_type {
@@ -44,7 +44,7 @@ pub fn get_file_metadata(path: &str) -> Result<FileMetadata, String> {
         },
         extension: String::from(file_path.extension().unwrap().to_str().unwrap()),
         size: metadata.len(),
-    });
+    })
 }
 
 /// Get [width, height] of an image

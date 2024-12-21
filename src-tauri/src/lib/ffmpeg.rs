@@ -2,6 +2,7 @@ use crate::domain::{
     CancelInProgressCompressionPayload, CompressionResult, CustomEvents, TauriEvents,
     VideoCompressionProgress, VideoThumbnail,
 };
+use crate::sys::gpu::{self, GpuType};
 use crossbeam_channel::{Receiver, Sender};
 use nanoid::nanoid;
 use regex::Regex;
@@ -80,8 +81,6 @@ impl FFMPEG {
 
         let output_path = &output_file.display().to_string();
 
-        println!("Quality {}", quality);
-
         let max_crf: u16 = 36;
         let min_crf: u16 = 24; // Lower the CRF, higher the quality
         let default_crf: u16 = 28;
@@ -92,6 +91,8 @@ impl FFMPEG {
             format!("{default_crf}")
         };
         let compression_quality_str = compression_quality.as_str();
+
+        let codec = "libx264";
 
         let preset = match preset_name {
             Some(preset) => match preset {
@@ -105,8 +106,8 @@ impl FFMPEG {
                         "-nostats",
                         "-loglevel",
                         "error",
-                        "-vcodec",
-                        "libx264",
+                        "-c:v",
+                        codec,
                         "-crf",
                         compression_quality_str,
                         "-vf",
@@ -136,7 +137,7 @@ impl FFMPEG {
                         "-pix_fmt",
                         "yuv420p",
                         "-c:v",
-                        "libx264",
+                        codec,
                         "-b:v",
                         "0",
                         "-movflags",
@@ -172,8 +173,8 @@ impl FFMPEG {
                     "-nostats",
                     "-loglevel",
                     "error",
-                    "-vcodec",
-                    "libx264",
+                    "-c:v",
+                    codec,
                     "-vf",
                     "pad=ceil(iw/2)*2:ceil(ih/2)*2",
                 ];
@@ -473,15 +474,15 @@ impl FFMPEG {
             }
             Err(err) => return Err(err.to_string()),
         };
-        return Ok(VideoThumbnail {
+        Ok(VideoThumbnail {
             id,
             file_name,
             file_path: output_path.display().to_string(),
-        });
+        })
     }
 
     pub fn get_asset_dir(&self) -> String {
-        return self.assets_dir.display().to_string();
+        self.assets_dir.display().to_string()
     }
 
     pub async fn get_video_duration(&mut self, video_path: &str) -> Result<Option<String>, String> {
@@ -494,7 +495,7 @@ impl FFMPEG {
             .args(["-i", video_path, "-hide_banner"])
             .stdout(Stdio::piped());
 
-        return match SharedChild::spawn(command) {
+        match SharedChild::spawn(command) {
             Ok(child) => {
                 let cp = Arc::new(child);
                 let cp_clone1 = cp.clone();
@@ -581,6 +582,6 @@ impl FFMPEG {
                 }
             }
             Err(err) => Err(err.to_string()),
-        };
+        }
     }
 }
