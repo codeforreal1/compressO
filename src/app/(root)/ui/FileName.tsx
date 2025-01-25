@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { useDisclosure, UseDisclosureProps } from '@nextui-org/modal'
+import { useDisclosure, UseDisclosureProps } from '@heroui/modal'
 import { snapshot, useSnapshot } from 'valtio'
 
 import Button from '@/components/Button'

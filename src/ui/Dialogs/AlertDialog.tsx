@@ -1,6 +1,6 @@
 import React from 'react'
-import { ButtonProps } from '@nextui-org/button'
-import { UseDisclosureProps } from '@nextui-org/modal'
+import { ButtonProps } from '@heroui/button'
+import { UseDisclosureProps } from '@heroui/modal'
 
 import Modal, {
   ModalHeader,

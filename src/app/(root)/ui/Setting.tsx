@@ -1,7 +1,7 @@
 import React from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { DropdownItem } from '@nextui-org/dropdown'
-import { useDisclosure } from '@nextui-org/modal'
+import { DropdownItem } from '@heroui/dropdown'
+import { useDisclosure } from '@heroui/modal'
 
 import ThemeSwitcher from '@/components/ThemeSwitcher'
 import Divider from '@/components/Divider'
@@ -13,12 +13,14 @@ import { toast } from '@/components/Toast'
 import Title from '@/components/Title'
 import Modal, { ModalContent } from '@/components/Modal'
 import Dropdown, { DropdownMenu, DropdownTrigger } from '@/components/Dropdown'
+import { usePlatform } from '@/hooks/usePlatform'
 import About from './About'
 
 type DropdownKey = 'settings' | 'about'
 
 function Setting() {
   const modalDisclosure = useDisclosure()
+  const { isLinux } = usePlatform()
 
   const [selectedKey, setSelectedKey] = React.useState<DropdownKey>('settings')
   const handleDropdownAction = (item: string | number) => {
@@ -58,7 +60,7 @@ function Setting() {
       <Modal
         isOpen={modalDisclosure.isOpen}
         onClose={modalDisclosure.onClose}
-        motionVariant="bottomToTop"
+        disableAnimation={isLinux}
       >
         <ModalContent className="max-w-[30rem] pb-2 overflow-hidden rounded-2xl">
           {selectedKey === 'settings' ? <AppSetting /> : <About />}
@@ -118,30 +120,30 @@ function AppSetting() {
                 }}
                 isLoading={isCacheDeleting}
               >
-                <AnimatePresence mode="wait" initial={false}>
+                <div>
+                  <Icon name="trash" />
+                </div>
+                <AnimatePresence initial={false}>
                   {confirmClearCache ? (
-                    <motion.div
-                      layout="preserve-aspect"
-                      transition={{
-                        type: 'spring',
-                        bounce: 0.2,
-                        duration: 0.5,
+                    <motion.p
+                      initial={{ width: 0, opacity: 0 }}
+                      animate={{
+                        width: 'auto',
+                        opacity: 1,
+                        transition: {
+                          duration: 0.3,
+                          bounce: 0.2,
+                          type: 'spring',
+                        },
+                      }}
+                      exit={{
+                        width: 0,
+                        opacity: 0,
                       }}
                     >
                       Clear Now
-                    </motion.div>
+                    </motion.p>
                   ) : null}
-                  <motion.div
-                    layout="preserve-aspect"
-                    className="flex items-center"
-                    transition={{
-                      type: 'spring',
-                      bounce: 0.2,
-                      duration: 0.2,
-                    }}
-                  >
-                    <Icon name="trash" />
-                  </motion.div>
                 </AnimatePresence>
               </Button>
             </div>

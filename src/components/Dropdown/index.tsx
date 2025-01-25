@@ -8,7 +8,7 @@ import {
   type DropdownTriggerProps as NextUIDropdownTriggerProps,
   type DropdownMenuProps as NextUIDropdownMenuProps,
   type DropdownItemProps as NextUIDropdownItemProps,
-} from '@nextui-org/dropdown'
+} from '@heroui/dropdown'
 import { cn } from '@/utils/tailwind'
 import { blurCSS } from '@/ui/BackdropBlur'
 import { getPlatform } from '@/utils/fs'

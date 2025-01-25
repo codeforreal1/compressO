@@ -2,7 +2,6 @@ use crate::domain::{
     CancelInProgressCompressionPayload, CompressionResult, CustomEvents, TauriEvents,
     VideoCompressionProgress, VideoThumbnail,
 };
-use crate::sys::gpu::{self, GpuType};
 use crossbeam_channel::{Receiver, Sender};
 use nanoid::nanoid;
 use regex::Regex;
@@ -214,11 +213,11 @@ impl FFMPEG {
                         log::info!("[tauri] window destroyed");
                         match cp.kill() {
                             Ok(_) => {
-                                log::info!("[ffmpeg] child process killed.");
+                                log::info!("child process killed.");
                             }
                             Err(err) => {
                                 log::error!(
-                                    "[ffmpeg] child process could not be killed {}",
+                                    "child process could not be killed {}",
                                     err.to_string()
                                 );
                             }
@@ -237,14 +236,14 @@ impl FFMPEG {
                         if let Some(payload) = payload_opt {
                             let video_id = id_clone2.as_str();
                             if payload.video_id == video_id {
-                                log::info!("[ffmpeg] compression requested to cancel.");
+                                log::info!("compression requested to cancel.");
                                 match cp_clone4.kill() {
                                     Ok(_) => {
-                                        log::info!("[ffmpeg] child process killed.");
+                                        log::info!("child process killed.");
                                     }
                                     Err(err) => {
                                         log::error!(
-                                            "[ffmpeg] child process could not be killed {}",
+                                            "child process could not be killed {}",
                                             err.to_string()
                                         );
                                     }
@@ -269,7 +268,7 @@ impl FFMPEG {
                                         break;
                                     }
                                     if let Ok(val) = std::str::from_utf8(&buf) {
-                                        log::debug!("[ffmpeg] stderr: {:?}", val);
+                                        log::debug!("stderr: {:?}", val);
                                     }
                                 }
                                 Err(_) => {
@@ -293,7 +292,7 @@ impl FFMPEG {
                                         break;
                                     }
                                     if let Ok(output) = std::str::from_utf8(&buf) {
-                                        log::debug!("[ffmpeg] stdout: {:?}", output);
+                                        log::debug!("stdout: {:?}", output);
                                         let re =
                                             Regex::new("out_time=(?<out_time>.*?)\\n").unwrap();
                                         if let Some(cap) = re.captures(output) {
@@ -355,13 +354,10 @@ impl FFMPEG {
                 window.unlisten(cancel_event_id);
                 match cp_clone3.kill() {
                     Ok(_) => {
-                        log::info!("[ffmpeg] child process killed.");
+                        log::info!("child process killed.");
                     }
                     Err(err) => {
-                        log::error!(
-                            "[ffmpeg] child process could not be killed {}",
-                            err.to_string()
-                        );
+                        log::error!("child process could not be killed {}", err.to_string());
                     }
                 }
 
@@ -426,13 +422,10 @@ impl FFMPEG {
                     TauriEvents::Destroyed.get_str("key").unwrap(),
                     move |_| match cp.kill() {
                         Ok(_) => {
-                            log::info!("[ffmpeg] child process killed.");
+                            log::info!("child process killed.");
                         }
                         Err(err) => {
-                            log::error!(
-                                "[ffmpeg] child process could not be killed {}",
-                                err.to_string()
-                            );
+                            log::error!("child process could not be killed {}", err.to_string());
                         }
                     },
                 );
@@ -459,13 +452,10 @@ impl FFMPEG {
                 window.unlisten(destroy_event_id);
                 match cp_clone2.kill() {
                     Ok(_) => {
-                        log::info!("[ffmpeg] child process killed.");
+                        log::info!("child process killed.");
                     }
                     Err(err) => {
-                        log::error!(
-                            "[ffmpeg] child process could not be killed {}",
-                            err.to_string()
-                        );
+                        log::error!("child process could not be killed {}", err.to_string());
                     }
                 }
                 if !message.is_empty() {
@@ -509,13 +499,10 @@ impl FFMPEG {
                     TauriEvents::Destroyed.get_str("key").unwrap(),
                     move |_| match cp.kill() {
                         Ok(_) => {
-                            log::info!("[ffmpeg] child process killed.");
+                            log::info!("child process killed.");
                         }
                         Err(err) => {
-                            log::error!(
-                                "[ffmpeg] child process could not be killed {}",
-                                err.to_string()
-                            );
+                            log::error!("child process could not be killed {}", err.to_string());
                         }
                     },
                 );
@@ -567,13 +554,10 @@ impl FFMPEG {
                 window.unlisten(destroy_event_id);
                 match cp_clone2.kill() {
                     Ok(_) => {
-                        log::info!("[ffmpeg] child process killed.");
+                        log::info!("child process killed.");
                     }
                     Err(err) => {
-                        log::error!(
-                            "[ffmpeg] child process could not be killed {}",
-                            err.to_string()
-                        );
+                        log::error!("child process could not be killed {}", err.to_string());
                     }
                 }
                 match result {

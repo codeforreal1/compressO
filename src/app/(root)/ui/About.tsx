@@ -29,7 +29,7 @@ function About() {
           <TauriLink href="https://ffmpeg.org/" className="text-lg">
             FFmpeg
           </TauriLink>
-          <span className="block text-sm max-w-[450px] mx-auto">
+          <span className="block text-sm max-w-[400px] mx-auto">
             This software uses libraries from the FFmpeg project under the
             LGPLv2.1.
           </span>

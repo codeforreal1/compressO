@@ -4,7 +4,7 @@ import {
   Tab as NextUITab,
   type TabsProps as NextUITabsProps,
   type TabItemProps as NextUITabProps,
-} from '@nextui-org/tabs'
+} from '@heroui/tabs'
 
 interface TabsProps extends NextUITabsProps {}
 

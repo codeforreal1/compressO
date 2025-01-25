@@ -4,7 +4,7 @@ import {
   SelectItem as NextUISelectItem,
   type SelectProps as NextUISelectProps,
   type SelectItemProps as NextUISelectItemProps,
-} from '@nextui-org/select'
+} from '@heroui/select'
 import { blurCSS } from '@/ui/BackdropBlur'
 import { cn } from '@/utils/tailwind'
 import { getPlatform } from '@/utils/fs'

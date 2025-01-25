@@ -75,41 +75,31 @@ function CancelCompression() {
   }
 
   return isCompressing ? (
-    <AnimatePresence mode="wait">
-      <motion.div
-        layout="preserve-aspect"
-        className="flex items-center"
-        transition={{
-          type: 'spring',
-          bounce: 0.2,
-          duration: 0.4,
-        }}
-      >
-        <Button
-          color="danger"
-          size="lg"
-          variant={confirmCancellation ? 'solid' : 'flat'}
-          onClick={() => {
-            if (!confirmCancellation) {
-              setConfirmCancellation(true)
-            } else {
-              cancelOngoingCompression()
-            }
-          }}
-          isLoading={isCancelling}
-          isDisabled={isCancelling}
-          fullWidth
-        >
-          <motion.div layout="preserve-aspect">
-            {confirmCancellation && !isCancelling
-              ? 'Confirm Cancel'
-              : isCancelling
-                ? 'Cancelling...'
-                : 'Cancel'}
-          </motion.div>
-        </Button>
-      </motion.div>
-    </AnimatePresence>
+    <Button
+      color="danger"
+      size="lg"
+      variant={confirmCancellation ? 'solid' : 'flat'}
+      onClick={() => {
+        if (!confirmCancellation) {
+          setConfirmCancellation(true)
+        } else {
+          cancelOngoingCompression()
+        }
+      }}
+      isLoading={isCancelling}
+      isDisabled={isCancelling}
+      fullWidth
+    >
+      <AnimatePresence mode="wait">
+        <motion.div layout="preserve-aspect">
+          {confirmCancellation && !isCancelling
+            ? 'Confirm Cancel'
+            : isCancelling
+              ? 'Cancelling...'
+              : 'Cancel'}
+        </motion.div>
+      </AnimatePresence>
+    </Button>
   ) : null
 }
 

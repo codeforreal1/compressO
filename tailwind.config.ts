@@ -1,5 +1,5 @@
 import type { Config } from 'tailwindcss'
-import { nextui } from '@nextui-org/react'
+import { heroui } from "@heroui/react"
 
 const WIDTHS = Object.freeze({
   xs: '320px',
@@ -26,14 +26,14 @@ const CUSTOM_MQ = {
 const config: Config = {
   darkMode: 'class',
   plugins: [
-    nextui({
+    heroui({
       addCommonColors: true,
     }),
   ],
   content: [
     './src/**/*.{js,ts,jsx,tsx,mdx}',
     // NextUI Components
-    './node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}',
+    "./node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
     extend: {

@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { core } from '@tauri-apps/api'
-import { SelectItem } from '@nextui-org/select'
+import { SelectItem } from '@heroui/select'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useSnapshot, snapshot } from 'valtio'
 

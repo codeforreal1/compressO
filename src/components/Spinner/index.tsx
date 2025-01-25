@@ -1,7 +1,7 @@
 import {
   Spinner as NextUISpinner,
   type SpinnerProps as NextUISpinnerProps,
-} from '@nextui-org/spinner'
+} from '@heroui/spinner'
 
 interface SpinnerPros extends NextUISpinnerProps {}
 

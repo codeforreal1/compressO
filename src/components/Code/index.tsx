@@ -2,7 +2,7 @@ import React from 'react'
 import {
   Code as NextUICode,
   type CodeProps as NextUICodeProps,
-} from '@nextui-org/code'
+} from '@heroui/code'
 
 interface CodeProps extends NextUICodeProps {}
 

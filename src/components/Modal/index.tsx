@@ -10,7 +10,7 @@ import {
   type ModalBodyProps as NextUIModalBodyProps,
   type ModalContentProps as NextUIModalContentProps,
   type ModalFooterProps as NextUIModalFooterProps,
-} from '@nextui-org/modal'
+} from '@heroui/modal'
 import { cn } from '@/utils/tailwind'
 import { getPlatform } from '@/utils/fs'
 import { BackdropBlurContent } from '@/ui/BackdropBlur'

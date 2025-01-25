@@ -2,7 +2,7 @@ import React from 'react'
 import {
   Image as NextUIImage,
   type ImageProps as NextUIImageProps,
-} from '@nextui-org/image'
+} from '@heroui/image'
 
 interface ImageProps {
   src: string
