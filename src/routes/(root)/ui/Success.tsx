@@ -4,7 +4,7 @@ import React from 'react'
 import { useSnapshot } from 'valtio'
 
 import Icon from '@/components/Icon'
-import { videoProxy } from '../state'
+import { videoProxy } from '../-state'
 
 function Success() {
   const {

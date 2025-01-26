@@ -1,16 +1,16 @@
 'use client'
 
-import React from 'react'
 import { event } from '@tauri-apps/api'
-import { AnimatePresence, motion } from 'framer-motion'
-import { snapshot, useSnapshot } from 'valtio'
 import { emitTo } from '@tauri-apps/api/event'
+import { AnimatePresence, motion } from 'framer-motion'
+import React from 'react'
+import { snapshot, useSnapshot } from 'valtio'
 
-import { CustomEvents, VideoCompressionProgress } from '@/types/compression'
-import { convertDurationToMilliseconds } from '@/utils/string'
 import Button from '@/components/Button'
 import { toast } from '@/components/Toast'
-import { videoProxy } from '../state'
+import { CustomEvents, VideoCompressionProgress } from '@/types/compression'
+import { convertDurationToMilliseconds } from '@/utils/string'
+import { videoProxy } from '../-state'
 
 function CancelCompression() {
   const {
@@ -79,7 +79,7 @@ function CancelCompression() {
       color="danger"
       size="lg"
       variant={confirmCancellation ? 'solid' : 'flat'}
-      onClick={() => {
+      onPress={() => {
         if (!confirmCancellation) {
           setConfirmCancellation(true)
         } else {

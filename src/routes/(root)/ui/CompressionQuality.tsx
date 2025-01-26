@@ -1,9 +1,9 @@
 import React from 'react'
 import { snapshot, useSnapshot } from 'valtio'
 
-import Slider from '@/components/Slider/Slider'
 import Checkbox from '@/components/Checkbox'
-import { videoProxy } from '../state'
+import Slider from '@/components/Slider/Slider'
+import { videoProxy } from '../-state'
 
 function CompressionQuality() {
   const {

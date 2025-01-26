@@ -1,27 +1,29 @@
-'use client'
-
-import React from 'react'
-import dynamic from 'next/dynamic'
+import { createFileRoute } from '@tanstack/react-router'
 import { core } from '@tauri-apps/api'
 import { motion } from 'framer-motion'
+import React from 'react'
 import { useSnapshot } from 'valtio'
 
-import VideoPicker from '@/tauri/components/VideoPicker'
 import Icon from '@/components/Icon'
+import Layout from '@/components/Layout'
 import { toast } from '@/components/Toast'
-import { formatBytes } from '@/utils/fs'
 import {
   generateVideoThumbnail,
   getVideoDuration,
 } from '@/tauri/commands/ffmpeg'
 import { getFileMetadata } from '@/tauri/commands/fs'
+import VideoPicker from '@/tauri/components/VideoPicker'
 import { extensions } from '@/types/compression'
+import { formatBytes } from '@/utils/fs'
 import { convertDurationToMilliseconds } from '@/utils/string'
-import Layout from '@/components/Layout'
-import Setting from './ui/Setting'
+import { videoProxy } from './-state'
 import DragAndDrop from './ui/DragAndDrop'
-import { videoProxy } from './state'
+import Setting from './ui/Setting'
 import VideoConfig from './ui/VideoConfig'
+
+export const Route = createFileRoute('/(root)/')({
+  component: Root,
+})
 
 function Root() {
   const { state, resetProxy } = useSnapshot(videoProxy)
@@ -134,4 +136,4 @@ function Root() {
   )
 }
 
-export default dynamic(() => Promise.resolve(Root), { ssr: false })
+export default Root

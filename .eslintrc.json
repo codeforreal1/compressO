@@ -5,13 +5,7 @@
     "es2021": true
   },
   "plugins": ["@typescript-eslint", "prettier", "unused-imports"],
-  "extends": [
-    "airbnb",
-    "airbnb-typescript",
-    "airbnb/hooks",
-    "prettier",
-    "next/core-web-vitals"
-  ],
+  "extends": ["airbnb", "airbnb-typescript", "airbnb/hooks", "prettier"],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "ecmaFeatures": {
@@ -72,6 +66,23 @@
         "ignoreCase": false
       }
     ],
-    "no-nested-ternary": "off"
+    "no-nested-ternary": "off",
+    "import/no-extraneous-dependencies": [
+      "error",
+      {
+        "devDependencies": ["**/vite.config.*", "**/*.test.*", "**/*.spec.*"]
+      }
+    ],
+    "import/extensions": [
+      "error",
+      "ignorePackages",
+      {
+        "": "never",
+        "js": "never",
+        "jsx": "never",
+        "ts": "never",
+        "tsx": "never"
+      }
+    ]
   }
 }

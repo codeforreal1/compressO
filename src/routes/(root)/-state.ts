@@ -1,7 +1,7 @@
-import { proxy } from 'valtio'
 import cloneDeep from 'lodash/cloneDeep'
+import { proxy } from 'valtio'
 
-import { Video, VideoConfig } from './types'
+import { Video, VideoConfig } from './-types'
 
 const videoConfigInitialState: VideoConfig = {
   convertToExtension: 'mp4',

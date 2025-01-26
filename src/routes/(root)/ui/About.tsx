@@ -1,10 +1,10 @@
-import React from 'react'
 import { open } from '@tauri-apps/plugin-shell'
+import React from 'react'
 
-import Image from '@/components/Image'
 import Icon from '@/components/Icon'
-import TauriLink from '@/tauri/components/Link'
+import Image from '@/components/Image'
 import Title from '@/components/Title'
+import TauriLink from '@/tauri/components/Link'
 
 function About() {
   return (
@@ -17,7 +17,13 @@ function About() {
           <h2 className="text-3xl mr-2 font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
             compressO
           </h2>
-          <Image src="/logo.png" alt="logo" width={50} height={50} />
+          <Image
+            disableAnimation
+            src="/logo.png"
+            alt="logo"
+            width={50}
+            height={50}
+          />
         </div>
         <p className="text-center italic text-gray-600 dark:text-gray-400 text-sm my-1">
           Compress any video to a tiny size.
@@ -63,7 +69,7 @@ function About() {
         </p>
       </section>
       <p className="self-end text-gray-400 ml-2 text-lg font-bold text-center">
-        v{process.env.version}
+        v{window.__appVersion ?? ''}
       </p>
     </section>
   )

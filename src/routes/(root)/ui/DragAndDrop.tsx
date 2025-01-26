@@ -1,11 +1,11 @@
-import React from 'react'
 import { event } from '@tauri-apps/api'
+import { AnimatePresence, motion } from 'framer-motion'
+import React from 'react'
 import ReactDOM from 'react-dom'
-import { motion, AnimatePresence } from 'framer-motion'
 
+import Icon from '@/components/Icon'
 import { toast } from '@/components/Toast'
 import { extensions } from '@/types/compression'
-import Icon from '@/components/Icon'
 import { zoomInTransition } from '@/utils/animation'
 
 const videoExtensions = Object.keys(extensions?.video)

@@ -1,16 +1,16 @@
 'use client'
 
-import React from 'react'
 import { useDisclosure, UseDisclosureProps } from '@heroui/modal'
+import React from 'react'
 import { snapshot, useSnapshot } from 'valtio'
 
 import Button from '@/components/Button'
 import Code from '@/components/Code'
 import Icon from '@/components/Icon'
-import AlertDialog, { AlertDialogButton } from '@/ui/Dialogs/AlertDialog'
 import Tooltip from '@/components/Tooltip'
 import { deleteFile } from '@/tauri/commands/fs'
-import { videoProxy } from '../state'
+import AlertDialog, { AlertDialogButton } from '@/ui/Dialogs/AlertDialog'
+import { videoProxy } from '../-state'
 
 function FileName() {
   const {
@@ -77,7 +77,7 @@ function FileName() {
           <Button
             isIconOnly
             size="sm"
-            onClick={handleReconfigure}
+            onPress={handleReconfigure}
             className="bg-transparent"
           >
             <Tooltip content="Reconfigure" aria-label="Reconfigure">
@@ -89,7 +89,7 @@ function FileName() {
           <Button
             isIconOnly
             size="sm"
-            onClick={handleCancelCompression}
+            onPress={handleCancelCompression}
             className="bg-transparent"
           >
             <Icon name="cross" size={22} />
@@ -102,10 +102,10 @@ function FileName() {
         description="Your compressed video is not yet saved. Are you sure you want to discard it?"
         renderFooter={({ closeModal }) => (
           <>
-            <AlertDialogButton onClick={closeModal}>Go Back</AlertDialogButton>
+            <AlertDialogButton onPress={closeModal}>Go Back</AlertDialogButton>
             <AlertDialogButton
               color="danger"
-              onClick={() => handleDiscard({ closeModal })}
+              onPress={() => handleDiscard({ closeModal })}
             >
               Yes
             </AlertDialogButton>

@@ -1,34 +1,34 @@
 'use client'
 
-import React from 'react'
-import { core } from '@tauri-apps/api'
 import { SelectItem } from '@heroui/select'
+import { core } from '@tauri-apps/api'
 import { AnimatePresence, motion } from 'framer-motion'
-import { useSnapshot, snapshot } from 'valtio'
+import React from 'react'
+import { snapshot, useSnapshot } from 'valtio'
 
 import Button from '@/components/Button'
+import Checkbox from '@/components/Checkbox'
+import Divider from '@/components/Divider'
+import Icon from '@/components/Icon'
+import Image from '@/components/Image'
+import Layout from '@/components/Layout'
 import Select from '@/components/Select'
 import Spinner from '@/components/Spinner'
-import Divider from '@/components/Divider'
-import Image from '@/components/Image'
-import Icon from '@/components/Icon'
 import { toast } from '@/components/Toast'
-import { formatBytes } from '@/utils/fs'
+import Tooltip from '@/components/Tooltip'
 import { compressVideo } from '@/tauri/commands/ffmpeg'
 import { getFileMetadata } from '@/tauri/commands/fs'
 import { compressionPresets, extensions } from '@/types/compression'
-import Tooltip from '@/components/Tooltip'
-import Checkbox from '@/components/Checkbox'
-import { cn } from '@/utils/tailwind'
 import { zoomInTransition } from '@/utils/animation'
-import Layout from '@/components/Layout'
-import { videoProxy } from '../state'
-import Compressing from './Compressing'
-import FileName from './FileName'
-import Success from './Success'
+import { formatBytes } from '@/utils/fs'
+import { cn } from '@/utils/tailwind'
+import { videoProxy } from '../-state'
 import CancelCompression from './CancelCompression'
-import SaveVideo from './SaveVideo'
+import Compressing from './Compressing'
 import CompressionQuality from './CompressionQuality'
+import FileName from './FileName'
+import SaveVideo from './SaveVideo'
+import Success from './Success'
 import styles from './styles.module.css'
 
 const videoExtensions = Object.keys(extensions?.video)
@@ -213,24 +213,26 @@ function VideoConfig() {
                   <span className="text-gray-600 dark:text-gray-400 block mr-2 text-sm">
                     Disable Compression
                   </span>
-                  <Tooltip
-                    delay={0}
-                    content={
-                      <div className="max-w-[10rem] p-2">
-                        <p>
-                          You can disable the compression if you just want to
-                          change the extension of the video.
-                        </p>
-                      </div>
-                    }
-                    aria-label="You can disable the compression if you just
-                              want to change the extension of the video"
-                    className="flex justify-center items-center"
-                  >
-                    <Icon name="question" className="block" />
-                  </Tooltip>
                 </div>
               </Checkbox>
+              <div className="z-10">
+                <Tooltip
+                  delay={0}
+                  content={
+                    <div className="max-w-[10rem] p-2">
+                      <p>
+                        You can disable the compression if you just want to
+                        change the extension of the video.
+                      </p>
+                    </div>
+                  }
+                  aria-label="You can disable the compression if you just
+                              want to change the extension of the video"
+                  className="flex justify-center items-center"
+                >
+                  <Icon name="question" className="block" />
+                </Tooltip>
+              </div>
             </div>
             <Divider className="my-3" />
             <Select
@@ -311,9 +313,10 @@ function VideoConfig() {
                 <Button
                   as={motion.button}
                   color="primary"
-                  onClick={handleCompression}
+                  onPress={handleCompression}
                   fullWidth
                   size="lg"
+                  className="text-primary"
                 >
                   Compress <Icon name="logo" size={25} />
                 </Button>

@@ -3,10 +3,10 @@
 import React, { ComponentProps } from 'react'
 
 import { cn } from '@/utils/tailwind'
-import Header from './Header'
-import Footer from './Footer'
-import { LayoutContext } from './context'
 import Image from '../Image'
+import Footer from './Footer'
+import Header from './Header'
+import { LayoutContext } from './context'
 
 interface LayoutProps {
   children: React.ReactNode
@@ -49,7 +49,7 @@ const Layout = (props: LayoutProps) => {
       <section
         {...(containerProps ?? {})}
         className={cn([
-          'w-full h-full flex flex-col overflow-y-auto',
+          'w-full h-full flex flex-col overflow-y-auto dark:bg-black1 bg-white1',
           containerProps?.className ?? '',
         ])}
       >

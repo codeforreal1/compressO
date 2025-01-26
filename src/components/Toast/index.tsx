@@ -1,6 +1,6 @@
+import { useTheme } from '@/hooks/useTheme'
 import React from 'react'
 import { Toaster as NativeToaster, toast } from 'sonner'
-import { useTheme } from 'next-themes'
 
 export function Toaster() {
   const { theme } = useTheme()
@@ -8,13 +8,15 @@ export function Toaster() {
     <NativeToaster
       position="bottom-center"
       richColors
-      theme={theme === 'dark' ? 'dark' : 'light'}
+      theme={theme}
       toastOptions={{
         classNames: {
-          default: 'rounded-[3rem] px-4 py-2 w-fit',
+          default:
+            'w-fit rounded-[3rem] px-4 py-2 flex justify-center align-center',
         },
-        duration: 3000,
+        duration: 2500,
       }}
+      className="flex justify-center items-center"
     />
   )
 }

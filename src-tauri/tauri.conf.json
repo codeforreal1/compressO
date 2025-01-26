@@ -4,9 +4,9 @@
   "version": "1.2.0",
   "identifier": "com.compresso.app",
   "build": {
-    "beforeBuildCommand": "pnpm next:build",
+    "beforeBuildCommand": "pnpm vite:build",
     "frontendDist": "../dist",
-    "devUrl": "http://localhost:3000"
+    "devUrl": "http://localhost:3001"
   },
   "bundle": {
     "longDescription": "Compress any video file to a tiny size.",

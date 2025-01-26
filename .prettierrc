@@ -2,5 +2,7 @@
   "singleQuote": true,
   "trailingComma": "all",
   "tabWidth": 2,
-  "semi": false
+  "semi": false,
+  "plugins": ["prettier-plugin-organize-imports"],
+  "organizeImportsSkipDestructiveCodeActions": true
 }

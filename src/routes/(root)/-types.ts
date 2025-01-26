@@ -1,4 +1,4 @@
-import { extensions, compressionPresets } from '@/types/compression'
+import { compressionPresets, extensions } from '@/types/compression'
 
 export type VideoConfig = {
   convertToExtension: keyof typeof extensions.video

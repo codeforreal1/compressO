@@ -1,15 +1,11 @@
 import React from 'react'
-import { useTheme } from 'next-themes'
 
+import { ThemeProxy, useTheme } from '@/hooks/useTheme'
 import Button from '../Button'
 import Icon from '../Icon'
 import Tooltip from '../Tooltip'
 
-interface ThemeSwitcherChildrenProps {
-  theme: string | undefined
-
-  setTheme(theme: string | undefined): void
-}
+type ThemeSwitcherChildrenProps = ThemeProxy
 
 interface ThemeSwitcherProps {
   children?(props: ThemeSwitcherChildrenProps): React.ReactNode
@@ -18,23 +14,14 @@ interface ThemeSwitcherProps {
 function ThemeSwitcher(props: ThemeSwitcherProps) {
   const { children } = props
 
-  const { theme, setTheme } = useTheme()
-  const [mounted, setMounted] = React.useState(false)
-
-  React.useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  if (!mounted) {
-    return null
-  }
+  const { theme, setTheme, toggleTheme } = useTheme()
 
   return children == null ? (
     <Button
       isIconOnly
       size="sm"
-      onClick={() => {
-        setTheme(theme === 'light' ? 'dark' : 'light')
+      onPress={() => {
+        toggleTheme()
       }}
     >
       <Tooltip
@@ -46,7 +33,7 @@ function ThemeSwitcher(props: ThemeSwitcherProps) {
       </Tooltip>
     </Button>
   ) : (
-    children({ theme, setTheme })
+    children({ theme, setTheme, toggleTheme })
   )
 }
 

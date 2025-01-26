@@ -1,16 +1,16 @@
 'use client'
 
-import React from 'react'
 import { save } from '@tauri-apps/plugin-dialog'
+import React from 'react'
 import { snapshot, useSnapshot } from 'valtio'
 
 import Button from '@/components/Button'
 import Icon from '@/components/Icon'
 import { toast } from '@/components/Toast'
 
-import { moveFile, showItemInFileManager } from '@/tauri/commands/fs'
 import Tooltip from '@/components/Tooltip'
-import { videoProxy } from '../state'
+import { moveFile, showItemInFileManager } from '@/tauri/commands/fs'
+import { videoProxy } from '../-state'
 
 function Success() {
   const {
@@ -65,7 +65,7 @@ function Success() {
       <Button
         className="flex justify-center items-center"
         color="success"
-        onClick={handleCompressedVideoSave}
+        onPress={handleCompressedVideoSave}
         isLoading={compressedVideo?.isSaving}
         isDisabled={compressedVideo?.isSaving || compressedVideo?.isSaved}
         fullWidth
@@ -85,7 +85,7 @@ function Success() {
           <Button
             isIconOnly
             className="ml-2 text-green-500"
-            onClick={openInFileManager}
+            onPress={openInFileManager}
           >
             <Icon name="fileExplorer" />
           </Button>

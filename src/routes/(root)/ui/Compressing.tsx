@@ -1,12 +1,12 @@
 'use client'
 
-import React from 'react'
 import { motion } from 'framer-motion'
+import React from 'react'
 import { useSnapshot } from 'valtio'
 
-import Progress from '@/components/Progress'
 import Image from '@/components/Image'
-import { videoProxy } from '../state'
+import Progress from '@/components/Progress'
+import { videoProxy } from '../-state'
 
 function Compressing() {
   const {

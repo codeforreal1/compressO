@@ -1,19 +1,19 @@
-import React from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
 import { DropdownItem } from '@heroui/dropdown'
 import { useDisclosure } from '@heroui/modal'
+import { AnimatePresence, motion } from 'framer-motion'
+import React from 'react'
 
-import ThemeSwitcher from '@/components/ThemeSwitcher'
-import Divider from '@/components/Divider'
 import Button from '@/components/Button'
-import Icon from '@/components/Icon'
-import Tooltip from '@/components/Tooltip'
-import { deleteCache as invokeDeleteCache } from '@/tauri/commands/fs'
-import { toast } from '@/components/Toast'
-import Title from '@/components/Title'
-import Modal, { ModalContent } from '@/components/Modal'
+import Divider from '@/components/Divider'
 import Dropdown, { DropdownMenu, DropdownTrigger } from '@/components/Dropdown'
+import Icon from '@/components/Icon'
+import Modal, { ModalContent } from '@/components/Modal'
+import ThemeSwitcher from '@/components/ThemeSwitcher'
+import Title from '@/components/Title'
+import { toast } from '@/components/Toast'
+import Tooltip from '@/components/Tooltip'
 import { usePlatform } from '@/hooks/usePlatform'
+import { deleteCache as invokeDeleteCache } from '@/tauri/commands/fs'
 import About from './About'
 
 type DropdownKey = 'settings' | 'about'
@@ -111,7 +111,7 @@ function AppSetting() {
                 size="sm"
                 color="danger"
                 variant={confirmClearCache ? 'solid' : 'flat'}
-                onClick={() => {
+                onPress={() => {
                   if (!confirmClearCache) {
                     setConfirmClearCache(true)
                   } else {
