@@ -6,7 +6,7 @@ import eslint from 'vite-plugin-eslint'
 import svgr from 'vite-plugin-svgr'
 import packageJSON from './package.json'
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [
     TanStackRouterVite({
       routeFileIgnorePattern: '(^[A-Z].*)',
@@ -20,7 +20,9 @@ export default defineConfig({
       '@': resolve('./src'),
     },
   },
+  // See `src/main.tsx` file to assign these defined values to window.
   define: {
     __appVersion: JSON.stringify(packageJSON.version),
+    __envMode: JSON.stringify(mode),
   },
-})
+}))

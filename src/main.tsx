@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { RouterProvider, createRouter } from '@tanstack/react-router'
 import React from 'react'
 import ReactDOM from 'react-dom/client'
@@ -13,6 +14,12 @@ declare module '@tanstack/react-router' {
   interface Register {
     router: typeof router
   }
+}
+
+// See `vite.config.ts` for all defined values.
+if (typeof window !== 'undefined') {
+  window.__appVersion = __appVersion
+  window.__envMode = __envMode
 }
 
 const rootElement = document.getElementById('app')!

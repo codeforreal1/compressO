@@ -9,6 +9,8 @@ export const Route = createRootRoute({
   component: RootComponent,
 })
 
+const isDev = import.meta.env.DEV
+
 function RootComponent() {
   return (
     <>
@@ -16,7 +18,7 @@ function RootComponent() {
         <Outlet />
       </UIProvider>
       <Toaster />
-      <TanStackRouterDevtools position="bottom-right" />
+      {isDev ? <TanStackRouterDevtools position="bottom-right" /> : null}
     </>
   )
 }
