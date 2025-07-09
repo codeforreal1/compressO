@@ -10,8 +10,8 @@
 
 // Import Routes
 
-import { Route as rootIndexImport } from './routes/(root)/index'
 import { Route as rootRoute } from './routes/__root'
+import { Route as rootIndexImport } from './routes/(root)/index'
 
 // Create/Update Routes
 

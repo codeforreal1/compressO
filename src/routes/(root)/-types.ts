@@ -7,6 +7,7 @@ export type VideoConfig = {
   shouldMuteVideo: boolean
   quality?: number | null
   shouldEnableQuality?: boolean
+  shouldEnableCustomDimensions?: boolean
 }
 
 export type Video = {
@@ -41,4 +42,5 @@ export type Video = {
   } | null
   compressionProgress?: number
   config: VideoConfig
+  dimensions?: { width: number; height: number }
 }

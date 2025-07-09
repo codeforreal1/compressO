@@ -1,6 +1,6 @@
 <div align="center">
   <div align="center">
-   <img width="100" height="100" src="public/logo.png" alt="Logo">
+   <img width="100" height="100" src="public/logo.png" alt="Logo" />
   </div>
 	<h1 align="center">CompressO</h1>
 	<p align="center">

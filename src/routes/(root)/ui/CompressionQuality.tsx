@@ -1,8 +1,10 @@
+import { AnimatePresence, motion } from 'framer-motion'
 import React from 'react'
 import { snapshot, useSnapshot } from 'valtio'
 
-import Checkbox from '@/components/Checkbox'
 import Slider from '@/components/Slider/Slider'
+import Switch from '@/components/Switch'
+import { slideDownTransition } from '@/utils/animation'
 import { videoProxy } from '../-state'
 
 function CompressionQuality() {
@@ -57,50 +59,60 @@ function CompressionQuality() {
 
   return (
     <>
-      <Checkbox
+      <Switch
         isSelected={shouldEnableQuality}
         onValueChange={() => {
           videoProxy.state.config.shouldEnableQuality = !shouldEnableQuality
         }}
         isDisabled={isCompressing}
       >
-        <div className="flex items-center">
-          <p className="text-gray-600 dark:text-gray-400 text-sm mr-2">
-            Quality
-          </p>
-        </div>
-      </Checkbox>
-      <Slider
-        label
-        aria-label="Quality"
-        size="sm"
-        marks={[
-          {
-            value: 0,
-            label: 'Low',
-          },
-          {
-            value: 50,
-            label: 'Medium',
-          },
-          {
-            value: 99,
-            label: 'High',
-          },
-        ]}
-        className="mb-8"
-        classNames={{ mark: 'text-xs' }}
-        getValue={(value) => {
-          const val = Array.isArray(value) ? value?.[0] : +value
-          return val < 50 ? 'Low' : val >= 50 && val < 100 ? 'Medium' : 'High'
-        }}
-        renderValue={(props) => (
-          <p className="text-primary text-sm font-bold">{props?.children}</p>
-        )}
-        value={quality}
-        onChange={handleQualityChange}
-        isDisabled={isCompressing || !shouldEnableQuality}
-      />
+        <p className="text-gray-600 dark:text-gray-400 text-sm mr-2 w-full">
+          Quality
+        </p>
+      </Switch>
+      <AnimatePresence mode="wait">
+        {shouldEnableQuality ? (
+          <motion.div {...slideDownTransition}>
+            <Slider
+              label
+              aria-label="Quality"
+              size="sm"
+              marks={[
+                {
+                  value: 0,
+                  label: 'Low',
+                },
+                {
+                  value: 50,
+                  label: 'Medium',
+                },
+                {
+                  value: 99,
+                  label: 'High',
+                },
+              ]}
+              className="mb-8"
+              classNames={{ mark: 'text-xs' }}
+              getValue={(value) => {
+                const val = Array.isArray(value) ? value?.[0] : +value
+                return val < 50
+                  ? 'Low'
+                  : val >= 50 && val < 100
+                    ? 'Medium'
+                    : 'High'
+              }}
+              renderValue={(props) => (
+                <p className="text-primary text-sm font-bold">
+                  {props?.children}
+                </p>
+              )}
+              value={quality}
+              onChange={handleQualityChange}
+              isDisabled={isCompressing || !shouldEnableQuality}
+            />
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
     </>
   )
 }

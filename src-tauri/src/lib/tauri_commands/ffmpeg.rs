@@ -1,6 +1,6 @@
 use crate::{
-    domain::{CompressionResult, VideoThumbnail},
-    ffmpeg,
+    domain::{CompressionResult, VideoInfo, VideoThumbnail},
+    ffmpeg::{self},
     fs::delete_stale_files,
 };
 
@@ -49,10 +49,7 @@ pub async fn generate_video_thumbnail(
 }
 
 #[tauri::command]
-pub async fn get_video_duration(
-    app: tauri::AppHandle,
-    video_path: &str,
-) -> Result<Option<String>, String> {
+pub async fn get_video_info(app: tauri::AppHandle, video_path: &str) -> Result<VideoInfo, String> {
     let mut ffmpeg = ffmpeg::FFMPEG::new(&app)?;
-    ffmpeg.get_video_duration(video_path).await
+    ffmpeg.get_video_info(video_path).await
 }

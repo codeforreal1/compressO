@@ -1,13 +1,13 @@
 use crate::domain::{
     CancelInProgressCompressionPayload, CompressionResult, CustomEvents, TauriEvents,
-    VideoCompressionProgress, VideoThumbnail,
+    VideoCompressionProgress, VideoInfo, VideoThumbnail,
 };
 use crossbeam_channel::{Receiver, Sender};
 use nanoid::nanoid;
 use regex::Regex;
 use shared_child::SharedChild;
 use std::{
-    io::BufReader,
+    io::{BufRead, BufReader},
     path::{Path, PathBuf},
     process::{Command, Stdio},
     sync::{Arc, Mutex},
@@ -475,7 +475,7 @@ impl FFMPEG {
         self.assets_dir.display().to_string()
     }
 
-    pub async fn get_video_duration(&mut self, video_path: &str) -> Result<Option<String>, String> {
+    pub async fn get_video_info(&mut self, video_path: &str) -> Result<VideoInfo, String> {
         if !Path::exists(Path::new(video_path)) {
             return Err(String::from("File does not exist in given path."));
         }
@@ -483,7 +483,7 @@ impl FFMPEG {
         let command = self
             .ffmpeg
             .args(["-i", video_path, "-hide_banner"])
-            .stdout(Stdio::piped());
+            .stderr(Stdio::piped()); // Capture stderr for metadata parsing
 
         match SharedChild::spawn(command) {
             Ok(child) => {
@@ -495,56 +495,69 @@ impl FFMPEG {
                     Some(window) => window,
                     None => return Err(String::from("Could not attach to main window")),
                 };
+
                 let destroy_event_id = window.listen(
                     TauriEvents::Destroyed.get_str("key").unwrap(),
                     move |_| match cp.kill() {
-                        Ok(_) => {
-                            log::info!("child process killed.");
-                        }
-                        Err(err) => {
-                            log::error!("child process could not be killed {}", err.to_string());
-                        }
+                        Ok(_) => log::info!("child process killed."),
+                        Err(err) => log::error!("child process could not be killed {}", err),
                     },
                 );
 
-                let thread: tokio::task::JoinHandle<(u8, Option<String>)> =
-                    tokio::spawn(async move {
+                let thread: tokio::task::JoinHandle<(u8, Option<String>, Option<(u32, u32)>)> =
+                    tokio::task::spawn(async move {
                         let mut duration: Option<String> = None;
+                        let mut dimensions: Option<(u32, u32)> = None;
+
                         if let Some(stderr) = cp_clone1.take_stderr() {
-                            let mut reader = BufReader::new(stderr);
-                            loop {
-                                let mut buf: Vec<u8> = Vec::new();
-                                match tauri::utils::io::read_line(&mut reader, &mut buf) {
-                                    Ok(n) => {
-                                        if n == 0 {
-                                            break;
+                            let reader = BufReader::new(stderr);
+                            let duration_re = Regex::new(r"Duration: (?P<duration>.*?),").unwrap();
+                            let dimension_re =
+                                Regex::new(r"Video:.*?,.*? (?P<width>\d{2,5})x(?P<height>\d{2,5})")
+                                    .unwrap();
+
+                            for line_res in reader.lines() {
+                                if let Ok(line) = line_res {
+                                    if duration.is_none() {
+                                        if let Some(cap) = duration_re.captures(&line) {
+                                            duration = Some(cap["duration"].to_string());
                                         }
-                                        let line = std::str::from_utf8(&buf).unwrap();
-                                        let re = Regex::new("Duration: (?<duration>.*?),").unwrap();
-                                        if let Some(cap) = re.captures(line) {
-                                            let matched_duration = &cap["duration"];
-                                            // FFMPEG might return duration as N/A for files with invalid or unknown encoding
-                                            duration = Some(String::from(matched_duration));
-                                        };
                                     }
-                                    Err(_) => {
+                                    if dimensions.is_none() {
+                                        if let Some(cap) = dimension_re.captures(&line) {
+                                            if let (Ok(w), Ok(h)) = (
+                                                cap["width"].parse::<u32>(),
+                                                cap["height"].parse::<u32>(),
+                                            ) {
+                                                dimensions = Some((w, h));
+                                            }
+                                        }
+                                    }
+                                    if duration.is_some() && dimensions.is_some() {
                                         break;
                                     }
-                                };
+                                } else {
+                                    break;
+                                }
                             }
                         }
+
                         if cp_clone1.wait().is_ok() {
-                            return (0, duration);
+                            (0, duration, dimensions)
+                        } else {
+                            (1, duration, dimensions)
                         }
-                        (1, duration)
                     });
 
-                let result: Result<Option<String>, String> = match thread.await {
-                    Ok((exit_status, duration)) => {
+                let result = match thread.await {
+                    Ok((exit_status, duration, dimensions)) => {
                         if exit_status == 1 {
-                            Err(String::from("Video file is corrupted"))
+                            Err("Video file is corrupted".to_string())
                         } else {
-                            Ok(duration)
+                            Ok(VideoInfo {
+                                duration,
+                                dimensions,
+                            })
                         }
                     }
                     Err(err) => Err(err.to_string()),
@@ -552,18 +565,11 @@ impl FFMPEG {
 
                 // Cleanup
                 window.unlisten(destroy_event_id);
-                match cp_clone2.kill() {
-                    Ok(_) => {
-                        log::info!("child process killed.");
-                    }
-                    Err(err) => {
-                        log::error!("child process could not be killed {}", err.to_string());
-                    }
+                if let Err(err) = cp_clone2.kill() {
+                    log::error!("child process could not be killed {}", err);
                 }
-                match result {
-                    Ok(duration) => Ok(duration),
-                    Err(err) => Err(err),
-                }
+
+                result
             }
             Err(err) => Err(err.to_string()),
         }

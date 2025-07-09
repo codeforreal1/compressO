@@ -28,3 +28,8 @@ export type VideoThumbnail = {
   fileName: string
   filePath: string
 }
+
+export type VideoInfo = {
+  duration: string
+  dimensions: [number, number]
+}

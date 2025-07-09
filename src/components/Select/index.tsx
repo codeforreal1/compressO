@@ -1,13 +1,13 @@
-import React from 'react'
+import { blurCSS } from '@/ui/BackdropBlur'
+import { getPlatform } from '@/utils/fs'
+import { cn } from '@/utils/tailwind'
 import {
   Select as NextUISelect,
   SelectItem as NextUISelectItem,
-  type SelectProps as NextUISelectProps,
   type SelectItemProps as NextUISelectItemProps,
+  type SelectProps as NextUISelectProps,
 } from '@heroui/select'
-import { blurCSS } from '@/ui/BackdropBlur'
-import { cn } from '@/utils/tailwind'
-import { getPlatform } from '@/utils/fs'
+import React from 'react'
 
 const { isWindows, isMacOS } = getPlatform()
 
@@ -15,7 +15,9 @@ interface SelectProps extends NextUISelectProps {}
 function Select(props: SelectProps) {
   return (
     <NextUISelect
-      radius="lg"
+      radius="sm"
+      size="sm"
+      labelPlacement="outside"
       {...props}
       classNames={{
         popoverContent: cn([

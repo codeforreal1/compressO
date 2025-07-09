@@ -7,10 +7,7 @@ import { useSnapshot } from 'valtio'
 import Icon from '@/components/Icon'
 import Layout from '@/components/Layout'
 import { toast } from '@/components/Toast'
-import {
-  generateVideoThumbnail,
-  getVideoDuration,
-} from '@/tauri/commands/ffmpeg'
+import { generateVideoThumbnail, getVideoInfo } from '@/tauri/commands/ffmpeg'
 import { getFileMetadata } from '@/tauri/commands/fs'
 import VideoPicker from '@/tauri/components/VideoPicker'
 import { extensions } from '@/types/compression'
@@ -38,7 +35,10 @@ function Root() {
           toast.error('Invalid file selected.')
           return
         }
-        const fileMetadata = await getFileMetadata(path)
+        const [fileMetadata, videoInfo] = await Promise.all([
+          getFileMetadata(path),
+          getVideoInfo(path),
+        ])
 
         if (
           !fileMetadata ||
@@ -62,6 +62,25 @@ function Root() {
             fileMetadata?.extension as keyof (typeof extensions)['video']
         }
 
+        if (videoInfo) {
+          const dimensions = videoInfo.dimensions
+          if (
+            !Number.isNaN(videoInfo.dimensions?.[0]) &&
+            !Number.isNaN(videoInfo.dimensions[1])
+          ) {
+            videoProxy.state.dimensions = {
+              width: dimensions[0],
+              height: dimensions[1],
+            }
+          }
+          const duration = videoInfo.duration
+          const durationInMilliseconds = convertDurationToMilliseconds(duration)
+          if (durationInMilliseconds > 0) {
+            videoProxy.state.videDurationRaw = duration
+            videoProxy.state.videoDurationMilliseconds = durationInMilliseconds
+          }
+        }
+
         const thumbnail = await generateVideoThumbnail(path)
 
         videoProxy.state.isThumbnailGenerating = false
@@ -71,15 +90,6 @@ function Root() {
           videoProxy.state.thumbnailPath = core.convertFileSrc(
             thumbnail?.filePath,
           )
-        }
-
-        const duration = await getVideoDuration(path)
-        const durationInMilliseconds = convertDurationToMilliseconds(
-          duration as string,
-        )
-        if (durationInMilliseconds > 0) {
-          videoProxy.state.videDurationRaw = duration
-          videoProxy.state.videoDurationMilliseconds = durationInMilliseconds
         }
       } catch (error) {
         resetProxy()
