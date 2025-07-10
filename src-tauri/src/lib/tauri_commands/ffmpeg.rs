@@ -13,6 +13,8 @@ pub async fn compress_video(
     video_id: Option<&str>,
     should_mute_video: bool,
     quality: u16,
+    dimensions: Option<(u32, u32)>,
+    fps: Option<&str>,
 ) -> Result<CompressionResult, String> {
     let mut ffmpeg = ffmpeg::FFMPEG::new(&app)?;
     if let Ok(files) =
@@ -31,6 +33,8 @@ pub async fn compress_video(
             video_id,
             should_mute_video,
             quality,
+            dimensions,
+            fps,
         )
         .await
     {

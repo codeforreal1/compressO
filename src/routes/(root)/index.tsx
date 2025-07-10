@@ -79,6 +79,9 @@ function Root() {
             videoProxy.state.videDurationRaw = duration
             videoProxy.state.videoDurationMilliseconds = durationInMilliseconds
           }
+          if (videoInfo.fps) {
+            videoProxy.state.fps = Math.ceil(videoInfo.fps)
+          }
         }
 
         const thumbnail = await generateVideoThumbnail(path)

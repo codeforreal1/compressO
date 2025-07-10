@@ -32,4 +32,5 @@ export type VideoThumbnail = {
 export type VideoInfo = {
   duration: string
   dimensions: [number, number]
+  fps: number
 }

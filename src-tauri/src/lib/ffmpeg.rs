@@ -59,10 +59,13 @@ impl FFMPEG {
         video_id: Option<&str>,
         should_mute_video: bool,
         quality: u16,
+        dimensions: Option<(u32, u32)>,
+        fps: Option<&str>,
     ) -> Result<CompressionResult, String> {
         if !EXTENSIONS.contains(&convert_to_extension) {
             return Err(String::from("Invalid convert to extension."));
         }
+        print!("{:?}", dimensions);
 
         let id = match video_id {
             Some(id) => String::from(id),
@@ -93,10 +96,10 @@ impl FFMPEG {
 
         let codec = "libx264";
 
-        let preset = match preset_name {
+        let mut preset = match preset_name {
             Some(preset) => match preset {
                 "thunderbolt" => {
-                    let mut args = vec![
+                    let args = vec![
                         "-i",
                         &video_path,
                         "-hide_banner",
@@ -109,22 +112,11 @@ impl FFMPEG {
                         codec,
                         "-crf",
                         compression_quality_str,
-                        "-vf",
-                        "pad=ceil(iw/2)*2:ceil(ih/2)*2",
                     ];
-                    if convert_to_extension == "webm" {
-                        args.push("-c:v");
-                        args.push("libvpx-vp9");
-                    }
-                    if should_mute_video {
-                        args.push("-an")
-                    }
-                    args.push(output_path);
-                    args.push("-y");
                     args
                 }
                 _ => {
-                    let mut args = vec![
+                    let args = vec![
                         "-i",
                         &video_path,
                         "-hide_banner",
@@ -147,23 +139,12 @@ impl FFMPEG {
                         "0",
                         "-crf",
                         compression_quality_str,
-                        "-vf",
-                        "pad=ceil(iw/2)*2:ceil(ih/2)*2",
                     ];
-                    if convert_to_extension == "webm" {
-                        args.push("-c:v");
-                        args.push("libvpx-vp9");
-                    }
-                    if should_mute_video {
-                        args.push("-an")
-                    }
-                    args.push(output_path);
-                    args.push("-y");
                     args
                 }
             },
             None => {
-                let mut args = vec![
+                let args = vec![
                     "-i",
                     &video_path,
                     "-hide_banner",
@@ -174,21 +155,40 @@ impl FFMPEG {
                     "error",
                     "-c:v",
                     codec,
-                    "-vf",
-                    "pad=ceil(iw/2)*2:ceil(ih/2)*2",
+                    "-crf",
+                    compression_quality_str,
                 ];
-                if convert_to_extension == "webm" {
-                    args.push("-c:v");
-                    args.push("libvpx-vp9");
-                }
-                if should_mute_video {
-                    args.push("-an")
-                }
-                args.push(output_path);
-                args.push("-y");
                 args
             }
         };
+        // Dimensions
+        let vf_filter = if let Some((width, height)) = dimensions {
+            format!("scale={}:{},pad=ceil(iw/2)*2:ceil(ih/2)*2", width, height)
+        } else {
+            "pad=ceil(iw/2)*2:ceil(ih/2)*2".to_string()
+        };
+        preset.push("-vf");
+        preset.push(&vf_filter);
+
+        // FPS
+        if let Some(fps_val) = fps {
+            preset.push("-r");
+            preset.push(fps_val);
+        }
+
+        // Webm
+        if convert_to_extension == "webm" {
+            preset.push("-c:v");
+            preset.push("libvpx-vp9");
+        }
+
+        // Mute Audio
+        if should_mute_video {
+            preset.push("-an")
+        }
+
+        preset.push(output_path);
+        preset.push("-y");
 
         let command = self
             .ffmpeg
@@ -504,59 +504,73 @@ impl FFMPEG {
                     },
                 );
 
-                let thread: tokio::task::JoinHandle<(u8, Option<String>, Option<(u32, u32)>)> =
-                    tokio::task::spawn(async move {
-                        let mut duration: Option<String> = None;
-                        let mut dimensions: Option<(u32, u32)> = None;
+                let thread: tokio::task::JoinHandle<(
+                    u8,
+                    Option<String>,
+                    Option<(u32, u32)>,
+                    Option<f32>,
+                )> = tokio::task::spawn(async move {
+                    let mut duration: Option<String> = None;
+                    let mut dimensions: Option<(u32, u32)> = None;
+                    let mut fps: Option<f32> = None;
 
-                        if let Some(stderr) = cp_clone1.take_stderr() {
-                            let reader = BufReader::new(stderr);
-                            let duration_re = Regex::new(r"Duration: (?P<duration>.*?),").unwrap();
-                            let dimension_re =
-                                Regex::new(r"Video:.*?,.*? (?P<width>\d{2,5})x(?P<height>\d{2,5})")
-                                    .unwrap();
+                    if let Some(stderr) = cp_clone1.take_stderr() {
+                        let reader = BufReader::new(stderr);
+                        let duration_re = Regex::new(r"Duration: (?P<duration>.*?),").unwrap();
+                        let dimension_re =
+                            Regex::new(r"Video:.*?,.*? (?P<width>\d{2,5})x(?P<height>\d{2,5})")
+                                .unwrap();
+                        let fps_re = Regex::new(r"(?P<fps>\d+(\.\d+)?) fps").unwrap();
 
-                            for line_res in reader.lines() {
-                                if let Ok(line) = line_res {
-                                    if duration.is_none() {
-                                        if let Some(cap) = duration_re.captures(&line) {
-                                            duration = Some(cap["duration"].to_string());
+                        for line_res in reader.lines() {
+                            if let Ok(line) = line_res {
+                                if duration.is_none() {
+                                    if let Some(cap) = duration_re.captures(&line) {
+                                        duration = Some(cap["duration"].to_string());
+                                    }
+                                }
+                                if dimensions.is_none() {
+                                    if let Some(cap) = dimension_re.captures(&line) {
+                                        if let (Ok(w), Ok(h)) = (
+                                            cap["width"].parse::<u32>(),
+                                            cap["height"].parse::<u32>(),
+                                        ) {
+                                            dimensions = Some((w, h));
                                         }
                                     }
-                                    if dimensions.is_none() {
-                                        if let Some(cap) = dimension_re.captures(&line) {
-                                            if let (Ok(w), Ok(h)) = (
-                                                cap["width"].parse::<u32>(),
-                                                cap["height"].parse::<u32>(),
-                                            ) {
-                                                dimensions = Some((w, h));
-                                            }
+                                }
+                                if fps.is_none() {
+                                    if let Some(cap) = fps_re.captures(&line) {
+                                        if let Ok(parsed_fps) = cap["fps"].parse::<f32>() {
+                                            fps = Some(parsed_fps);
                                         }
                                     }
-                                    if duration.is_some() && dimensions.is_some() {
-                                        break;
-                                    }
-                                } else {
+                                }
+                                if duration.is_some() && dimensions.is_some() && fps.is_some() {
                                     break;
                                 }
+                            } else {
+                                break;
                             }
                         }
+                    }
 
-                        if cp_clone1.wait().is_ok() {
-                            (0, duration, dimensions)
-                        } else {
-                            (1, duration, dimensions)
-                        }
-                    });
+                    if cp_clone1.wait().is_ok() {
+                        (0, duration, dimensions, fps)
+                    } else {
+                        (1, duration, dimensions, fps)
+                    }
+                });
 
                 let result = match thread.await {
-                    Ok((exit_status, duration, dimensions)) => {
+                    Ok((exit_status, duration, dimensions, fps)) => {
                         if exit_status == 1 {
                             Err("Video file is corrupted".to_string())
                         } else {
                             Ok(VideoInfo {
                                 duration,
                                 dimensions,
+                                fps,
                             })
                         }
                     }

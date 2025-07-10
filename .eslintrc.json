@@ -47,12 +47,7 @@
     "@typescript-eslint/naming-convention": 0,
     "jsx-a11y/control-has-associated-label": 0,
     "@typescript-eslint/no-use-before-define": 0,
-    "react/jsx-no-useless-fragment": [
-      1,
-      {
-        "allowExpressions": true
-      }
-    ],
+    "react/jsx-no-useless-fragment": "off",
     "prefer-destructuring": "off",
     "react/no-unstable-nested-components": [
       1,

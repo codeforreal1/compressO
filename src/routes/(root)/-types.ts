@@ -5,9 +5,12 @@ export type VideoConfig = {
   presetName: keyof typeof compressionPresets
   shouldDisableCompression: boolean
   shouldMuteVideo: boolean
-  quality?: number | null
   shouldEnableQuality?: boolean
+  quality?: number | null
   shouldEnableCustomDimensions?: boolean
+  customDimensions?: [number, number]
+  shouldEnableCustomFPS?: boolean
+  customFPS?: number
 }
 
 export type Video = {
@@ -43,4 +46,5 @@ export type Video = {
   compressionProgress?: number
   config: VideoConfig
   dimensions?: { width: number; height: number }
+  fps?: number
 }

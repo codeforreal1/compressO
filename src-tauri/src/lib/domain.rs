@@ -56,4 +56,5 @@ pub struct CancelInProgressCompressionPayload {
 pub struct VideoInfo {
     pub duration: Option<String>,
     pub dimensions: Option<(u32, u32)>,
+    pub fps: Option<f32>,
 }

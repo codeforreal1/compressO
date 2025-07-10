@@ -15,25 +15,25 @@ import Select from '@/components/Select'
 import Spinner from '@/components/Spinner'
 import Switch from '@/components/Switch'
 import { toast } from '@/components/Toast'
-import Tooltip from '@/components/Tooltip'
 import { compressVideo } from '@/tauri/commands/ffmpeg'
 import { getFileMetadata } from '@/tauri/commands/fs'
-import { compressionPresets, extensions } from '@/types/compression'
+import { extensions } from '@/types/compression'
 import { zoomInTransition } from '@/utils/animation'
 import { formatBytes } from '@/utils/fs'
 import { cn } from '@/utils/tailwind'
 import { videoProxy } from '../-state'
 import CancelCompression from './CancelCompression'
 import Compressing from './Compressing'
+import CompressionPreset from './CompressionPreset'
 import CompressionQuality from './CompressionQuality'
 import FileName from './FileName'
 import SaveVideo from './SaveVideo'
 import Success from './Success'
 import VideoDimensions from './VideoDimensions'
+import VideoFPS from './VideoFPS'
 import styles from './styles.module.css'
 
 const videoExtensions = Object.keys(extensions?.video)
-const presets = Object.keys(compressionPresets)
 
 function VideoConfig() {
   const {
@@ -49,14 +49,18 @@ function VideoConfig() {
       videDurationRaw,
       extension: videoExtension,
       dimensions,
+      fps,
     },
   } = useSnapshot(videoProxy)
 
   const {
     convertToExtension,
     presetName,
-    shouldDisableCompression,
     shouldMuteVideo,
+    shouldEnableCustomDimensions,
+    customDimensions,
+    shouldEnableCustomFPS,
+    customFPS,
   } = config
 
   const handleCompression = async () => {
@@ -78,6 +82,10 @@ function VideoConfig() {
         ...(videoSnapshot?.state?.config?.shouldEnableQuality
           ? { quality: videoSnapshot.state?.config?.quality as number }
           : {}),
+        ...(shouldEnableCustomDimensions
+          ? { dimensions: customDimensions }
+          : {}),
+        ...(shouldEnableCustomFPS ? { fps: customFPS?.toString?.() } : {}),
       })
       if (!result) {
         throw new Error()
@@ -149,196 +157,152 @@ function VideoConfig() {
                 >
                   {renderThumbnail}
                   <section className={cn(['my-4', styles.videoMetadata])}>
-                    <div>
-                      <p className="italic text-gray-600 dark:text-gray-400">
-                        Size
-                      </p>
-                      <span className="block font-black">{videoSize}</span>
-                    </div>
-                    <Divider orientation="vertical" className="h-10" />
-                    <div>
-                      <p className="italic text-gray-600 dark:text-gray-400">
-                        Extension
-                      </p>
-                      <span className="block font-black">
-                        {videoExtension ?? '-'}
-                      </span>
-                    </div>
-                    {dimensions ? (
-                      <>
-                        <Divider orientation="vertical" className="h-10" />
-                        <div>
-                          <p className="italic text-gray-600 dark:text-gray-400">
-                            Dimensions
-                          </p>
-                          <span className="block font-black">
-                            {dimensions.width ?? '-'} x{' '}
-                            {dimensions.height ?? '-'}
-                          </span>
-                        </div>
-                      </>
-                    ) : null}
-                    <Divider orientation="vertical" className="h-10" />{' '}
-                    <div>
-                      <p className="italic text-gray-600 dark:text-gray-400">
-                        Duration
-                      </p>
-                      <span className="block font-black">
-                        {videDurationRaw ?? '-'}
-                      </span>
-                    </div>
+                    <>
+                      <div>
+                        <p className="italic text-gray-600 dark:text-gray-400">
+                          Size
+                        </p>
+                        <span className="block font-black">{videoSize}</span>
+                      </div>
+                      <Divider orientation="vertical" className="h-10" />
+                    </>
+                    <>
+                      <div>
+                        <p className="italic text-gray-600 dark:text-gray-400">
+                          Extension
+                        </p>
+                        <span className="block font-black">
+                          {videoExtension ?? '-'}
+                        </span>
+                      </div>
+                      <Divider orientation="vertical" className="h-10" />
+                    </>
+
+                    <>
+                      <div>
+                        <p className="italic text-gray-600 dark:text-gray-400">
+                          Duration
+                        </p>
+                        <span className="block font-black">
+                          {videDurationRaw ?? '-'}
+                        </span>
+                      </div>
+                    </>
+                    <>
+                      {dimensions ? (
+                        <>
+                          <Divider orientation="vertical" className="h-10" />{' '}
+                          <div>
+                            <p className="italic text-gray-600 dark:text-gray-400">
+                              Dimensions
+                            </p>
+                            <span className="block font-black">
+                              {dimensions.width ?? '-'} x{' '}
+                              {dimensions.height ?? '-'}
+                            </span>
+                          </div>
+                        </>
+                      ) : null}
+                    </>
+                    <>
+                      {fps ? (
+                        <>
+                          <Divider orientation="vertical" className="h-10" />{' '}
+                          <div>
+                            <p className="italic text-gray-600 dark:text-gray-400">
+                              FPS
+                            </p>
+                            <span className="block font-black">
+                              {fps ?? '-'}
+                            </span>
+                          </div>
+                        </>
+                      ) : null}
+                    </>
                   </section>
                 </motion.div>
               )}
             </section>
           </AnimatePresence>
-
           <section
             className="px-4 py-6 hlg:py-10 rounded-xl border-2 border-zinc-200 dark:border-zinc-800"
             {...zoomInTransition}
           >
             <p className="text-xl mb-6 font-bold">Output Settings</p>
-            <div className="flex items-center my-2">
-              <Switch
-                isSelected={shouldMuteVideo}
-                onValueChange={() => {
-                  videoProxy.state.config.shouldMuteVideo = !shouldMuteVideo
-                }}
-                className="flex justify-center items-center"
-                isDisabled={isCompressing}
-              >
-                <div className="flex justify-center items-center">
-                  <span className="text-gray-600 dark:text-gray-400 block mr-2 text-sm">
-                    Mute Video
-                  </span>
-                </div>
-              </Switch>
-            </div>
-            <Divider className="my-3" />
-            <div className="flex items-center mb-4 my-2">
-              <Switch
-                isSelected={shouldDisableCompression}
-                onValueChange={() => {
-                  videoProxy.state.config.shouldDisableCompression =
-                    !shouldDisableCompression
-                }}
-                className="flex justify-center items-center"
-                isDisabled={isCompressing}
-              >
-                <div className="flex justify-center items-center">
-                  <span className="text-gray-600 dark:text-gray-400 block mr-2 text-sm">
-                    Disable Compression
-                  </span>
-                </div>
-              </Switch>
-              <div className="z-10">
-                <Tooltip
-                  delay={0}
-                  content={
-                    <div className="max-w-[10rem] p-2 ">
-                      <p>
-                        You can disable the compression if you just want to
-                        change the extension of the video.
-                      </p>
-                    </div>
-                  }
-                  aria-label="You can disable the compression if you just
-                              want to change the extension of the video"
+            <>
+              <CompressionPreset />
+              <Divider className="my-3" />
+            </>
+            <>
+              <div className="flex items-center my-2">
+                <Switch
+                  isSelected={shouldMuteVideo}
+                  onValueChange={() => {
+                    videoProxy.state.config.shouldMuteVideo = !shouldMuteVideo
+                  }}
                   className="flex justify-center items-center"
+                  isDisabled={isCompressing}
                 >
-                  <Icon
-                    name="question"
-                    className="block !text-gray-600 dark:!text-gray-400"
-                  />
-                </Tooltip>
+                  <div className="flex justify-center items-center">
+                    <span className="text-gray-600 dark:text-gray-400 block mr-2 text-sm">
+                      Mute Audio
+                    </span>
+                  </div>
+                </Switch>
               </div>
-            </div>
-            <Divider className="my-3" />
-            <div className="mt-8">
-              <Select
-                fullWidth
-                label="Compression Preset:"
-                labelPlacement="outside"
-                className="block flex-shrink-0 rounded-2xl"
-                selectedKeys={[presetName]}
-                onChange={(evt) => {
-                  const value = evt?.target
-                    ?.value as keyof typeof compressionPresets
-                  if (value?.length > 0) {
-                    videoProxy.state.config.presetName = value
-                  }
-                }}
-                selectionMode="single"
-                isDisabled={shouldDisableCompression || isCompressing}
-                classNames={{
-                  label: '!text-gray-600 dark:!text-gray-400 text-sm',
-                }}
-              >
-                {presets?.map((preset) => (
-                  // Right now if we use SelectItem it breaks the code so opting for SelectItem from NextUI directly
-                  <SelectItem
-                    key={preset}
-                    value={preset}
-                    className="flex justify-center items-center"
-                    endContent={
-                      preset === compressionPresets.ironclad ? (
-                        <Tooltip content="Recommended" aria-label="Recommended">
-                          <Icon
-                            name="star"
-                            className="inline-block ml-1 text-yellow-500"
-                            size={15}
-                          />
-                        </Tooltip>
-                      ) : null
-                    }
-                  >
-                    {preset}
-                  </SelectItem>
-                ))}
-              </Select>
-            </div>
-            <Divider className="my-3" />
-            <CompressionQuality />
+              <Divider className="my-3" />
+            </>
+
+            <>
+              <CompressionQuality />
+              <Divider className="my-3" />
+            </>
             {dimensions ? (
               <>
-                <Divider className="my-3" />
                 <VideoDimensions />
+                <Divider className="my-3" />
               </>
             ) : null}
-            <Divider className="my-3" />
-            <div className="mt-8">
-              <Select
-                fullWidth
-                label="Extension:"
-                className="block flex-shrink-0 rounded-2xl"
-                size="sm"
-                value={convertToExtension}
-                selectedKeys={[convertToExtension]}
-                onChange={(evt) => {
-                  const value = evt?.target
-                    ?.value as keyof typeof extensions.video
-                  if (value?.length > 0) {
-                    videoProxy.state.config.convertToExtension = value
-                  }
-                }}
-                selectionMode="single"
-                isDisabled={isCompressing}
-                classNames={{
-                  label: '!text-gray-600 dark:!text-gray-400 text-sm',
-                }}
-              >
-                {videoExtensions?.map((ext) => (
-                  <SelectItem
-                    key={ext}
-                    value={ext}
-                    className="flex justify-center items-center"
-                  >
-                    {ext}
-                  </SelectItem>
-                ))}
-              </Select>
-            </div>
-
+            {fps ? (
+              <>
+                <VideoFPS />
+                <Divider className="my-3" />
+              </>
+            ) : null}
+            <>
+              <div className="mt-8">
+                <Select
+                  fullWidth
+                  label="Extension:"
+                  className="block flex-shrink-0 rounded-2xl"
+                  size="sm"
+                  value={convertToExtension}
+                  selectedKeys={[convertToExtension]}
+                  onChange={(evt) => {
+                    const value = evt?.target
+                      ?.value as keyof typeof extensions.video
+                    if (value?.length > 0) {
+                      videoProxy.state.config.convertToExtension = value
+                    }
+                  }}
+                  selectionMode="single"
+                  isDisabled={isCompressing}
+                  classNames={{
+                    label: '!text-gray-600 dark:!text-gray-400 text-sm',
+                  }}
+                >
+                  {videoExtensions?.map((ext) => (
+                    <SelectItem
+                      key={ext}
+                      value={ext}
+                      className="flex justify-center items-center"
+                    >
+                      {ext}
+                    </SelectItem>
+                  ))}
+                </Select>
+              </div>
+            </>
             <div className="mt-4">
               {isCompressing ? (
                 <CancelCompression />

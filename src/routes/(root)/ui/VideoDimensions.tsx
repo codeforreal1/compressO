@@ -26,10 +26,15 @@ function VideoDimensions() {
       !Number.isNaN(videoDimensions?.width) &&
       !Number.isNaN(videoDimensions)
     ) {
+      const _dimensions: [number, number] = [
+        videoDimensions?.width ?? 0,
+        videoDimensions?.height ?? 0,
+      ]
       setDimensions({
-        width: videoDimensions?.width ?? 0,
-        height: videoDimensions?.height ?? 0,
+        width: _dimensions[0],
+        height: _dimensions[1],
       })
+      videoProxy.state.config.customDimensions = _dimensions
     }
   }, [videoDimensions])
 
@@ -44,12 +49,16 @@ function VideoDimensions() {
       return
     }
     const aspectRatio = videoDimensions.width / videoDimensions.height
+    const _dimensions: [number, number] =
+      type === 'width'
+        ? [value, Math.round(value / aspectRatio)]
+        : [Math.round(value * aspectRatio), value]
     setDimensions((s) => ({
       ...s,
-      ...(type === 'width'
-        ? { width: value, height: Math.round(value / aspectRatio) }
-        : { width: Math.round(value * aspectRatio), height: value }),
+      width: _dimensions[0],
+      height: _dimensions[1],
     }))
+    videoProxy.state.config.customDimensions = _dimensions
   }
 
   return (
@@ -79,6 +88,7 @@ function VideoDimensions() {
               onValueChange={(val) => handleChange(val, 'width')}
               labelPlacement="outside"
               classNames={{ label: '!text-gray-600 dark:!text-gray-400' }}
+              isDisabled={isCompressing}
             />
             <NumberInput
               label="Height"
@@ -87,6 +97,7 @@ function VideoDimensions() {
               onValueChange={(val) => handleChange(val, 'height')}
               labelPlacement="outside"
               classNames={{ label: '!text-gray-600 dark:!text-gray-400' }}
+              isDisabled={isCompressing}
             />
           </motion.div>
         ) : null}
