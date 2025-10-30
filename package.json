@@ -52,6 +52,7 @@
     "lodash": "^4.17.21",
     "pretty-bytes": "^6.1.1",
     "react": "^18",
+    "react-advanced-cropper": "^0.20.1",
     "react-dom": "^18",
     "sonner": "^1.4.41",
     "tailwind-merge": "^1.14.0",

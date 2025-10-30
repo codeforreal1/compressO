@@ -9,7 +9,6 @@ import { snapshot, useSnapshot } from 'valtio'
 import Button from '@/components/Button'
 import Divider from '@/components/Divider'
 import Icon from '@/components/Icon'
-import Image from '@/components/Image'
 import Layout from '@/components/Layout'
 import Select from '@/components/Select'
 import Spinner from '@/components/Spinner'
@@ -29,8 +28,10 @@ import CompressionQuality from './CompressionQuality'
 import FileName from './FileName'
 import SaveVideo from './SaveVideo'
 import Success from './Success'
+import TransformVideo from './TransformVideo'
 import VideoDimensions from './VideoDimensions'
 import VideoFPS from './VideoFPS'
+import VideoThumbnail from './VideoThumbnail'
 import styles from './styles.module.css'
 
 const videoExtensions = Object.keys(extensions?.video)
@@ -43,7 +44,6 @@ function VideoConfig() {
       id: videoId,
       isThumbnailGenerating,
       fileName,
-      thumbnailPath,
       isCompressionSuccessful,
       size: videoSize,
       videDurationRaw,
@@ -120,17 +120,6 @@ function VideoConfig() {
     }
   }
 
-  const renderThumbnail = React.useMemo(
-    () => (
-      <Image
-        alt="video to compress"
-        src={thumbnailPath as string}
-        className="max-w-[50vw] xxl:max-w-[60vw] max-h-[60vh] object-contain border-8 rounded-3xl border-primary"
-      />
-    ),
-    [thumbnailPath],
-  )
-
   return (
     <Layout
       childrenProps={{
@@ -147,7 +136,7 @@ function VideoConfig() {
                 <Compressing />
               ) : isCompressionSuccessful ? (
                 <>
-                  {renderThumbnail}
+                  <VideoThumbnail />
                   <Success />
                 </>
               ) : (
@@ -155,7 +144,7 @@ function VideoConfig() {
                   className="flex flex-col justify-center items-center"
                   {...zoomInTransition}
                 >
-                  {renderThumbnail}
+                  <VideoThumbnail />
                   <section className={cn(['my-4', styles.videoMetadata])}>
                     <>
                       <div>
@@ -260,6 +249,8 @@ function VideoConfig() {
             {dimensions ? (
               <>
                 <VideoDimensions />
+                <Divider className="my-3" />
+                <TransformVideo />
                 <Divider className="my-3" />
               </>
             ) : null}

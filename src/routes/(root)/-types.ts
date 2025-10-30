@@ -11,6 +11,13 @@ export type VideoConfig = {
   customDimensions?: [number, number]
   shouldEnableCustomFPS?: boolean
   customFPS?: number
+  shouldTransformVideo?: boolean
+  transformVideoCoordinates?: {
+    top: number
+    left: number
+    width: number
+    height: number
+  }
 }
 
 export type Video = {

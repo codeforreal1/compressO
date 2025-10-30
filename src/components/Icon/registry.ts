@@ -4,7 +4,10 @@ import Cross from '@/assets/icons/cross.svg?react'
 import CurvedArrow from '@/assets/icons/curved-arrow.svg?react'
 import DragAndDrop from '@/assets/icons/drag-and-drop.svg?react'
 import Error from '@/assets/icons/error.svg?react'
+import Expand from '@/assets/icons/expand.svg?react'
 import FileExplorer from '@/assets/icons/file-explorer.svg?react'
+import FlipHorizontal from '@/assets/icons/flip-horizontal.svg?react'
+import FlipVertical from '@/assets/icons/flip-vertical.svg?react'
 import Github from '@/assets/icons/github.svg?react'
 import Info from '@/assets/icons/info.svg?react'
 import Logo from '@/assets/icons/logo.svg?react'
@@ -13,6 +16,8 @@ import Moon from '@/assets/icons/moon.svg?react'
 import Play from '@/assets/icons/play.svg?react'
 import Question from '@/assets/icons/question.svg?react'
 import Redo from '@/assets/icons/redo.svg?react'
+import ResetZoom from '@/assets/icons/reset-zoom.svg?react'
+import RotateLeft from '@/assets/icons/rotate-left.svg?react'
 import Save from '@/assets/icons/save.svg?react'
 import Setting from '@/assets/icons/setting.svg?react'
 import Star from '@/assets/icons/star.svg?react'
@@ -52,6 +57,11 @@ const registry = asRegistry({
   warning: Warning,
   error: Error,
   redo: Redo,
+  rotateLeft: RotateLeft,
+  flipVertical: FlipVertical,
+  flipHorizontal: FlipHorizontal,
+  expand: Expand,
+  resetZoom: ResetZoom,
 })
 
 export default registry

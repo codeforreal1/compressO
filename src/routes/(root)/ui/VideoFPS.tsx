@@ -1,3 +1,4 @@
+import { SelectItem } from '@heroui/select'
 import { AnimatePresence, motion } from 'framer-motion'
 import React from 'react'
 import { useSnapshot } from 'valtio'
@@ -5,7 +6,6 @@ import { useSnapshot } from 'valtio'
 import Select from '@/components/Select'
 import Switch from '@/components/Switch'
 import { slideDownTransition } from '@/utils/animation'
-import { SelectItem } from '@heroui/select'
 import { videoProxy } from '../-state'
 
 const FPS = [24, 25, 30, 50, 60] as const

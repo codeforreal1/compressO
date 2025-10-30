@@ -101,6 +101,9 @@ importers:
       react:
         specifier: ^18
         version: 18.3.1
+      react-advanced-cropper:
+        specifier: ^0.20.1
+        version: 0.20.1(react@18.3.1)
       react-dom:
         specifier: ^18
         version: 18.3.1(react@18.3.1)
@@ -3648,6 +3651,10 @@ packages:
     engines: {node: '>=0.4.0'}
     hasBin: true
 
+  advanced-cropper@0.17.1:
+    resolution: {integrity: sha512-Z1P0sYOXa2tqZjeY742QtNERofXh1AuOa27LEurO9rbx3IfzLrGQlzy7sWEc5VN9hRg+J/qCiMmnB6tUDLb1TA==}
+    engines: {node: '>=8', npm: '>=5'}
+
   ajv@6.12.6:
     resolution: {integrity: sha512-j3fVLgvTo527anyYyJOGTYJbG+vnnQYvE0m5mmkc1TK+nxAppkCLMIL0aZ4dblVCNoGShhm+kzE4ZUykBoMg4g==}
 
@@ -3841,6 +3848,9 @@ packages:
   chokidar@3.6.0:
     resolution: {integrity: sha512-7VT13fmjotKpGipCW9JEQAusEPE+Ei8nl6/g4FBAmIm0GOOLMua9NDDo/DWp0ZAxCr3cPq5ZpBqmPAQgDda2Pw==}
     engines: {node: '>= 8.10.0'}
+
+  classnames@2.5.1:
+    resolution: {integrity: sha512-saHYOzhIQs6wy2sVxTM6bUDsQO4F50V9RQ22qBpEdCW+I+/Wmke2HOl6lS6dTpdxVhb88/I6+Hs+438c3lfUow==}
 
   cli-cursor@4.0.0:
     resolution: {integrity: sha512-VGtlMu3x/4DOtIUwEkRezxUZ2lBacNJCHash0N0WeZDBS+7Ux1dm3XWAgWYxLJFMMdOeXMHXorshEFhbMSGelg==}
@@ -5070,6 +5080,12 @@ packages:
 
   queue-microtask@1.2.3:
     resolution: {integrity: sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==}
+
+  react-advanced-cropper@0.20.1:
+    resolution: {integrity: sha512-Pcmkv0xQMpig6+LkM+zLbEuqBbYG3+CwXvIfYU+LDNn9l8t91Jm0fp9MSTNW0pjIvT6frAGTfmlnvnZW4PEs7Q==}
+    engines: {node: '>=8', npm: '>=5'}
+    peerDependencies:
+      react: '>=16.8.0'
 
   react-dom@18.3.1:
     resolution: {integrity: sha512-5m4nQKp+rZRb09LNH59GM4BxTh9251/ylbKIbpe7TpGxfJ+9kv6BLkLBXIjjspbgbnIBNqlI23tRnTWT0snUIw==}
@@ -10407,6 +10423,10 @@ snapshots:
 
   acorn@8.14.0: {}
 
+  advanced-cropper@0.17.1:
+    dependencies:
+      tslib: 2.6.2
+
   ajv@6.12.6:
     dependencies:
       fast-deep-equal: 3.1.3
@@ -10650,6 +10670,8 @@ snapshots:
       readdirp: 3.6.0
     optionalDependencies:
       fsevents: 2.3.3
+
+  classnames@2.5.1: {}
 
   cli-cursor@4.0.0:
     dependencies:
@@ -11946,6 +11968,13 @@ snapshots:
   punycode@2.3.1: {}
 
   queue-microtask@1.2.3: {}
+
+  react-advanced-cropper@0.20.1(react@18.3.1):
+    dependencies:
+      advanced-cropper: 0.17.1
+      classnames: 2.5.1
+      react: 18.3.1
+      tslib: 2.6.2
 
   react-dom@18.3.1(react@18.3.1):
     dependencies:

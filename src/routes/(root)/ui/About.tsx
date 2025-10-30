@@ -59,7 +59,7 @@ function About() {
               open('https://github.com/codeforreal1/compressO')
             }}
           >
-            Free and open-sourced{' '}
+            Free and open-source{' '}
             <Icon
               name="github"
               size={25}
