@@ -1,5 +1,5 @@
 import React, { useRef } from 'react'
-import { Cropper, CropperRef } from 'react-advanced-cropper'
+import { Cropper, CropperRef, type CropperState } from 'react-advanced-cropper'
 import 'react-advanced-cropper/dist/style.css'
 import { useSnapshot } from 'valtio'
 
@@ -11,7 +11,10 @@ import { videoProxy } from '../-state'
 
 function VideoTransformer() {
   const {
-    state: { thumbnailPath },
+    state: {
+      thumbnailPath,
+      config: { shouldTransformVideo },
+    },
   } = useSnapshot(videoProxy)
 
   const cropperRef = useRef<CropperRef>(null)
@@ -57,14 +60,32 @@ function VideoTransformer() {
     if (debouncedRef.current) {
       clearTimeout(debouncedRef.current)
     }
-    debouncedRef.current = setTimeout(() => {
-      const coords = cropper.getCoordinates()
-      if (coords) {
-        videoProxy.state.config.transformVideoCoordinates = {
-          top: coords?.top!,
-          left: coords?.left!,
-          width: coords?.width!,
-          height: coords?.height!,
+    debouncedRef.current = setTimeout(async () => {
+      const cropperState = cropper.getState()
+      if (cropperState) {
+        const blob = await getCanvasBlob(cropper.getCanvas()!)
+        if (videoProxy.state.config.transformVideoConfig?.previewUrl) {
+          URL.revokeObjectURL(
+            videoProxy.state.config.transformVideoConfig.previewUrl,
+          )
+        }
+        const coordinates = cropperState.coordinates
+        const transforms = cropperState.transforms
+        videoProxy.state.config.transformVideoConfig = {
+          transforms: {
+            coordinates: {
+              top: coordinates?.top!,
+              left: coordinates?.left!,
+              width: coordinates?.width!,
+              height: coordinates?.height!,
+            },
+            rotate: transforms.rotate,
+            flip: {
+              horizontal: transforms.flip.horizontal,
+              vertical: transforms.flip.vertical,
+            },
+          },
+          previewUrl: URL.createObjectURL(blob!),
         }
       }
     }, 500)
@@ -81,6 +102,50 @@ function VideoTransformer() {
         onChange={onChange}
         className="w-full"
         boundaryClassName="w-full max-w-[50vw] xxl:max-w-[60vw] max-h-[60vh] object-contain"
+        {...(shouldTransformVideo
+          ? {
+              defaultCoordinates(state: CropperState) {
+                const coordinates =
+                  videoProxy.state.config.transformVideoConfig?.transforms
+                    ?.coordinates
+                return {
+                  left: coordinates?.left ?? 0,
+                  top: coordinates?.top ?? 0,
+                  width: coordinates?.width ?? state.imageSize.width,
+                  height: coordinates?.height ?? state.imageSize.height,
+                }
+              },
+              defaultPosition() {
+                const coordinates =
+                  videoProxy.state.config.transformVideoConfig?.transforms
+                    ?.coordinates
+                return {
+                  left: coordinates?.left ?? 0,
+                  top: coordinates?.top ?? 0,
+                }
+              },
+              defaultSize(state: CropperState) {
+                const coordinates =
+                  videoProxy.state.config.transformVideoConfig?.transforms
+                    ?.coordinates
+                return {
+                  width: coordinates?.width ?? state.imageSize.width,
+                  height: coordinates?.height ?? state.imageSize.height,
+                }
+              },
+              defaultTransforms() {
+                const transforms =
+                  videoProxy.state.config.transformVideoConfig?.transforms
+                return {
+                  rotate: transforms?.rotate ?? 0,
+                  flip: {
+                    horizontal: transforms?.flip?.horizontal ?? false,
+                    vertical: transforms?.flip?.vertical ?? false,
+                  },
+                }
+              },
+            }
+          : {})}
       />
       <div className="mx-auto flex items-center justify-center gap-2 mt-4">
         <>
@@ -126,6 +191,10 @@ function VideoTransformer() {
       </div>
     </>
   )
+}
+
+async function getCanvasBlob(canvas: HTMLCanvasElement): Promise<Blob | null> {
+  return new Promise((resolve) => canvas.toBlob(resolve, 'image/png'))
 }
 
 export default VideoTransformer

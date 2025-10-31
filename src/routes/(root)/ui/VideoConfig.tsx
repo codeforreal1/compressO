@@ -26,6 +26,7 @@ import Compressing from './Compressing'
 import CompressionPreset from './CompressionPreset'
 import CompressionQuality from './CompressionQuality'
 import FileName from './FileName'
+import PreviewVideo from './PreviewVideo'
 import SaveVideo from './SaveVideo'
 import Success from './Success'
 import TransformVideo from './TransformVideo'
@@ -61,6 +62,8 @@ function VideoConfig() {
     customDimensions,
     shouldEnableCustomFPS,
     customFPS,
+    shouldTransformVideo,
+    transformVideoConfig,
   } = config
 
   const handleCompression = async () => {
@@ -69,6 +72,14 @@ function VideoConfig() {
     try {
       videoProxy.takeSnapshot('beforeCompressionStarted')
       videoProxy.state.isCompressing = true
+
+      if (
+        videoProxy.state.config.shouldTransformVideo &&
+        videoProxy.state.config.transformVideoConfig?.previewUrl
+      ) {
+        videoProxy.state.thumbnailPath =
+          videoProxy.state.config.transformVideoConfig.previewUrl
+      }
 
       const result = await compressVideo({
         videoPath: videoSnapshot.state.pathRaw as string,
@@ -86,6 +97,9 @@ function VideoConfig() {
           ? { dimensions: customDimensions }
           : {}),
         ...(shouldEnableCustomFPS ? { fps: customFPS?.toString?.() } : {}),
+        ...(shouldTransformVideo
+          ? { transforms: transformVideoConfig?.transforms }
+          : {}),
       })
       if (!result) {
         throw new Error()
@@ -144,7 +158,7 @@ function VideoConfig() {
                   className="flex flex-col justify-center items-center"
                   {...zoomInTransition}
                 >
-                  <VideoThumbnail />
+                  <PreviewVideo />
                   <section className={cn(['my-4', styles.videoMetadata])}>
                     <>
                       <div>

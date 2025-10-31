@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import React from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { useSnapshot } from 'valtio'
 
 import NumberInput from '@/components/NumberInput'
@@ -11,17 +11,41 @@ function VideoDimensions() {
   const {
     state: {
       isCompressing,
-      config: { shouldEnableCustomDimensions },
-      dimensions: videoDimensions,
+      config: {
+        shouldEnableCustomDimensions,
+        shouldTransformVideo,
+        transformVideoConfig,
+      },
+      dimensions: videoOriginalDimensions,
     },
   } = useSnapshot(videoProxy)
+
+  const videoDimensions = useMemo(
+    () =>
+      shouldTransformVideo
+        ? {
+            width:
+              transformVideoConfig?.transforms?.coordinates?.width ??
+              videoOriginalDimensions?.width,
+            height:
+              transformVideoConfig?.transforms?.coordinates?.height ??
+              videoOriginalDimensions?.height,
+          }
+        : videoOriginalDimensions,
+    [
+      shouldTransformVideo,
+      transformVideoConfig?.transforms?.coordinates?.height,
+      transformVideoConfig?.transforms?.coordinates?.width,
+      videoOriginalDimensions,
+    ],
+  )
 
   const [dimensions, setDimensions] = React.useState({
     width: videoDimensions?.width ?? 0,
     height: videoDimensions?.height ?? 0,
   })
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (
       !Number.isNaN(videoDimensions?.width) &&
       !Number.isNaN(videoDimensions)
@@ -38,6 +62,27 @@ function VideoDimensions() {
     }
   }, [videoDimensions])
 
+  useEffect(() => {
+    if (shouldTransformVideo) {
+      if (transformVideoConfig) {
+        const transforms = transformVideoConfig?.transforms
+        if (transforms?.coordinates) {
+          setDimensions({
+            width: transforms.coordinates.width,
+            height: transforms.coordinates.height,
+          })
+        }
+      }
+    } else {
+      if (videoDimensions) {
+        setDimensions({
+          width: videoDimensions.width!,
+          height: videoDimensions.height!,
+        })
+      }
+    }
+  }, [videoDimensions, shouldTransformVideo, transformVideoConfig])
+
   const handleChange = (value: number, type: 'width' | 'height') => {
     if (
       !value ||
@@ -48,7 +93,7 @@ function VideoDimensions() {
     ) {
       return
     }
-    const aspectRatio = videoDimensions.width / videoDimensions.height
+    const aspectRatio = videoDimensions.width! / videoDimensions.height!
     const _dimensions: [number, number] =
       type === 'width'
         ? [value, Math.round(value / aspectRatio)]

@@ -78,6 +78,7 @@
         "ts": "never",
         "tsx": "never"
       }
-    ]
+    ],
+    "no-lonely-if": "off"
   }
 }

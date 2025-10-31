@@ -1,4 +1,8 @@
-import { compressionPresets, extensions } from '@/types/compression'
+import {
+  compressionPresets,
+  extensions,
+  VideoTransforms,
+} from '@/types/compression'
 
 export type VideoConfig = {
   convertToExtension: keyof typeof extensions.video
@@ -12,11 +16,9 @@ export type VideoConfig = {
   shouldEnableCustomFPS?: boolean
   customFPS?: number
   shouldTransformVideo?: boolean
-  transformVideoCoordinates?: {
-    top: number
-    left: number
-    width: number
-    height: number
+  transformVideoConfig?: {
+    transforms: VideoTransforms
+    previewUrl: string
   }
 }
 

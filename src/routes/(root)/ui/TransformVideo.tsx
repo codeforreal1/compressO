@@ -19,7 +19,7 @@ function TransformVideo() {
         onValueChange={() => {
           videoProxy.state.config.shouldTransformVideo = !shouldTransformVideo
           if (shouldTransformVideo) {
-            videoProxy.state.config.transformVideoCoordinates = undefined
+            videoProxy.state.config.transformVideoConfig = undefined
           }
         }}
         isDisabled={isCompressing}

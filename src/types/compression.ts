@@ -34,3 +34,9 @@ export type VideoInfo = {
   dimensions: [number, number]
   fps: number
 }
+
+export type VideoTransforms = {
+  coordinates: { top: number; left: number; width: number; height: number }
+  rotate: number
+  flip: { horizontal: boolean; vertical: boolean }
+}
