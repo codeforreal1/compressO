@@ -1,6 +1,6 @@
 use crate::domain::{
     CancelInProgressCompressionPayload, CompressionResult, CustomEvents, TauriEvents,
-    VideoCompressionProgress, VideoInfo, VideoThumbnail,
+    VideoCompressionProgress, VideoInfo, VideoThumbnail, VideoTransforms,
 };
 use crossbeam_channel::{Receiver, Sender};
 use nanoid::nanoid;
@@ -61,11 +61,11 @@ impl FFMPEG {
         quality: u16,
         dimensions: Option<(u32, u32)>,
         fps: Option<&str>,
+        transforms: Option<&VideoTransforms>,
     ) -> Result<CompressionResult, String> {
         if !EXTENSIONS.contains(&convert_to_extension) {
             return Err(String::from("Invalid convert to extension."));
         }
-        print!("{:?}", dimensions);
 
         let id = match video_id {
             Some(id) => String::from(id),
@@ -161,12 +161,59 @@ impl FFMPEG {
                 args
             }
         };
-        // Dimensions
-        let vf_filter = if let Some((width, height)) = dimensions {
-            format!("scale={}:{},pad=ceil(iw/2)*2:ceil(ih/2)*2", width, height)
+        // Transforms
+        let transform_filters = if let Some(video_transforms) = transforms {
+            let coordinates = &video_transforms.coordinates;
+
+            let mut transform_str = String::new();
+
+            // Rotate
+            match video_transforms.rotate {
+                -90 => transform_str.push_str("transpose=2,"),
+                -180 => transform_str.push_str("hflip,vflip,"),
+                -270 => transform_str.push_str("transpose=1,"),
+                _ => {}
+            }
+
+            // Crop
+            transform_str.push_str(
+                format!(
+                    "crop={}:{}:{}:{}",
+                    coordinates.width, coordinates.height, coordinates.left, coordinates.top
+                )
+                .as_str(),
+            );
+
+            // Flip
+            if video_transforms.flip.horizontal {
+                transform_str.push_str(",hflip");
+            }
+            if video_transforms.flip.vertical {
+                transform_str.push_str(",vflip");
+            }
+
+            transform_str
         } else {
-            "pad=ceil(iw/2)*2:ceil(ih/2)*2".to_string()
+            "".to_string()
         };
+
+        // Dimensions
+        let padding = "pad=ceil(iw/2)*2:ceil(ih/2)*2";
+        let pad_filter = if let Some((width, height)) = dimensions {
+            format!("scale={}:{},{}", width, height, padding)
+        } else {
+            format!("{}", padding)
+        };
+
+        let mut vf_filter = String::new();
+
+        if !transform_filters.is_empty() {
+            vf_filter.push_str(&transform_filters);
+            vf_filter.push_str(",")
+        }
+
+        vf_filter.push_str(&pad_filter);
+
         preset.push("-vf");
         preset.push(&vf_filter);
 
@@ -400,8 +447,6 @@ impl FFMPEG {
             video_path,
             "-ss",
             "00:00:01.00",
-            "-vf",
-            "scale=1080:720:force_original_aspect_ratio=decrease",
             "-vframes",
             "1",
             &output_path.display().to_string(),

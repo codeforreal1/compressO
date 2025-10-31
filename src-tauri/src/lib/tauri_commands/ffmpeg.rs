@@ -1,5 +1,5 @@
 use crate::{
-    domain::{CompressionResult, VideoInfo, VideoThumbnail},
+    domain::{CompressionResult, VideoInfo, VideoThumbnail, VideoTransforms},
     ffmpeg::{self},
     fs::delete_stale_files,
 };
@@ -15,6 +15,7 @@ pub async fn compress_video(
     quality: u16,
     dimensions: Option<(u32, u32)>,
     fps: Option<&str>,
+    transforms: Option<VideoTransforms>,
 ) -> Result<CompressionResult, String> {
     let mut ffmpeg = ffmpeg::FFMPEG::new(&app)?;
     if let Ok(files) =
@@ -35,6 +36,7 @@ pub async fn compress_video(
             quality,
             dimensions,
             fps,
+            transforms.as_ref(),
         )
         .await
     {
