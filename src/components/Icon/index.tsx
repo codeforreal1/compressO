@@ -14,7 +14,7 @@ function Icon(props: IconProps & React.SVGProps<SVGElement>) {
   const SVGComponent = registry[name]
 
   if (SVGComponent == null) {
-    // eslint-disable-next-line no-console
+    // biome-ignore lint/suspicious/noConsole: <>
     console.warn(`No such icon named ${name}`)
     return null
   }

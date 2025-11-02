@@ -3,10 +3,10 @@
 import React, { ComponentProps } from 'react'
 
 import { cn } from '@/utils/tailwind'
-import Image from '../Image'
+import { LayoutContext } from './context'
 import Footer from './Footer'
 import Header from './Header'
-import { LayoutContext } from './context'
+import Image from '../Image'
 
 interface LayoutProps {
   children: React.ReactNode

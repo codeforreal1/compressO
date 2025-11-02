@@ -1,5 +1,3 @@
-'use client'
-
 import { SelectItem } from '@heroui/select'
 import { core } from '@tauri-apps/api'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -20,7 +18,6 @@ import { extensions } from '@/types/compression'
 import { zoomInTransition } from '@/utils/animation'
 import { formatBytes } from '@/utils/fs'
 import { cn } from '@/utils/tailwind'
-import { videoProxy } from '../-state'
 import CancelCompression from './CancelCompression'
 import Compressing from './Compressing'
 import CompressionPreset from './CompressionPreset'
@@ -29,11 +26,12 @@ import FileName from './FileName'
 import PreviewVideo from './PreviewVideo'
 import SaveVideo from './SaveVideo'
 import Success from './Success'
+import styles from './styles.module.css'
 import TransformVideo from './TransformVideo'
 import VideoDimensions from './VideoDimensions'
 import VideoFPS from './VideoFPS'
 import VideoThumbnail from './VideoThumbnail'
-import styles from './styles.module.css'
+import { videoProxy } from '../-state'
 
 const videoExtensions = Object.keys(extensions?.video)
 

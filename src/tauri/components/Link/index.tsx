@@ -1,5 +1,6 @@
-import React from 'react'
 import { open } from '@tauri-apps/plugin-shell'
+import React from 'react'
+
 import { cn } from '@/utils/tailwind'
 
 type LinkProps = {

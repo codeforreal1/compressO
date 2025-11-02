@@ -1,13 +1,13 @@
-import { blurCSS } from '@/ui/BackdropBlur'
-import { getPlatform } from '@/utils/fs'
-import { cn } from '@/utils/tailwind'
 import {
   Select as NextUISelect,
   SelectItem as NextUISelectItem,
   type SelectItemProps as NextUISelectItemProps,
   type SelectProps as NextUISelectProps,
 } from '@heroui/select'
-import React from 'react'
+
+import { blurCSS } from '@/ui/BackdropBlur'
+import { getPlatform } from '@/utils/fs'
+import { cn } from '@/utils/tailwind'
 
 const { isWindows, isMacOS } = getPlatform()
 

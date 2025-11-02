@@ -1,5 +1,3 @@
-'use client'
-
 import { event } from '@tauri-apps/api'
 import { emitTo } from '@tauri-apps/api/event'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -68,7 +66,7 @@ function CancelCompression() {
         videoId: snapshot(videoProxy).state.id,
       })
       videoProxy.timeTravel('beforeCompressionStarted')
-    } catch (error) {
+    } catch {
       toast.error('Cannot cancel compression at this point.')
     }
     setConfirmCancellation(false)

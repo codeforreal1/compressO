@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import { useRef } from 'react'
 import { Cropper, CropperRef, type CropperState } from 'react-advanced-cropper'
 import 'react-advanced-cropper/dist/style.css'
 import { useSnapshot } from 'valtio'

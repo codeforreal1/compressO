@@ -1,6 +1,4 @@
-'use client'
-
-import { useDisclosure, UseDisclosureProps } from '@heroui/modal'
+import { UseDisclosureProps, useDisclosure } from '@heroui/modal'
 import React from 'react'
 import { snapshot, useSnapshot } from 'valtio'
 

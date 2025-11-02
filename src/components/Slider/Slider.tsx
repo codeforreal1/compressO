@@ -1,4 +1,3 @@
-import React from 'react'
 import {
   Slider as NextUISlider,
   type SliderProps as NextUISliderProps,

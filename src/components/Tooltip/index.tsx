@@ -1,11 +1,11 @@
-import React from 'react'
 import {
   Tooltip as NextUITooltip,
   type TooltipProps as NextUITooltipProps,
 } from '@heroui/tooltip'
+
 import { blurCSS, getBlurPseudoCSS } from '@/ui/BackdropBlur'
-import { cn } from '@/utils/tailwind'
 import { getPlatform } from '@/utils/fs'
+import { cn } from '@/utils/tailwind'
 
 const { isWindows, isMacOS } = getPlatform()
 

@@ -1,3 +1,5 @@
+import { core } from '@tauri-apps/api'
+
 import {
   CompressionResult,
   VideoInfo,
@@ -5,7 +7,6 @@ import {
   VideoTransforms,
 } from '@/types/compression'
 import { FileMetadata } from '@/types/fs'
-import { core } from '@tauri-apps/api'
 
 export function compressVideo({
   videoPath,

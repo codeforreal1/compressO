@@ -15,7 +15,7 @@ use lib::tauri_commands::{
         __cmd__delete_cache, __cmd__delete_file, __cmd__get_file_metadata,
         __cmd__get_image_dimension, __cmd__move_file, delete_cache, delete_file, get_file_metadata,
         get_image_dimension, move_file,
-    },
+    }
 };
 
 #[cfg(target_os = "linux")]

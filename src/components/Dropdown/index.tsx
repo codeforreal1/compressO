@@ -1,17 +1,17 @@
-import React from 'react'
 import {
   Dropdown as NextUIDropdown,
-  DropdownTrigger as NextUIDropdownTrigger,
-  DropdownMenu as NextUIDropdownMenu,
   DropdownItem as NextUIDropdownItem,
-  type DropdownProps as NextUIDropdownProps,
-  type DropdownTriggerProps as NextUIDropdownTriggerProps,
-  type DropdownMenuProps as NextUIDropdownMenuProps,
   type DropdownItemProps as NextUIDropdownItemProps,
+  DropdownMenu as NextUIDropdownMenu,
+  type DropdownMenuProps as NextUIDropdownMenuProps,
+  type DropdownProps as NextUIDropdownProps,
+  DropdownTrigger as NextUIDropdownTrigger,
+  type DropdownTriggerProps as NextUIDropdownTriggerProps,
 } from '@heroui/dropdown'
-import { cn } from '@/utils/tailwind'
+
 import { blurCSS } from '@/ui/BackdropBlur'
 import { getPlatform } from '@/utils/fs'
+import { cn } from '@/utils/tailwind'
 
 const { isWindows, isMacOS } = getPlatform()
 

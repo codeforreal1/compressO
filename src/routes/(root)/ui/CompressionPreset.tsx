@@ -1,5 +1,5 @@
+import { SelectItem } from '@heroui/select'
 import { AnimatePresence, motion } from 'framer-motion'
-import React from 'react'
 import { useSnapshot } from 'valtio'
 
 import Icon from '@/components/Icon'
@@ -8,7 +8,6 @@ import Switch from '@/components/Switch'
 import Tooltip from '@/components/Tooltip'
 import { compressionPresets } from '@/types/compression'
 import { slideDownTransition } from '@/utils/animation'
-import { SelectItem } from '@heroui/select'
 import { videoProxy } from '../-state'
 
 const presets = Object.keys(compressionPresets)

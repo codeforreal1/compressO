@@ -94,7 +94,7 @@ function Root() {
             thumbnail?.filePath,
           )
         }
-      } catch (error) {
+      } catch {
         resetProxy()
         toast.error('File seems to be corrupted.')
       }

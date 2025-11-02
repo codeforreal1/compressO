@@ -60,37 +60,21 @@
     "vaul": "^0.9.1"
   },
   "devDependencies": {
-    "@svgr/webpack": "^8.1.0",
+    "@biomejs/biome": "2.3.2",
     "@tanstack/router-plugin": "^1.97.22",
     "@tauri-apps/cli": ">=2.0.0-beta.0",
     "@types/lodash": "^4.17.4",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "@typescript-eslint/eslint-plugin": "^6.21.0",
-    "@typescript-eslint/parser": "^6.21.0",
     "@vitejs/plugin-react": "^4.3.2",
     "autoprefixer": "^10.4.16",
-    "eslint": "8.9.0",
-    "eslint-config-airbnb": "^19.0.4",
-    "eslint-config-airbnb-typescript": "^17.0.0",
-    "eslint-config-prettier": "^8.6.0",
-    "eslint-import-resolver-typescript": "^2.5.0",
-    "eslint-plugin-import": "^2.25.4",
-    "eslint-plugin-jsx-a11y": "^6.5.1",
-    "eslint-plugin-prettier": "^4.2.1",
-    "eslint-plugin-react": "^7.28.0",
-    "eslint-plugin-react-hooks": "^4.3.0",
-    "eslint-plugin-unused-imports": "^3.0.0",
     "husky": "^8.0.1",
     "lint-staged": "^13.2.3",
     "postcss": "^8.4.31",
-    "prettier": "^3.2.5",
-    "prettier-plugin-organize-imports": "^4.1.0",
     "tailwindcss": "^3.4.0",
     "typescript": "^5",
     "vite": "^6.0.3",
-    "vite-plugin-eslint": "^1.8.1",
     "vite-plugin-svgr": "^4.3.0"
   },
   "husky": {
@@ -99,9 +83,6 @@
     }
   },
   "lint-staged": {
-    "src/**/*.{js,ts,jsx,tsx}": [
-      "eslint --fix",
-      "prettier --write"
-    ]
+    "src/**/*.{js,ts,jsx,tsx}": ["biome check --write"]
   }
 }

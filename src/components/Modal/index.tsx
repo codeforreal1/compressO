@@ -1,20 +1,21 @@
-import React from 'react'
 import {
   Modal as NextUIModal,
-  ModalHeader as NextUIModalHeader,
   ModalBody as NextUIModalBody,
-  ModalContent as NextUIModalContent,
-  ModalFooter as NextUIModalFooter,
-  type ModalProps as NextUIModalProps,
-  type ModalHeaderProps as NextUIModalHeaderProps,
   type ModalBodyProps as NextUIModalBodyProps,
+  ModalContent as NextUIModalContent,
   type ModalContentProps as NextUIModalContentProps,
+  ModalFooter as NextUIModalFooter,
   type ModalFooterProps as NextUIModalFooterProps,
+  ModalHeader as NextUIModalHeader,
+  type ModalHeaderProps as NextUIModalHeaderProps,
+  type ModalProps as NextUIModalProps,
 } from '@heroui/modal'
-import { cn } from '@/utils/tailwind'
-import { getPlatform } from '@/utils/fs'
+import React from 'react'
+
 import { BackdropBlurContent } from '@/ui/BackdropBlur'
-import { zoomIn, bottomToTop } from './modal.animation'
+import { getPlatform } from '@/utils/fs'
+import { cn } from '@/utils/tailwind'
+import { bottomToTop, zoomIn } from './modal.animation'
 
 const { isWindows, isMacOS } = getPlatform()
 

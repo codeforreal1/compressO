@@ -2,8 +2,8 @@ import { TanStackRouterVite } from '@tanstack/router-plugin/vite'
 import react from '@vitejs/plugin-react'
 import { resolve } from 'path'
 import { defineConfig } from 'vite'
-import eslint from 'vite-plugin-eslint'
 import svgr from 'vite-plugin-svgr'
+
 import packageJSON from './package.json'
 
 export default defineConfig(({ mode }) => ({
@@ -13,13 +13,6 @@ export default defineConfig(({ mode }) => ({
     }),
     react(),
     svgr(),
-    eslint({
-      failOnError: false,
-      failOnWarning: false,
-      emitWarning: false,
-      emitError: true,
-      exclude: ['src/api/gen'],
-    }),
   ],
   resolve: {
     alias: {

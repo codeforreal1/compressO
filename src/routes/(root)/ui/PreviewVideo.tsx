@@ -1,9 +1,8 @@
-import React from 'react'
 import { useSnapshot } from 'valtio'
 
-import { videoProxy } from '../-state'
 import VideoThumbnail from './VideoThumbnail'
 import VideoTransformer from './VideoTransformer'
+import { videoProxy } from '../-state'
 
 function PreviewVideo() {
   const {

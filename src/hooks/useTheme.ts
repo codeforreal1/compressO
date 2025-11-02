@@ -1,6 +1,7 @@
-import * as constants from '@/constants'
 import { useEffect } from 'react'
 import { proxy, subscribe, useSnapshot } from 'valtio'
+
+import * as constants from '@/constants'
 
 export type ThemeVariant = 'light' | 'dark'
 

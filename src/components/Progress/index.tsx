@@ -1,4 +1,3 @@
-import React from 'react'
 import {
   CircularProgress as NextUICircularProgress,
   type CircularProgressProps as NextUICircularProgressProps,

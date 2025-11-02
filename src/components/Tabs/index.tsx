@@ -1,9 +1,8 @@
-import React from 'react'
 import {
-  Tabs as NextUITabs,
   Tab as NextUITab,
-  type TabsProps as NextUITabsProps,
   type TabItemProps as NextUITabProps,
+  Tabs as NextUITabs,
+  type TabsProps as NextUITabsProps,
 } from '@heroui/tabs'
 
 interface TabsProps extends NextUITabsProps {}

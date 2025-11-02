@@ -1,4 +1,3 @@
-import React from 'react'
 import { Link as NextLink, LinkProps as NextLinkProps } from '@heroui/link'
 
 interface LinkProps {}

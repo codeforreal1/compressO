@@ -1,4 +1,3 @@
-import React from 'react'
 import {
   Code as NextUICode,
   type CodeProps as NextUICodeProps,

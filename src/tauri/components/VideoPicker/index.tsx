@@ -1,4 +1,5 @@
 import { FileResponse, open } from '@tauri-apps/plugin-dialog'
+
 import { extensions } from '@/types/compression'
 
 type ChildrenFnParams = { onClick: () => void }
@@ -31,7 +32,7 @@ export default function VideoPicker({
       })
       if (file == null) {
         const message = 'File selection config is invalid.'
-        // eslint-disable-next-line no-console
+        // biome-ignore lint/suspicious/noConsole: <>
         console.warn(message)
         onError?.({ message })
         return

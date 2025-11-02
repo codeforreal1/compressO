@@ -1,6 +1,5 @@
 import { SelectItem } from '@heroui/select'
 import { AnimatePresence, motion } from 'framer-motion'
-import React from 'react'
 import { useSnapshot } from 'valtio'
 
 import Select from '@/components/Select'

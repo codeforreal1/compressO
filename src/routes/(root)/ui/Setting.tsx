@@ -12,7 +12,6 @@ import ThemeSwitcher from '@/components/ThemeSwitcher'
 import Title from '@/components/Title'
 import { toast } from '@/components/Toast'
 import Tooltip from '@/components/Tooltip'
-import { usePlatform } from '@/hooks/usePlatform'
 import { deleteCache as invokeDeleteCache } from '@/tauri/commands/fs'
 import About from './About'
 
@@ -20,7 +19,6 @@ type DropdownKey = 'settings' | 'about'
 
 function Setting() {
   const modalDisclosure = useDisclosure()
-  const { isLinux } = usePlatform()
 
   const [selectedKey, setSelectedKey] = React.useState<DropdownKey>('settings')
   const handleDropdownAction = (item: string | number) => {
@@ -57,11 +55,7 @@ function Setting() {
           </DropdownMenu>
         </Dropdown>
       </div>
-      <Modal
-        isOpen={modalDisclosure.isOpen}
-        onClose={modalDisclosure.onClose}
-        disableAnimation={isLinux}
-      >
+      <Modal isOpen={modalDisclosure.isOpen} onClose={modalDisclosure.onClose}>
         <ModalContent className="max-w-[30rem] pb-2 overflow-hidden rounded-2xl">
           {selectedKey === 'settings' ? <AppSetting /> : <About />}
         </ModalContent>

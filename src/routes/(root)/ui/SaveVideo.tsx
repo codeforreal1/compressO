@@ -7,7 +7,6 @@ import { snapshot, useSnapshot } from 'valtio'
 import Button from '@/components/Button'
 import Icon from '@/components/Icon'
 import { toast } from '@/components/Toast'
-
 import Tooltip from '@/components/Tooltip'
 import { moveFile, showItemInFileManager } from '@/tauri/commands/fs'
 import { videoProxy } from '../-state'
