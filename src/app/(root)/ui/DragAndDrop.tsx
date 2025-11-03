@@ -59,7 +59,7 @@ function DragAndDrop({ disable = false, onFile }: DragAndDropProps) {
               const filePathSplitted = filePath?.split('.')
               if (filePathSplitted.length) {
                 const fileExtension =
-                  filePathSplitted?.[filePathSplitted.length - 1]
+                  filePathSplitted?.[filePathSplitted.length - 1].toLowerCase()
                 if (!videoExtensions?.includes(fileExtension)) {
                   toast.error('Invalid video file.')
                 } else {
