@@ -101,7 +101,7 @@ function VideoTransformer() {
         }}
         onChange={onChange}
         className="w-full"
-        boundaryClassName="w-full max-w-[50vw] xxl:max-w-[60vw] max-h-[60vh] object-contain"
+        boundaryClassName="max-w-[65vw] xxl:max-w-[80vw] max-h-[60vh] object-contain"
         {...(shouldTransformVideo
           ? {
               defaultCoordinates(state: CropperState) {

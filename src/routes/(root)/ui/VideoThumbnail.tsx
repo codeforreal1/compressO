@@ -12,7 +12,7 @@ function VideoThumbnail() {
     <Image
       alt="video to compress"
       src={thumbnailPath as string}
-      className="max-w-[50vw] xxl:max-w-[60vw] max-h-[60vh] object-contain rounded-3xl border-primary border-4"
+      className="max-w-[65vw] xxl:max-w-[75vw] max-h-[60vh] object-contain rounded-3xl border-primary border-4"
     />
   )
 }

@@ -126,8 +126,7 @@ function VideoConfig() {
     } catch (error) {
       if (error !== 'CANCELLED') {
         toast.error('Something went wrong during compression.')
-        videoProxy.state.isCompressing = false
-        videoProxy.state.isCompressionSuccessful = false
+        videoProxy.timeTravel('beforeCompressionStarted')
       }
     }
   }
