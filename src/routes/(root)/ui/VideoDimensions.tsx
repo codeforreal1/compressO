@@ -25,17 +25,17 @@ function VideoDimensions() {
       shouldTransformVideo
         ? {
             width:
-              transformVideoConfig?.transforms?.coordinates?.width ??
+              transformVideoConfig?.transforms?.crop?.width ??
               videoOriginalDimensions?.width,
             height:
-              transformVideoConfig?.transforms?.coordinates?.height ??
+              transformVideoConfig?.transforms?.crop?.height ??
               videoOriginalDimensions?.height,
           }
         : videoOriginalDimensions,
     [
       shouldTransformVideo,
-      transformVideoConfig?.transforms?.coordinates?.height,
-      transformVideoConfig?.transforms?.coordinates?.width,
+      transformVideoConfig?.transforms?.crop?.height,
+      transformVideoConfig?.transforms?.crop?.width,
       videoOriginalDimensions,
     ],
   )
@@ -66,10 +66,10 @@ function VideoDimensions() {
     if (shouldTransformVideo) {
       if (transformVideoConfig) {
         const transforms = transformVideoConfig?.transforms
-        if (transforms?.coordinates) {
+        if (transforms?.crop) {
           setDimensions({
-            width: transforms.coordinates.width,
-            height: transforms.coordinates.height,
+            width: transforms.crop.width,
+            height: transforms.crop.height,
           })
         }
       }
