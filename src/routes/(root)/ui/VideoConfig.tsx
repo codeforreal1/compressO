@@ -52,17 +52,7 @@ function VideoConfig() {
     },
   } = useSnapshot(videoProxy)
 
-  const {
-    convertToExtension,
-    presetName,
-    shouldMuteVideo,
-    shouldEnableCustomDimensions,
-    customDimensions,
-    shouldEnableCustomFPS,
-    customFPS,
-    shouldTransformVideo,
-    transformVideoConfig,
-  } = config
+  const { convertToExtension, presetName, shouldMuteVideo } = config
 
   const handleCompression = async () => {
     const videoSnapshot = snapshot(videoProxy)
@@ -91,12 +81,18 @@ function VideoConfig() {
         ...(videoSnapshot?.state?.config?.shouldEnableQuality
           ? { quality: videoSnapshot.state?.config?.quality as number }
           : {}),
-        ...(shouldEnableCustomDimensions
-          ? { dimensions: customDimensions }
+        ...(videoSnapshot.state.config.shouldEnableCustomDimensions
+          ? { dimensions: videoSnapshot.state.config.customDimensions }
           : {}),
-        ...(shouldEnableCustomFPS ? { fps: customFPS?.toString?.() } : {}),
-        ...(shouldTransformVideo
-          ? { transforms: transformVideoConfig?.transforms }
+        ...(videoSnapshot.state.config.shouldEnableCustomFPS
+          ? { fps: videoSnapshot.state.config.customFPS?.toString?.() }
+          : {}),
+        ...(videoSnapshot.state.config.shouldTransformVideo
+          ? {
+              transformsHistory:
+                videoSnapshot.state.config.transformVideoConfig
+                  ?.transformsHistory ?? ([] as any),
+            }
           : {}),
       })
       if (!result) {

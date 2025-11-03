@@ -7,6 +7,7 @@ import Button from '@/components/Button'
 import Divider from '@/components/Divider'
 import Icon from '@/components/Icon'
 import Tooltip from '@/components/Tooltip'
+import { VideoTransforms, VideoTransformsHistory } from '@/types/compression'
 import { videoProxy } from '../-state'
 
 function VideoTransformer() {
@@ -20,9 +21,31 @@ function VideoTransformer() {
   const cropperRef = useRef<CropperRef>(null)
   const debouncedRef = useRef<NodeJS.Timeout | null>(null)
 
+  const recordTransformHistory = (action: VideoTransformsHistory) => {
+    const transformsHistory =
+      videoProxy.state.config.transformVideoConfig?.transformsHistory ?? []
+
+    transformsHistory.push(action)
+
+    if (videoProxy.state.config.transformVideoConfig) {
+      videoProxy.state.config.transformVideoConfig.transformsHistory =
+        transformsHistory
+    } else {
+      videoProxy.state.config.transformVideoConfig = {
+        transforms: {
+          crop: { width: 0, height: 0, top: 0, left: 0 },
+          flip: { horizontal: false, vertical: false },
+          rotate: 0,
+        },
+        transformsHistory,
+      }
+    }
+  }
+
   const flip = (horizontal: boolean, vertical: boolean) => {
     if (cropperRef.current) {
       cropperRef.current.flipImage(horizontal, vertical)
+      recordTransformHistory({ type: 'flip', value: { horizontal, vertical } })
     }
   }
 
@@ -32,12 +55,17 @@ function VideoTransformer() {
         factor: 0,
         center: { left: 0, top: 0 },
       })
+      // This is related to crop so it's history will be recorded on `oNChange` handler
     }
   }
 
   const rotate = (angle: number) => {
     if (cropperRef.current) {
       cropperRef.current.rotateImage(angle)
+      recordTransformHistory({
+        type: 'rotate',
+        value: angle,
+      })
       resetZoom()
     }
   }
@@ -53,6 +81,7 @@ function VideoTransformer() {
           height: visibleArea.height,
         })
       }
+      // This is related to crop so it's history will be recorded on `oNChange` handler
     }
   }
 
@@ -71,21 +100,39 @@ function VideoTransformer() {
         }
         const coordinates = cropperState.coordinates
         const transforms = cropperState.transforms
-        videoProxy.state.config.transformVideoConfig = {
-          transforms: {
-            coordinates: {
-              top: coordinates?.top!,
-              left: coordinates?.left!,
-              width: coordinates?.width!,
-              height: coordinates?.height!,
-            },
-            rotate: transforms.rotate,
-            flip: {
-              horizontal: transforms.flip.horizontal,
-              vertical: transforms.flip.vertical,
-            },
+
+        const transformsHistory =
+          videoProxy.state.config.transformVideoConfig?.transformsHistory ?? []
+
+        const newTransforms: VideoTransforms = {
+          crop: {
+            top: coordinates?.top!,
+            left: coordinates?.left!,
+            width: coordinates?.width!,
+            height: coordinates?.height!,
           },
+          rotate: transforms.rotate,
+          flip: {
+            horizontal: transforms.flip.horizontal,
+            vertical: transforms.flip.vertical,
+          },
+        }
+
+        if (
+          JSON.stringify(
+            videoProxy.state.config.transformVideoConfig?.transforms?.crop,
+          ) !== JSON.stringify(newTransforms?.crop)
+        ) {
+          transformsHistory.push({
+            type: 'crop',
+            value: newTransforms.crop,
+          })
+        }
+
+        videoProxy.state.config.transformVideoConfig = {
+          transforms: newTransforms,
           previewUrl: URL.createObjectURL(blob!),
+          transformsHistory,
         }
       }
     }, 500)
@@ -105,32 +152,29 @@ function VideoTransformer() {
         {...(shouldTransformVideo
           ? {
               defaultCoordinates(state: CropperState) {
-                const coordinates =
-                  videoProxy.state.config.transformVideoConfig?.transforms
-                    ?.coordinates
+                const crop =
+                  videoProxy.state.config.transformVideoConfig?.transforms?.crop
                 return {
-                  left: coordinates?.left ?? 0,
-                  top: coordinates?.top ?? 0,
-                  width: coordinates?.width ?? state.imageSize.width,
-                  height: coordinates?.height ?? state.imageSize.height,
+                  left: crop?.left ?? 0,
+                  top: crop?.top ?? 0,
+                  width: crop?.width ?? state.imageSize.width,
+                  height: crop?.height ?? state.imageSize.height,
                 }
               },
               defaultPosition() {
-                const coordinates =
-                  videoProxy.state.config.transformVideoConfig?.transforms
-                    ?.coordinates
+                const crop =
+                  videoProxy.state.config.transformVideoConfig?.transforms?.crop
                 return {
-                  left: coordinates?.left ?? 0,
-                  top: coordinates?.top ?? 0,
+                  left: crop?.left ?? 0,
+                  top: crop?.top ?? 0,
                 }
               },
               defaultSize(state: CropperState) {
-                const coordinates =
-                  videoProxy.state.config.transformVideoConfig?.transforms
-                    ?.coordinates
+                const crop =
+                  videoProxy.state.config.transformVideoConfig?.transforms?.crop
                 return {
-                  width: coordinates?.width ?? state.imageSize.width,
-                  height: coordinates?.height ?? state.imageSize.height,
+                  width: crop?.width ?? state.imageSize.width,
+                  height: crop?.height ?? state.imageSize.height,
                 }
               },
               defaultTransforms() {

@@ -78,7 +78,7 @@ pub struct VideoFlip {
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct VideoTransforms {
-    pub coordinates: VideoCoordinates,
+    pub crop: VideoCoordinates,
     pub rotate: i32,
     pub flip: VideoFlip,
 }

@@ -55,11 +55,11 @@ function Root() {
         videoProxy.state.sizeInBytes = fileMetadata?.size
         videoProxy.state.size = formatBytes(fileMetadata?.size ?? 0)
         videoProxy.state.isThumbnailGenerating = true
-        videoProxy.state.extension = fileMetadata?.extension
+        videoProxy.state.extension = fileMetadata?.extension?.toLowerCase?.()
 
         if (fileMetadata?.extension) {
-          videoProxy.state.config.convertToExtension =
-            fileMetadata?.extension as keyof (typeof extensions)['video']
+          videoProxy.state.config.convertToExtension = videoProxy.state
+            .extension as keyof (typeof extensions)['video']
         }
 
         if (videoInfo) {

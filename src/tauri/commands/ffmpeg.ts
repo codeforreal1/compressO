@@ -4,7 +4,7 @@ import {
   CompressionResult,
   VideoInfo,
   VideoThumbnail,
-  VideoTransforms,
+  VideoTransformsHistory,
 } from '@/types/compression'
 import { FileMetadata } from '@/types/fs'
 
@@ -17,7 +17,7 @@ export function compressVideo({
   quality = 101, // quality should be within 0-100, but if you supply out of bound value, backend will automatically select optimum quality
   dimensions,
   fps,
-  transforms,
+  transformsHistory,
 }: {
   videoPath: string
   convertToExtension?: string
@@ -27,7 +27,7 @@ export function compressVideo({
   quality?: number
   dimensions?: readonly [number, number]
   fps?: string
-  transforms?: VideoTransforms
+  transformsHistory?: VideoTransformsHistory[]
 }): Promise<CompressionResult> {
   return core.invoke('compress_video', {
     videoPath,
@@ -40,19 +40,7 @@ export function compressVideo({
     ...(dimensions
       ? { dimensions: [Math.round(dimensions[0]), Math.round(dimensions[1])] }
       : {}),
-    ...(transforms
-      ? {
-          transforms: {
-            ...transforms,
-            coordinates: {
-              top: Math.round(transforms.coordinates.top),
-              left: Math.round(transforms?.coordinates.left),
-              width: Math.round(transforms?.coordinates.width),
-              height: Math.round(transforms?.coordinates.height),
-            },
-          },
-        }
-      : {}),
+    transformsHistory,
   })
 }
 

@@ -1,10 +1,11 @@
 use crate::domain::{
     CancelInProgressCompressionPayload, CompressionResult, CustomEvents, TauriEvents,
-    VideoCompressionProgress, VideoInfo, VideoThumbnail, VideoTransforms,
+    VideoCompressionProgress, VideoInfo, VideoThumbnail,
 };
 use crossbeam_channel::{Receiver, Sender};
 use nanoid::nanoid;
 use regex::Regex;
+use serde_json::Value;
 use shared_child::SharedChild;
 use std::{
     io::{BufRead, BufReader},
@@ -61,7 +62,7 @@ impl FFMPEG {
         quality: u16,
         dimensions: Option<(u32, u32)>,
         fps: Option<&str>,
-        transforms: Option<&VideoTransforms>,
+        transforms_history: Option<&Vec<Value>>,
     ) -> Result<CompressionResult, String> {
         if !EXTENSIONS.contains(&convert_to_extension) {
             return Err(String::from("Invalid convert to extension."));
@@ -162,39 +163,10 @@ impl FFMPEG {
             }
         };
         // Transforms
-        let transform_filters = if let Some(video_transforms) = transforms {
-            let coordinates = &video_transforms.coordinates;
-
-            let mut transform_str = String::new();
-
-            // Rotate
-            match video_transforms.rotate {
-                -90 => transform_str.push_str("transpose=2,"),
-                -180 => transform_str.push_str("hflip,vflip,"),
-                -270 => transform_str.push_str("transpose=1,"),
-                _ => {}
-            }
-
-            // Crop
-            transform_str.push_str(
-                format!(
-                    "crop={}:{}:{}:{}",
-                    coordinates.width, coordinates.height, coordinates.left, coordinates.top
-                )
-                .as_str(),
-            );
-
-            // Flip
-            if video_transforms.flip.horizontal {
-                transform_str.push_str(",hflip");
-            }
-            if video_transforms.flip.vertical {
-                transform_str.push_str(",vflip");
-            }
-
-            transform_str
+        let transform_filters = if let Some(transforms) = transforms_history {
+            self.build_ffmpeg_filters(transforms)
         } else {
-            "".to_string()
+            String::from("")
         };
 
         // Dimensions
@@ -213,6 +185,8 @@ impl FFMPEG {
         }
 
         vf_filter.push_str(&pad_filter);
+
+        println!(">>>>>Final vf filter {}", vf_filter);
 
         preset.push("-vf");
         preset.push(&vf_filter);
@@ -632,5 +606,52 @@ impl FFMPEG {
             }
             Err(err) => Err(err.to_string()),
         }
+    }
+
+    fn build_ffmpeg_filters(&self, actions: &Vec<Value>) -> String {
+        let mut filters: Vec<String> = Vec::new();
+        let mut latest_crop: Option<&Value> = None;
+
+        for action in actions {
+            let action_type = action["type"].as_str().unwrap_or("");
+
+            match action_type {
+                "rotate" => {
+                    let angle = action["value"].as_i64().unwrap_or(0);
+                    match angle % 360 {
+                        -90 | 270 => filters.push("transpose=2".to_string()),
+                        90 | -270 => filters.push("transpose=1".to_string()),
+                        180 | -180 => filters.push("hflip,vflip".to_string()),
+                        _ => {}
+                    }
+                }
+                "flip" => {
+                    if let Some(flip_obj) = action["value"].as_object() {
+                        if flip_obj.get("horizontal").and_then(|v| v.as_bool()) == Some(true) {
+                            filters.push("hflip".to_string());
+                        }
+                        if flip_obj.get("vertical").and_then(|v| v.as_bool()) == Some(true) {
+                            filters.push("vflip".to_string());
+                        }
+                    }
+                }
+                "crop" => {
+                    latest_crop = Some(&action["value"]);
+                }
+                _ => {}
+            }
+        }
+
+        // Apply only the last crop
+        if let Some(c) = latest_crop {
+            let w = c["width"].as_f64().unwrap_or(0.0).round() as i64;
+            let h = c["height"].as_f64().unwrap_or(0.0).round() as i64;
+            let x = c["left"].as_f64().unwrap_or(0.0).round() as i64;
+            let y = c["top"].as_f64().unwrap_or(0.0).round() as i64;
+
+            filters.push(format!("crop={}:{}:{}:{}", w, h, x, y));
+        }
+
+        filters.join(",")
     }
 }

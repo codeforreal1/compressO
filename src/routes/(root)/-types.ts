@@ -2,6 +2,7 @@ import {
   compressionPresets,
   extensions,
   VideoTransforms,
+  VideoTransformsHistory,
 } from '@/types/compression'
 
 export type VideoConfig = {
@@ -18,7 +19,8 @@ export type VideoConfig = {
   shouldTransformVideo?: boolean
   transformVideoConfig?: {
     transforms: VideoTransforms
-    previewUrl: string
+    transformsHistory: VideoTransformsHistory[]
+    previewUrl?: string
   }
 }
 
