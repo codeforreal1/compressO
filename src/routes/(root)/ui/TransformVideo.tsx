@@ -7,6 +7,7 @@ function TransformVideo() {
   const {
     state: {
       isCompressing,
+      isCompressionSuccessful,
       config: { shouldTransformVideo },
     },
   } = useSnapshot(videoProxy)
@@ -21,7 +22,7 @@ function TransformVideo() {
             videoProxy.state.config.transformVideoConfig = undefined
           }
         }}
-        isDisabled={isCompressing}
+        isDisabled={isCompressing || isCompressionSuccessful}
       >
         <p className="text-gray-600 dark:text-gray-400 text-sm mr-2 w-full">
           Transform

@@ -11,6 +11,7 @@ function VideoDimensions() {
   const {
     state: {
       isCompressing,
+      isCompressionSuccessful,
       config: {
         shouldEnableCustomDimensions,
         shouldTransformVideo,
@@ -114,7 +115,7 @@ function VideoDimensions() {
           videoProxy.state.config.shouldEnableCustomDimensions =
             !shouldEnableCustomDimensions
         }}
-        isDisabled={isCompressing}
+        isDisabled={isCompressing || isCompressionSuccessful}
       >
         <p className="text-gray-600 dark:text-gray-400 text-sm mr-2 w-full">
           Dimensions
@@ -133,7 +134,7 @@ function VideoDimensions() {
               onValueChange={(val) => handleChange(val, 'width')}
               labelPlacement="outside"
               classNames={{ label: '!text-gray-600 dark:!text-gray-400' }}
-              isDisabled={isCompressing}
+              isDisabled={isCompressing || isCompressionSuccessful}
             />
             <NumberInput
               label="Height"
@@ -142,7 +143,7 @@ function VideoDimensions() {
               onValueChange={(val) => handleChange(val, 'height')}
               labelPlacement="outside"
               classNames={{ label: '!text-gray-600 dark:!text-gray-400' }}
-              isDisabled={isCompressing}
+              isDisabled={isCompressing || isCompressionSuccessful}
             />
           </motion.div>
         ) : null}

@@ -13,6 +13,7 @@ function VideoFPS() {
   const {
     state: {
       isCompressing,
+      isCompressionSuccessful,
       config: { shouldEnableCustomFPS, customFPS },
       fps,
     },
@@ -25,7 +26,7 @@ function VideoFPS() {
         onValueChange={() => {
           videoProxy.state.config.shouldEnableCustomFPS = !shouldEnableCustomFPS
         }}
-        isDisabled={isCompressing}
+        isDisabled={isCompressing || isCompressionSuccessful}
       >
         <p className="text-gray-600 dark:text-gray-400 text-sm mr-2 w-full">
           FPS
@@ -48,11 +49,10 @@ function VideoFPS() {
                 }
               }}
               selectionMode="single"
-              isDisabled={isCompressing}
+              isDisabled={isCompressing || isCompressionSuccessful}
               classNames={{
                 label: '!text-gray-600 dark:!text-gray-400 text-xs',
               }}
-              labelPlacement="outside"
             >
               {FPS?.map((f) => (
                 <SelectItem

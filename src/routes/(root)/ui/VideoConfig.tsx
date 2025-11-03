@@ -237,7 +237,7 @@ function VideoConfig() {
                     videoProxy.state.config.shouldMuteVideo = !shouldMuteVideo
                   }}
                   className="flex justify-center items-center"
-                  isDisabled={isCompressing}
+                  isDisabled={isCompressing || isCompressionSuccessful}
                 >
                   <div className="flex justify-center items-center">
                     <span className="text-gray-600 dark:text-gray-400 block mr-2 text-sm">
@@ -284,7 +284,7 @@ function VideoConfig() {
                     }
                   }}
                   selectionMode="single"
-                  isDisabled={isCompressing}
+                  isDisabled={isCompressing || isCompressionSuccessful}
                   classNames={{
                     label: '!text-gray-600 dark:!text-gray-400 text-sm',
                   }}

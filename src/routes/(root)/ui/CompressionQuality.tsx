@@ -11,6 +11,7 @@ function CompressionQuality() {
   const {
     state: {
       isCompressing,
+      isCompressionSuccessful,
       config: { quality: compressionQuality, shouldEnableQuality },
     },
   } = useSnapshot(videoProxy)
@@ -64,7 +65,7 @@ function CompressionQuality() {
         onValueChange={() => {
           videoProxy.state.config.shouldEnableQuality = !shouldEnableQuality
         }}
-        isDisabled={isCompressing}
+        isDisabled={isCompressing || isCompressionSuccessful}
       >
         <p className="text-gray-600 dark:text-gray-400 text-sm mr-2 w-full">
           Quality
@@ -108,7 +109,9 @@ function CompressionQuality() {
               )}
               value={quality}
               onChange={handleQualityChange}
-              isDisabled={isCompressing || !shouldEnableQuality}
+              isDisabled={
+                isCompressing || isCompressionSuccessful || !shouldEnableQuality
+              }
             />
           </motion.div>
         ) : null}
