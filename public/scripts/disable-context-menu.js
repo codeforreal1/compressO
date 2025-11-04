@@ -3,26 +3,26 @@
     return
   }
 
-  const isReleaseMode =
-    document.currentScript.getAttribute('data-env') === 'production'
+  document.addEventListener('DOMContentLoaded', () => {
+    const isReleaseMode = window.__envMode === 'production'
+    if (isReleaseMode) {
+      document.addEventListener(
+        'contextmenu',
+        (e) => {
+          e.preventDefault()
+          return false
+        },
+        { capture: true },
+      )
 
-  if (isReleaseMode) {
-    document.addEventListener(
-      'contextmenu',
-      (e) => {
-        e.preventDefault()
-        return false
-      },
-      { capture: true },
-    )
-
-    document.addEventListener(
-      'selectstart',
-      (e) => {
-        e.preventDefault()
-        return false
-      },
-      { capture: true },
-    )
-  }
+      document.addEventListener(
+        'selectstart',
+        (e) => {
+          e.preventDefault()
+          return false
+        },
+        { capture: true },
+      )
+    }
+  })
 })(document, window)

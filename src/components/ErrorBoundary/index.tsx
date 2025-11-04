@@ -20,7 +20,7 @@ class ErrorBoundary extends React.Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: any) {
-    // eslint-disable-next-line no-console
+    // biome-ignore lint/suspicious/noConsole: <>
     console.log({ error, errorInfo })
   }
 

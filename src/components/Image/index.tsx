@@ -1,8 +1,8 @@
-import React from 'react'
 import {
   Image as NextUIImage,
   type ImageProps as NextUIImageProps,
-} from '@nextui-org/image'
+} from '@heroui/image'
+import React from 'react'
 
 interface ImageProps {
   src: string

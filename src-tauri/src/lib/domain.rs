@@ -51,3 +51,34 @@ pub enum TauriEvents {
 pub struct CancelInProgressCompressionPayload {
     pub video_id: String,
 }
+#[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct VideoInfo {
+    pub duration: Option<String>,
+    pub dimensions: Option<(u32, u32)>,
+    pub fps: Option<f32>,
+}
+
+#[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct VideoCoordinates {
+    pub top: u32,
+    pub left: u32,
+    pub width: u32,
+    pub height: u32,
+}
+
+#[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct VideoFlip {
+    pub horizontal: bool,
+    pub vertical: bool,
+}
+
+#[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct VideoTransforms {
+    pub crop: VideoCoordinates,
+    pub rotate: i32,
+    pub flip: VideoFlip,
+}

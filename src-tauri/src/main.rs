@@ -6,20 +6,20 @@ use tauri::Manager;
 use tauri_plugin_log::{Target as LogTarget, TargetKind as LogTargetKind};
 
 use lib::tauri_commands::{
-    command::{__cmd__show_item_in_file_manager, show_item_in_file_manager},
     ffmpeg::{
-        __cmd__compress_video, __cmd__generate_video_thumbnail, __cmd__get_video_duration,
-        compress_video, generate_video_thumbnail, get_video_duration,
+        __cmd__compress_video, __cmd__generate_video_thumbnail, __cmd__get_video_info,
+        compress_video, generate_video_thumbnail, get_video_info,
     },
+    file_manager::{__cmd__show_item_in_file_manager, show_item_in_file_manager},
     fs::{
         __cmd__delete_cache, __cmd__delete_file, __cmd__get_file_metadata,
         __cmd__get_image_dimension, __cmd__move_file, delete_cache, delete_file, get_file_metadata,
         get_image_dimension, move_file,
-    },
+    }
 };
 
 #[cfg(target_os = "linux")]
-use lib::tauri_commands::command::DbusState;
+use lib::tauri_commands::file_manager::DbusState;
 #[cfg(target_os = "linux")]
 use std::sync::Mutex;
 
@@ -37,6 +37,7 @@ async fn main() {
                 .targets(LOG_TARGETS)
                 .build(),
         )
+        .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_shell::init())
@@ -54,7 +55,7 @@ async fn main() {
         .invoke_handler(tauri::generate_handler![
             compress_video,
             generate_video_thumbnail,
-            get_video_duration,
+            get_video_info,
             get_image_dimension,
             get_file_metadata,
             move_file,

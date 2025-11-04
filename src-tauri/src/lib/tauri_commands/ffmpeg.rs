@@ -1,8 +1,9 @@
 use crate::{
-    domain::{CompressionResult, VideoThumbnail},
-    ffmpeg,
+    domain::{CompressionResult, VideoInfo, VideoThumbnail},
+    ffmpeg::{self},
     fs::delete_stale_files,
 };
+use serde_json::Value;
 
 #[tauri::command]
 pub async fn compress_video(
@@ -13,6 +14,9 @@ pub async fn compress_video(
     video_id: Option<&str>,
     should_mute_video: bool,
     quality: u16,
+    dimensions: Option<(u32, u32)>,
+    fps: Option<&str>,
+    transforms_history: Option<Vec<Value>>,
 ) -> Result<CompressionResult, String> {
     let mut ffmpeg = ffmpeg::FFMPEG::new(&app)?;
     if let Ok(files) =
@@ -31,6 +35,9 @@ pub async fn compress_video(
             video_id,
             should_mute_video,
             quality,
+            dimensions,
+            fps,
+            transforms_history.as_ref(),
         )
         .await
     {
@@ -49,10 +56,7 @@ pub async fn generate_video_thumbnail(
 }
 
 #[tauri::command]
-pub async fn get_video_duration(
-    app: tauri::AppHandle,
-    video_path: &str,
-) -> Result<Option<String>, String> {
+pub async fn get_video_info(app: tauri::AppHandle, video_path: &str) -> Result<VideoInfo, String> {
     let mut ffmpeg = ffmpeg::FFMPEG::new(&app)?;
-    ffmpeg.get_video_duration(video_path).await
+    ffmpeg.get_video_info(video_path).await
 }

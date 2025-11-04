@@ -1,5 +1,6 @@
-import { FileMetadata } from '@/types/fs'
 import { core } from '@tauri-apps/api'
+
+import { FileMetadata } from '@/types/fs'
 
 export function getFileMetadata(filePath: string): Promise<FileMetadata> {
   return core.invoke('get_file_metadata', { filePath })

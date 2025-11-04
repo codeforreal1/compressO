@@ -1,8 +1,7 @@
-import React from 'react'
 import {
   CircularProgress as NextUICircularProgress,
   type CircularProgressProps as NextUICircularProgressProps,
-} from '@nextui-org/progress'
+} from '@heroui/progress'
 
 interface CircularProgressProps extends NextUICircularProgressProps {}
 

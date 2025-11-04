@@ -28,3 +28,23 @@ export type VideoThumbnail = {
   fileName: string
   filePath: string
 }
+
+export type VideoInfo = {
+  duration: string
+  dimensions: [number, number]
+  fps: number
+}
+
+export type VideoTransforms = {
+  crop: { top: number; left: number; width: number; height: number }
+  rotate: number
+  flip: { horizontal: boolean; vertical: boolean }
+}
+
+export type VideoTransformsHistory =
+  | {
+      type: 'crop'
+      value: { top: number; left: number; width: number; height: number }
+    }
+  | { type: 'rotate'; value: number }
+  | { type: 'flip'; value: { horizontal: boolean; vertical: boolean } }

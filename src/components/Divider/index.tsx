@@ -1,8 +1,7 @@
-import React from 'react'
 import {
   Divider as NextUIDivider,
   type DividerProps as NextUIDividerProps,
-} from '@nextui-org/divider'
+} from '@heroui/divider'
 
 import { cn } from '@/utils/tailwind'
 

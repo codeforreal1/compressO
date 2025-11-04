@@ -1,16 +1,16 @@
 {
-  "$schema": "../node_modules/@tauri-apps/cli/schema.json",
+  "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "CompressO",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "identifier": "com.compresso.app",
   "build": {
-    "beforeBuildCommand": "pnpm next:build",
+    "beforeBuildCommand": "pnpm vite:build",
     "frontendDist": "../dist",
-    "devUrl": "http://localhost:3000"
+    "devUrl": "http://localhost:3001"
   },
   "bundle": {
     "longDescription": "Compress any video file to a tiny size.",
-    "shortDescription": "CompressO.",
+    "shortDescription": "Compress any video to a tiny size",
     "active": true,
     "category": "DeveloperTool",
     "copyright": "Code For Real",
@@ -46,18 +46,19 @@
   "app": {
     "windows": [
       {
+        "title": "CompressO",
         "fullscreen": false,
         "height": 992,
         "width": 1280,
         "minWidth": 1080,
         "minHeight": 800,
         "resizable": true,
-        "title": "",
-        "hiddenTitle": true
+        "hiddenTitle": true,
+        "backgroundColor": "#FFFFFF"
       }
     ],
     "security": {
-      "csp": "default-src 'self'; img-src 'self' asset: http://asset.localhost asset: https://asset.localhost; style-src 'unsafe-inline' 'self'; connect-src 'self' ipc: http://ipc.localhost ipc: https://ipc.localhost",
+      "csp": "default-src 'self'; img-src 'self' asset: http://asset.localhost asset: https://asset.localhost blob: data:; style-src 'unsafe-inline' 'self'; connect-src 'self' ipc: http://ipc.localhost ipc: https://ipc.localhost",
       "dangerousDisableAssetCspModification": ["style-src"],
       "assetProtocol": {
         "enable": true,

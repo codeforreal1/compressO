@@ -1,6 +1,6 @@
 <div align="center">
   <div align="center">
-   <img width="100" height="100" src="public/logo.png" alt="Logo">
+   <img width="100" height="100" src="public/logo.png" alt="Logo" />
   </div>
 	<h1 align="center">CompressO</h1>
 	<p align="center">
@@ -35,7 +35,7 @@
 
 ### Tech ⌨
 
-This app is created using [Tauri](https://tauri.app/), a Rust🦀 framework for building a cross-platform desktop app. It uses [Next.js](https://nextjs.org/) as a frontend layer. The compression is done entirely by [FFmpeg](https://ffmpeg.org/) using platform specific standalone binaries.
+This app is created using [Tauri](https://tauri.app/), a Rust🦀 framework for building a cross-platform desktop app. It uses [Vite](https://vite.dev/) as a frontend layer. The compression is done entirely by [FFmpeg](https://ffmpeg.org/) using platform specific standalone binaries.
 The app works completely offline and no any network requests is made to/from the app.
 
 ### Downloads ⬇️

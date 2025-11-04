@@ -1,6 +1,12 @@
-import { CompressionResult, VideoThumbnail } from '@/types/compression'
-import { FileMetadata } from '@/types/fs'
 import { core } from '@tauri-apps/api'
+
+import {
+  CompressionResult,
+  VideoInfo,
+  VideoThumbnail,
+  VideoTransformsHistory,
+} from '@/types/compression'
+import { FileMetadata } from '@/types/fs'
 
 export function compressVideo({
   videoPath,
@@ -9,6 +15,9 @@ export function compressVideo({
   videoId,
   shouldMuteVideo = false,
   quality = 101, // quality should be within 0-100, but if you supply out of bound value, backend will automatically select optimum quality
+  dimensions,
+  fps,
+  transformsHistory,
 }: {
   videoPath: string
   convertToExtension?: string
@@ -16,6 +25,9 @@ export function compressVideo({
   videoId?: string | null
   shouldMuteVideo?: boolean
   quality?: number
+  dimensions?: readonly [number, number]
+  fps?: string
+  transformsHistory?: VideoTransformsHistory[]
 }): Promise<CompressionResult> {
   return core.invoke('compress_video', {
     videoPath,
@@ -24,6 +36,11 @@ export function compressVideo({
     videoId,
     shouldMuteVideo,
     quality,
+    fps,
+    ...(dimensions
+      ? { dimensions: [Math.round(dimensions[0]), Math.round(dimensions[1])] }
+      : {}),
+    transformsHistory,
   })
 }
 
@@ -37,6 +54,6 @@ export function getFileMetadata(filePath: string): Promise<FileMetadata> {
   return core.invoke('get_file_metadata', { filePath })
 }
 
-export function getVideoDuration(videoPath: string): Promise<string | null> {
-  return core.invoke('get_video_duration', { videoPath })
+export function getVideoInfo(videoPath: string): Promise<VideoInfo | null> {
+  return core.invoke('get_video_info', { videoPath })
 }
