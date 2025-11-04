@@ -3,4 +3,4 @@
 set -e
 
 pnpm lint-staged
-pnpm tsc --noEmit --skipLibCheck
+pnpm tsc:check

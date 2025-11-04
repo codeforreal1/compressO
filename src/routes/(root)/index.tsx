@@ -109,7 +109,7 @@ function Root() {
       containerProps={{ className: 'relative' }}
       childrenProps={{ className: 'm-auto' }}
     >
-      <VideoPicker onSuccess={({ file }) => handleVideoSelected(file?.path)}>
+      <VideoPicker onSuccess={({ filePath }) => handleVideoSelected(filePath)}>
         {({ onClick }) => (
           <motion.div
             role="button"
