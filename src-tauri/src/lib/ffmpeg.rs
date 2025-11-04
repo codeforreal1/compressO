@@ -14,7 +14,7 @@ use std::{
     sync::{Arc, Mutex},
 };
 use strum::EnumProperty;
-use tauri::{AppHandle, Manager};
+use tauri::{AppHandle, Emitter, Listener, Manager};
 use tauri_plugin_shell::ShellExt;
 
 pub struct FFMPEG {
