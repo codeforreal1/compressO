@@ -57,7 +57,7 @@ function AutoSaveSettings() {
     : 'Downloads (default)'
 
   return (
-    <div className="mb-4">
+    <div className="py-2 flex flex-col gap-2 w-full">
       <div className="flex items-center">
         <Switch
           isSelected={autoSaveEnabled}
