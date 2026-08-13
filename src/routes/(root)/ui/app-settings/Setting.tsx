@@ -134,12 +134,12 @@ function AppSetting() {
       setIsSelectingFolder(true)
       const selectedDirectory = await open({
         directory: true,
-        title: 'Choose default folder for auto-save',
+        title: 'Choose default folder for auto save',
       })
       if (selectedDirectory && typeof selectedDirectory === 'string') {
         appProxy.state.autoSavePath = selectedDirectory
         localStorage.setItem('autoSavePath', selectedDirectory)
-        toast.success(`Auto-save folder set to: ${selectedDirectory}`)
+        toast.success(`Auto save folder set to: ${selectedDirectory}`)
       }
     } catch (error) {
       toast.error('Failed to select folder')
@@ -152,7 +152,7 @@ function AppSetting() {
     try {
       appProxy.state.autoSavePath = undefined
       localStorage.removeItem('autoSavePath')
-      toast.success('Auto-save folder reset to default (Downloads)')
+      toast.success('Auto save folder reset to default (Downloads)')
     } catch (error) {
       toast.error('Failed to reset folder')
     }
@@ -197,7 +197,7 @@ function AppSetting() {
             placement="left"
           >
             <p className="text-gray-600 dark:text-gray-400 text-sm">
-              Auto-save after Compression
+              Auto save to
             </p>
           </Tooltip>
           <Switch
@@ -212,12 +212,12 @@ function AppSetting() {
               <div className="flex justify-between items-center">
                 <Tooltip
                   content="Set custom default folder for auto-saving compressed files"
-                  aria-label="Custom auto-save folder"
+                  aria-label="Custom auto save folder"
                   placement="left"
                 >
-                  <p className="text-gray-600 dark:text-gray-400 text-sm">
-                    Auto-save Folder
-                  </p>
+                  {/* <p className="text-gray-600 dark:text-gray-400 text-sm">
+                    Auto save Folder
+                  </p> */}
                 </Tooltip>
               </div>
               <div className="flex gap-2 items-center">
