@@ -1,5 +1,6 @@
+import { path } from '@tauri-apps/api'
 import { open, save } from '@tauri-apps/plugin-dialog'
-import React, { useCallback } from 'react'
+import React, { useCallback, useEffect } from 'react'
 import { snapshot, useSnapshot } from 'valtio'
 
 import Button from '@/components/Button'
@@ -7,19 +8,19 @@ import Icon from '@/components/Icon'
 import { toast } from '@/components/Toast'
 import Tooltip from '@/components/Tooltip'
 import {
-  copyFileToClipboard,
-  moveFile,
-  showItemInFileManager,
+    copyFileToClipboard,
+    moveFile,
+    showItemInFileManager,
 } from '@/tauri/commands/fs'
 import { appProxy } from '../-state'
 
 function SaveMedia() {
   const {
-    state: { media, isSaving, isSaved, isCompressing },
+    state: { media, isSaving, isSaved, isCompressing, autoSaveEnabled, isProcessCompleted },
   } = useSnapshot(appProxy)
   const mediaFile = media.length === 1 ? media[0] : null
 
-  const handleCompressedMediaSave = useCallback(async () => {
+  const performAutoSave = useCallback(async (isAutoSave: boolean = false) => {
     if (appProxy.state.media.length) {
       const { media } = appProxy.state
       const isBatch = media.length > 1
@@ -30,18 +31,34 @@ function SaveMedia() {
         let pathToSave: string | string[] | null = null
 
         if (isBatch) {
-          const selectedDirectory = await open({
-            directory: true,
-            title: 'Choose directory to save the compressed media.',
-          })
-          if (selectedDirectory) {
-            pathToSave = selectedDirectory as string
+          if (isAutoSave) {
+            // For auto-save in batch mode, use custom path or default Downloads folder
+            const customPath = appProxy.state.autoSavePath
+            const directory = customPath || (await path.downloadDir())
+            pathToSave = directory
+          } else {
+            const selectedDirectory = await open({
+              directory: true,
+              title: 'Choose directory to save the compressed media.',
+            })
+            if (selectedDirectory) {
+              pathToSave = selectedDirectory as string
+              appProxy.state.autoSavePath = pathToSave
+            }
           }
         } else {
-          pathToSave = await save({
-            title: 'Choose location to save the compressed media.',
-            defaultPath: `compressO-${compressedFile?.fileNameToDisplay ?? fileName ?? ''}`,
-          })
+          if (isAutoSave) {
+            // For auto-save in single file mode, use custom path or default Downloads folder
+            const customPath = appProxy.state.autoSavePath
+            const defaultDir = customPath || (await path.downloadDir())
+            const filename = `compressO-${compressedFile?.fileNameToDisplay ?? fileName ?? 'media'}`
+            pathToSave = `${defaultDir}/${filename}`
+          } else {
+            pathToSave = await save({
+              title: 'Choose location to save the compressed media.',
+              defaultPath: `compressO-${compressedFile?.fileNameToDisplay ?? fileName ?? ''}`,
+            })
+          }
         }
 
         if (pathToSave) {
@@ -94,9 +111,15 @@ function SaveMedia() {
             }
             appProxy.state.isSaved = true
           }
+
+          if (isAutoSave) {
+            toast.success('Compression complete! File saved automatically.')
+          }
         }
       } catch (_) {
-        toast.error('Could not save media to the given path.')
+        if (!isAutoSave) {
+          toast.error('Could not save media to the given path.')
+        }
         for (let i = 0; i < media.length; i++) {
           appProxy.state.media[i].compressedFile = {
             ...(snapshot(appProxy).state.media[i].compressedFile ?? {}),
@@ -108,6 +131,24 @@ function SaveMedia() {
       appProxy.state.isSaving = false
     }
   }, [])
+
+  // Auto-save when compression completes and auto-save is enabled
+  useEffect(() => {
+    if (
+      autoSaveEnabled &&
+      isProcessCompleted &&
+      !isSaving &&
+      !isSaved &&
+      media.length > 0 &&
+      media.every((m) => m.compressedFile?.isSuccessful !== false)
+    ) {
+      performAutoSave(true)
+    }
+  }, [autoSaveEnabled, isProcessCompleted, isSaving, isSaved, media, performAutoSave])
+
+  const handleCompressedMediaSave = useCallback(async () => {
+    await performAutoSave(false)
+  }, [performAutoSave])
 
   const openInFileManager = async () => {
     const { media } = appProxy.state
