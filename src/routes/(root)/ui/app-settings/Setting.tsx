@@ -158,7 +158,9 @@ function AppSetting() {
     }
   }
 
-  const displayPath = autoSavePath ? autoSavePath.split('/').slice(-2).join('/') : 'Downloads (default)'
+  const displayPath = autoSavePath
+    ? autoSavePath.split(/[\\/]/).slice(-2).join('/')
+    : 'Downloads (default)'
 
   const deleteCache = async () => {
     setIsCacheDeleting(true)

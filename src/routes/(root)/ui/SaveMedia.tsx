@@ -14,6 +14,11 @@ import {
 } from '@/tauri/commands/fs'
 import { appProxy } from '../-state'
 
+// Cross-platform path joining utility
+const joinPath = (...parts: string[]): string => {
+  return parts.filter(Boolean).join('/')
+}
+
 function SaveMedia() {
   const {
     state: { media, isSaving, isSaved, isCompressing, autoSaveEnabled, isProcessCompleted },
@@ -52,7 +57,7 @@ function SaveMedia() {
             const customPath = appProxy.state.autoSavePath
             const defaultDir = customPath || (await path.downloadDir())
             const filename = `compressO-${compressedFile?.fileNameToDisplay ?? fileName ?? 'media'}`
-            pathToSave = `${defaultDir}/${filename}`
+            pathToSave = joinPath(defaultDir, filename)
           } else {
             pathToSave = await save({
               title: 'Choose location to save the compressed media.',
@@ -78,7 +83,7 @@ function SaveMedia() {
                   isSaved: false,
                 }
 
-                const destinationPath = `${directory}/compressO-${mediaFile?.compressedFile?.fileNameToDisplay || mediaFile?.fileName}`
+                const destinationPath = joinPath(directory, `compressO-${mediaFile?.compressedFile?.fileNameToDisplay || mediaFile?.fileName}`)
 
                 await moveFile(
                   mediaFile.compressedFile.pathRaw,
