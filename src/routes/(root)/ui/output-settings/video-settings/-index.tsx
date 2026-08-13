@@ -4,6 +4,8 @@ import { useSnapshot } from 'valtio'
 
 import Tabs from '@/components/Tabs'
 import { getAudioStreams } from '@/tauri/commands/ffprobe'
+import { appProxy } from '../../../-state'
+import AutoSaveSettings from '../AutoSaveSettings'
 import AudioBitrate from './audio/AudioBitrate'
 import AudioChannels from './audio/AudioChannels'
 import AudioCodec from './audio/AudioCodec'
@@ -19,7 +21,6 @@ import VideoSpeed from './video/Speed'
 import TransformVideo from './video/TransformVideo'
 import TrimVideo from './video/TrimVideo'
 import VideoCodec from './video/VideoCodec'
-import { appProxy } from '../../../-state'
 
 type VideoSettingsProps = {
   mediaIndex: number // if mediaIndex < 0, we'll only show settings that applies to all videos
@@ -78,6 +79,7 @@ function VideoSettings({ mediaIndex }: VideoSettingsProps) {
   return (
     <>
       <section>
+        <AutoSaveSettings />
         <Tabs
           aria-label="Compression Settings"
           size="sm"
