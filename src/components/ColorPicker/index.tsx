@@ -105,7 +105,7 @@ function ColorPicker({
                   onChange?.(defaultColor)
                 }}
               >
-                Reset
+                重置
               </Button>
             ) : null}
           </div>

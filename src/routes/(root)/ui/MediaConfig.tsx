@@ -47,7 +47,7 @@ function MediaConfig() {
               {...zoomInTransition}
             >
               <Tabs
-                aria-label="Media Filter"
+                aria-label="媒体筛选"
                 size="sm"
                 selectedKey={activeTab}
                 onSelectionChange={(t) => {
@@ -59,9 +59,9 @@ function MediaConfig() {
                   tab: 'h-5',
                 }}
               >
-                <Tab key="all" value="all" title="All" />
-                <Tab key="videos" value="videos" title="Videos" />
-                <Tab key="images" value="images" title="Images" />
+                <Tab key="all" value="all" title="全部" />
+                <Tab key="videos" value="videos" title="视频" />
+                <Tab key="images" value="images" title="图片" />
               </Tabs>
             </motion.div>
           ) : null}
@@ -83,8 +83,8 @@ function MediaConfig() {
             <Title
               title={
                 media.length === 1 || selectedMediaIndexForCustomization > -1
-                  ? 'Output Settings'
-                  : 'Batch Settings'
+                  ? '输出设置'
+                  : '批量设置'
               }
               className="text-xl font-bold"
             />

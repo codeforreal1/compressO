@@ -28,15 +28,15 @@ type VideoSettingsProps = {
 const TABS = {
   video: {
     id: 'video',
-    title: 'Video',
+    title: '视频',
   },
   audio: {
     id: 'audio',
-    title: 'Audio',
+    title: '音频',
   },
   others: {
     id: 'others',
-    title: 'Others',
+    title: '其他',
   },
 } as const
 
@@ -79,7 +79,7 @@ function VideoSettings({ mediaIndex }: VideoSettingsProps) {
     <>
       <section>
         <Tabs
-          aria-label="Compression Settings"
+          aria-label="压缩设置"
           size="sm"
           selectedKey={tab}
           onSelectionChange={(t) => setTab(t as keyof typeof TABS)}
@@ -156,7 +156,7 @@ function VideoSettings({ mediaIndex }: VideoSettingsProps) {
               {hasNoAudio ? (
                 <div className="flex justify-center items-center absolute left-0 top-0 w-full h-full bg-white1/50 dark:bg-black1/50">
                   <p className="text-xs text-center mt-1 text-zinc-600 dark:text-zinc-400">
-                    No audio found
+                    未找到音频
                   </p>
                 </div>
               ) : null}

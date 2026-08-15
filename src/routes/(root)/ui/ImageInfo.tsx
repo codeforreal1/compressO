@@ -32,15 +32,15 @@ type ImageInfoProps = {
 const TABS = {
   container: {
     id: 'container',
-    title: 'Container',
+    title: '文件容器',
   },
   color: {
     id: 'color',
-    title: 'Color',
+    title: '颜色',
   },
   exif: {
     id: 'exif',
-    title: 'EXIF',
+    title: 'EXIF 信息',
   },
 } as const
 
@@ -139,7 +139,7 @@ function ImageInfo({ mediaIndex, onClose }: ImageInfoProps) {
     <section className="w-full h-full bg-white1 dark:bg-black1 p-6">
       <div className="w-full flex justify-center">
         <Tabs
-          aria-label="Image Information"
+          aria-label="图片信息"
           size="sm"
           selectedKey={tab}
           onSelectionChange={(t) => setTab(t as keyof typeof TABS)}
@@ -200,7 +200,7 @@ function BasicInfoDisplay({
       {imagePathRaw ? (
         <>
           <InfoItem
-            label="Full Path"
+            label="文件完整路径"
             value={
               <Code size="sm" className="text-xs max-w-[100%] truncate">
                 {imagePathRaw}
@@ -213,28 +213,28 @@ function BasicInfoDisplay({
 
       {info.filename ? (
         <>
-          <InfoItem label="File Name" value={info.filename} />
+          <InfoItem label="文件名" value={info.filename} />
           <Divider className="my-1" />
         </>
       ) : null}
 
       {info.format ? (
         <>
-          <InfoItem label="Format" value={info.format} />
+          <InfoItem label="格式" value={info.format} />
           <Divider className="my-1" />
         </>
       ) : null}
 
       {info.mimeType ? (
         <>
-          <InfoItem label="MIME Type" value={info.mimeType} />
+          <InfoItem label="MIME 类型" value={info.mimeType} />
           <Divider className="my-1" />
         </>
       ) : null}
 
       {info.size > 0 ? (
         <>
-          <InfoItem label="Size" value={formatBytes(info.size)} />
+          <InfoItem label="大小" value={formatBytes(info.size)} />
           <Divider className="my-1" />
         </>
       ) : null}
@@ -243,28 +243,25 @@ function BasicInfoDisplay({
         <>
           <div className="grid grid-cols-2 gap-4 mt-4">
             <div>
-              <InfoItem label="Width" value={`${dimensions.width}px`} />
+              <InfoItem label="宽度" value={`${dimensions.width}px`} />
               <Divider className="!my-2" />
             </div>
             <div>
-              <InfoItem label="Height" value={`${dimensions.height}px`} />
+              <InfoItem label="高度" value={`${dimensions.height}px`} />
               <Divider className="!my-2" />
             </div>
           </div>
 
           {dimensions.aspectRatio ? (
             <>
-              <InfoItem label="Aspect Ratio" value={dimensions.aspectRatio} />
+              <InfoItem label="宽高比" value={dimensions.aspectRatio} />
               <Divider className="!my-2" />
             </>
           ) : null}
 
           {dimensions.orientation ? (
             <>
-              <InfoItem
-                label="Orientation"
-                value={`${dimensions.orientation}°`}
-              />
+              <InfoItem label="方向" value={`${dimensions.orientation}°`} />
               <Divider className="!my-2" />
             </>
           ) : null}
@@ -280,7 +277,7 @@ function BasicInfoDisplay({
           ) : null}
 
           <InfoItem
-            label="Megapixels"
+            label="百万像素"
             value={`${dimensions.megapixels.toFixed(2)} MP`}
           />
           <Divider className="!my-2" />
@@ -295,31 +292,31 @@ function ColorInfoDisplay({ info }: { info: ImageColorInfo }) {
     <div className="space-y-4">
       {info.colorType ? (
         <>
-          <InfoItem label="Color Type" value={info.colorType} />
+          <InfoItem label="颜色类型" value={info.colorType} />
           <Divider className="!my-2" />
         </>
       ) : null}
 
       {info.bitDepth ? (
         <>
-          <InfoItem label="Bit Depth" value={`${info.bitDepth}-bit`} />
+          <InfoItem label="位深" value={`${info.bitDepth} 位`} />
           <Divider className="!my-2" />
         </>
       ) : null}
 
-      <InfoItem label="Alpha Channel" value={info.hasAlpha ? 'Yes' : 'No'} />
+      <InfoItem label="Alpha 通道" value={info.hasAlpha ? '是' : '否'} />
       <Divider className="!my-2" />
 
       {info.colorSpace ? (
         <>
-          <InfoItem label="Color Space" value={info.colorSpace} />
+          <InfoItem label="色彩空间" value={info.colorSpace} />
           <Divider className="!my-2" />
         </>
       ) : null}
 
       {info.pixelFormat ? (
         <>
-          <InfoItem label="Pixel Format" value={info.pixelFormat} />
+          <InfoItem label="像素格式" value={info.pixelFormat} />
           <Divider className="!my-2" />
         </>
       ) : null}
@@ -350,7 +347,7 @@ function ExifDisplay({ exif }: { exif: ExifInfo }) {
   ) {
     return (
       <p className="text-center text-zinc-500 py-8 select-text">
-        No EXIF data found
+        未找到 EXIF 数据
       </p>
     )
   }
@@ -364,33 +361,33 @@ function ExifDisplay({ exif }: { exif: ExifInfo }) {
           className="space-y-4"
         >
           <h3 className="text-lg font-semibold text-primary select-text">
-            Camera Information
+            相机信息
           </h3>
 
           {exif.make ? (
             <>
-              <InfoItem label="Make" value={exif.make} />
+              <InfoItem label="制造商" value={exif.make} />
               <Divider className="!my-2" />
             </>
           ) : null}
 
           {exif.model ? (
             <>
-              <InfoItem label="Model" value={exif.model} />
+              <InfoItem label="型号" value={exif.model} />
               <Divider className="!my-2" />
             </>
           ) : null}
 
           {exif.lensModel ? (
             <>
-              <InfoItem label="Lens Model" value={exif.lensModel} />
+              <InfoItem label="镜头型号" value={exif.lensModel} />
               <Divider className="!my-2" />
             </>
           ) : null}
 
           {exif.software ? (
             <>
-              <InfoItem label="Software" value={exif.software} />
+              <InfoItem label="软件" value={exif.software} />
               <Divider className="!my-2" />
             </>
           ) : null}
@@ -405,7 +402,7 @@ function ExifDisplay({ exif }: { exif: ExifInfo }) {
           className="space-y-4"
         >
           <h3 className="text-lg font-semibold text-primary select-text">
-            Shooting Information
+            拍摄信息
           </h3>
 
           {exif.iso ? (
@@ -417,28 +414,28 @@ function ExifDisplay({ exif }: { exif: ExifInfo }) {
 
           {exif.exposureTime ? (
             <>
-              <InfoItem label="Exposure Time" value={exif.exposureTime} />
+              <InfoItem label="曝光时间" value={exif.exposureTime} />
               <Divider className="!my-1" />
             </>
           ) : null}
 
           {exif.fNumber ? (
             <>
-              <InfoItem label="Aperture" value={`f/${exif.fNumber}`} />
+              <InfoItem label="光圈" value={`f/${exif.fNumber}`} />
               <Divider className="!my-1" />
             </>
           ) : null}
 
           {exif.focalLength ? (
             <>
-              <InfoItem label="Focal Length" value={exif.focalLength} />
+              <InfoItem label="焦距" value={exif.focalLength} />
               <Divider className="!my-1" />
             </>
           ) : null}
 
           {exif.flash ? (
             <>
-              <InfoItem label="Flash" value={exif.flash} />
+              <InfoItem label="闪光灯" value={exif.flash} />
               <Divider className="!my-1" />
             </>
           ) : null}
@@ -453,19 +450,19 @@ function ExifDisplay({ exif }: { exif: ExifInfo }) {
           className="space-y-4"
         >
           <h3 className="text-lg font-semibold text-primary select-text">
-            Date Information
+            日期信息
           </h3>
 
           {exif.dateTimeOriginal ? (
             <>
-              <InfoItem label="Date Taken" value={exif.dateTimeOriginal} />
+              <InfoItem label="拍摄日期" value={exif.dateTimeOriginal} />
               <Divider className="!my-2" />
             </>
           ) : null}
 
           {exif.dateTimeDigitized ? (
             <>
-              <InfoItem label="Date Digitized" value={exif.dateTimeDigitized} />
+              <InfoItem label="数字化日期" value={exif.dateTimeDigitized} />
               <Divider className="!my-2" />
             </>
           ) : null}
@@ -480,19 +477,19 @@ function ExifDisplay({ exif }: { exif: ExifInfo }) {
           className="space-y-4"
         >
           <h3 className="text-lg font-semibold text-primary select-text">
-            Copyright Information
+            版权信息
           </h3>
 
           {exif.artist ? (
             <>
-              <InfoItem label="Artist" value={exif.artist} />
+              <InfoItem label="作者" value={exif.artist} />
               <Divider className="!my-2" />
             </>
           ) : null}
 
           {exif.copyright ? (
             <>
-              <InfoItem label="Copyright" value={exif.copyright} />
+              <InfoItem label="版权" value={exif.copyright} />
               <Divider className="!my-2" />
             </>
           ) : null}
@@ -507,13 +504,13 @@ function ExifDisplay({ exif }: { exif: ExifInfo }) {
           className="space-y-4"
         >
           <h3 className="text-lg font-semibold text-primary select-text">
-            GPS Information
+            GPS 信息
           </h3>
 
           {exif.gpsCoordinates ? (
             <>
               <InfoItem
-                label="Coordinates"
+                label="坐标"
                 value={`${exif.gpsCoordinates[0].toFixed(6)}°, ${exif.gpsCoordinates[1].toFixed(6)}°`}
               />
               <Divider className="!my-2" />
@@ -532,7 +529,7 @@ function ExifDisplay({ exif }: { exif: ExifInfo }) {
           >
             <div className="space-y-2">
               <h3 className="text-lg font-semibold text-primary select-text">
-                All Tags
+                全部标签
               </h3>
               {exif.tags.map((tag, index) => (
                 <div key={index}>

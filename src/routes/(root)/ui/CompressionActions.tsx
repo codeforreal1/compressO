@@ -57,7 +57,7 @@ function CompressionActions() {
     <>
       <div className="w-fit flex justify-center items-center z-[10]">
         {isProcessCompleted ? (
-          <Tooltip content="Reconfigure" aria-label="Reset">
+          <Tooltip content="重新配置" aria-label="重置">
             <Button
               size="sm"
               onPress={handleReconfigure}
@@ -71,7 +71,7 @@ function CompressionActions() {
             </Button>
           </Tooltip>
         ) : null}
-        <Tooltip content="Exit" aria-label="Exit">
+        <Tooltip content="退出" aria-label="退出">
           <Button
             size="sm"
             onPress={handleCancelCompression}
@@ -86,17 +86,17 @@ function CompressionActions() {
         </Tooltip>
       </div>
       <AlertDialog
-        title={`Media not saved`}
+        title="媒体文件尚未保存"
         disclosure={alertDisclosure}
-        description={`Your compressed media${media.length > 1 ? 'are' : ' is'} not yet saved. Are you sure you want to discard it?`}
+        description="压缩后的媒体文件尚未保存。确定要放弃吗？"
         renderFooter={({ closeModal }) => (
           <>
-            <AlertDialogButton onPress={closeModal}>Go Back</AlertDialogButton>
+            <AlertDialogButton onPress={closeModal}>返回</AlertDialogButton>
             <AlertDialogButton
               color="danger"
               onPress={() => handleDiscard({ closeModal })}
             >
-              Yes
+              确定
             </AlertDialogButton>
           </>
         )}

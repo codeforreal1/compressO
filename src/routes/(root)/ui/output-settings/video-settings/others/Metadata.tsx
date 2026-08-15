@@ -153,7 +153,7 @@ function Metadata({ mediaIndex }: MetadataProps) {
       >
         <div className="flex justify-center items-center">
           <span className="text-gray-600 dark:text-gray-400 block mr-2 text-sm">
-            Strip Metadata
+            移除元数据
           </span>
         </div>
       </Switch>
@@ -162,18 +162,14 @@ function Metadata({ mediaIndex }: MetadataProps) {
           <Card className="px-2 my-2 pb-4 shadow-none border-1 dark:border-none">
             <motion.div {...slideDownTransition} className="space-y-4 mt-2">
               <div className="text-zinc-700 dark:text-zinc-400">
-                <p className="text-xs  italic">
-                  - Leave the field empty to keep the original
-                </p>{' '}
-                <p className="text-xs  italic">
-                  - Or, add a whitespace to remove the original
-                </p>
+                <p className="text-xs  italic">- 留空以保留原始信息</p>{' '}
+                <p className="text-xs  italic">- 或输入空格以移除原始信息</p>
               </div>
               <div>
                 <TextInput
                   type="text"
-                  label="Title"
-                  placeholder="Enter video title"
+                  label="标题"
+                  placeholder="输入视频标题"
                   value={metadataConfig?.title ?? ''}
                   isDisabled={shouldDisableInput}
                   onValueChange={(value) => updateMetadataField('title', value)}
@@ -184,8 +180,8 @@ function Metadata({ mediaIndex }: MetadataProps) {
               <div>
                 <TextInput
                   type="text"
-                  label="Artist"
-                  placeholder="Enter artist name"
+                  label="作者"
+                  placeholder="输入作者名称"
                   value={metadataConfig?.artist ?? ''}
                   isDisabled={shouldDisableInput}
                   onValueChange={(value) =>
@@ -198,8 +194,8 @@ function Metadata({ mediaIndex }: MetadataProps) {
               <div>
                 <TextInput
                   type="text"
-                  label="Album"
-                  placeholder="Enter album name"
+                  label="专辑"
+                  placeholder="输入专辑名称"
                   value={metadataConfig?.album ?? ''}
                   isDisabled={shouldDisableInput}
                   onValueChange={(value) => updateMetadataField('album', value)}
@@ -210,8 +206,8 @@ function Metadata({ mediaIndex }: MetadataProps) {
               <div>
                 <TextInput
                   type="text"
-                  label="Genre"
-                  placeholder="Enter genre"
+                  label="流派"
+                  placeholder="输入流派"
                   value={metadataConfig?.genre ?? ''}
                   isDisabled={shouldDisableInput}
                   classNames={{ mainWrapper: 'my-3' }}
@@ -222,8 +218,8 @@ function Metadata({ mediaIndex }: MetadataProps) {
               <div>
                 <TextInput
                   type="text"
-                  label="Year/Date"
-                  placeholder="Enter year or date"
+                  label="年份/日期"
+                  placeholder="输入年份或日期"
                   value={metadataConfig?.year ?? ''}
                   isDisabled={shouldDisableInput}
                   classNames={{ mainWrapper: 'my-3' }}
@@ -234,8 +230,8 @@ function Metadata({ mediaIndex }: MetadataProps) {
               <div className="!mt-[-10px]">
                 <TextArea
                   type="text"
-                  label="Description"
-                  placeholder="Enter description"
+                  label="描述"
+                  placeholder="输入描述"
                   value={metadataConfig?.description ?? ''}
                   isDisabled={shouldDisableInput}
                   onValueChange={(value) =>
@@ -248,8 +244,8 @@ function Metadata({ mediaIndex }: MetadataProps) {
               <div className="!mt-[-10px]">
                 <TextArea
                   type="text"
-                  label="Synopsis"
-                  placeholder="Enter synopsis"
+                  label="概要"
+                  placeholder="输入概要"
                   value={metadataConfig?.synopsis ?? ''}
                   isDisabled={shouldDisableInput}
                   onValueChange={(value) =>
@@ -262,8 +258,8 @@ function Metadata({ mediaIndex }: MetadataProps) {
               <div className="!mt-[-10px]">
                 <TextArea
                   type="text"
-                  label="Comment"
-                  placeholder="Enter comment"
+                  label="评论"
+                  placeholder="输入评论"
                   value={metadataConfig?.comment ?? ''}
                   isDisabled={shouldDisableInput}
                   onValueChange={(value) =>
@@ -276,8 +272,8 @@ function Metadata({ mediaIndex }: MetadataProps) {
               <div className="!mt-[-10px]">
                 <TextArea
                   type="text"
-                  label="Copyright"
-                  placeholder="Enter copyright information"
+                  label="版权"
+                  placeholder="输入版权信息"
                   value={metadataConfig?.copyright ?? ''}
                   isDisabled={shouldDisableInput}
                   onValueChange={(value) =>
@@ -306,7 +302,7 @@ function Metadata({ mediaIndex }: MetadataProps) {
                   >
                     <div className="flex justify-center items-center">
                       <span className="text-black1 dark:text-white1 block mr-2 text-xs opacity-90">
-                        Creation Time
+                        创建时间
                       </span>
                     </div>
                   </Switch>
@@ -317,7 +313,7 @@ function Metadata({ mediaIndex }: MetadataProps) {
                     hideTimeZone
                     showMonthAndYearPickers
                     label=""
-                    placeholder="Enter creation time"
+                    placeholder="输入创建时间"
                     isDisabled={
                       shouldDisableInput ||
                       !metadataConfig?.shouldEnableCreationTime

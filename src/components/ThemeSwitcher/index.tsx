@@ -95,14 +95,10 @@ export const ThemeSwitcher = ({
       className={cn(className)}
       onPress={handleThemeToggle}
     >
-      <Tooltip
-        content="Toggle theme"
-        aria-label="Toggle theme"
-        placement="right"
-      >
+      <Tooltip content="切换主题" aria-label="切换主题" placement="right">
         <Icon name={theme === 'light' ? 'moon' : 'sun'} />
       </Tooltip>
-      <span className="sr-only">Toggle theme</span>
+      <span className="sr-only">切换主题</span>
     </Button>
   )
 }

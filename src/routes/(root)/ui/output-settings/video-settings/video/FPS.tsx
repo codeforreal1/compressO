@@ -112,7 +112,7 @@ function FPS({ mediaIndex }: VideoFPSProps) {
         isDisabled={shouldDisableInput}
       >
         <p className="text-gray-600 dark:text-gray-400 text-sm mr-2 w-full">
-          FPS
+          帧率
         </p>
       </Switch>
       <AnimatePresence mode="wait">
@@ -141,7 +141,7 @@ function FPS({ mediaIndex }: VideoFPSProps) {
             ) : (
               <Select
                 fullWidth
-                label="Frames Per Second:"
+                label="每秒帧数："
                 className="block flex-shrink-0 rounded-2xl !mt-8"
                 selectedKeys={[String(initialFpsValue)!]}
                 size="sm"

@@ -40,10 +40,8 @@ function OutputSettings({ mediaIndex }: OutputSettingsProps) {
           <Accordion isCompact keepContentMounted variant="splitted">
             <AccordionItem
               key="1"
-              aria-label="Video Settings"
-              title={
-                <Title title="Video Settings" className="text-md text-left" />
-              }
+              aria-label="视频设置"
+              title={<Title title="视频设置" className="text-md text-left" />}
               startContent={<Icon name="video" size={25} />}
               classNames={{
                 base: 'bg-transparent border-1 border-zinc-200 dark:border-zinc-900 px-2',
@@ -56,10 +54,8 @@ function OutputSettings({ mediaIndex }: OutputSettingsProps) {
             </AccordionItem>
             <AccordionItem
               key="2"
-              aria-label="Image Settings"
-              title={
-                <Title title="Image Settings" className="text-md text-left" />
-              }
+              aria-label="图片设置"
+              title={<Title title="图片设置" className="text-md text-left" />}
               startContent={<Icon name="image" size={25} />}
               classNames={{
                 base: 'bg-transparent border-1 border-zinc-200 dark:border-zinc-900 px-2',

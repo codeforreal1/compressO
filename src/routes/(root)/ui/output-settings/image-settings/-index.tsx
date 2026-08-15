@@ -20,11 +20,11 @@ type ImageSettingsProps = {
 const TABS = {
   image: {
     id: 'image',
-    title: 'Image',
+    title: '图片',
   },
   others: {
     id: 'others',
-    title: 'Others',
+    title: '其他',
   },
 } as const
 
@@ -46,7 +46,7 @@ function ImageSettings({ mediaIndex }: ImageSettingsProps) {
     <>
       <section>
         <Tabs
-          aria-label="Compression Settings"
+          aria-label="压缩设置"
           size="sm"
           selectedKey={tab}
           onSelectionChange={(t) => setTab(t as keyof typeof TABS)}

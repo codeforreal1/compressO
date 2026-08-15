@@ -95,7 +95,7 @@ const VideoSpeed = ({ mediaIndex }: VideoSpeedProps) => {
         isDisabled={shouldDisableInput}
       >
         <p className="text-gray-600 dark:text-gray-400 text-sm mr-2 w-full">
-          Speed
+          速度
         </p>
       </Switch>
       <AnimatePresence mode="wait">

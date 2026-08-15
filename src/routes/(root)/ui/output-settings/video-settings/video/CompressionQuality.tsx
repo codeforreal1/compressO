@@ -73,20 +73,20 @@ function CompressionQuality({ mediaIndex }: CompressionQualityProps) {
     <AnimatePresence mode="wait">
       <motion.div {...slideDownTransition}>
         <Slider
-          label="Quality"
-          aria-label="Quality"
+          label="质量"
+          aria-label="质量"
           marks={[
             {
               value: 1,
-              label: 'Low',
+              label: '低',
             },
             {
               value: 50,
-              label: 'Medium',
+              label: '中',
             },
             {
               value: 99,
-              label: 'High',
+              label: '高',
             },
           ]}
           minValue={1}
@@ -99,7 +99,7 @@ function CompressionQuality({ mediaIndex }: CompressionQualityProps) {
           }}
           getValue={(value) => {
             const val = Array.isArray(value) ? value?.[0] : +value
-            return val < 50 ? 'Low' : val >= 50 && val < 100 ? 'Medium' : 'High'
+            return val < 50 ? '低' : val >= 50 && val < 100 ? '中' : '高'
           }}
           renderValue={() => <p className="text-primary text-xs">{quality}%</p>}
           value={quality}

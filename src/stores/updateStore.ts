@@ -56,13 +56,11 @@ export async function downloadAndInstallUpdateApp() {
 
   try {
     await downloadAndInstallUpdate()
-    toast.success(
-      'Update installed successfully. Restart the app to use the new version.',
-    )
+    toast.success('更新安装成功。请重启应用以使用新版本。')
   } catch (error) {
     // biome-ignore lint/suspicious/noConsole: <>
     console.error('Failed to install update:', error)
-    toast.error('Failed to install update. Please try again.')
+    toast.error('更新安装失败，请重试。')
   } finally {
     setTimeout(() => {
       updateStore.isUpdateAvailable = false
@@ -85,7 +83,7 @@ export function setupUpdateListeners() {
     })
 
     listen('update-error', (event) => {
-      toast.error(`Update error: ${event.payload}`)
+      toast.error(`更新错误：${event.payload}`)
       updateStore.isInstalling = false
     })
   })

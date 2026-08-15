@@ -55,7 +55,7 @@ function CancelCompression() {
         appProxy.timeTravel('beforeCompressionStarted')
       }
     } catch {
-      toast.error('Cannot cancel compression at this point.')
+      toast.error('当前无法取消压缩。')
     }
     setConfirmCancellation(false)
   }
@@ -78,10 +78,10 @@ function CancelCompression() {
       <AnimatePresence mode="wait">
         <motion.div layout="preserve-aspect">
           {confirmCancellation && !isCancelling
-            ? 'Confirm Cancel'
+            ? '确认取消'
             : isCancelling
-              ? 'Cancelling...'
-              : 'Cancel'}
+              ? '正在取消……'
+              : '取消'}
         </motion.div>
       </AnimatePresence>
     </Button>

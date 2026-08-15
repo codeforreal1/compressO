@@ -97,27 +97,27 @@ function CompressionQuality({ mediaIndex }: CompressionQualityProps) {
         isDisabled={shouldDisableInput}
       >
         <p className="text-gray-600 dark:text-gray-400 text-sm mr-2 w-full">
-          Lossless Compression
+          无损压缩
         </p>
       </Switch>
       <AnimatePresence mode="wait">
         {!isLossless ? (
           <motion.div {...slideDownTransition}>
             <Slider
-              label="Quality"
-              aria-label="Quality"
+              label="质量"
+              aria-label="质量"
               marks={[
                 {
                   value: 1,
-                  label: 'Low',
+                  label: '低',
                 },
                 {
                   value: 50,
-                  label: 'Medium',
+                  label: '中',
                 },
                 {
                   value: 100,
-                  label: 'High',
+                  label: '高',
                 },
               ]}
               minValue={1}
@@ -130,11 +130,7 @@ function CompressionQuality({ mediaIndex }: CompressionQualityProps) {
               }}
               getValue={(value) => {
                 const val = Array.isArray(value) ? value?.[0] : +value
-                return val < 50
-                  ? 'Low'
-                  : val >= 50 && val < 99
-                    ? 'Medium'
-                    : 'High'
+                return val < 50 ? '低' : val >= 50 && val < 99 ? '中' : '高'
               }}
               renderValue={() => (
                 <p className="text-primary text-xs">{quality}%</p>

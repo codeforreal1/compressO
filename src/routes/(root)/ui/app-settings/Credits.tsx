@@ -9,13 +9,12 @@ export default function Credits() {
     <div className="w-full py-10 pb-4 px-6">
       <section className="mb-4">
         <Title
-          title="Credits"
+          title="致谢"
           iconProps={{ name: 'lowResHeart' }}
           className="mb-6"
         />
         <p className="text-gray-600 dark:text-gray-400 text-[12px] text-center mt-1">
-          CompressO would not be possible without these incredible open-source
-          tools and libraries:
+          CompressO 的实现离不开以下优秀的开源工具和库：
         </p>
       </section>
       <div className="grid grid-cols-2 gap-4">
@@ -35,7 +34,7 @@ export default function Credits() {
               href="https://ffmpeg.org/"
               className="text-xs text-primary hover:underline"
             >
-              Website
+              官网
             </Link>
             <Divider orientation="vertical" className="mx-1 h-4" />
             <Link
@@ -63,7 +62,7 @@ export default function Credits() {
               href="https://pngquant.org/"
               className="text-xs text-primary hover:underline"
             >
-              Website
+              官网
             </Link>
             <Divider orientation="vertical" className="mx-1 h-4" />
             <Link
@@ -112,7 +111,7 @@ export default function Credits() {
               href="https://gif.ski/"
               className="text-xs text-primary hover:underline"
             >
-              Website
+              官网
             </Link>
             <Divider orientation="vertical" className="mx-1 h-4" />
             <Link
@@ -126,9 +125,9 @@ export default function Credits() {
 
         <div className="text-center pt-2 col-span-full">
           <p className="text-xs text-gray-600 dark:text-gray-400">
-            Complete third-party notices and licenses is available{' '}
+            完整的第三方声明、许可证和归属信息请参阅{' '}
             <Link href="https://github.com/codeforreal1/compressO/blob/main/THIRD_PARTY_NOTICES.md">
-              here
+              此处
             </Link>
           </p>
         </div>

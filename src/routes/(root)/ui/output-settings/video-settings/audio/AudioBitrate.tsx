@@ -130,7 +130,7 @@ function AudioBitrate({ mediaIndex }: AudioBitrateProps) {
         isDisabled={shouldDisableInput || hasNoAudio}
       >
         <p className="text-gray-600 dark:text-gray-400 text-sm mr-2 w-full">
-          Bitrate
+          比特率
         </p>
       </Switch>
       <AnimatePresence mode="wait">
@@ -138,7 +138,7 @@ function AudioBitrate({ mediaIndex }: AudioBitrateProps) {
           <motion.div {...slideDownTransition}>
             <Select
               fullWidth
-              label="Bitrate:"
+              label="比特率："
               className="block flex-shrink-0 rounded-2xl !mt-8"
               size="sm"
               value={currentValue?.toString() ?? '128'}

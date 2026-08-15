@@ -24,49 +24,49 @@ const AUDIO_CODECS: readonly AudioCodecOption[] = [
   {
     value: 'aac',
     name: 'AAC',
-    description: 'Standard codec, wide compatibility',
+    description: '标准编码器，兼容性广',
     compatible_containers: ['mp4', 'mov', 'mkv'] as VideoExtension[],
   },
   {
     value: 'libmp3lame',
     name: 'MP3',
-    description: 'Universal audio format',
+    description: '通用音频格式',
     compatible_containers: ['mp4', 'mov', 'mkv', 'avi'] as VideoExtension[],
   },
   {
     value: 'libopus',
     name: 'Opus',
-    description: 'Modern, high quality',
+    description: '现代格式，质量高',
     compatible_containers: ['webm', 'mkv'] as VideoExtension[],
   },
   {
     value: 'libvorbis',
     name: 'Vorbis',
-    description: 'Open-source, good quality',
+    description: '开源格式，质量良好',
     compatible_containers: ['webm', 'mkv'] as VideoExtension[],
   },
   {
     value: 'ac3',
     name: 'AC3',
-    description: 'Dolby Digital, surround sound',
+    description: '杜比数字，支持环绕声',
     compatible_containers: ['mp4', 'mov', 'mkv', 'avi'] as VideoExtension[],
   },
   {
     value: 'alac',
     name: 'ALAC',
-    description: 'Lossless compression optimized for Apple devices',
+    description: '针对 Apple 设备优化的无损压缩',
     compatible_containers: ['mp4', 'mov'] as VideoExtension[],
   },
   {
     value: 'flac',
     name: 'FLAC',
-    description: 'Lossless compression',
+    description: '无损压缩',
     compatible_containers: ['mkv'] as VideoExtension[],
   },
   {
     value: 'pcm_s16le',
     name: 'PCM',
-    description: 'Uncompressed, best quality',
+    description: '未压缩，质量最佳',
     compatible_containers: ['mov', 'avi'] as VideoExtension[],
   },
 ]
@@ -196,7 +196,7 @@ function AudioCodec({ mediaIndex }: AudioCodecProps) {
         isDisabled={shouldDisableInput}
       >
         <p className="text-gray-600 dark:text-gray-400 text-sm mr-2 w-full">
-          Codec
+          编码器
         </p>
       </Switch>
       <AnimatePresence mode="wait">
@@ -204,7 +204,7 @@ function AudioCodec({ mediaIndex }: AudioCodecProps) {
           <motion.div {...slideDownTransition}>
             <Select
               fullWidth
-              label="Select Codec:"
+              label="选择编码器："
               className="block flex-shrink-0 rounded-2xl !mt-8"
               selectedKeys={[initialCodecValue]}
               size="sm"
@@ -223,12 +223,12 @@ function AudioCodec({ mediaIndex }: AudioCodecProps) {
             >
               <SelectItem
                 key="-"
-                textValue="Default"
+                textValue="默认"
                 className="flex justify-center items-center"
                 endContent={
                   <Tooltip
-                    content="Default codec for the selected container"
-                    aria-label="Default codec for the selected container"
+                    content="所选容器的默认编码器"
+                    aria-label="所选容器的默认编码器"
                   >
                     <Icon
                       name="info"
@@ -239,7 +239,7 @@ function AudioCodec({ mediaIndex }: AudioCodecProps) {
                 }
               >
                 <div className="flex flex-col">
-                  <span className="text-sm">Default</span>
+                  <span className="text-sm">默认</span>
                 </div>
               </SelectItem>
               <SelectSection>

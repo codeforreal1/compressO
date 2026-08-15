@@ -82,7 +82,7 @@ function MediaThumbnail({ mediaIndex }: MediaThumbnailProps) {
       !mediaPathRaw ||
       !playerRef.current
     ) {
-      toast.error('Unable to copy frame')
+      toast.error('无法复制当前帧。')
       return
     }
 
@@ -101,9 +101,9 @@ function MediaThumbnail({ mediaIndex }: MediaThumbnailProps) {
       const result = await generateVideoThumbnail(mediaPathRaw, timestamp)
 
       await copyFileToClipboard(result.filePath)
-      toast.success('Frame copied to clipboard')
+      toast.success('当前帧已复制到剪贴板。')
     } catch {
-      toast.error('Failed to copy frame to clipboard')
+      toast.error('复制当前帧到剪贴板失败。')
     } finally {
       setIsCopyingFrame(false)
     }
@@ -342,7 +342,7 @@ function MediaThumbnail({ mediaIndex }: MediaThumbnailProps) {
                         disabled={isCopyingFrame}
                       >
                         <Icon name="copy" size={20} />
-                        <span>Copy current frame</span>
+                        <span>复制当前帧</span>
                       </button>
                     </div>
                   ) : null
@@ -366,7 +366,7 @@ function MediaThumbnail({ mediaIndex }: MediaThumbnailProps) {
                 disableClosedCaptions
                 onError={(error: any) => {
                   if (error.name !== 'AbortError') {
-                    toast.warning('Switching to image thumbnail...')
+                    toast.warning('正在切换到图片缩略图……')
                     if (appProxy.state.media[mediaIndex].type === 'video') {
                       appProxy.state.media[mediaIndex].previewMode = 'image'
                     }
@@ -407,7 +407,7 @@ function MediaThumbnail({ mediaIndex }: MediaThumbnailProps) {
           ) : (
             <div className="relative w-fit mx-auto">
               <Image
-                alt="image to compress"
+                alt="待压缩的图片"
                 src={imageToRenderSrc}
                 className="object-contain rounded-3xl max-h-[60vh] border-1 border-zinc-200 dark:border-zinc-900 min-w-[100px] min-h-[100px]"
                 onError={() => {
@@ -433,16 +433,14 @@ function MediaThumbnail({ mediaIndex }: MediaThumbnailProps) {
                       <PopoverContent>
                         <div className="py-2 px-1 max-w-[250px]">
                           <p>
-                            This video is unable to play by this app because it
-                            contains advanced codec/configurations. Such videos
-                            require dedicated media players like VLC.
+                            此视频使用了高级编码或配置，应用无法播放。此类视频需要使用
+                            VLC 等专用媒体播放器。
                           </p>
                           {!isProcessCompleted ? (
                             <>
                               <br />
                               <p>
-                                Rest assured, you can still apply the output
-                                settings and perform all the conversions.
+                                你仍然可以应用输出设置并执行所有转换，请放心。
                               </p>
                             </>
                           ) : null}
@@ -465,10 +463,7 @@ function MediaThumbnail({ mediaIndex }: MediaThumbnailProps) {
                         isLoading={isThumbnailRegenerating}
                         className="!p-0 !min-h-0 !py-2 !w-[unset] !min-w-[unset] !h-0 "
                       >
-                        <Tooltip
-                          content="Regenerate Thumbnail"
-                          className="w-0! h-0!"
-                        >
+                        <Tooltip content="重新生成缩略图" className="w-0! h-0!">
                           <Icon name="image" size={20} />
                         </Tooltip>
                       </Button>
@@ -487,7 +482,7 @@ function MediaThumbnail({ mediaIndex }: MediaThumbnailProps) {
                   >
                     <PhotoView src={imageToRenderSrc!}>
                       <div>
-                        <Tooltip content="Enlarge image">
+                        <Tooltip content="放大图片">
                           <Icon
                             name="zoom"
                             size={18}

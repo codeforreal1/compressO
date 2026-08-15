@@ -43,8 +43,8 @@ function Setting() {
           <DropdownTrigger>
             <Button isIconOnly size="sm" variant="light">
               <Tooltip
-                content="Open Settings"
-                aria-label="Open Settings"
+                content="打开设置"
+                aria-label="打开设置"
                 placement="right"
               >
                 <Badge
@@ -61,20 +61,20 @@ function Setting() {
           </DropdownTrigger>
           <DropdownMenu
             variant="faded"
-            aria-label="Dropdown menu with description"
+            aria-label="带描述的下拉菜单"
             onAction={handleDropdownAction}
           >
             <DropdownItem key="settings" startContent={<Icon name="setting" />}>
-              Settings
+              设置
             </DropdownItem>
             <DropdownItem key="about" startContent={<Icon name="info" />}>
-              About
+              关于
             </DropdownItem>
             <DropdownItem
               key="credits"
               startContent={<Icon name="lowResHeart" />}
             >
-              Credits
+              致谢
             </DropdownItem>
             {hasNewVersion ? (
               <DropdownItem
@@ -82,7 +82,7 @@ function Setting() {
                 className="text-primary"
                 startContent={<Icon name="download" />}
               >
-                Update to {latestVersion}
+                更新到 {latestVersion}
               </DropdownItem>
             ) : null}
           </DropdownMenu>
@@ -118,10 +118,10 @@ function AppSetting() {
     setIsCacheDeleting(true)
     try {
       await invokeDeleteCache()
-      toast.success('All cache was cleared.')
+      toast.success('所有缓存已清除。')
       setConfirmClearCache(false)
     } catch (_) {
-      toast.error('There was a problem clearing cache.')
+      toast.error('清除缓存时出现问题。')
     }
     setIsCacheDeleting(false)
   }
@@ -129,24 +129,24 @@ function AppSetting() {
   return (
     <div className="w-full py-10 px-8">
       <section className="mb-6">
-        <Title title="Settings" iconProps={{ name: 'setting' }} />
+        <Title title="设置" iconProps={{ name: 'setting' }} />
       </section>
       <div className="mx-auto bg-zinc-100 dark:bg-zinc-800 rounded-lg px-4 py-3 overflow-hidden">
         <div className="flex justify-between items-center">
-          <p className="text-gray-600 dark:text-gray-400 text-sm">Theme</p>
+          <p className="text-gray-600 dark:text-gray-400 text-sm">主题</p>
           <ThemeSwitcher />
         </div>
         <Divider className="my-2 dark:bg-zinc-700" />
         <div className="flex justify-between items-center">
-          <p className="text-gray-600 dark:text-gray-400 text-sm">Color</p>
+          <p className="text-gray-600 dark:text-gray-400 text-sm">颜色</p>
           <ColorPicker color={color} onChange={setColor} />
         </div>
         <Divider className="my-2 dark:bg-zinc-700" />
         <div className="flex justify-between items-center">
-          <p className="dark:text-red-400 text-sm text-red-400">Clear Cache</p>
+          <p className="dark:text-red-400 text-sm text-red-400">清除缓存</p>
           <Tooltip
-            content="Clear cache"
-            aria-label="Clear cache"
+            content="清除缓存"
+            aria-label="清除缓存"
             placement="right"
             isDisabled={confirmClearCache}
           >
@@ -181,7 +181,7 @@ function AppSetting() {
                       }}
                       className="inline-block whitespace-nowrap"
                     >
-                      Clear Now
+                      立即清除
                     </motion.span>
                   ) : null}
                 </AnimatePresence>
@@ -213,14 +213,14 @@ function UpdateModal({ onClose }: UpdateModalProps) {
       await downloadAndInstallUpdateApp()
       onClose()
     } catch {
-      toast.error('Failed to install update. Please try again.')
+      toast.error('更新安装失败，请重试。')
     }
   }
 
   return (
     <div className="w-full py-10 pb-4 px-8">
       <section className="mb-6">
-        <Title title="Update Available" iconProps={{ name: 'download' }} />
+        <Title title="有可用更新" iconProps={{ name: 'download' }} />
       </section>
       <div>
         {isUpdateAvailable && latestVersion ? (
@@ -228,13 +228,13 @@ function UpdateModal({ onClose }: UpdateModalProps) {
             <div className="flex justify-between items-center mb-4">
               <div>
                 <p className="text-gray-600 dark:text-gray-400 text-xs">
-                  Current Version
+                  当前版本
                 </p>
                 <p className="font-bold text-sm">{currentVersion}</p>
               </div>
               <div className="text-right">
                 <p className="text-gray-600 dark:text-gray-400 text-xs">
-                  Latest Version
+                  最新版本
                 </p>
                 <p className="font-bold text-sm text-primary">
                   {latestVersion}
@@ -244,7 +244,7 @@ function UpdateModal({ onClose }: UpdateModalProps) {
             <Divider className="my-2" />
             {body && (
               <div className="mt-4">
-                <p className="text-primary text-sm mb-2">What's New?</p>
+                <p className="text-primary text-sm mb-2">更新内容</p>
                 <ScrollShadow className="max-h-[50vh]">
                   <Markdown content={body} className="text-sm" />
                 </ScrollShadow>
@@ -254,7 +254,7 @@ function UpdateModal({ onClose }: UpdateModalProps) {
             <div className="mt-4 flex justify-end gap-2">
               {!isInstalling ? (
                 <Button variant="flat" size="sm" onPress={onClose}>
-                  Cancel
+                  取消
                 </Button>
               ) : null}
               <Button
@@ -264,14 +264,14 @@ function UpdateModal({ onClose }: UpdateModalProps) {
                 isLoading={isInstalling}
                 isDisabled={isInstalling}
               >
-                Update Now {isInstalling ? `(${installProgress}%)` : ''}
+                立即更新 {isInstalling ? `(${installProgress}%)` : ''}
               </Button>
             </div>
           </>
         ) : (
           <div className="text-center py-4">
             <p className="text-gray-600 dark:text-gray-400 text-sm">
-              No updates available. You are on the latest version.
+              暂无更新，你正在使用最新版本。
             </p>
           </div>
         )}

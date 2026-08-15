@@ -189,7 +189,7 @@ function Dimensions({ mediaIndex }: DimensionsProps) {
         isDisabled={shouldDisableInput}
       >
         <p className="text-gray-600 dark:text-gray-400 text-sm mr-2 w-full">
-          Dimensions
+          尺寸
         </p>
       </Switch>
       <AnimatePresence mode="wait">
@@ -197,7 +197,7 @@ function Dimensions({ mediaIndex }: DimensionsProps) {
           <motion.div {...slideDownTransition}>
             <div className="mt-2 flex items-center space-x-2">
               <NumberInput
-                label="Width"
+                label="宽度"
                 className="max-w-[120px] xl:max-w-[150px]"
                 value={dimensions?.width}
                 onValueChange={(val) => handleChange(val, 'width')}
@@ -206,7 +206,7 @@ function Dimensions({ mediaIndex }: DimensionsProps) {
                 isDisabled={!shouldEnableCustomDimensions || shouldDisableInput}
               />
               <NumberInput
-                label="Height"
+                label="高度"
                 className="max-w-[120px] xl:max-w-[150px]"
                 value={dimensions?.height}
                 onValueChange={(val) => handleChange(val, 'height')}

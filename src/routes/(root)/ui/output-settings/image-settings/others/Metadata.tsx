@@ -92,7 +92,7 @@ function Metadata({ mediaIndex }: MetadataProps) {
       >
         <div className="flex justify-center items-center">
           <span className="text-gray-600 dark:text-gray-400 block mr-2 text-sm">
-            Strip Metadata
+            移除元数据
           </span>
         </div>
       </Switch>

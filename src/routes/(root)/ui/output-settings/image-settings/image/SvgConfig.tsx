@@ -162,7 +162,7 @@ function SvgConfig({ mediaIndex }: SvgConfigProps) {
         isDisabled={shouldDisableInput}
       >
         <p className="text-gray-600 dark:text-gray-400 text-sm mr-2 w-full">
-          Advanced SVG Settings
+          高级 SVG 设置
         </p>
       </Switch>
 
@@ -175,8 +175,8 @@ function SvgConfig({ mediaIndex }: SvgConfigProps) {
             <Slider
               label={
                 <div className="flex items-center gap-1">
-                  Filter Speckle
-                  <Tooltip content="Higher is cleaner/smoother">
+                  斑点过滤
+                  <Tooltip content="数值越高，图像越干净、平滑">
                     <Icon
                       name="info"
                       size={20}
@@ -185,7 +185,7 @@ function SvgConfig({ mediaIndex }: SvgConfigProps) {
                   </Tooltip>
                 </div>
               }
-              aria-label="Filter Speckle"
+              aria-label="斑点过滤"
               marks={[
                 { value: 0, label: '0' },
                 { value: 128, label: '128' },
@@ -200,11 +200,7 @@ function SvgConfig({ mediaIndex }: SvgConfigProps) {
               }}
               getValue={(value) => {
                 const val = Array.isArray(value) ? value?.[0] : +value
-                return val < 50
-                  ? 'Low'
-                  : val >= 50 && val < 100
-                    ? 'Medium'
-                    : 'High'
+                return val < 50 ? '低' : val >= 50 && val < 100 ? '中' : '高'
               }}
               renderValue={() => (
                 <p className="text-primary text-xs">{filterSpeckle}</p>
@@ -223,8 +219,8 @@ function SvgConfig({ mediaIndex }: SvgConfigProps) {
             <Slider
               label={
                 <div className="flex items-center gap-1">
-                  Color Precision
-                  <Tooltip content="Higher is more accurate but can over-saturate">
+                  颜色精度
+                  <Tooltip content="数值越高，精度越高，但可能会过度饱和">
                     <Icon
                       name="info"
                       size={20}
@@ -233,7 +229,7 @@ function SvgConfig({ mediaIndex }: SvgConfigProps) {
                   </Tooltip>
                 </div>
               }
-              aria-label="Color Precision"
+              aria-label="颜色精度"
               marks={[
                 { value: 1, label: '1' },
                 { value: 8, label: '8' },
@@ -249,7 +245,7 @@ function SvgConfig({ mediaIndex }: SvgConfigProps) {
               }}
               getValue={(value) => {
                 const val = Array.isArray(value) ? value?.[0] : +value
-                return val < 4 ? 'Low' : val >= 4 && val < 7 ? 'Medium' : 'High'
+                return val < 4 ? '低' : val >= 4 && val < 7 ? '中' : '高'
               }}
               renderValue={() => (
                 <p className="text-primary text-xs">{colorPrecision}</p>
@@ -268,8 +264,8 @@ function SvgConfig({ mediaIndex }: SvgConfigProps) {
             <Slider
               label={
                 <div className="flex items-center gap-1">
-                  Layer Difference
-                  <Tooltip content="Higher means less layers">
+                  图层差异
+                  <Tooltip content="数值越高，图层越少">
                     <Icon
                       name="info"
                       size={20}
@@ -278,7 +274,7 @@ function SvgConfig({ mediaIndex }: SvgConfigProps) {
                   </Tooltip>
                 </div>
               }
-              aria-label="Layer Difference"
+              aria-label="图层差异"
               marks={[
                 { value: 0, label: '0' },
                 { value: 128, label: '128' },
@@ -293,11 +289,7 @@ function SvgConfig({ mediaIndex }: SvgConfigProps) {
               }}
               getValue={(value) => {
                 const val = Array.isArray(value) ? value?.[0] : +value
-                return val < 50
-                  ? 'Few'
-                  : val >= 50 && val < 100
-                    ? 'Medium'
-                    : 'Many'
+                return val < 50 ? '少' : val >= 50 && val < 100 ? '中' : '多'
               }}
               renderValue={() => (
                 <p className="text-primary text-xs">{layerDifference}</p>
@@ -316,8 +308,8 @@ function SvgConfig({ mediaIndex }: SvgConfigProps) {
             <Slider
               label={
                 <div className="flex items-center gap-1">
-                  Corner Threshold
-                  <Tooltip content="Higher is smoother">
+                  角点阈值
+                  <Tooltip content="数值越高，图像越平滑">
                     <Icon
                       name="info"
                       size={20}
@@ -326,7 +318,7 @@ function SvgConfig({ mediaIndex }: SvgConfigProps) {
                   </Tooltip>
                 </div>
               }
-              aria-label="Corner Threshold"
+              aria-label="角点阈值"
               marks={[
                 { value: 0, label: '0' },
                 { value: 180, label: '180' },
@@ -342,10 +334,10 @@ function SvgConfig({ mediaIndex }: SvgConfigProps) {
               getValue={(value) => {
                 const val = Array.isArray(value) ? value?.[0] : +value
                 return val < 60
-                  ? 'Sharp'
+                  ? '锐利'
                   : val >= 60 && val < 120
-                    ? 'Medium'
-                    : 'Smooth'
+                    ? '中'
+                    : '平滑'
               }}
               renderValue={() => (
                 <p className="text-primary text-xs">{cornerThreshold}</p>
@@ -364,8 +356,8 @@ function SvgConfig({ mediaIndex }: SvgConfigProps) {
             <Slider
               label={
                 <div className="flex items-center gap-1">
-                  Segment Length
-                  <Tooltip content="Higher is more coarse">
+                  段长度
+                  <Tooltip content="数值越高，结果越粗糙">
                     <Icon
                       name="info"
                       size={20}
@@ -374,7 +366,7 @@ function SvgConfig({ mediaIndex }: SvgConfigProps) {
                   </Tooltip>
                 </div>
               }
-              aria-label="Segment Length"
+              aria-label="段长度"
               marks={[
                 { value: 0, label: '0' },
                 { value: 10, label: '10' },
@@ -390,11 +382,7 @@ function SvgConfig({ mediaIndex }: SvgConfigProps) {
               }}
               getValue={(value) => {
                 const val = Array.isArray(value) ? value?.[0] : +value
-                return val < 3
-                  ? 'Fine'
-                  : val >= 3 && val < 7
-                    ? 'Medium'
-                    : 'Coarse'
+                return val < 3 ? '细' : val >= 3 && val < 7 ? '中' : '粗'
               }}
               renderValue={() => (
                 <p className="text-primary text-xs">{lengthThreshold}</p>
@@ -413,8 +401,8 @@ function SvgConfig({ mediaIndex }: SvgConfigProps) {
             <Slider
               label={
                 <div className="flex items-center gap-1">
-                  Splice Threshold
-                  <Tooltip content="Higher is less accurate">
+                  拼接阈值
+                  <Tooltip content="数值越高，精度越低">
                     <Icon
                       name="info"
                       size={20}
@@ -423,7 +411,7 @@ function SvgConfig({ mediaIndex }: SvgConfigProps) {
                   </Tooltip>
                 </div>
               }
-              aria-label="Splice Threshold"
+              aria-label="拼接阈值"
               marks={[
                 { value: 0, label: '0' },
                 { value: 180, label: '180' },
@@ -438,11 +426,7 @@ function SvgConfig({ mediaIndex }: SvgConfigProps) {
               }}
               getValue={(value) => {
                 const val = Array.isArray(value) ? value?.[0] : +value
-                return val < 60
-                  ? 'Accurate'
-                  : val >= 60 && val < 120
-                    ? 'Medium'
-                    : 'Less'
+                return val < 60 ? '准确' : val >= 60 && val < 120 ? '中' : '低'
               }}
               renderValue={() => (
                 <p className="text-primary text-xs">{spliceThreshold}</p>
@@ -462,7 +446,7 @@ function SvgConfig({ mediaIndex }: SvgConfigProps) {
             isDisabled={shouldDisableInput}
           >
             <p className="text-gray-600 dark:text-gray-400 text-sm mr-2 w-full">
-              Black & White
+              黑白
             </p>
           </Switch>
         </motion.div>

@@ -24,31 +24,31 @@ const VIDEO_CODECS: readonly VideoCodecOption[] = [
   {
     value: 'libx264',
     name: 'H.264 (AVC)',
-    description: 'Most compatible, good quality',
+    description: '兼容性最好，质量良好',
     compatible_containers: ['mp4', 'mov', 'mkv', 'avi'] as VideoExtension[],
   },
   {
     value: 'libx265',
     name: 'H.265 (HEVC)',
-    description: 'Better compression, newer standard',
+    description: '压缩效果更好，较新的标准',
     compatible_containers: ['mp4', 'mov', 'mkv'] as VideoExtension[],
   },
   {
     value: 'libvpx-vp9',
     name: 'VP9',
-    description: 'Open-source, great for web',
+    description: '开源，适合网页使用',
     compatible_containers: ['webm', 'mkv'] as VideoExtension[],
   },
   {
     value: 'libaom-av1',
     name: 'AV1',
-    description: 'Best compression, very slow',
+    description: '压缩效果最佳，但速度很慢',
     compatible_containers: ['mp4', 'mkv', 'webm'] as VideoExtension[],
   },
   {
     value: 'mpeg4',
     name: 'MPEG-4',
-    description: 'Legacy codec, wide support',
+    description: '传统编码器，支持范围广',
     compatible_containers: ['mp4', 'mov', 'mkv', 'avi'] as VideoExtension[],
   },
 ]
@@ -172,7 +172,7 @@ function VideoCodec({ mediaIndex }: VideoCodecProps) {
         isDisabled={shouldDisableInput}
       >
         <p className="text-gray-600 dark:text-gray-400 text-sm mr-2 w-full">
-          Codec
+          编码器
         </p>
       </Switch>
       <AnimatePresence mode="wait">
@@ -180,7 +180,7 @@ function VideoCodec({ mediaIndex }: VideoCodecProps) {
           <motion.div {...slideDownTransition}>
             <Select
               fullWidth
-              label="Select Codec:"
+              label="选择编码器："
               className="block flex-shrink-0 rounded-2xl !mt-8"
               selectedKeys={[initialCodecValue]}
               size="sm"
@@ -199,12 +199,12 @@ function VideoCodec({ mediaIndex }: VideoCodecProps) {
             >
               <SelectItem
                 key="-"
-                textValue="Default"
+                textValue="默认"
                 className="flex justify-center items-center"
                 endContent={
                   <Tooltip
-                    content="Default codec for the selected container"
-                    aria-label="Default codec for the selected container"
+                    content="所选容器的默认编码器"
+                    aria-label="所选容器的默认编码器"
                   >
                     <Icon
                       name="info"
@@ -215,7 +215,7 @@ function VideoCodec({ mediaIndex }: VideoCodecProps) {
                 }
               >
                 <div className="flex flex-col">
-                  <span className="text-sm">Default</span>
+                  <span className="text-sm">默认</span>
                 </div>
               </SelectItem>
               <SelectSection>

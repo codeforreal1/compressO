@@ -164,7 +164,7 @@ const LANGUAGE_OPTIONS: Subtitle[] = [
   { code: 'lim', name: 'Limburgish' },
   { code: 'ltz', name: 'Luxembourgish' },
   { code: 'luo', name: 'Luo' },
-  { code: 'und', name: 'Unknown' },
+  { code: 'und', name: '未知' },
 ]
 
 function Subtitles({ mediaIndex }: SubtitlesProps) {
@@ -278,7 +278,7 @@ function Subtitles({ mediaIndex }: SubtitlesProps) {
       const filePath = await open({
         directory: false,
         multiple: false,
-        title: 'Select subtitle file (SRT)',
+        title: '选择字幕文件（SRT）',
         filters: [
           {
             name: 'subtitle',
@@ -291,7 +291,7 @@ function Subtitles({ mediaIndex }: SubtitlesProps) {
         const newSubtitle = {
           subtitlePath: filePath,
           language: 'eng',
-          title: 'English',
+          title: '英语',
           fileName,
         }
         if (
@@ -331,7 +331,7 @@ function Subtitles({ mediaIndex }: SubtitlesProps) {
         }
       }
     } catch (error: any) {
-      toast.error(error?.message ?? 'Could not select subtitle file.')
+      toast.error(error?.message ?? '无法选择字幕文件。')
     }
   }, [mediaIndex])
 
@@ -427,7 +427,7 @@ function Subtitles({ mediaIndex }: SubtitlesProps) {
           >
             <div className="flex justify-center items-center">
               <span className="text-gray-600 dark:text-gray-400 block mr-2 text-sm">
-                Subtitles
+                字幕
               </span>
             </div>
           </Switch>
@@ -443,7 +443,7 @@ function Subtitles({ mediaIndex }: SubtitlesProps) {
                   size="sm"
                 >
                   <span className="text-sm text-gray-600 dark:text-gray-400">
-                    Preserve existing subtitles
+                    保留现有字幕
                   </span>
                 </Switch>
               </div>
@@ -469,7 +469,7 @@ function Subtitles({ mediaIndex }: SubtitlesProps) {
                         <div className="flex-1 min-w-0">
                           <Autocomplete
                             fullWidth
-                            label="Language"
+                            label="语言"
                             size="sm"
                             defaultItems={LANGUAGE_OPTIONS}
                             defaultSelectedKey={getDisplayLanguageCode(
@@ -521,13 +521,13 @@ function Subtitles({ mediaIndex }: SubtitlesProps) {
                 isDisabled={shouldDisableInput || isUnsupported}
                 className="mt-2"
               >
-                Add Subtitle
+                添加字幕
                 <Icon name="fileExplorer" size={14} />
               </Button>
 
               {isUnsupported ? (
                 <p className="text-xs italic text-danger-300 mt-2">
-                  {convertToExtension} does not support soft subtitles
+                  {convertToExtension} 不支持软字幕
                 </p>
               ) : null}
             </motion.div>

@@ -303,7 +303,7 @@ function StartCompression() {
       }
     } catch (error) {
       if (error !== 'CANCELLED') {
-        toast.error('Something went wrong during compression.')
+        toast.error('压缩过程中出现错误。')
         appProxy.timeTravel('beforeCompressionStarted')
       }
     }
@@ -323,7 +323,7 @@ function StartCompression() {
           className="w-full text-primary bg-primary/20"
           isDisabled={isLoadingMediaFiles}
         >
-          Process
+          开始处理
         </Button>
       )}
     </div>

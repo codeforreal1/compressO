@@ -18,11 +18,11 @@ const PRESETS: {
 }[] = [
   {
     name: 'ironclad',
-    description: <p>Optimal size but slightly slower processing</p>,
+    description: <p>体积最优，但处理速度稍慢</p>,
   },
   {
     name: 'thunderbolt',
-    description: <p>Slightly larger size but faster processing</p>,
+    description: <p>体积稍大，但处理速度更快</p>,
   },
 ]
 
@@ -108,7 +108,7 @@ function CompressionPreset({ mediaIndex }: CompressionPresetProps) {
         >
           <div className="flex justify-center items-center">
             <span className="text-gray-600 dark:text-gray-400 block mr-2 text-sm">
-              Lossless Compression
+              无损压缩
             </span>
           </div>
         </Switch>
@@ -119,7 +119,7 @@ function CompressionPreset({ mediaIndex }: CompressionPresetProps) {
             <div className="mt-8">
               <Select
                 fullWidth
-                label="Compression Preset:"
+                label="压缩预设："
                 labelPlacement="outside"
                 className="block flex-shrink-0 rounded-2xl"
                 selectedKeys={[presetName!]}
@@ -145,7 +145,7 @@ function CompressionPreset({ mediaIndex }: CompressionPresetProps) {
                     className="flex justify-center items-center"
                     endContent={
                       preset.name === compressionPresets.ironclad ? (
-                        <Tooltip content="Recommended" aria-label="Recommended">
+                        <Tooltip content="推荐" aria-label="推荐">
                           <Icon
                             name="star"
                             className="inline-block ml-1 text-yellow-500"
