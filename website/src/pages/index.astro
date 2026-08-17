@@ -1,5 +1,4 @@
 ---
-import { motion } from "framer-motion";
 import BaseHead from "../components/BaseHead.astro";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
@@ -36,17 +35,14 @@ const githubStars = await fetchGitHubStars();
       <div class="hero-content">
         <HeroAnimatedContent client:visible />
         <p>
-          CompressO is a completely free & open-source video/image
-          compression app available for Mac, Windows & Linux.
-          <br />
-          No signup, no cloud uploads, no tracking. Just powerful compression that runs entirely private
-          on your machine.
+          A free & open-source video/image compression app for Mac, Windows & Linux.
+          No signup, no cloud uploads, no tracking.
         </p>
         <div class="cta-group">
-          <a href="#downloads" class="btn btn-primary text-zinc-900!">
+          <a href="#downloads" class="btn btn-primary h-9! text-zinc-900!">
             <svg
-              width="20"
-              height="20"
+              width="18"
+              height="18"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -60,17 +56,17 @@ const githubStars = await fetchGitHubStars();
           </a>
           <a
             href="https://github.com/codeforreal1/compressO"
-            class="btn btn-secondary"
+            class="btn btn-secondary h-9!"
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
               <path
                 d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"
               ></path>
             </svg>
-            View on GitHub <span id="github-stars">{githubStars ? `⭐️ ${githubStars.toLocaleString()}` : ""}</span>
+            GitHub <span id="github-stars">{githubStars ? githubStars.toLocaleString() : ""}</span>
           </a>
         </div>
-        <div class="hero-image rounded-[25px]! xl:rounded-[100px]!">
+        <div class="hero-image rounded-[46px]!">
           <img src={heroImage.src} alt="CompressO Interface" />
         </div>
       </div>
@@ -83,62 +79,91 @@ const githubStars = await fetchGitHubStars();
         <div class="section-header">
           <h2 class="section-title">
             Powerful compression.<br />
-            <span class="gradient-text">Zero compromise</span>
+            Zero compromise
           </h2>
           <p class="section-subtitle">
-            CompressO combines industry-leading compression algorithms with a
-            focus on privacy and simplicity.
+            Industry-leading algorithms with a focus on privacy and simplicity.
           </p>
         </div>
 
         <div class="feature-grid">
           <div class="feature-card">
-            <div class="feature-icon">🔒</div>
+            <div class="feature-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+            </div>
             <h3>100% Offline</h3>
             <p>
               Your videos never leave your device. All compression happens
-              locally on your machine, ensuring complete privacy and security.
+              locally, ensuring complete privacy.
             </p>
           </div>
 
           <div class="feature-card">
-            <div class="feature-icon">⚡</div>
+            <div class="feature-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+              </svg>
+            </div>
             <h3>Lightning Fast</h3>
-            <p>Powered by latest FFmpeg. Compress videos within seconds.</p>
+            <p>Powered by the latest FFmpeg. Compress videos within seconds.</p>
           </div>
 
           <div class="feature-card">
-            <div class="feature-icon">🎯</div>
+            <div class="feature-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+            </div>
             <h3>Smart Compression</h3>
             <p>
               Advanced algorithms maintain visual quality while dramatically
-              reducing file size. Perfect for sharing and storage.
+              reducing file size.
             </p>
           </div>
 
           <div class="feature-card">
-            <div class="feature-icon">🎨</div>
+            <div class="feature-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                <polyline points="21 15 16 10 5 21"></polyline>
+              </svg>
+            </div>
             <h3>Simple Interface</h3>
             <p>
-              Drag & drop, copy-paste or select videos, compress. No complicated
-              settings or technical knowledge required. Just results that work.
+              Drag & drop, copy-paste, or select files. No complicated settings
+              required.
             </p>
           </div>
 
           <div class="feature-card">
-            <div class="feature-icon">🌐</div>
+            <div class="feature-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+              </svg>
+            </div>
             <h3>Universal Format</h3>
             <p>
-              Support for all major video formats including MP4, MOV, AVI, and
+              Support for all major formats including MP4, MOV, AVI, and
               more. Export to any format you need.
             </p>
           </div>
 
           <div class="feature-card">
-            <div class="feature-icon">💎</div>
+            <div class="feature-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+              </svg>
+            </div>
             <h3>Quality Control</h3>
             <p>
-              Fine-tune compression settings to balance file size and quality.
+              Fine-tune settings to balance file size and quality.
               Preview results before saving.
             </p>
           </div>
@@ -147,184 +172,126 @@ const githubStars = await fetchGitHubStars();
     </section>
 
     <div class="section-divider"></div>
-
     <section class="section showcase-section">
       <div class="container">
         <div class="showcase-content">
           <div class="showcase-text">
-            <span class="section-tag">Powerful Features</span>
-            <h2>Packed with <span class="gradient-text">everything</span><br />you need!</h2>
+            <h2>Packed with everything<br />you need</h2>
             <p>
-              CompressO goes beyond simple compression. It's a comprehensive
-              video processing tool designed for power users and casual users
-              alike.
+              Beyond simple compression — a comprehensive video processing tool
+              for power users and casual users alike.
             </p>
             <ul class="feature-list feature-list-vertical" id="featureList">
               <li>
                 <div class="feature-item-content">
                   <strong>Batch Compression</strong>
-                  <span
-                    >Process multiple videos and images at once with smart queue
-                    management</span
-                  >
+                  <span>Process multiple videos and images at once</span>
                 </div>
               </li>
               <li>
                 <div class="feature-item-content">
                   <strong>Video Editing</strong>
-                  <span
-                    >Trim, split, crop, rotate, flip, and zoom videos before
-                    compression</span
-                  >
+                  <span>Trim, split, crop, rotate, flip, and zoom before compression</span>
                 </div>
               </li>
               <li>
                 <div class="feature-item-content">
                   <strong>Image Editing</strong>
-                  <span
-                    >Crop, rotate, flip, and adjust dimensions of images before
-                    compression</span
-                  >
+                  <span>Crop, rotate, flip, and adjust dimensions</span>
                 </div>
               </li>
               <li>
                 <div class="feature-item-content">
                   <strong>Video Controls</strong>
-                  <span
-                    >Customize codec, quality, dimensions, resolution, FPS, speed and
-                    output format</span
-                  >
+                  <span>Codec, quality, dimensions, resolution, FPS, speed, format</span>
                 </div>
               </li>
               <li>
                 <div class="feature-item-content">
                   <strong>Image Controls</strong>
-                  <span
-                    >Adjust quality, format, and optimization settings for JPEG,
-                    PNG, WebP, and GIF</span
-                  >
+                  <span>Quality, format, and optimization for JPEG, PNG, WebP, GIF</span>
                 </div>
               </li>
               <li>
                 <div class="feature-item-content">
                   <strong>Audio Controls</strong>
-                  <span
-                    >Adjust codec, volume, channels, bitrate, and select audio
-                    tracks</span
-                  >
+                  <span>Codec, volume, channels, bitrate, and audio tracks</span>
                 </div>
               </li>
               <li>
                 <div class="feature-item-content">
                   <strong>Clipboard Support</strong>
-                  <span
-                    >Paste video or image files and directories directly from
-                    clipboard for instant batch processing</span
-                  >
+                  <span>Paste files and directories directly from clipboard</span>
                 </div>
               </li>
               <li class="feature-hidden">
                 <div class="feature-item-content">
                   <strong>Format Conversion</strong>
-                  <span
-                    >Convert between image formats (JPEG, PNG, WebP, GIF) and
-                    video formats seamlessly</span
-                  >
+                  <span>Convert between JPEG, PNG, WebP, GIF, and video formats</span>
                 </div>
               </li>
               <li class="feature-hidden">
                 <div class="feature-item-content">
                   <strong>SVG Conversion</strong>
-                  <span
-                    >Convert SVG files to PNG, JPEG, or WebP formats with advanced
-                    rasterization settings</span
-                  >
+                  <span>Convert SVG to PNG, JPEG, or WebP with rasterization settings</span>
                 </div>
               </li>
               <li class="feature-hidden">
                 <div class="feature-item-content">
                   <strong>GIF Tools</strong>
-                  <span
-                    >Create animated GIFs from videos and compress existing GIFs
-                    while maintaining quality</span
-                  >
+                  <span>Create animated GIFs from videos and compress existing GIFs</span>
                 </div>
               </li>
               <li class="feature-hidden">
                 <div class="feature-item-content">
                   <strong>Comparison Slider</strong>
-                  <span
-                    >Compare original and compressed images or videos with an
-                    interactive before/after slider</span
-                  >
+                  <span>Interactive before/after comparison for images and videos</span>
                 </div>
               </li>
               <li class="feature-hidden">
                 <div class="feature-item-content">
                   <strong>Drag & Drop</strong>
-                  <span
-                    >Drop entire folders containing videos or images for automatic
-                    batch compression</span
-                  >
+                  <span>Drop entire folders for automatic batch compression</span>
                 </div>
               </li>
               <li class="feature-hidden">
                 <div class="feature-item-content">
                   <strong>File Explorer Integration</strong>
-                  <span
-                    >Right-click any video or image in your file manager and "Open
-                    with CompressO"</span
-                  >
+                  <span>Right-click to "Open with CompressO" from your file manager</span>
                 </div>
               </li>
               <li class="feature-hidden">
                 <div class="feature-item-content">
-                  <strong>Complete Metadata Info</strong>
-                  <span
-                    >View full metadata for videos and images including dimensions,
-                    format, EXIF data, streams, subtitles, and chapters</span
-                  >
+                  <strong>Metadata Info</strong>
+                  <span>View dimensions, format, EXIF data, streams, subtitles, chapters</span>
                 </div>
               </li>
               <li class="feature-hidden">
                 <div class="feature-item-content">
                   <strong>Copy to Clipboard</strong>
-                  <span
-                    >Copy compressed videos or images directly to clipboard for
-                    easy pasting</span
-                  >
+                  <span>Copy compressed files directly to clipboard</span>
                 </div>
               </li>
               <li class="feature-hidden">
                 <div class="feature-item-content">
                   <strong>Metadata Editing</strong>
-                  <span
-                    >Edit title, artist, album, year, genre, description,
-                    copyright, and more for videos</span
-                  >
+                  <span>Edit title, artist, album, year, genre, copyright and more</span>
                 </div>
               </li>
               <li class="feature-hidden">
                 <div class="feature-item-content">
                   <strong>Image Metadata</strong>
-                  <span
-                    >Preserve EXIF and other metadata when compressing images</span
-                  >
+                  <span>Preserve EXIF and other metadata when compressing images</span>
                 </div>
               </li>
               <li class="feature-hidden">
                 <div class="feature-item-content">
                   <strong>Custom Thumbnails</strong>
-                  <span
-                    >Set custom thumbnails that display as video previews in
-                    file managers</span
-                  >
+                  <span>Set custom thumbnails for video previews in file managers</span>
                 </div>
               </li>
             </ul>
-            <button class="show-all-btn" id="showAllBtn"
-              >See More Features</button
-            >
+            <button class="show-all-btn" id="showAllBtn">See More Features</button>
           </div>
           <div class="showcase-visual">
             <img
@@ -346,14 +313,10 @@ const githubStars = await fetchGitHubStars();
             <img src={privateImage.src} alt="Privacy First" loading="lazy" />
           </div>
           <div class="showcase-text">
-            <span class="section-tag">Privacy First</span>
-            <h2>Your videos stay yours.<br />
-              <span class="gradient-text">Always!</span>
-            </h2>
+            <h2>Your videos stay yours.<br />Always.</h2>
             <p>
               Unlike online compression services, CompressO never uploads your
-              files. No account required. No tracking. No data collection. Just
-              pure, local compression that respects your privacy.
+              files. No account required. No tracking. No data collection.
             </p>
             <ul class="feature-list">
               <li>No internet connection required</li>
@@ -373,17 +336,13 @@ const githubStars = await fetchGitHubStars();
       <div class="container">
         <div class="showcase-content">
           <div class="showcase-text">
-            <span class="section-tag">Open Source</span>
-            <h2>Free & Open Source.<br />
-              <span class="gradient-text">Forever!</span>
-            </h2>
+            <h2>Free & Open Source.<br />Forever.</h2>
             <p>
-              CompressO is fully open-source software. The code is available on
-              GitHub, so you can audit it, contribute to it, or even fork it for
-              your own projects.
+              The code is available on GitHub. Audit it, contribute to it, or
+              fork it for your own projects.
             </p>
             <ul class="feature-list">
-              <li>MIT License - use it anywhere</li>
+              <li>MIT License — use it anywhere</li>
               <li>Transparent development on GitHub</li>
               <li>Community-driven features</li>
               <li>Regular updates and improvements</li>
@@ -392,11 +351,11 @@ const githubStars = await fetchGitHubStars();
             <a
               href="https://github.com/codeforreal1/compressO"
               class="github-link"
-              style="margin-top: 24px;"
+              style="margin-top: 20px;"
             >
               <svg
-                width="24"
-                height="24"
+                width="20"
+                height="20"
                 viewBox="0 0 24 24"
                 fill="currentColor"
               >
@@ -415,106 +374,51 @@ const githubStars = await fetchGitHubStars();
     </section>
 
     <div class="section-divider"></div>
-
     <section class="section cta-section">
       <img
           src="/app-icon.png"
           alt="Compresso Logo"
-          class="w-30 h-auto block  mx-auto!"
+          class="w-24 h-auto block mx-auto!"
       />
       <div class="container">
-        <h2 class="gradient-text">Ready to compress your videos/images?</h2>
+        <h2>Ready to compress?</h2>
         <div id="downloads" class="downloads-section">
           <h3>Direct Downloads</h3>
           <div class="downloads-grid">
             <div class="download-column">
               <div class="download-os-header">
                 <svg
-                  width="22"
-                  height="22"
+                  width="16"
+                  height="16"
                   viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="#000000"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
                 >
-                  <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-                  <g
-                    id="SVGRepo_tracerCarrier"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"></g>
-                  <g id="SVGRepo_iconCarrier">
-                    <path
-                      fill="#AAA"
-                      fill-rule="evenodd"
-                      d="M15.3007013,3.832 C16.1387013,2.818 16.7027013,1.405 16.5487013,0 C15.3407013,0.049 13.8797013,0.805 13.0137013,1.819 C12.2367013,2.717 11.5567013,4.154 11.7407013,5.531 C13.0867013,5.636 14.4627013,4.847 15.3007013,3.832 M18.3207013,12.75 C18.3547013,16.382 21.5067013,17.591 21.5417013,17.607 C21.5157013,17.692 21.0387013,19.329 19.8807013,21.02 C18.8807013,22.482 17.8427013,23.939 16.2067013,23.969 C14.5997013,23.998 14.0837013,23.016 12.2457013,23.016 C10.4097013,23.016 9.83570131,23.939 8.31370131,23.998 C6.73570131,24.058 5.53370131,22.417 4.52470131,20.961 C2.46370131,17.981 0.888701307,12.541 3.00370131,8.869 C4.05470131,7.045 5.93170131,5.89 7.96970131,5.861 C9.51970131,5.831 10.9827013,6.904 11.9307013,6.904 C12.8777013,6.904 14.6557013,5.614 16.5247013,5.803 C17.3077013,5.836 19.5037013,6.119 20.9147013,8.184 C20.8007013,8.254 18.2937013,9.714 18.3207013,12.75"
-                    >
-                    </path>
-                  </g>
+                  <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                  <path d="M2 17l10 5 10-5"></path>
+                  <path d="M2 12l10 5 10-5"></path>
                 </svg>
                 macOS
               </div>
               <div
                 class="download-btn"
-                style="cursor: default; background: rgba(255, 255, 255, 0.03); border-style: dashed;"
+                style="cursor: default; border-style: dashed;"
               >
                 <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  xmlns:xlink="http://www.w3.org/1999/xlink"
-                  width="20"
-                  height="100%"
-                  viewBox="0 0 180 271"
-                  version="1.1"
-                  xml:space="preserve"
-                  style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
                 >
-                  <g id="Group" transform="matrix(1,0,0,1,5.782,3.414)">
-                    <g id="Path" transform="matrix(1,0,0,1,13,0)">
-                      <g transform="matrix(1,0,0,1,24,0)">
-                        <path
-                          d="M31.758,46.916C32.498,23.429 24.586,9.582 1.841,0.435C-4.624,23.049 22.066,43.9 31.758,46.916Z"
-                          style="fill:rgb(209,211,212);stroke:black;stroke-width:4.79px;"
-                        ></path>
-                      </g>
-                      <path
-                        d="M117.441,86.72C118.181,67.434 113.31,59.65 109.654,54.084C105.945,48.892 97.045,40.732 86.11,40.39C75.769,40.066 73.282,45.782 63.742,46.127C62.178,28.755 75.289,19.222 75.289,19.222C75.289,19.222 71.704,14.155 68.738,12.917C64.472,16.708 52.73,29.353 55.447,45.625C46.669,43.947 40.473,38.923 31.252,40.737C18.69,43.209 8.335,50.804 2.433,67.47C-3.468,84.137 4.516,103.581 6.252,109.134C7.989,114.692 20.836,138.298 30.905,141.772C40.972,145.247 40.975,143.681 46.357,141.599C51.74,139.516 59.897,135.697 71.879,140.038C83.854,144.377 85.416,145.417 92.879,140.557C100.348,135.698 110.067,120.595 112.322,116.254C114.579,111.915 115.795,109.657 116.492,107.401C123.748,103.78 116.775,104.004 117.441,86.72Z"
-                        style="fill:rgb(209,211,212);stroke:black;stroke-width:4.79px;"
-                      ></path>
-                    </g>
-                    <g transform="matrix(1,0,0,1,4,112)">
-                      <path
-                        id="Shape"
-                        d="M145.932,115.67C150.717,115.687 155.312,113.799 158.701,110.422C162.091,107.045 163.996,102.457 163.996,97.672C163.998,79.399 163.998,51.162 163.998,32.839C163.998,28.065 162.102,23.487 158.726,20.111C155.35,16.735 150.772,14.839 145.998,14.839L131.16,14.839C128.951,14.839 127.16,13.048 127.16,10.839L127.16,1.409L10.13,1.409C10.13,1.409 10.388,121.948 10.425,139.622C10.428,140.985 11.125,142.254 12.275,142.987C17.487,146.005 34.196,151.737 69.279,151.737C105.104,151.737 121.118,144.063 125.703,140.598C126.614,139.842 127.141,138.72 127.141,137.536C127.16,133.711 127.16,124.848 127.16,119.612C127.16,118.537 127.593,117.507 128.361,116.755C129.129,116.002 130.168,115.591 131.243,115.613C135.644,115.675 140.917,115.684 145.932,115.67ZM127.16,35.864C127.16,34.538 127.687,33.266 128.624,32.328C129.562,31.391 130.834,30.864 132.16,30.864L144.898,30.864C146.224,30.864 147.496,31.391 148.434,32.328C149.371,33.266 149.898,34.538 149.898,35.864L149.898,94.049C149.898,95.375 149.371,96.647 148.434,97.585C147.496,98.522 146.224,99.049 144.898,99.049L132.16,99.049C130.834,99.049 129.562,98.522 128.624,97.585C127.687,96.647 127.16,95.375 127.16,94.049L127.16,35.864Z"
-                        style="fill:white;fill-rule:nonzero;stroke:black;stroke-width:4.79px;"
-                      ></path>
-                      <path
-                        id="Path1"
-                        d="M21.667,0.249L21.667,124.235C21.667,125.666 22.431,126.988 23.67,127.702C28.731,130.114 43.413,135.871 69.154,135.871C95.066,135.871 109.312,128.876 114.082,125.993C115.221,125.259 115.909,123.996 115.909,122.642C115.92,106.201 115.92,0.249 115.92,0.249L21.667,0.249Z"
-                        style="fill:rgb(251,176,64);"></path>
-                      <g
-                        id="Path2"
-                        transform="matrix(1,0,0,0.849312,0,21.0375)"
-                      >
-                        <path
-                          d="M35.521,0.249L35.521,113.065"
-                          style="fill:none;stroke:rgb(255,219,150);stroke-width:11.96px;stroke-linecap:round;stroke-linejoin:miter;"
-                        ></path>
-                      </g>
-                    </g>
-                    <g id="Path3" transform="matrix(1,0,0,1,-2,-2)">
-                      <path
-                        d="M94.773,139.692C94.773,137.692 93.596,135.304 91.663,134.105C88.518,132.202 86.059,129.283 84.721,125.805C59.13,126.666 35.772,122.172 24.005,118.999C20.984,118.143 17.924,117.432 14.834,116.869C7.791,115.472 2.438,109.287 2.438,101.851C2.438,93.666 8.932,87.015 17.046,86.724C18.611,78.067 26.167,71.495 35.275,71.495C45.517,71.495 53.819,79.799 53.819,90.04C53.819,92.195 53.43,94.258 52.755,96.184L52.81,96.193C55.097,89.04 61.793,83.857 69.706,83.857C77.568,83.857 84.228,88.979 86.554,96.065C86.487,95.426 86.453,94.776 86.453,94.118C86.453,83.466 95.087,74.832 105.737,74.832C114.359,74.832 121.656,80.491 124.125,88.294L125.806,87.856C128.004,86.617 130.535,85.901 133.238,85.901C141.607,85.901 148.392,92.686 148.389,101.053C148.389,108.719 142.698,115.054 135.31,116.065C133.637,116.302 131.996,116.728 130.419,117.335C126.028,118.99 121.538,120.362 117.002,121.494C116.776,123.73 116.11,125.836 115.093,127.725C113.253,131.177 112.428,135.08 112.713,138.982C112.711,139.218 112.72,140.454 112.72,140.692C112.72,145.648 108.704,148.664 103.744,148.664C98.791,148.664 94.773,144.649 94.773,139.692Z"
-                        style="fill:white;stroke:black;stroke-width:4.79px;stroke-linecap:round;"
-                      ></path>
-                    </g>
-                  </g>
-                  <style id="squircle-everything-style">
-                    * {
-                      corner-shape: superellipse(1.333);
-                    }
-                  </style></svg
-                >
+                  <polyline points="16 18 22 12 16 6"></polyline>
+                  <polyline points="8 6 2 12 8 18"></polyline>
+                </svg>
                 <code
                   id="brew-command"
-                  style="font-size: 12px; padding: 2px 6px; border-radius: 3px; text-align: left; flex: 1;"
+                  style="font-size: 12px; padding: 2px 6px; border-radius: 3px; text-align: left; flex: 1; background: transparent; color: rgba(255,255,255,0.7);"
                   >brew install codeforreal1/tap/compresso</code
                 >
                 <button
@@ -540,8 +444,8 @@ const githubStars = await fetchGitHubStars();
               </div>
               <a href={downloads.mac.aarch64} class="download-btn">
                 <svg
-                  width="16"
-                  height="16"
+                  width="14"
+                  height="14"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -555,8 +459,8 @@ const githubStars = await fetchGitHubStars();
               </a>
               <a href={downloads.mac.x64} class="download-btn">
                 <svg
-                  width="16"
-                  height="16"
+                  width="14"
+                  height="14"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -573,66 +477,26 @@ const githubStars = await fetchGitHubStars();
             <div class="download-column">
               <div class="download-os-header">
                 <svg
-                  width="24px"
-                  height="24px"
-                  viewBox="0 0 16 16"
-                  xmlns="http://www.w3.org/2000/svg"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
                   fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
                 >
-                  <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-                  <g
-                    id="SVGRepo_tracerCarrier"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"></g>
-                  <g id="SVGRepo_iconCarrier">
-                    <path
-                      fill="#202020"
-                      d="M13.338 12.033c-.1-.112-.146-.319-.197-.54-.05-.22-.107-.457-.288-.61v-.001a.756.756 0 00-.223-.134c.252-.745.153-1.487-.1-2.157-.312-.823-.855-1.54-1.27-2.03-.464-.586-.918-1.142-.91-1.963.014-1.254.138-3.579-2.068-3.582-.09 0-.183.004-.28.012-2.466.198-1.812 2.803-1.849 3.675-.045.638-.174 1.14-.613 1.764-.515.613-1.24 1.604-1.584 2.637-.162.487-.24.984-.168 1.454-.023.02-.044.041-.064.063-.151.161-.263.357-.388.489-.116.116-.282.16-.464.225-.183.066-.383.162-.504.395v.001a.702.702 0 00-.077.339c0 .108.016.217.032.322.034.22.068.427.023.567-.144.395-.163.667-.061.865.102.199.31.286.547.335.473.1 1.114.075 1.619.342l.043-.082-.043.082c.54.283 1.089.383 1.526.284a.99.99 0 00.706-.552c.342-.002.717-.146 1.318-.18.408-.032.918.145 1.503.113a.806.806 0 00.068.183l.001.001c.227.455.65.662 1.1.627.45-.036.928-.301 1.315-.762l-.07-.06.07.06c.37-.448.982-.633 1.388-.878.203-.123.368-.276.38-.499.013-.222-.118-.471-.418-.805z"
-                    >
-                    </path>
-                    <path
-                      fill="#F8BF11"
-                      d="M13.571 12.828c-.007.137-.107.24-.29.35-.368.222-1.019.414-1.434.918-.362.43-.802.665-1.19.696-.387.03-.721-.13-.919-.526v-.002c-.123-.233-.072-.6.031-.987s.251-.785.271-1.108v-.001c.02-.415.044-.776.114-1.055.07-.28.179-.468.373-.575a.876.876 0 01.027-.014c.022.359.2.725.514.804.343.09.838-.204 1.047-.445l.122-.004c.184-.005.337.006.495.143v.001c.121.102.179.296.229.512.05.217.09.453.239.621.287.32.38.534.371.672zM6.592 13.843v.003c-.034.435-.28.672-.656.758-.377.086-.888 0-1.398-.266-.565-.3-1.237-.27-1.667-.36-.216-.045-.357-.113-.421-.238-.064-.126-.066-.345.071-.72v-.001l.001-.002c.068-.209.018-.438-.015-.653-.033-.214-.049-.41.024-.546l.001-.001c.094-.181.232-.246.403-.307.17-.062.373-.11.533-.27l.001-.001h.001c.148-.157.26-.353.39-.492.11-.117.22-.195.385-.196h.005a.61.61 0 01.093.008c.22.033.411.187.596.437l.533.971v.001c.142.296.441.622.695.954.254.333.45.666.425.921z"
-                    >
-                    </path>
-                    <path
-                      fill="#D6A312"
-                      d="M9.25 4.788c-.043-.084-.13-.164-.28-.225-.31-.133-.444-.142-.617-.254-.28-.181-.513-.244-.706-.244a.834.834 0 00-.272.047c-.236.08-.392.25-.49.342-.02.019-.044.035-.104.08-.06.043-.15.11-.28.208-.117.086-.154.2-.114.332.04.132.167.285.4.417h.001c.145.085.244.2.358.291a.801.801 0 00.189.117c.072.031.156.052.26.058.248.015.43-.06.59-.151.16-.092.296-.204.452-.255h.001c.32-.1.548-.301.62-.493a.324.324 0 00-.008-.27z"
-                    >
-                    </path>
-                    <path
-                      fill="#202020"
-                      d="M8.438 5.26c-.255.133-.552.294-.869.294-.316 0-.566-.146-.745-.289-.09-.07-.163-.142-.218-.193-.096-.075-.084-.181-.045-.178.066.008.076.095.117.134.056.052.126.12.211.187.17.135.397.266.68.266.284 0 .614-.166.816-.28.115-.064.26-.179.379-.266.09-.067.087-.147.162-.138.075.009.02.089-.085.18-.105.092-.27.214-.403.283z"
-                    >
-                    </path>
-                    <path
-                      fill="#ffffff"
-                      d="M12.337 10.694a1.724 1.724 0 00-.104 0h-.01c.088-.277-.106-.48-.621-.713-.534-.235-.96-.212-1.032.265-.005.025-.009.05-.011.076a.801.801 0 00-.12.054c-.252.137-.389.386-.465.692-.076.305-.098.674-.119 1.09-.013.208-.099.49-.186.79-.875.624-2.09.894-3.122.19-.07-.11-.15-.22-.233-.328a13.85 13.85 0 00-.16-.205.65.65 0 00.268-.05.34.34 0 00.186-.192c.063-.17 0-.408-.202-.68-.201-.273-.542-.58-1.043-.888-.368-.23-.574-.51-.67-.814-.097-.305-.084-.635-.01-.96.143-.625.51-1.233.743-1.614.063-.046.023.086-.236.567-.232.44-.667 1.455-.072 2.248.016-.564.15-1.14.377-1.677.329-.747 1.018-2.041 1.072-3.073.029.02.125.086.169.11.126.075.221.184.344.283a.85.85 0 00.575.2c.24 0 .427-.079.582-.168.17-.096.304-.204.433-.245.27-.085.486-.235.608-.41.21.83.7 2.027 1.014 2.611.167.31.5.969.643 1.762.091-.002.191.01.299.038.375-.973-.319-2.022-.636-2.314-.128-.124-.135-.18-.07-.177.343.304.795.917.96 1.608.075.315.09.646.01.973.04.017.08.034.12.054.603.293.826.548.719.897z"
-                    >
-                    </path>
-                    <path
-                      fill="#E6E6E6"
-                      d="M8.04 8.062c-.556.002-1.099.251-1.558.716-.46.464-.814 1.122-1.018 1.888l.061.038v.004c.47.298.805.598 1.012.878.219.296.316.584.223.834a.513.513 0 01-.27.283l-.041.015c.074.097.146.197.213.3.944.628 2.042.396 2.867-.172.08-.278.153-.536.163-.698.021-.415.042-.792.124-1.12.082-.33.242-.63.544-.795.017-.01.034-.015.051-.023a.756.756 0 01.022-.094c-.242-.622-.591-1.14-1.01-1.5-.42-.36-.897-.551-1.382-.554zm2.37 2.155l-.002.005v-.002l.001-.004z"
-                    >
-                    </path>
-                    <path
-                      fill="#ffffff"
-                      d="M9.278 3.833a1.05 1.05 0 01-.215.656 4.119 4.119 0 00-.218-.09l-.127-.045c.029-.035.085-.075.107-.127a.669.669 0 00.05-.243l.001-.01a.673.673 0 00-.035-.236.434.434 0 00-.108-.184.223.223 0 00-.156-.07H8.57a.228.228 0 00-.151.06.434.434 0 00-.122.175.676.676 0 00-.05.243v.01a.718.718 0 00.009.14 1.773 1.773 0 00-.354-.12 1.196 1.196 0 01-.01-.133v-.013a1.035 1.035 0 01.088-.447.793.793 0 01.25-.328.554.554 0 01.346-.123h.006c.125 0 .232.036.342.116a.78.78 0 01.257.324c.063.138.094.273.097.433l.001.012zM7.388 3.997a1.05 1.05 0 00-.277.125.623.623 0 00.002-.15v-.008a.651.651 0 00-.048-.192.37.37 0 00-.096-.141.158.158 0 00-.119-.045c-.042.004-.077.024-.11.065a.372.372 0 00-.07.156.626.626 0 00-.013.205v.008a.634.634 0 00.048.193.367.367 0 00.116.156l-.102.08-.078.056a.706.706 0 01-.16-.24c-.053-.12-.082-.24-.09-.381v-.001a1.071 1.071 0 01.045-.39.668.668 0 01.167-.292.359.359 0 01.264-.118c.084 0 .158.028.235.09a.68.68 0 01.199.271c.053.12.08.24.089.382v.001c.003.06.003.115-.002.17z"
-                    >
-                    </path>
-                    <path
-                      fill="#202020"
-                      d="M7.806 4.335c.01.034.065.029.097.045.027.014.05.045.08.046.03.001.076-.01.08-.04.005-.038-.052-.063-.088-.077-.047-.019-.107-.028-.151-.003-.01.005-.021.018-.018.03zM7.484 4.335c-.01.034-.065.029-.096.045-.028.014-.05.045-.081.046-.03.001-.076-.01-.08-.04-.005-.038.052-.063.088-.077.047-.019.108-.028.152-.003.01.005.02.018.017.03z"
-                    >
-                    </path>
-                  </g>
+                  <path d="M4 4l16 0"></path>
+                  <path d="M4 12l16 0"></path>
+                  <path d="M4 20l16 0"></path>
+                  <circle cx="7" cy="4" r="2" fill="currentColor"></circle>
+                  <circle cx="17" cy="12" r="2" fill="currentColor"></circle>
+                  <circle cx="10" cy="20" r="2" fill="currentColor"></circle>
                 </svg>
                 Linux
               </div>
               <a href={downloads.linux.appImage} class="download-btn">
                 <svg
-                  width="16"
-                  height="16"
+                  width="14"
+                  height="14"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -646,8 +510,8 @@ const githubStars = await fetchGitHubStars();
               </a>
               <a href={downloads.linux.deb} class="download-btn">
                 <svg
-                  width="16"
-                  height="16"
+                  width="14"
+                  height="14"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -664,8 +528,8 @@ const githubStars = await fetchGitHubStars();
             <div class="download-column">
               <div class="download-os-header">
                 <svg
-                  width="18"
-                  height="18"
+                  width="16"
+                  height="16"
                   viewBox="0 0 24 24"
                   fill="currentColor"
                 >
@@ -677,8 +541,8 @@ const githubStars = await fetchGitHubStars();
               </div>
               <a href={downloads.windows.x64} class="download-btn">
                 <svg
-                  width="16"
-                  height="16"
+                  width="14"
+                  height="14"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -692,33 +556,9 @@ const githubStars = await fetchGitHubStars();
               </a>
             </div>
           </div>
-          <div class="version-badge">Latest Version: {downloads.version}</div>
+          <div class="version-badge">v{downloads.version}</div>
         </div>
       </div>
-      <div class="cta-group" style="justify-content: center; margin-top: 2rem;">
-          <a
-            href="https://github.com/codeforreal1/compressO/releases"
-            class="btn btn-secondary"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-              <path
-                d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"
-              ></path>
-            </svg>
-            View Latest Release
-          </a>
-          <a
-            href="https://github.com/codeforreal1/compressO"
-            class="btn btn-secondary"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-              <path
-                d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"
-              ></path>
-            </svg>
-            View Source Code
-          </a>
-        </div>
     </section>
     <Footer />
 
@@ -733,7 +573,6 @@ const githubStars = await fetchGitHubStars();
         showAllBtn.style.display = "none";
       });
 
-      // Copy Homebrew command
       const copyBrewBtn = document.getElementById("copy-brew-btn");
       const brewCommand = document.getElementById("brew-command");
 

@@ -5,27 +5,90 @@ const today = new Date();
 ---
 
 <footer>
-  &copy; {today.getFullYear()} Code For Real. All rights reserved.
-  <div>
-    <a href="mailto:hello@codeforreal.com" target="_blank"
-      >hello@codeforreal.com</a
-    >
-  </div>
-  <div class="flex justify-center">
-    <SocialLinks />
-  </div>
-  <div class="mx-auto max-w-[100vw] overflow-hidden leading-[0] pb-25" aria-hidden="true">
-    <svg class="block w-full" viewBox="0 0 600 110" preserveAspectRatio="none" fill="black" xmlns="http://www.w3.org/2000/svg" stroke="var(--accent)" stroke-width="0.5">
-      <text x="50%" y="100" text-anchor="middle" font-size="100" font-weight="900" letter-spacing="-6" style="background-image: var(--gradient-primary);">
-        CompressO
-      </text>
-    </svg>
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <img src="/app-icon.png" alt="CompressO" class="footer-logo" />
+        <span class="footer-name">CompressO</span>
+      </div>
+      <div class="footer-links">
+        <a href="https://github.com/codeforreal1/compressO" target="_blank">GitHub</a>
+        <a href="https://github.com/codeforreal1/compressO/releases" target="_blank">Releases</a>
+        <a href="mailto:hello@codeforreal.com">Contact</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; {today.getFullYear()} Code For Real. All rights reserved.</p>
+      <SocialLinks />
+    </div>
   </div>
 </footer>
 <style>
   footer {
-    padding: 2em 1em 2em 1em;
-    color: rgb(var(--gray));
-    text-align: center;
+    padding: 48px 24px 32px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+  }
+  .footer-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .footer-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+  .footer-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .footer-logo {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+  }
+  .footer-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.8);
+  }
+  .footer-links {
+    display: flex;
+    gap: 24px;
+  }
+  .footer-links a {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.4);
+    text-decoration: none;
+    transition: color 0.15s ease;
+  }
+  .footer-links a:hover {
+    color: rgba(255, 255, 255, 0.7);
+    opacity: 1;
+  }
+  .footer-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+  }
+  .footer-bottom p {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.3);
+    margin: 0;
+  }
+  @media (max-width: 640px) {
+    .footer-top {
+      flex-direction: column;
+      gap: 16px;
+      align-items: flex-start;
+    }
+    .footer-bottom {
+      flex-direction: column;
+      gap: 12px;
+      align-items: flex-start;
+    }
   }
 </style>
