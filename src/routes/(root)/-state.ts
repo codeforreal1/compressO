@@ -3,10 +3,10 @@ import cloneDeep from 'lodash/cloneDeep'
 import { proxy } from 'valtio'
 
 import {
-  App,
-  ImageConfig,
-  MediaMetadataConfig,
-  VideoConfig,
+    App,
+    ImageConfig,
+    MediaMetadataConfig,
+    VideoConfig,
 } from '../../types/app'
 
 export const videoMetadataConfigInitialState: MediaMetadataConfig = {
@@ -93,6 +93,8 @@ const appInitialState: App = {
     videoConfig: videoConfigInitialState,
     imageConfig: imageConfigInitialState,
   },
+  autoSaveEnabled: localStorage.getItem('autoSaveEnabled') === 'true' || false,
+  autoSavePath: localStorage.getItem('autoSavePath') || undefined,
 }
 
 const snapshotMoment = {

@@ -5,9 +5,10 @@ import { useSnapshot } from 'valtio'
 import Accordion from '@/components/Accordion'
 import Icon from '@/components/Icon'
 import Title from '@/components/Title'
+import { appProxy } from '../../-state'
+import AutoSaveSettings from './AutoSaveSettings'
 import ImageSettings from './image-settings/-index'
 import VideoSettings from './video-settings/-index'
-import { appProxy } from '../../-state'
 
 type OutputSettingsProps = {
   mediaIndex: number
@@ -37,6 +38,7 @@ function OutputSettings({ mediaIndex }: OutputSettingsProps) {
         <ImageSettings mediaIndex={mediaIndex} />
       ) : (
         <div className="mx-[-6px]">
+          <AutoSaveSettings />
           <Accordion isCompact keepContentMounted variant="splitted">
             <AccordionItem
               key="1"

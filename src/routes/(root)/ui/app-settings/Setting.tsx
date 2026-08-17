@@ -1,4 +1,5 @@
 import { DropdownItem, useDisclosure } from '@heroui/react'
+import { open } from '@tauri-apps/plugin-dialog'
 import { AnimatePresence, motion } from 'framer-motion'
 import React from 'react'
 import { useSnapshot } from 'valtio'
@@ -12,6 +13,7 @@ import Icon from '@/components/Icon'
 import Markdown from '@/components/Markdown'
 import Modal, { ModalContent } from '@/components/Modal'
 import ScrollShadow from '@/components/ScrollShadow'
+import Switch from '@/components/Switch'
 import { ThemeSwitcher } from '@/components/ThemeSwitcher'
 import Title from '@/components/Title'
 import { toast } from '@/components/Toast'
@@ -19,6 +21,7 @@ import Tooltip from '@/components/Tooltip'
 import { usePrimaryColor } from '@/hooks/usePrimaryColor'
 import { downloadAndInstallUpdateApp, updateStore } from '@/stores/updateStore'
 import { deleteCache as invokeDeleteCache } from '@/tauri/commands/fs'
+import { appProxy } from '../../-state'
 import About from './About'
 import Credits from './Credits'
 
@@ -113,6 +116,51 @@ function AppSetting() {
   const [confirmClearCache, setConfirmClearCache] = React.useState(false)
   const [isCacheDeleting, setIsCacheDeleting] = React.useState(false)
   const { color, setColor } = usePrimaryColor()
+  const { autoSaveEnabled, autoSavePath } = useSnapshot(appProxy.state)
+  const [isSelectingFolder, setIsSelectingFolder] = React.useState(false)
+
+  const handleAutoSaveToggle = (checked: boolean) => {
+    appProxy.state.autoSaveEnabled = checked
+    localStorage.setItem('autoSaveEnabled', String(checked))
+    toast.success(
+      checked
+        ? 'Auto-save enabled. Files will be saved automatically after compression.'
+        : 'Auto-save disabled.',
+    )
+  }
+
+  const handleSelectAutoSaveFolder = async () => {
+    try {
+      setIsSelectingFolder(true)
+      const selectedDirectory = await open({
+        directory: true,
+        title: 'Choose default folder for auto save',
+      })
+      if (selectedDirectory && typeof selectedDirectory === 'string') {
+        appProxy.state.autoSavePath = selectedDirectory
+        localStorage.setItem('autoSavePath', selectedDirectory)
+        toast.success(`Auto save folder set to: ${selectedDirectory}`)
+      }
+    } catch (error) {
+      toast.error('Failed to select folder')
+    } finally {
+      setIsSelectingFolder(false)
+    }
+  }
+
+  const handleResetAutoSaveFolder = async () => {
+    try {
+      appProxy.state.autoSavePath = undefined
+      localStorage.removeItem('autoSavePath')
+      toast.success('Auto save folder reset to default (Downloads)')
+    } catch (error) {
+      toast.error('Failed to reset folder')
+    }
+  }
+
+  const displayPath = autoSavePath
+    ? autoSavePath.split(/[\\/]/).slice(-2).join('/')
+    : 'Downloads (default)'
 
   const deleteCache = async () => {
     setIsCacheDeleting(true)
@@ -142,6 +190,67 @@ function AppSetting() {
           <ColorPicker color={color} onChange={setColor} />
         </div>
         <Divider className="my-2 dark:bg-zinc-700" />
+        <div className="flex justify-between items-center">
+          <Tooltip
+            content="Automatically save compressed files to the default directory after compression completes"
+            aria-label="Auto-save toggle"
+            placement="left"
+          >
+            <p className="text-gray-600 dark:text-gray-400 text-sm">
+              Auto save to
+            </p>
+          </Tooltip>
+          <Switch
+            isSelected={autoSaveEnabled}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleAutoSaveToggle(e.target.checked)}
+          />
+        </div>
+        <Divider className="my-2 dark:bg-zinc-700" />
+        {autoSaveEnabled ? (
+          <>
+            <div className="flex flex-col gap-2">
+              <div className="flex justify-between items-center">
+                <Tooltip
+                  content="Set custom default folder for auto-saving compressed files"
+                  aria-label="Custom auto save folder"
+                  placement="left"
+                >
+                  {/* <p className="text-gray-600 dark:text-gray-400 text-sm">
+                    Auto save Folder
+                  </p> */}
+                </Tooltip>
+              </div>
+              <div className="flex gap-2 items-center">
+                <p className="text-xs text-gray-500 dark:text-gray-500 flex-1 truncate">
+                  {displayPath}
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant="flat"
+                  onPress={handleSelectAutoSaveFolder}
+                  isLoading={isSelectingFolder}
+                  className="flex-1"
+                >
+                  <Icon name="fileExplorer" size={16} />
+                  Change
+                </Button>
+                {autoSavePath ? (
+                  <Button
+                    size="sm"
+                    variant="flat"
+                    onPress={handleResetAutoSaveFolder}
+                  >
+                    <Icon name="redo" size={16} />
+                    Reset
+                  </Button>
+                ) : null}
+              </div>
+            </div>
+            <Divider className="my-2 dark:bg-zinc-700" />
+          </>
+        ) : null}
         <div className="flex justify-between items-center">
           <p className="dark:text-red-400 text-sm text-red-400">Clear Cache</p>
           <Tooltip
