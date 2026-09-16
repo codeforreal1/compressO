@@ -293,7 +293,7 @@ function AudioChannels({ mediaIndex }: AudioChannelsProps) {
         isDisabled={shouldDisableInput || hasNoAudio}
       >
         <p className="text-gray-600 dark:text-gray-400 text-sm mr-2 w-full">
-          Channels
+          声道
         </p>
       </Switch>
       <AnimatePresence mode="wait">
@@ -301,7 +301,7 @@ function AudioChannels({ mediaIndex }: AudioChannelsProps) {
           <motion.div {...slideDownTransition}>
             <Select
               fullWidth
-              label="Layout:"
+              label="布局："
               className="block flex-shrink-0 rounded-2xl !mt-8"
               size="sm"
               value={audioConfig?.audioChannelConfig?.channelLayout ?? 'stereo'}
@@ -320,18 +320,18 @@ function AudioChannels({ mediaIndex }: AudioChannelsProps) {
                 label: '!text-gray-600 dark:!text-gray-400 text-xs',
               }}
             >
-              <SelectItem key="mono" textValue="Mono">
-                Mono
+              <SelectItem key="mono" textValue="单声道">
+                单声道
               </SelectItem>
-              <SelectItem key="stereo" textValue="Stereo">
-                Stereo
+              <SelectItem key="stereo" textValue="立体声">
+                立体声
               </SelectItem>
             </Select>
             <AnimatePresence mode="wait">
               {audioConfig?.audioChannelConfig?.channelLayout === 'mono' ? (
                 <motion.div {...slideDownTransition} className="mt-4">
                   <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
-                    Mono Source:
+                    单声道源：
                   </p>
                   <div className="flex gap-4">
                     <Checkbox
@@ -342,7 +342,7 @@ function AudioChannels({ mediaIndex }: AudioChannelsProps) {
                       onValueChange={handleMonoLeftChange}
                       isDisabled={shouldDisableInput}
                     >
-                      <span className="text-sm">Left</span>
+                      <span className="text-sm">左声道</span>
                     </Checkbox>
                     <Divider orientation="vertical" className="h-5" />
                     <Checkbox
@@ -353,7 +353,7 @@ function AudioChannels({ mediaIndex }: AudioChannelsProps) {
                       onValueChange={handleMonoRightChange}
                       isDisabled={shouldDisableInput}
                     >
-                      <span className="text-sm">Right</span>
+                      <span className="text-sm">右声道</span>
                     </Checkbox>
                   </div>
                 </motion.div>
@@ -369,7 +369,7 @@ function AudioChannels({ mediaIndex }: AudioChannelsProps) {
                     isDisabled={shouldDisableInput}
                   >
                     <p className="text-gray-600 dark:text-gray-400 text-sm mr-2 w-full">
-                      Swap left and right channels
+                      交换左右声道
                     </p>
                   </Switch>
                 </motion.div>

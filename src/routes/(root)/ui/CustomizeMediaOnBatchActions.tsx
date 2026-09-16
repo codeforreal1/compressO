@@ -111,7 +111,7 @@ function CustomizeMediaOnBatchActions() {
             variant="flat"
             radius="md"
           >
-            Close
+            关闭
           </Button>
         ) : (
           <>
@@ -122,7 +122,7 @@ function CustomizeMediaOnBatchActions() {
               variant="flat"
               radius="md"
             >
-              Reset
+              重置
             </Button>
             <Button
               size="sm"
@@ -130,7 +130,7 @@ function CustomizeMediaOnBatchActions() {
               radius="md"
               onPress={handleApplyVideoConfig}
             >
-              Apply
+              应用
             </Button>
           </>
         )}

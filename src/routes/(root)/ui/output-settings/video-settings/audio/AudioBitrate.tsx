@@ -138,7 +138,7 @@ function AudioBitrate({ mediaIndex }: AudioBitrateProps) {
           <motion.div {...slideDownTransition}>
             <Select
               fullWidth
-              label="Bitrate:"
+              label="比特率："
               className="block flex-shrink-0 rounded-2xl !mt-8"
               size="sm"
               value={currentValue?.toString() ?? '128'}

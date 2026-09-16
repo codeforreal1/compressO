@@ -82,7 +82,7 @@ function MediaThumbnail({ mediaIndex }: MediaThumbnailProps) {
       !mediaPathRaw ||
       !playerRef.current
     ) {
-      toast.error('Unable to copy frame')
+      toast.error('无法复制帧')
       return
     }
 
@@ -101,9 +101,9 @@ function MediaThumbnail({ mediaIndex }: MediaThumbnailProps) {
       const result = await generateVideoThumbnail(mediaPathRaw, timestamp)
 
       await copyFileToClipboard(result.filePath)
-      toast.success('Frame copied to clipboard')
+      toast.success('帧已复制到剪贴板')
     } catch {
-      toast.error('Failed to copy frame to clipboard')
+      toast.error('复制帧到剪贴板失败')
     } finally {
       setIsCopyingFrame(false)
     }
@@ -342,7 +342,7 @@ function MediaThumbnail({ mediaIndex }: MediaThumbnailProps) {
                         disabled={isCopyingFrame}
                       >
                         <Icon name="copy" size={20} />
-                        <span>Copy current frame</span>
+                        <span>复制当前帧</span>
                       </button>
                     </div>
                   ) : null
@@ -366,7 +366,7 @@ function MediaThumbnail({ mediaIndex }: MediaThumbnailProps) {
                 disableClosedCaptions
                 onError={(error: any) => {
                   if (error.name !== 'AbortError') {
-                    toast.warning('Switching to image thumbnail...')
+                    toast.warning('正在切换到图片缩略图...')
                     if (appProxy.state.media[mediaIndex].type === 'video') {
                       appProxy.state.media[mediaIndex].previewMode = 'image'
                     }
@@ -466,7 +466,7 @@ function MediaThumbnail({ mediaIndex }: MediaThumbnailProps) {
                         className="!p-0 !min-h-0 !py-2 !w-[unset] !min-w-[unset] !h-0 "
                       >
                         <Tooltip
-                          content="Regenerate Thumbnail"
+                          content="重新生成缩略图"
                           className="w-0! h-0!"
                         >
                           <Icon name="image" size={20} />
@@ -487,7 +487,7 @@ function MediaThumbnail({ mediaIndex }: MediaThumbnailProps) {
                   >
                     <PhotoView src={imageToRenderSrc!}>
                       <div>
-                        <Tooltip content="Enlarge image">
+                        <Tooltip content="放大图片">
                           <Icon
                             name="zoom"
                             size={18}

@@ -24,147 +24,147 @@ const SUBTITLE_EXTENSIONS = ['srt']
 
 type Subtitle = { code: string; name: string }
 const LANGUAGE_OPTIONS: Subtitle[] = [
-  { code: 'afr', name: 'Afrikaans' },
-  { code: 'sqi', name: 'Albanian' },
-  { code: 'amh', name: 'Amharic' },
-  { code: 'ara', name: 'Arabic' },
-  { code: 'hye', name: 'Armenian' },
-  { code: 'asm', name: 'Assamese' },
-  { code: 'aze', name: 'Azerbaijani' },
-  { code: 'bam', name: 'Bambara' },
-  { code: 'ben', name: 'Bengali' },
-  { code: 'bul', name: 'Bulgarian' },
-  { code: 'bur', name: 'Burmese' },
-  { code: 'cat', name: 'Catalan' },
-  { code: 'ceb', name: 'Cebuano' },
-  { code: 'ces', name: 'Czech' },
-  { code: 'chi', name: 'Chinese' },
-  { code: 'zul', name: 'Zulu' },
-  { code: 'yor', name: 'Yoruba' },
-  { code: 'xho', name: 'Xhosa' },
-  { code: 'wol', name: 'Wolof' },
-  { code: 'wel', name: 'Welsh' },
-  { code: 'uzb', name: 'Uzbek' },
-  { code: 'ukr', name: 'Ukrainian' },
-  { code: 'tur', name: 'Turkish' },
-  { code: 'tmh', name: 'Tamashek' },
-  { code: 'tgl', name: 'Tagalog' },
-  { code: 'taj', name: 'Tajik' },
-  { code: 'tam', name: 'Tamil' },
-  { code: 'tel', name: 'Telugu' },
-  { code: 'tha', name: 'Thai' },
-  { code: 'tir', name: 'Tigrinya' },
-  { code: 'ton', name: 'Tonga' },
-  { code: 'tsn', name: 'Tswana' },
-  { code: 'tso', name: 'Tsonga' },
-  { code: 'tuk', name: 'Turkmen' },
-  { code: 'twi', name: 'Twi' },
-  { code: 'sag', name: 'Sango' },
-  { code: 'san', name: 'Sanskrit' },
-  { code: 'sin', name: 'Sinhala' },
-  { code: 'slk', name: 'Slovak' },
-  { code: 'slv', name: 'Slovenian' },
-  { code: 'sme', name: 'Northern Sami' },
-  { code: 'smo', name: 'Samoan' },
-  { code: 'sna', name: 'Shona' },
-  { code: 'snd', name: 'Sindhi' },
-  { code: 'som', name: 'Somali' },
-  { code: 'sot', name: 'Southern Sotho' },
-  { code: 'spa', name: 'Spanish' },
-  { code: 'srp', name: 'Serbian' },
-  { code: 'swa', name: 'Swahili' },
-  { code: 'swe', name: 'Swedish' },
-  { code: 'rus', name: 'Russian' },
-  { code: 'ron', name: 'Romanian' },
-  { code: 'run', name: 'Rundi' },
-  { code: 'que', name: 'Quechua' },
-  { code: 'pus', name: 'Pashto' },
-  { code: 'pan', name: 'Punjabi' },
-  { code: 'pol', name: 'Polish' },
-  { code: 'por', name: 'Portuguese' },
-  { code: 'pra', name: 'Prakrit' },
-  { code: 'pes', name: 'Persian' },
-  { code: 'oci', name: 'Occitan' },
-  { code: 'ori', name: 'Oriya' },
-  { code: 'nya', name: 'Nyanja' },
-  { code: 'nep', name: 'Nepali' },
-  { code: 'nld', name: 'Dutch' },
-  { code: 'nor', name: 'Norwegian' },
-  { code: 'nno', name: 'Norwegian Nynorsk' },
-  { code: 'mar', name: 'Marathi' },
-  { code: 'mkd', name: 'Macedonian' },
-  { code: 'mal', name: 'Malayalam' },
-  { code: 'mon', name: 'Mongolian' },
-  { code: 'mlt', name: 'Maltese' },
-  { code: 'msa', name: 'Malay' },
-  { code: 'lao', name: 'Lao' },
-  { code: 'lat', name: 'Latin' },
-  { code: 'lav', name: 'Latvian' },
-  { code: 'lin', name: 'Lingala' },
-  { code: 'lit', name: 'Lithuanian' },
-  { code: 'lub', name: 'Luba-Katanga' },
-  { code: 'lug', name: 'Ganda' },
-  { code: 'kur', name: 'Kurdish' },
-  { code: 'kan', name: 'Kannada' },
-  { code: 'kor', name: 'Korean' },
-  { code: 'kau', name: 'Kanuri' },
-  { code: 'kaz', name: 'Kazakh' },
-  { code: 'khm', name: 'Khmer' },
-  { code: 'kik', name: 'Kikuyu' },
-  { code: 'kin', name: 'Kinyarwanda' },
-  { code: 'kir', name: 'Kyrgyz' },
-  { code: 'kom', name: 'Komi' },
-  { code: 'kon', name: 'Kongo' },
-  { code: 'jpn', name: 'Japanese' },
-  { code: 'jav', name: 'Javanese' },
-  { code: 'ibo', name: 'Igbo' },
-  { code: 'ido', name: 'Ido' },
-  { code: 'ind', name: 'Indonesian' },
-  { code: 'ina', name: 'Interlingua' },
-  { code: 'ile', name: 'Interlingue' },
-  { code: 'iku', name: 'Inuktitut' },
-  { code: 'ipk', name: 'Inupiaq' },
-  { code: 'gle', name: 'Irish' },
-  { code: 'ita', name: 'Italian' },
-  { code: 'jpr', name: 'Judeo-Persian' },
-  { code: 'geo', name: 'Georgian' },
-  { code: 'deu', name: 'German' },
-  { code: 'grn', name: 'Guarani' },
-  { code: 'guj', name: 'Gujarati' },
-  { code: 'gla', name: 'Scottish Gaelic' },
-  { code: 'fra', name: 'French' },
-  { code: 'fin', name: 'Finnish' },
-  { code: 'fao', name: 'Faroese' },
-  { code: 'fas', name: 'Persian (Farsi)' },
-  { code: 'fij', name: 'Fijian' },
-  { code: 'est', name: 'Estonian' },
-  { code: 'eus', name: 'Basque' },
-  { code: 'ewe', name: 'Ewe' },
-  { code: 'dzo', name: 'Dzongkha' },
-  { code: 'eng', name: 'English' },
-  { code: 'ell', name: 'Greek' },
-  { code: 'dan', name: 'Danish' },
-  { code: 'dak', name: 'Dakota' },
-  { code: 'cze', name: 'Czech' },
-  { code: 'crh', name: 'Crimean Tatar' },
-  { code: 'hrv', name: 'Croatian' },
-  { code: 'hun', name: 'Hungarian' },
-  { code: 'hat', name: 'Haitian' },
-  { code: 'hau', name: 'Hausa' },
-  { code: 'heb', name: 'Hebrew' },
-  { code: 'her', name: 'Herero' },
-  { code: 'hin', name: 'Hindi' },
-  { code: 'hmo', name: 'Hiri Motu' },
-  { code: 'hil', name: 'Hiligaynon' },
-  { code: 'isl', name: 'Icelandic' },
-  { code: 'iii', name: 'Sichuan Yi' },
-  { code: 'kal', name: 'Kalaallisut' },
-  { code: 'kas', name: 'Kashmiri' },
-  { code: 'kua', name: 'Kuanyama' },
-  { code: 'lim', name: 'Limburgish' },
-  { code: 'ltz', name: 'Luxembourgish' },
-  { code: 'luo', name: 'Luo' },
-  { code: 'und', name: 'Unknown' },
+  { code: 'afr', name: '南非荷兰语' },
+  { code: 'sqi', name: '阿尔巴尼亚语' },
+  { code: 'amh', name: '阿姆哈拉语' },
+  { code: 'ara', name: '阿拉伯语' },
+  { code: 'hye', name: '亚美尼亚语' },
+  { code: 'asm', name: '阿萨姆语' },
+  { code: 'aze', name: '阿塞拜疆语' },
+  { code: 'bam', name: '班巴拉语' },
+  { code: 'ben', name: '孟加拉语' },
+  { code: 'bul', name: '保加利亚语' },
+  { code: 'bur', name: '缅甸语' },
+  { code: 'cat', name: '加泰罗尼亚语' },
+  { code: 'ceb', name: '宿务语' },
+  { code: 'ces', name: '捷克语' },
+  { code: 'chi', name: '中文' },
+  { code: 'zul', name: '祖鲁语' },
+  { code: 'yor', name: '约鲁巴语' },
+  { code: 'xho', name: '科萨语' },
+  { code: 'wol', name: '沃洛夫语' },
+  { code: 'wel', name: '威尔士语' },
+  { code: 'uzb', name: '乌兹别克语' },
+  { code: 'ukr', name: '乌克兰语' },
+  { code: 'tur', name: '土耳其语' },
+  { code: 'tmh', name: '塔马舍克语' },
+  { code: 'tgl', name: '他加禄语' },
+  { code: 'taj', name: '塔吉克语' },
+  { code: 'tam', name: '泰米尔语' },
+  { code: 'tel', name: '泰卢固语' },
+  { code: 'tha', name: '泰语' },
+  { code: 'tir', name: '提格雷尼亚语' },
+  { code: 'ton', name: '汤加语' },
+  { code: 'tsn', name: '茨瓦纳语' },
+  { code: 'tso', name: '聪加语' },
+  { code: 'tuk', name: '土库曼语' },
+  { code: 'twi', name: '特威语' },
+  { code: 'sag', name: '桑戈语' },
+  { code: 'san', name: '梵语' },
+  { code: 'sin', name: '僧伽罗语' },
+  { code: 'slk', name: '斯洛伐克语' },
+  { code: 'slv', name: '斯洛文尼亚语' },
+  { code: 'sme', name: '北萨米语' },
+  { code: 'smo', name: '萨摩亚语' },
+  { code: 'sna', name: '修纳语' },
+  { code: 'snd', name: '信德语' },
+  { code: 'som', name: '索马里语' },
+  { code: 'sot', name: '南索托语' },
+  { code: 'spa', name: '西班牙语' },
+  { code: 'srp', name: '塞尔维亚语' },
+  { code: 'swa', name: '斯瓦希里语' },
+  { code: 'swe', name: '瑞典语' },
+  { code: 'rus', name: '俄语' },
+  { code: 'ron', name: '罗马尼亚语' },
+  { code: 'run', name: '基隆迪语' },
+  { code: 'que', name: '克丘亚语' },
+  { code: 'pus', name: '普什图语' },
+  { code: 'pan', name: '旁遮普语' },
+  { code: 'pol', name: '波兰语' },
+  { code: 'por', name: '葡萄牙语' },
+  { code: 'pra', name: '普拉克里特语' },
+  { code: 'pes', name: '波斯语' },
+  { code: 'oci', name: '奥克语' },
+  { code: 'ori', name: '奥里亚语' },
+  { code: 'nya', name: '尼扬贾语' },
+  { code: 'nep', name: '尼泊尔语' },
+  { code: 'nld', name: '荷兰语' },
+  { code: 'nor', name: '挪威语' },
+  { code: 'nno', name: '新挪威语' },
+  { code: 'mar', name: '马拉地语' },
+  { code: 'mkd', name: '马其顿语' },
+  { code: 'mal', name: '马拉雅拉姆语' },
+  { code: 'mon', name: '蒙古语' },
+  { code: 'mlt', name: '马耳他语' },
+  { code: 'msa', name: '马来语' },
+  { code: 'lao', name: '老挝语' },
+  { code: 'lat', name: '拉丁语' },
+  { code: 'lav', name: '拉脱维亚语' },
+  { code: 'lin', name: '林加拉语' },
+  { code: 'lit', name: '立陶宛语' },
+  { code: 'lub', name: '卢巴-加丹加语' },
+  { code: 'lug', name: '卢干达语' },
+  { code: 'kur', name: '库尔德语' },
+  { code: 'kan', name: '卡纳达语' },
+  { code: 'kor', name: '韩语' },
+  { code: 'kau', name: '卡努里语' },
+  { code: 'kaz', name: '哈萨克语' },
+  { code: 'khm', name: '高棉语' },
+  { code: 'kik', name: '基库尤语' },
+  { code: 'kin', name: '基尼亚卢旺达语' },
+  { code: 'kir', name: '吉尔吉斯语' },
+  { code: 'kom', name: '科米语' },
+  { code: 'kon', name: '刚果语' },
+  { code: 'jpn', name: '日语' },
+  { code: 'jav', name: '爪哇语' },
+  { code: 'ibo', name: '伊博语' },
+  { code: 'ido', name: '伊多语' },
+  { code: 'ind', name: '印尼语' },
+  { code: 'ina', name: '国际语' },
+  { code: 'ile', name: '国际语E' },
+  { code: 'iku', name: '因纽特语' },
+  { code: 'ipk', name: '因纽皮亚特语' },
+  { code: 'gle', name: '爱尔兰语' },
+  { code: 'ita', name: '意大利语' },
+  { code: 'jpr', name: '犹太-波斯语' },
+  { code: 'geo', name: '格鲁吉亚语' },
+  { code: 'deu', name: '德语' },
+  { code: 'grn', name: '瓜拉尼语' },
+  { code: 'guj', name: '古吉拉特语' },
+  { code: 'gla', name: '苏格兰盖尔语' },
+  { code: 'fra', name: '法语' },
+  { code: 'fin', name: '芬兰语' },
+  { code: 'fao', name: '法罗语' },
+  { code: 'fas', name: '波斯语' },
+  { code: 'fij', name: '斐济语' },
+  { code: 'est', name: '爱沙尼亚语' },
+  { code: 'eus', name: '巴斯克语' },
+  { code: 'ewe', name: '埃维语' },
+  { code: 'dzo', name: '宗喀语' },
+  { code: 'eng', name: '英语' },
+  { code: 'ell', name: '希腊语' },
+  { code: 'dan', name: '丹麦语' },
+  { code: 'dak', name: '达科他语' },
+  { code: 'cze', name: '捷克语' },
+  { code: 'crh', name: '克里米亚鞑靼语' },
+  { code: 'hrv', name: '克罗地亚语' },
+  { code: 'hun', name: '匈牙利语' },
+  { code: 'hat', name: '海地语' },
+  { code: 'hau', name: '豪萨语' },
+  { code: 'heb', name: '希伯来语' },
+  { code: 'her', name: '赫雷罗语' },
+  { code: 'hin', name: '印地语' },
+  { code: 'hmo', name: '希里莫图语' },
+  { code: 'hil', name: '希利盖农语' },
+  { code: 'isl', name: '冰岛语' },
+  { code: 'iii', name: '四川彝语' },
+  { code: 'kal', name: '格陵兰语' },
+  { code: 'kas', name: '克什米尔语' },
+  { code: 'kua', name: '宽亚玛语' },
+  { code: 'lim', name: '林堡语' },
+  { code: 'ltz', name: '卢森堡语' },
+  { code: 'luo', name: '卢奥语' },
+  { code: 'und', name: '未知' },
 ]
 
 function Subtitles({ mediaIndex }: SubtitlesProps) {
@@ -278,10 +278,10 @@ function Subtitles({ mediaIndex }: SubtitlesProps) {
       const filePath = await open({
         directory: false,
         multiple: false,
-        title: 'Select subtitle file (SRT)',
+        title: '选择字幕文件 (SRT)',
         filters: [
           {
-            name: 'subtitle',
+            name: '字幕',
             extensions: SUBTITLE_EXTENSIONS,
           },
         ],
@@ -291,7 +291,7 @@ function Subtitles({ mediaIndex }: SubtitlesProps) {
         const newSubtitle = {
           subtitlePath: filePath,
           language: 'eng',
-          title: 'English',
+          title: '英语',
           fileName,
         }
         if (
@@ -331,7 +331,7 @@ function Subtitles({ mediaIndex }: SubtitlesProps) {
         }
       }
     } catch (error: any) {
-      toast.error(error?.message ?? 'Could not select subtitle file.')
+      toast.error(error?.message ?? '无法选择字幕文件。')
     }
   }, [mediaIndex])
 
@@ -427,7 +427,7 @@ function Subtitles({ mediaIndex }: SubtitlesProps) {
           >
             <div className="flex justify-center items-center">
               <span className="text-gray-600 dark:text-gray-400 block mr-2 text-sm">
-                Subtitles
+                字幕
               </span>
             </div>
           </Switch>
@@ -443,7 +443,7 @@ function Subtitles({ mediaIndex }: SubtitlesProps) {
                   size="sm"
                 >
                   <span className="text-sm text-gray-600 dark:text-gray-400">
-                    Preserve existing subtitles
+                    保留已有字幕
                   </span>
                 </Switch>
               </div>
@@ -463,13 +463,13 @@ function Subtitles({ mediaIndex }: SubtitlesProps) {
                       className="mb-2 p-3 bg-default-50 rounded-xl border border-default-200 dark:border-default-100"
                     >
                       <div className="text-xs font-medium text-gray-700 dark:text-gray-300 truncate mb-2 text-center">
-                        {subtitle.fileName || `Subtitle ${index + 1}`}
+                        {subtitle.fileName || `字幕 ${index + 1}`}
                       </div>
                       <div className="flex items-center justify-center gap-2">
                         <div className="flex-1 min-w-0">
                           <Autocomplete
                             fullWidth
-                            label="Language"
+                            label="语言"
                             size="sm"
                             defaultItems={LANGUAGE_OPTIONS}
                             defaultSelectedKey={getDisplayLanguageCode(
@@ -521,13 +521,13 @@ function Subtitles({ mediaIndex }: SubtitlesProps) {
                 isDisabled={shouldDisableInput || isUnsupported}
                 className="mt-2"
               >
-                Add Subtitle
+                添加字幕
                 <Icon name="fileExplorer" size={14} />
               </Button>
 
               {isUnsupported ? (
                 <p className="text-xs italic text-danger-300 mt-2">
-                  {convertToExtension} does not support soft subtitles
+                  {convertToExtension} 不支持软字幕
                 </p>
               ) : null}
             </motion.div>

@@ -90,7 +90,7 @@ function Transform({ mediaIndex }: TransformProps) {
             className="h-[unset] py-1 ml-auto"
             isDisabled={shouldDisableInput}
           >
-            <Icon name="pencil" size={16} /> Edit
+            <Icon name="pencil" size={16} /> 编辑
           </Button>
         )
       ) : null}

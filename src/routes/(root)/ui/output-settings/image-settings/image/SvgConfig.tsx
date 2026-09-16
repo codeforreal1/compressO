@@ -175,8 +175,8 @@ function SvgConfig({ mediaIndex }: SvgConfigProps) {
             <Slider
               label={
                 <div className="flex items-center gap-1">
-                  Filter Speckle
-                  <Tooltip content="Higher is cleaner/smoother">
+                  滤波斑点
+                  <Tooltip content="值越高越干净/平滑">
                     <Icon
                       name="info"
                       size={20}
@@ -185,7 +185,7 @@ function SvgConfig({ mediaIndex }: SvgConfigProps) {
                   </Tooltip>
                 </div>
               }
-              aria-label="Filter Speckle"
+              aria-label="滤波斑点"
               marks={[
                 { value: 0, label: '0' },
                 { value: 128, label: '128' },
@@ -223,8 +223,8 @@ function SvgConfig({ mediaIndex }: SvgConfigProps) {
             <Slider
               label={
                 <div className="flex items-center gap-1">
-                  Color Precision
-                  <Tooltip content="Higher is more accurate but can over-saturate">
+                  颜色精度
+                  <Tooltip content="值越高越精确但可能过饱和">
                     <Icon
                       name="info"
                       size={20}
@@ -233,7 +233,7 @@ function SvgConfig({ mediaIndex }: SvgConfigProps) {
                   </Tooltip>
                 </div>
               }
-              aria-label="Color Precision"
+              aria-label="颜色精度"
               marks={[
                 { value: 1, label: '1' },
                 { value: 8, label: '8' },
@@ -268,8 +268,8 @@ function SvgConfig({ mediaIndex }: SvgConfigProps) {
             <Slider
               label={
                 <div className="flex items-center gap-1">
-                  Layer Difference
-                  <Tooltip content="Higher means less layers">
+                  图层差异
+                  <Tooltip content="值越高意味着图层越少">
                     <Icon
                       name="info"
                       size={20}
@@ -278,7 +278,7 @@ function SvgConfig({ mediaIndex }: SvgConfigProps) {
                   </Tooltip>
                 </div>
               }
-              aria-label="Layer Difference"
+              aria-label="图层差异"
               marks={[
                 { value: 0, label: '0' },
                 { value: 128, label: '128' },
@@ -316,8 +316,8 @@ function SvgConfig({ mediaIndex }: SvgConfigProps) {
             <Slider
               label={
                 <div className="flex items-center gap-1">
-                  Corner Threshold
-                  <Tooltip content="Higher is smoother">
+                  角点阈值
+                  <Tooltip content="值越高越平滑">
                     <Icon
                       name="info"
                       size={20}
@@ -326,7 +326,7 @@ function SvgConfig({ mediaIndex }: SvgConfigProps) {
                   </Tooltip>
                 </div>
               }
-              aria-label="Corner Threshold"
+              aria-label="角点阈值"
               marks={[
                 { value: 0, label: '0' },
                 { value: 180, label: '180' },
@@ -364,8 +364,8 @@ function SvgConfig({ mediaIndex }: SvgConfigProps) {
             <Slider
               label={
                 <div className="flex items-center gap-1">
-                  Segment Length
-                  <Tooltip content="Higher is more coarse">
+                  线段长度
+                  <Tooltip content="值越高越粗糙">
                     <Icon
                       name="info"
                       size={20}
@@ -374,7 +374,7 @@ function SvgConfig({ mediaIndex }: SvgConfigProps) {
                   </Tooltip>
                 </div>
               }
-              aria-label="Segment Length"
+              aria-label="线段长度"
               marks={[
                 { value: 0, label: '0' },
                 { value: 10, label: '10' },
@@ -413,8 +413,8 @@ function SvgConfig({ mediaIndex }: SvgConfigProps) {
             <Slider
               label={
                 <div className="flex items-center gap-1">
-                  Splice Threshold
-                  <Tooltip content="Higher is less accurate">
+                  拼接阈值
+                  <Tooltip content="值越高精度越低">
                     <Icon
                       name="info"
                       size={20}
@@ -423,7 +423,7 @@ function SvgConfig({ mediaIndex }: SvgConfigProps) {
                   </Tooltip>
                 </div>
               }
-              aria-label="Splice Threshold"
+              aria-label="拼接阈值"
               marks={[
                 { value: 0, label: '0' },
                 { value: 180, label: '180' },

@@ -104,20 +104,20 @@ function CompressionQuality({ mediaIndex }: CompressionQualityProps) {
         {!isLossless ? (
           <motion.div {...slideDownTransition}>
             <Slider
-              label="Quality"
-              aria-label="Quality"
+              label="质量"
+              aria-label="质量"
               marks={[
                 {
                   value: 1,
-                  label: 'Low',
+                  label: '低',
                 },
                 {
                   value: 50,
-                  label: 'Medium',
+                  label: '中',
                 },
                 {
                   value: 100,
-                  label: 'High',
+                  label: '高',
                 },
               ]}
               minValue={1}

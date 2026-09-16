@@ -427,7 +427,7 @@ const VideoTrimmerTimeline = forwardRef(
               </PopoverTrigger>
               <PopoverContent>
                 <div className="p-2">
-                  <p className="text-md mb-1">Timeline Controls:</p>
+                  <p className="text-md mb-1">时间轴控制：</p>
                   <p className="text-xs">- Click to select a track</p>
                   <p className="text-xs">
                     - Double click on the track to split

@@ -106,7 +106,7 @@ function PreviewSingleMedia({ mediaIndex }: PreviewSingleMediaProps) {
             }}
           >
             <div className="flex justify-center items-center">
-              <span className="block mr-2 text-sm">Compare</span>
+              <span className="block mr-2 text-sm">对比</span>
               <Icon name="compare" />
             </div>
           </Switch>
@@ -143,7 +143,7 @@ function PreviewSingleMedia({ mediaIndex }: PreviewSingleMediaProps) {
                 {compressedSizeDiff.toFixed(2)?.endsWith('.00')
                   ? compressedSizeDiff.toFixed(2)?.slice(0, -3)
                   : compressedSizeDiff.toFixed(2)}
-                %<span className="text-large block">smaller</span>
+                %<span className="text-large block">更小</span>
               </p>
             ) : null}
           </section>
@@ -151,14 +151,14 @@ function PreviewSingleMedia({ mediaIndex }: PreviewSingleMediaProps) {
           <section className={cn(['my-4 mb-2', styles.videoMetadata])}>
             <>
               <div>
-                <p className=" text-gray-600 dark:text-gray-400">Size</p>
+                <p className=" text-gray-600 dark:text-gray-400">大小</p>
                 <span className="block font-black">{mediaSize}</span>
               </div>
               <Divider orientation="vertical" className="h-8" />
             </>
             <>
               <div>
-                <p className=" text-gray-600 dark:text-gray-400">Extension</p>
+                <p className=" text-gray-600 dark:text-gray-400">格式</p>
                 <span className="block font-black">
                   {mediaExtension ?? '-'}
                 </span>
@@ -169,7 +169,7 @@ function PreviewSingleMedia({ mediaIndex }: PreviewSingleMediaProps) {
             {videoDuration ? (
               <>
                 <div>
-                  <p className=" text-gray-600 dark:text-gray-400">Duration</p>
+                  <p className=" text-gray-600 dark:text-gray-400">时长</p>
                   <span className="block font-black">
                     {formatDuration(videoDuration) ?? '-'}
                   </span>
@@ -182,7 +182,7 @@ function PreviewSingleMedia({ mediaIndex }: PreviewSingleMediaProps) {
                 <>
                   <div>
                     <p className=" text-gray-600 dark:text-gray-400">
-                      Dimensions
+                      尺寸
                     </p>
                     <span className="block font-black">
                       {dimensions.width ?? '-'} x {dimensions.height ?? '-'}

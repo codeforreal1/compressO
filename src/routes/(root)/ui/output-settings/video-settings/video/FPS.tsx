@@ -141,7 +141,7 @@ function FPS({ mediaIndex }: VideoFPSProps) {
             ) : (
               <Select
                 fullWidth
-                label="Frames Per Second:"
+                label="每秒帧数："
                 className="block flex-shrink-0 rounded-2xl !mt-8"
                 selectedKeys={[String(initialFpsValue)!]}
                 size="sm"

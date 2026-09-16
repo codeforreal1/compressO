@@ -146,7 +146,7 @@ function PreviewBatchMedia() {
   const handleCopyToClipboard = useCallback(async (savedPath: string) => {
     try {
       await copyFileToClipboard(savedPath)
-      toast.success('Copied to clipboard.')
+      toast.success('已复制到剪贴板。')
     } catch {}
   }, [])
 
@@ -206,7 +206,7 @@ function PreviewBatchMedia() {
 
     if (activeTab === 'videos') {
       return {
-        label: 'Videos',
+        label: '视频',
         count: compressionStats.displayTotalVideos,
         cancelledCount: compressionStats.cancelledVideosCount,
         totalMedia,
@@ -219,7 +219,7 @@ function PreviewBatchMedia() {
       }
     } else if (activeTab === 'images') {
       return {
-        label: 'Images',
+        label: '图片',
         count: compressionStats.displayTotalImages,
         cancelledCount: compressionStats.cancelledImagesCount,
         totalMedia,
@@ -232,7 +232,7 @@ function PreviewBatchMedia() {
       }
     }
     return {
-      label: 'Media',
+      label: '媒体',
       count: compressionStats.displayTotalMedia,
       cancelledCount: compressionStats.cancelledMediaCount,
       totalMedia,
@@ -326,8 +326,8 @@ function PreviewBatchMedia() {
                           <>
                             {/* Can copy to output immediately after it's process is completed. no need to wait for other processes */}
                             <Tooltip
-                              content="Copy output to clipboard"
-                              aria-label="Copy output to clipboard"
+                              content="复制输出到剪贴板"
+                              aria-label="复制输出到剪贴板"
                             >
                               <Button
                                 size="sm"
@@ -350,8 +350,8 @@ function PreviewBatchMedia() {
                             </Tooltip>
                             {!isCompressing ? (
                               <Tooltip
-                                content="Compare output"
-                                aria-label="Compare output"
+                                content="比较输出"
+                                aria-label="比较输出"
                               >
                                 <Button
                                   size="sm"
@@ -379,8 +379,8 @@ function PreviewBatchMedia() {
                         mediaFile?.compressedFile?.savedPath ? (
                           <div>
                             <Tooltip
-                              content="Show in File Explorer"
-                              aria-label="Show in File Explorer"
+                              content="在文件管理器中显示"
+                              aria-label="在文件管理器中显示"
                             >
                               <Button
                                 size="sm"
@@ -445,7 +445,7 @@ function PreviewBatchMedia() {
                                 track: 'dark:stroke-white/50',
                                 value: 'text-[12px] text-white1',
                               }}
-                              aria-label="Processing"
+                              aria-label="处理中"
                             />
                           ) : (
                             <Spinner className="absolute left-1/2 top-1/2 z-20 -translate-x-1/2 -translate-y-1/2" />
@@ -507,7 +507,7 @@ function PreviewBatchMedia() {
                           <>
                             <div className="text-[11px] xl:text-[12px] xxl:text-[12px] 3xl:text-[12.5px]">
                               <p className=" text-gray-600 dark:text-gray-400 mb-1">
-                                Input Size
+                                输入大小
                               </p>
                               <span className="block font-black">
                                 {mediaFile.size}
@@ -637,7 +637,7 @@ function PreviewBatchMedia() {
               </div>
               <Divider orientation="vertical" className="h-8" />
               <div>
-                <p className=" text-gray-600 dark:text-gray-400">Input Size</p>
+                <p className=" text-gray-600 dark:text-gray-400">输入大小</p>
                 <p
                   className={cn(
                     'font-black text-lg',
