@@ -5,6 +5,7 @@ import { snapshot, useSnapshot } from 'valtio'
 
 import Button from '@/components/Button'
 import { toast } from '@/components/Toast'
+import { useCommandEnterShortcut } from '@/hooks/useCommandEnterShortcut'
 import { CustomEvents } from '@/types/compression'
 import { autoSaveCompressedMedia } from '../-save'
 import { appProxy } from '../-state'
@@ -63,6 +64,16 @@ function CancelCompression() {
     }
     setConfirmCancellation(false)
   }
+
+  // ⌘+Shift+Enter acts like the Cancel button: the first press asks for confirmation, the second
+  // cancels
+  useCommandEnterShortcut(isCompressing && !isCancelling, () => {
+    if (!confirmCancellation) {
+      setConfirmCancellation(true)
+    } else {
+      cancelOngoingCompression()
+    }
+  })
 
   return isCompressing ? (
     <Button

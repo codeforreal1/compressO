@@ -6,6 +6,7 @@ import { toast } from 'sonner'
 import { snapshot, useSnapshot } from 'valtio'
 
 import Button from '@/components/Button'
+import { useCommandEnterShortcut } from '@/hooks/useCommandEnterShortcut'
 import { compressMediaBatch } from '@/tauri/commands/media'
 import { MediaMetadataConfig } from '@/types/app'
 import {
@@ -341,6 +342,15 @@ function StartCompression() {
       }
     }
   }, [])
+
+  // ⌘+Shift+Enter acts like the Process button (cancelling is handled by CancelCompression)
+  useCommandEnterShortcut(
+    selectedMediaIndexForCustomization < 0 &&
+      !isCompressing &&
+      !isProcessCompleted &&
+      !isLoadingMediaFiles,
+    handleCompression,
+  )
 
   return selectedMediaIndexForCustomization < 0 ? (
     <div className="mt-4">
