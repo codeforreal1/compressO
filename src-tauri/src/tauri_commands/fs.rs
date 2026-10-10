@@ -30,7 +30,11 @@ pub async fn get_svg_dimension(image_path: &str) -> Result<(u32, u32), String> {
 /// `clip (1).mp4` is used instead. Returns the path the file was saved to.
 ///
 /// A failed or interrupted move never leaves a truncated file under the destination name.
-pub async fn move_file(from: &str, to: &str) -> Result<String, String> {
+pub async fn move_file(
+    app_handle: tauri::AppHandle,
+    from: &str,
+    to: &str,
+) -> Result<String, String> {
     let to = fs::get_available_path(&PathBuf::from(to), false);
     let parent = to.parent().map(|p| p.to_path_buf()).unwrap_or_default();
 
@@ -41,7 +45,7 @@ pub async fn move_file(from: &str, to: &str) -> Result<String, String> {
 
     // Same drive: an instant, atomic rename
     if tokio::fs::rename(from, &to).await.is_ok() {
-        return Ok(to.to_string_lossy().to_string());
+        return Ok(allow_saved_file(&app_handle, &to));
     }
 
     // Different drive: copy to a temporary file first and only give it the real name once complete
@@ -62,7 +66,15 @@ pub async fn move_file(from: &str, to: &str) -> Result<String, String> {
     // The output is saved; failing to clean up the cached copy isn't an error
     let _ = fs::delete_file(from).await;
 
-    Ok(to.to_string_lossy().to_string())
+    Ok(allow_saved_file(&app_handle, &to))
+}
+
+/// Lets the frontend load a saved file (e.g. to preview it), since the asset protocol scope only
+/// covers the app data folder by default
+fn allow_saved_file(app_handle: &AppHandle, path: &PathBuf) -> String {
+    let _ = app_handle.fs_scope().allow_file(path);
+    let _ = app_handle.asset_protocol_scope().allow_file(path);
+    path.to_string_lossy().to_string()
 }
 
 /// First unused path for `path`, numbering it (`name (1)`) if it already exists
