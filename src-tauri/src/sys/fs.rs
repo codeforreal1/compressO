@@ -42,7 +42,9 @@ pub fn get_file_metadata(path: &str) -> Result<FileMetadata, String> {
 
     let metadata = metadata_ref.unwrap();
     let file_path = Path::new(path);
-    let mime_type = infer::get_from_path(path).unwrap();
+    let mut file_type_matcher = infer::Infer::new();
+    file_type_matcher.add("video/mp2t", "ts", is_mpeg_ts);
+    let mime_type = file_type_matcher.get_from_path(path).unwrap();
 
     Ok(FileMetadata {
         path: String::from(path),
@@ -54,6 +56,15 @@ pub fn get_file_metadata(path: &str) -> Result<FileMetadata, String> {
         extension: String::from(file_path.extension().unwrap_or_default().to_str().unwrap()),
         size: metadata.len(),
     })
+}
+
+/// MPEG-TS has no magic number, so detect it by its 0x47 sync byte repeating
+/// every 188 bytes (or every 192 bytes for M2TS, after a 4-byte timestamp).
+fn is_mpeg_ts(buf: &[u8]) -> bool {
+    let has_sync_bytes = |offset: usize, packet_size: usize| {
+        (0..3).all(|i| buf.get(offset + i * packet_size) == Some(&0x47))
+    };
+    has_sync_bytes(0, 188) || has_sync_bytes(4, 192)
 }
 
 /// Get [width, height] of an image (only raster images PNG, JPEG, GIF, BMP, WebP, TIFF, etc.)

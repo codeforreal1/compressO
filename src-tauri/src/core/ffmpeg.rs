@@ -25,7 +25,7 @@ pub struct FFMPEG {
     assets_dir: PathBuf,
 }
 
-const EXTENSIONS: [&str; 6] = ["mp4", "mov", "webm", "avi", "mkv", "gif"];
+const EXTENSIONS: [&str; 7] = ["mp4", "mov", "webm", "avi", "mkv", "ts", "gif"];
 
 impl FFMPEG {
     pub fn new(app: &tauri::AppHandle) -> Result<Self, String> {
@@ -122,7 +122,7 @@ impl FFMPEG {
         // Track input indices for mapping
         let mut input_index: usize = 1; // 0 is video, 1+ are thumbnails/subtitles
 
-        if !is_gif_target && convert_to_extension != "webm" {
+        if !is_gif_target && convert_to_extension != "webm" && convert_to_extension != "ts" {
             if let Some(thumb_path) = custom_thumbnail_path {
                 if thumb_path.len() > 0 {
                     cmd_args.extend_from_slice(&["-i", thumb_path]);
@@ -221,6 +221,9 @@ impl FFMPEG {
                         codec.contains("vp8") || codec.contains("vp9") || codec.contains("av1")
                     }
                     "mkv" => true,
+                    "ts" => {
+                        codec.contains("264") || codec.contains("265") || codec.contains("mpeg2")
+                    }
                     _ => codec.contains("264") || codec.contains("265") || codec.contains("av1"),
                 }
             }
@@ -706,8 +709,8 @@ impl FFMPEG {
                         continue;
                     }
 
-                    if output_container == "avi" {
-                        log::warn!("[ffmpeg] Skipping subtitle stream {} (codec: {}) - AVI container has limited subtitle support", idx, stream.codec);
+                    if output_container == "avi" || output_container == "ts" {
+                        log::warn!("[ffmpeg] Skipping subtitle stream {} (codec: {}) - {} container has limited subtitle support", idx, stream.codec, output_container);
                         continue;
                     }
 
@@ -739,8 +742,8 @@ impl FFMPEG {
             }
 
             for (sub_input_idx, language, title) in subtitle_input_indices.iter() {
-                if convert_to_extension == "avi" {
-                    log::warn!("[ffmpeg] Skipping external subtitle file - AVI container has limited subtitle support");
+                if convert_to_extension == "avi" || convert_to_extension == "ts" {
+                    log::warn!("[ffmpeg] Skipping external subtitle file - {} container has limited subtitle support", convert_to_extension);
                     continue;
                 }
 
@@ -770,7 +773,11 @@ impl FFMPEG {
         }
         cmd_args.extend(subtitle_args_owned.iter().map(|s| s.as_str()));
 
-        if !is_gif_target && custom_thumbnail_path.is_some() && convert_to_extension != "webm" {
+        if !is_gif_target
+            && custom_thumbnail_path.is_some()
+            && convert_to_extension != "webm"
+            && convert_to_extension != "ts"
+        {
             if let Some(thumb_path) = custom_thumbnail_path {
                 if thumb_path.len() > 0 {
                     cmd_args.push("-c:v:1");

@@ -11,7 +11,6 @@ import Icon from '@/components/Icon'
 import Image from '@/components/Image'
 import Switch from '@/components/Switch'
 import TextInput from '@/components/TextInput'
-import { ImageExtension } from '@/types/compression'
 import { slideDownTransition } from '@/utils/animation'
 import { cn } from '@/utils/tailwind'
 import { appProxy, normalizeBatchMediaConfig } from '../../../../-state'
@@ -125,9 +124,10 @@ function CustomThumbnail({ mediaIndex }: CustomThumbnailProps) {
     isCompressing ||
     isProcessCompleted ||
     isLoadingMediaFiles ||
-    (['webm', 'gif'] as ImageExtension[]).includes(
-      convertToExtension as ImageExtension,
-    )
+    (['webm', 'ts', 'gif'] as string[]).includes(convertToExtension ?? '')
+
+  const isThumbnailUnsupported =
+    convertToExtension === 'webm' || convertToExtension === 'ts'
 
   return (
     <>
@@ -184,9 +184,7 @@ function CustomThumbnail({ mediaIndex }: CustomThumbnailProps) {
                   onPress={handleThumbnailSelect}
                   fullWidth
                   size="sm"
-                  isDisabled={
-                    shouldDisableInput || convertToExtension === 'webm'
-                  }
+                  isDisabled={shouldDisableInput || isThumbnailUnsupported}
                 >
                   Choose
                   <Icon name="fileExplorer" size={14} />
@@ -197,17 +195,15 @@ function CustomThumbnail({ mediaIndex }: CustomThumbnailProps) {
                   onPress={handleClearThumbnail}
                   fullWidth
                   size="sm"
-                  isDisabled={
-                    shouldDisableInput || convertToExtension === 'webm'
-                  }
+                  isDisabled={shouldDisableInput || isThumbnailUnsupported}
                   color="danger"
                 >
                   Clear
                 </Button>
               )}
-              {convertToExtension === 'webm' ? (
+              {isThumbnailUnsupported ? (
                 <p className="text-xs italic text-danger-300 mt-2">
-                  webm does not support custom thumbnail
+                  {convertToExtension} does not support custom thumbnail
                 </p>
               ) : null}
             </div>

@@ -25,13 +25,19 @@ const VIDEO_CODECS: readonly VideoCodecOption[] = [
     value: 'libx264',
     name: 'H.264 (AVC)',
     description: 'Most compatible, good quality',
-    compatible_containers: ['mp4', 'mov', 'mkv', 'avi'] as VideoExtension[],
+    compatible_containers: [
+      'mp4',
+      'mov',
+      'mkv',
+      'avi',
+      'ts',
+    ] as VideoExtension[],
   },
   {
     value: 'libx265',
     name: 'H.265 (HEVC)',
     description: 'Better compression, newer standard',
-    compatible_containers: ['mp4', 'mov', 'mkv'] as VideoExtension[],
+    compatible_containers: ['mp4', 'mov', 'mkv', 'ts'] as VideoExtension[],
   },
   {
     value: 'libvpx-vp9',

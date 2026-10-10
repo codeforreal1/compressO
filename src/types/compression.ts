@@ -8,6 +8,7 @@ export const extensions = {
     mkv: 'mkv',
     webm: 'webm',
     avi: 'avi',
+    ts: 'ts',
     gif: 'gif',
   },
   image: {

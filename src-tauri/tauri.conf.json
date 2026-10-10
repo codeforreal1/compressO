@@ -49,6 +49,11 @@
         "role": "Editor"
       },
       {
+        "ext": ["ts"],
+        "mimeType": "video/mp2t",
+        "role": "Editor"
+      },
+      {
         "ext": ["png"],
         "mimeType": "image/png",
         "role": "Editor"

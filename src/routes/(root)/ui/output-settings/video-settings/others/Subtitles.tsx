@@ -412,7 +412,8 @@ function Subtitles({ mediaIndex }: SubtitlesProps) {
     isLoadingMediaFiles ||
     convertToExtension === 'gif'
 
-  const isUnsupported = convertToExtension === 'avi'
+  const isUnsupported =
+    convertToExtension === 'avi' || convertToExtension === 'ts'
 
   return (
     <>

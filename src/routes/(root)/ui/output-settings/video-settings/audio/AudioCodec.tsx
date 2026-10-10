@@ -25,13 +25,19 @@ const AUDIO_CODECS: readonly AudioCodecOption[] = [
     value: 'aac',
     name: 'AAC',
     description: 'Standard codec, wide compatibility',
-    compatible_containers: ['mp4', 'mov', 'mkv'] as VideoExtension[],
+    compatible_containers: ['mp4', 'mov', 'mkv', 'ts'] as VideoExtension[],
   },
   {
     value: 'libmp3lame',
     name: 'MP3',
     description: 'Universal audio format',
-    compatible_containers: ['mp4', 'mov', 'mkv', 'avi'] as VideoExtension[],
+    compatible_containers: [
+      'mp4',
+      'mov',
+      'mkv',
+      'avi',
+      'ts',
+    ] as VideoExtension[],
   },
   {
     value: 'libopus',
@@ -49,7 +55,13 @@ const AUDIO_CODECS: readonly AudioCodecOption[] = [
     value: 'ac3',
     name: 'AC3',
     description: 'Dolby Digital, surround sound',
-    compatible_containers: ['mp4', 'mov', 'mkv', 'avi'] as VideoExtension[],
+    compatible_containers: [
+      'mp4',
+      'mov',
+      'mkv',
+      'avi',
+      'ts',
+    ] as VideoExtension[],
   },
   {
     value: 'alac',
