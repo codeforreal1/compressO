@@ -46,6 +46,21 @@ export type VideoExtension = keyof typeof extensions.video
 export type ImageExtension = keyof typeof extensions.image
 export type AudioExtension = keyof typeof extensions.audio
 
+/**
+ * Resolutions applicable to all videos of a batch: the target size of each video's shorter side
+ * (so landscape & portrait videos both work). `original` keeps the original size.
+ */
+export const batchResolutions = {
+  original: null,
+  '480p': 480,
+  '720p': 720,
+  '1080p': 1080,
+  '2k': 1440,
+  '4k': 2160,
+} as const
+
+export type BatchResolution = keyof typeof batchResolutions
+
 /** Whether an output extension extracts only the audio of a video */
 export function isAudioExtension(
   extension: string | null | undefined,

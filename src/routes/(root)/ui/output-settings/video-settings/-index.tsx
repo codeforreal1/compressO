@@ -12,6 +12,7 @@ import AudioTracks from './audio/AudioTracks'
 import AudioVolume from './audio/AudioVolume'
 import Others from './others/-index'
 import VideoOnlySection from './VideoOnlySection'
+import BatchResolution from './video/BatchResolution'
 import CompressionPreset from './video/CompressionPreset'
 import CustomThumbnail from './video/CustomThumbnail'
 import VideoDimensions from './video/Dimensions'
@@ -123,6 +124,13 @@ function VideoSettings({ mediaIndex }: VideoSettingsProps) {
                   <TrimVideo mediaIndex={mediaIndex} />
                   <Divider className="my-3" />
                 </>
+              ) : mediaIndex < 0 ? (
+                <div className="mt-8">
+                  <VideoOnlySection isDisabled={isAudioOutput}>
+                    <BatchResolution />
+                    <Divider className="my-3" />
+                  </VideoOnlySection>
+                </div>
               ) : null}
               <>
                 <VideoSpeed mediaIndex={mediaIndex} />

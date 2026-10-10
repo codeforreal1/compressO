@@ -4,6 +4,7 @@ import { TimelineAction } from '@xzdarcy/timeline-engine'
 import {
   AudioChannelConfig,
   AudioStream,
+  BatchResolution,
   Chapter,
   ContainerInfo,
   compressionPresets,
@@ -67,6 +68,8 @@ export type VideoConfig = {
   quality?: number | null
   shouldEnableCustomDimensions?: boolean
   customDimensions?: [number, number]
+  /** Resolution for all videos of a batch (set on the batch config only) */
+  batchResolution?: BatchResolution
   shouldEnableCustomFPS?: boolean
   customFPS?: number
   shouldEnableCustomVideoCodec?: boolean

@@ -9,6 +9,7 @@ import Button from '@/components/Button'
 import { compressMediaBatch } from '@/tauri/commands/media'
 import { MediaMetadataConfig } from '@/types/app'
 import {
+  batchResolutions,
   CustomEvents,
   ImageCompressionConfig,
   MediaBatchCompressionResult,
@@ -17,6 +18,10 @@ import {
   VideoTrimSegment,
 } from '@/types/compression'
 import { formatBytes, getOutputFileName } from '@/utils/fs'
+import {
+  getBatchResolutionDimensions,
+  getTransformedDimensions,
+} from '@/utils/video'
 import CancelCompression from './CancelCompression'
 import SaveMedia from './SaveMedia'
 import { autoSaveCompressedMedia } from '../-save'
@@ -92,6 +97,15 @@ function StartCompression() {
         },
       )
 
+      // A batch resolution applies to every video of a batch without its own custom dimensions
+      const batchResolutionShorterSide =
+        appSnapshot.state.media.length > 1
+          ? batchResolutions[
+              appSnapshot.state.commonConfigForBatchCompression.videoConfig
+                .batchResolution ?? 'original'
+            ]
+          : null
+
       const { results } = (await Promise.race([
         compressMediaBatch(
           batchId,
@@ -138,7 +152,18 @@ function StartCompression() {
                             Math.round(v.config.customDimensions[0]),
                             Math.round(v.config.customDimensions[1]),
                           ] as [number, number])
-                        : null,
+                        : v.dimensions
+                          ? getBatchResolutionDimensions(
+                              getTransformedDimensions(
+                                v.dimensions,
+                                v.config?.shouldTransformVideo
+                                  ? v.config.transformVideoConfig
+                                      ?.transformHistory
+                                  : null,
+                              ),
+                              batchResolutionShorterSide,
+                            )
+                          : null,
 
                     speed:
                       v.config?.shouldEnableCustomSpeed &&
