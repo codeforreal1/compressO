@@ -6,7 +6,6 @@ import { PhotoView } from 'react-photo-view'
 import { OnProgressProps } from 'react-player/base'
 import { toast } from 'sonner'
 import { useSnapshot } from 'valtio'
-import { subscribeKey } from 'valtio/utils'
 
 import Icon from '@/components/Icon'
 import Image from '@/components/Image'
@@ -238,44 +237,30 @@ function MediaThumbnail({ mediaIndex }: MediaThumbnailProps) {
     thumbnailCacheRef.current = {}
   }, [mediaIndex])
 
+  // When the trim editor opens/closes, pause (on open) and move the timeline playhead to the
+  // player's current time. Driven by the snapshot value rather than `subscribeKey` on the config
+  // object, which went stale whenever the config/media objects were replaced.
+  const previousTrimEditModeRef = useRef(isVideoTrimEditMode)
   useEffect(() => {
-    let unsubscribeTrim: (() => void) | undefined
+    if (previousTrimEditModeRef.current === isVideoTrimEditMode) return
+    previousTrimEditModeRef.current = isVideoTrimEditMode
 
-    if (
-      appProxy.state.media[mediaIndex]?.type === 'video' &&
-      appProxy.state.media[mediaIndex]?.config
-    ) {
-      unsubscribeTrim = subscribeKey(
-        appProxy.state.media[mediaIndex].config,
-        'isVideoTrimEditMode',
-        async () => {
-          if (playerRef.current) {
-            setTimeout(() => {
-              if (playerRef?.current?.playerRef) {
-                const currentTime =
-                  playerRef?.current?.playerRef?.getCurrentTime?.()
-                if (currentTime) {
-                  setTimelineTime(currentTime)
-                  autoScrollCursorToCurrentTime(scales, {
-                    onlyOnOutOfView: false,
-                  })
-                }
-              }
-            }, 100)
-            if (
-              appProxy.state.media[mediaIndex].type === 'video' &&
-              appProxy.state.media[mediaIndex].config.isVideoTrimEditMode
-            ) {
-              playerRef.current.pauseVideo()
-            }
-          }
-        },
-      )
+    if (!playerRef.current) return
+    if (isVideoTrimEditMode) {
+      playerRef.current.pauseVideo()
     }
-    return () => {
-      unsubscribeTrim?.()
-    }
-  }, [mediaIndex, autoScrollCursorToCurrentTime, setTimelineTime])
+
+    const timeoutId = setTimeout(() => {
+      const currentTime = playerRef.current?.playerRef?.getCurrentTime?.()
+      if (currentTime != null && !Number.isNaN(currentTime)) {
+        setTimelineTime(currentTime)
+        autoScrollCursorToCurrentTime(scales, {
+          onlyOnOutOfView: false,
+        })
+      }
+    }, 100)
+    return () => clearTimeout(timeoutId)
+  }, [isVideoTrimEditMode, autoScrollCursorToCurrentTime, setTimelineTime])
 
   const showTrimmerLayout =
     shouldTrimVideo && isVideoTrimEditMode && !isProcessCompleted
