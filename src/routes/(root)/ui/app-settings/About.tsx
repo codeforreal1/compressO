@@ -53,7 +53,7 @@ function About() {
             hasNewVersion
               ? `Version ${latestVersion} is available. Restart the app after updating to use it.`
               : hasChecked
-                ? "You're on the latest version."
+                ? 'You are on the latest version.'
                 : 'Check if a newer version of CompressO is available.'
           }
         >
@@ -89,10 +89,7 @@ function About() {
         <SettingsRow
           title="Free and open-source"
           description={
-            <Link
-              href="https://github.com/codeforreal1/compressO/blob/main/LICENSE"
-              className="text-sm"
-            >
+            <Link href="https://github.com/codeforreal1/compressO/blob/main/LICENSE">
               Licensed under AGPL-3.0
             </Link>
           }
@@ -112,16 +109,14 @@ function About() {
               Made with{' '}
               <Icon className="inline text-primary" name="lowResHeart" /> in
               public by{' '}
-              <Link href="https://codeforreal.com" className="text-sm">
-                Code For Real⚡
-              </Link>
+              <Link href="https://codeforreal.com">Code For Real⚡</Link>
             </>
           }
         />
       </SettingsSection>
 
       {hasNewVersion && body ? (
-        <SettingsSection title="What's new">
+        <SettingsSection title="Release notes">
           <div className="pt-1">
             <Markdown content={body} className="text-sm" />
           </div>

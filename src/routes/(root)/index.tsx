@@ -23,6 +23,7 @@ import {
   inputExtensions,
   inputOnlyExtensions,
 } from '@/types/compression'
+import { CollectedFile } from '@/types/fs'
 import { formatBytes } from '@/utils/fs'
 import {
   appProxy,
@@ -51,17 +52,24 @@ async function getSvgDimensionSilently(
   }
 }
 
+// File paths (picker, Open with) or files from dropped/pasted folders
+type MediaSelection = string | CollectedFile
+
 function Root() {
   const { state, resetProxy } = useSnapshot(appProxy)
 
   const { media, isLoadingMediaFiles, totalSelectedMediaCount } = state
 
   const handleMediaSelection = React.useCallback(
-    async (path: string | string[]) => {
+    async (selection: MediaSelection | MediaSelection[]) => {
       if (appProxy.state.isCompressing) return
 
-      const rawPaths = Array.isArray(path) ? path : [path]
-      const mediaPaths = rawPaths.filter((filePath) => {
+      const selectedFiles = (
+        Array.isArray(selection) ? selection : [selection]
+      ).map((file) =>
+        typeof file === 'string' ? { path: file, relativeDir: '' } : file,
+      )
+      const mediaPaths = selectedFiles.filter(({ path: filePath }) => {
         const ext = filePath.split('.').pop()?.toLowerCase()
         return (
           ext &&
@@ -80,7 +88,7 @@ function Root() {
 
       let corruptedFilesCount = 0
       for (const index in mediaPaths) {
-        const path = mediaPaths[index]
+        const { path, relativeDir } = mediaPaths[index]
         try {
           const fileMetadata = await getFileMetadata(path)
           const mediaType = fileMetadata.mimeType.startsWith('video')
@@ -108,6 +116,7 @@ function Root() {
               id: videoThumbnail?.id ?? `${index}-${+new Date()}`,
               pathRaw: path,
               path: core.convertFileSrc(path),
+              relativeDir,
               fileName: fileMetadata?.fileName,
               mimeType: fileMetadata?.mimeType,
               sizeInBytes: fileMetadata?.size,
@@ -164,6 +173,7 @@ function Root() {
               id: `${index}-${+new Date()}`,
               pathRaw: path,
               path: core.convertFileSrc(path),
+              relativeDir,
               thumbnailPathRaw: path,
               thumbnailPath: core.convertFileSrc(path),
               fileName: fileMetadata?.fileName,

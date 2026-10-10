@@ -510,3 +510,14 @@ pub struct ExifInfo {
     pub focal_length: Option<String>,
     pub flash: Option<String>,
 }
+
+/// A file collected from a dropped/pasted path, with the folder it was in so outputs can mirror the
+/// original structure
+#[derive(Serialize, Deserialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct CollectedFile {
+    pub path: String,
+    /// Folder of the file relative to the dropped path's parent, `/` separated (e.g. `Vacation/Day1`
+    /// for a dropped `Vacation` folder). Empty for files that were dropped directly.
+    pub relative_dir: String,
+}

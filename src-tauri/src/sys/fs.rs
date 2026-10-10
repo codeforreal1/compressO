@@ -6,7 +6,7 @@ use std::{
 use tauri::Manager;
 use tauri_plugin_fs::FsExt;
 
-use crate::core::domain::FileMetadata;
+use crate::core::domain::{CollectedFile, FileMetadata};
 
 /// Create required .compressO directory if not exists.
 pub fn setup_app_data_dir(app: &mut tauri::App) -> Result<PathBuf, tauri::Error> {
@@ -109,12 +109,6 @@ pub fn get_svg_dimension(svg_path: &str) -> Result<(u32, u32), String> {
     }
 }
 
-/// Copies file from one path to another path
-pub async fn copy_file(from: &str, to: &str) -> std::io::Result<u64> {
-    let result = tokio::fs::copy(from, to).await?;
-    Ok(result)
-}
-
 /// Deletes file from the given path
 pub async fn delete_file(path: &str) -> std::io::Result<()> {
     tokio::fs::remove_file(path).await
@@ -144,47 +138,94 @@ pub async fn delete_stale_files(
     Ok(deleted_files)
 }
 
-/// Collects files from a given path with configurable depth.
-///
-/// # Arguments
-/// * `path` - The file or directory path to collect from
-/// * `depth` - Optional depth level for directory traversal:
-///   - `None`: Recursively collect all files (unlimited depth)
-///   - `Some(0)`: Only files in the immediate directory (no subdirectories)
-///   - `Some(n)`: Go n levels deep into subdirectories
-///
-/// # Returns
-/// A vector of file paths found at the specified depth
-pub fn collect_files(path: &str, depth: Option<u32>) -> std::io::Result<Vec<String>> {
+/// First path that doesn't exist yet: `path` itself, then `name (1).ext`, `name (2).ext`, ... (or
+/// `name (1)` for folders), so saving never replaces an existing file or folder.
+pub fn get_available_path(path: &Path, is_dir: bool) -> PathBuf {
+    // `symlink_metadata` also counts broken symlinks as existing
+    let exists = |candidate: &Path| fs::symlink_metadata(candidate).is_ok();
+    if !exists(path) {
+        return path.to_path_buf();
+    }
+
+    let parent = path.parent().unwrap_or(Path::new(""));
+    let (name, extension) = if is_dir {
+        (path.file_name(), None)
+    } else {
+        (path.file_stem(), path.extension())
+    };
+    let name = name.unwrap_or_default().to_string_lossy();
+
+    (1..)
+        .map(|n| match extension {
+            Some(extension) => {
+                parent.join(format!("{} ({}).{}", name, n, extension.to_string_lossy()))
+            }
+            None => parent.join(format!("{} ({})", name, n)),
+        })
+        .find(|candidate| !exists(candidate))
+        .expect("an unused numbered path")
+}
+
+/// Collects files from a path, recursing into directories. Each file keeps the folder it was in
+/// relative to the given path's parent (a dropped `Vacation` folder gives `Vacation/Day1/...`), so
+/// outputs can mirror the original structure. Hidden entries and symlinked directories are skipped.
+pub fn collect_files(path: &str) -> std::io::Result<Vec<CollectedFile>> {
+    let path = Path::new(path);
     let metadata = std::fs::metadata(path)?;
     let mut files = Vec::new();
 
     if metadata.is_file() {
-        files.push(path.to_string());
+        files.push(CollectedFile {
+            path: path.to_string_lossy().to_string(),
+            relative_dir: String::new(),
+        });
     } else if metadata.is_dir() {
-        let entries = std::fs::read_dir(path)?;
-        for entry in entries {
-            let entry = entry?;
-            let entry_path = entry.path();
-            let path_str = entry_path.to_string_lossy().to_string();
-
-            if entry_path.is_file() {
-                files.push(path_str);
-            } else if entry_path.is_dir() {
-                match depth {
-                    None => {
-                        files.extend(collect_files(&path_str, None)?);
-                    }
-                    Some(0) => {
-                        continue;
-                    }
-                    Some(n) => {
-                        files.extend(collect_files(&path_str, Some(n - 1))?);
-                    }
-                }
-            }
-        }
+        let base = path.parent().unwrap_or(path);
+        collect_dir_files(path, base, &mut files)?;
     }
 
     Ok(files)
+}
+
+fn collect_dir_files(
+    dir: &Path,
+    base: &Path,
+    files: &mut Vec<CollectedFile>,
+) -> std::io::Result<()> {
+    let mut entries = std::fs::read_dir(dir)?
+        .filter_map(|entry| entry.ok())
+        .collect::<Vec<_>>();
+    entries.sort_by_key(|entry| entry.file_name());
+
+    let relative_dir = dir
+        .strip_prefix(base)
+        .unwrap_or(Path::new(""))
+        .components()
+        .map(|component| component.as_os_str().to_string_lossy().to_string())
+        .collect::<Vec<_>>()
+        .join("/");
+
+    for entry in entries {
+        if entry.file_name().to_string_lossy().starts_with('.') {
+            continue;
+        }
+        // `file_type` doesn't follow symlinks, so symlinked folders (possible loops) are skipped
+        let Ok(file_type) = entry.file_type() else {
+            continue;
+        };
+        let entry_path = entry.path();
+
+        if file_type.is_dir() {
+            if let Err(err) = collect_dir_files(&entry_path, base, files) {
+                log::warn!("[fs] Skipping unreadable folder {:?}: {}", entry_path, err);
+            }
+        } else if file_type.is_file() || (file_type.is_symlink() && entry_path.is_file()) {
+            files.push(CollectedFile {
+                path: entry_path.to_string_lossy().to_string(),
+                relative_dir: relative_dir.clone(),
+            });
+        }
+    }
+
+    Ok(())
 }

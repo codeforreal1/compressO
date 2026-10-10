@@ -16,9 +16,10 @@ import {
   VideoCompressionConfig,
   VideoTrimSegment,
 } from '@/types/compression'
-import { formatBytes } from '@/utils/fs'
+import { formatBytes, getOutputFileName } from '@/utils/fs'
 import CancelCompression from './CancelCompression'
 import SaveMedia from './SaveMedia'
+import { autoSaveCompressedMedia } from '../-save'
 import { appProxy } from '../-state'
 
 function StartCompression() {
@@ -269,10 +270,11 @@ function StartCompression() {
           appProxy.state.media[index].compressedFile = {
             isSuccessful: !(videoResult == null),
             fileName: videoResult?.fileMetadata?.fileName ?? video.fileName,
-            fileNameToDisplay: `${video?.fileName?.slice(
-              0,
-              -((video?.extension?.length ?? 0) + 1),
-            )}.${videoResult?.fileMetadata?.extension}`,
+            fileNameToDisplay: getOutputFileName(
+              video.fileName,
+              video.extension,
+              videoResult?.fileMetadata?.extension,
+            ),
             pathRaw: videoResult?.fileMetadata?.path,
             path: core.convertFileSrc(videoResult?.fileMetadata?.path ?? ''),
             mimeType: videoResult?.fileMetadata?.mimeType,
@@ -288,10 +290,11 @@ function StartCompression() {
           appProxy.state.media[index].compressedFile = {
             isSuccessful: !(imageResult == null),
             fileName: imageResult?.fileName ?? image.fileName,
-            fileNameToDisplay: `${image?.fileName?.slice(
-              0,
-              -((image?.extension?.length ?? 0) + 1),
-            )}.${imageResult?.fileMetadata?.extension}`,
+            fileNameToDisplay: getOutputFileName(
+              image.fileName,
+              image.extension,
+              imageResult?.fileMetadata?.extension,
+            ),
             pathRaw: imageResult?.fileMetadata?.path,
             path: core.convertFileSrc(imageResult?.fileMetadata?.path ?? ''),
             mimeType: imageResult?.fileMetadata?.mimeType,
@@ -301,6 +304,9 @@ function StartCompression() {
           }
         }
       }
+
+      // Saves right away when a save location is set in Settings (Output -> Save location)
+      await autoSaveCompressedMedia()
     } catch (error) {
       if (error !== 'CANCELLED') {
         toast.error('Something went wrong during compression.')

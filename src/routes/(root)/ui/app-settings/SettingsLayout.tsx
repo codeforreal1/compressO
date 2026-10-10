@@ -49,7 +49,7 @@ export function SettingsRow({
       <div className="min-w-0">
         <p className="text-sm text-foreground">{title}</p>
         {description ? (
-          <div className="text-sm text-zinc-500 dark:text-zinc-400 mt-1 leading-relaxed">
+          <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 leading-relaxed">
             {description}
           </div>
         ) : null}

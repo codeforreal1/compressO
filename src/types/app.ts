@@ -96,6 +96,8 @@ export type Video = {
   id: string | null
   pathRaw?: string | null
   path?: string | null
+  /** Folder relative to the dropped folder (e.g. `Vacation/Day1`), mirrored when batch saving */
+  relativeDir?: string
   fileName?: string | null
   mimeType?: string | null
   sizeInBytes?: number | null
@@ -160,6 +162,8 @@ export type Image = {
   id: string | null
   pathRaw?: string | null
   path?: string | null
+  /** Folder relative to the dropped folder (e.g. `Vacation/Day1`), mirrored when batch saving */
+  relativeDir?: string
   fileName?: string | null
   mimeType?: string | null
   sizeInBytes?: number | null

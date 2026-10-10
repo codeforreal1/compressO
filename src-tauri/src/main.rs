@@ -25,7 +25,7 @@ use tauri_commands::{
     file_manager::show_item_in_file_manager,
     fs::{
         copy_file_to_clipboard, delete_cache, delete_file, get_file_metadata, get_image_dimension,
-        get_svg_dimension, move_file, read_files_from_clipboard, read_files_from_paths,
+        get_available_path, get_svg_dimension, move_file, read_files_from_clipboard, read_files_from_paths,
     },
     image::{
         compress_images_batch, convert_svg_to_png, get_exif_info, get_image_basic_info,
@@ -348,6 +348,7 @@ async fn main() {
             get_svg_dimension,
             get_file_metadata,
             move_file,
+            get_available_path,
             delete_file,
             delete_cache,
             show_item_in_file_manager,

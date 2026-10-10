@@ -1,0 +1,63 @@
+import { proxy, subscribe } from 'valtio'
+
+import * as constants from '@/constants'
+
+export const DEFAULT_OUTPUT_FILE_PREFIX = 'compressO-'
+
+export const saveLocations = {
+  /** Choose where to save after every compression */
+  ask: 'ask',
+  /** Save automatically to `saveFolder` */
+  fixedFolder: 'fixedFolder',
+  /** Save automatically next to the original (or next to the dropped folder) */
+  sameFolder: 'sameFolder',
+} as const
+
+export type SaveLocation = keyof typeof saveLocations
+
+export type SettingsState = {
+  /** Added to the start of saved file (and top folder) names. Empty keeps the original names. */
+  outputFilePrefix: string
+  saveLocation: SaveLocation
+  /** Folder used when `saveLocation` is `fixedFolder` */
+  saveFolder: string | null
+  /** Leave outputs that are larger than their original for the Save button when auto-saving */
+  skipLargerOutputs: boolean
+}
+
+const storedSaveLocation = localStorage.getItem(constants.saveLocation)
+
+export const settingsStore = proxy<SettingsState>({
+  outputFilePrefix:
+    localStorage.getItem(constants.outputFilePrefix) ??
+    DEFAULT_OUTPUT_FILE_PREFIX,
+  saveLocation:
+    storedSaveLocation && storedSaveLocation in saveLocations
+      ? (storedSaveLocation as SaveLocation)
+      : saveLocations.ask,
+  saveFolder: localStorage.getItem(constants.saveFolder),
+  skipLargerOutputs:
+    localStorage.getItem(constants.skipLargerOutputs) === 'true',
+})
+
+subscribe(settingsStore, () => {
+  localStorage.setItem(
+    constants.outputFilePrefix,
+    settingsStore.outputFilePrefix,
+  )
+  localStorage.setItem(constants.saveLocation, settingsStore.saveLocation)
+  localStorage.setItem(
+    constants.skipLargerOutputs,
+    String(settingsStore.skipLargerOutputs),
+  )
+  if (settingsStore.saveFolder) {
+    localStorage.setItem(constants.saveFolder, settingsStore.saveFolder)
+  } else {
+    localStorage.removeItem(constants.saveFolder)
+  }
+})
+
+/** Removes characters that aren't allowed in file names */
+export function sanitizeFileNamePart(value: string) {
+  return value.replace(/[/\\:*?"<>|\u0000-\u001f]/g, '')
+}

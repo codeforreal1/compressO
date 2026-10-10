@@ -9,7 +9,7 @@ import {
   BatchMediaIndividualCompressionResult,
   CustomEvents,
 } from '@/types/compression'
-import { formatBytes } from '@/utils/fs'
+import { formatBytes, getOutputFileName } from '@/utils/fs'
 import { convertDurationToMilliseconds } from '@/utils/string'
 import { appProxy } from '../-state'
 
@@ -154,6 +154,7 @@ function CompressionProgress() {
                 )
                 if (targetMediaIndex !== -1) {
                   const fileMetadata = payload.result.fileMetadata
+                  const originalMedia = media[targetMediaIndex]
 
                   appProxy.state.media[targetMediaIndex].isProcessCompleted =
                     true
@@ -163,10 +164,13 @@ function CompressionProgress() {
                   appProxy.state.media[targetMediaIndex].compressedFile = {
                     isSuccessful: true,
                     fileName: fileMetadata?.fileName,
-                    fileNameToDisplay: `${fileMetadata?.fileName?.slice(
-                      0,
-                      -((fileMetadata?.extension?.length ?? 0) + 1),
-                    )}.${fileMetadata?.extension}`,
+                    // This event can arrive after the final results, so it must name the file the
+                    // same way (after the original, not the generated output file name)
+                    fileNameToDisplay: getOutputFileName(
+                      originalMedia.fileName,
+                      originalMedia.extension,
+                      fileMetadata?.extension,
+                    ),
                     pathRaw: fileMetadata?.path,
                     path: core.convertFileSrc(fileMetadata?.path ?? ''),
                     mimeType: fileMetadata?.extension,

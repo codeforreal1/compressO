@@ -1,16 +1,12 @@
-import { open, save } from '@tauri-apps/plugin-dialog'
 import React, { useCallback } from 'react'
-import { snapshot, useSnapshot } from 'valtio'
+import { useSnapshot } from 'valtio'
 
 import Button from '@/components/Button'
 import Icon from '@/components/Icon'
 import { toast } from '@/components/Toast'
 import Tooltip from '@/components/Tooltip'
-import {
-  copyFileToClipboard,
-  moveFile,
-  showItemInFileManager,
-} from '@/tauri/commands/fs'
+import { copyFileToClipboard, showItemInFileManager } from '@/tauri/commands/fs'
+import { saveCompressedMediaWithPrompt } from '../-save'
 import { appProxy } from '../-state'
 
 function SaveMedia() {
@@ -20,93 +16,7 @@ function SaveMedia() {
   const mediaFile = media.length === 1 ? media[0] : null
 
   const handleCompressedMediaSave = useCallback(async () => {
-    if (appProxy.state.media.length) {
-      const { media } = appProxy.state
-      const isBatch = media.length > 1
-      const mediaFile = media.length > 0 ? media[0] : null
-      const { compressedFile, fileName } = mediaFile ?? {}
-
-      try {
-        let pathToSave: string | string[] | null = null
-
-        if (isBatch) {
-          const selectedDirectory = await open({
-            directory: true,
-            title: 'Choose directory to save the compressed media.',
-          })
-          if (selectedDirectory) {
-            pathToSave = selectedDirectory as string
-          }
-        } else {
-          pathToSave = await save({
-            title: 'Choose location to save the compressed media.',
-            defaultPath: `compressO-${compressedFile?.fileNameToDisplay ?? fileName ?? ''}`,
-          })
-        }
-
-        if (pathToSave) {
-          appProxy.state.isSaving = true
-          appProxy.state.isSaved = false
-          appProxy.state.savedPath = pathToSave
-
-          if (isBatch) {
-            const directory = pathToSave as string
-
-            for (let i = 0; i < media.length; i++) {
-              const mediaFile = media[i]
-              if (mediaFile.compressedFile?.pathRaw) {
-                appProxy.state.media[i].compressedFile = {
-                  ...(snapshot(appProxy).state.media[i].compressedFile ?? {}),
-                  isSaving: true,
-                  isSaved: false,
-                }
-
-                const destinationPath = `${directory}/compressO-${mediaFile?.compressedFile?.fileNameToDisplay || mediaFile?.fileName}`
-
-                await moveFile(
-                  mediaFile.compressedFile.pathRaw,
-                  destinationPath,
-                )
-                appProxy.state.media[i].compressedFile = {
-                  ...(snapshot(appProxy).state.media[i].compressedFile ?? {}),
-                  savedPath: destinationPath,
-                  isSaving: false,
-                  isSaved: true,
-                }
-              }
-            }
-            appProxy.state.isSaved = true
-          } else {
-            appProxy.state.media[0].compressedFile = {
-              ...(snapshot(appProxy).state.media[0].compressedFile ?? {}),
-              isSaving: true,
-              isSaved: false,
-            }
-            await moveFile(
-              compressedFile?.pathRaw as string,
-              pathToSave as string,
-            )
-            appProxy.state.media[0].compressedFile = {
-              ...(snapshot(appProxy).state.media[0].compressedFile ?? {}),
-              savedPath: pathToSave as string,
-              isSaving: false,
-              isSaved: true,
-            }
-            appProxy.state.isSaved = true
-          }
-        }
-      } catch (_) {
-        toast.error('Could not save media to the given path.')
-        for (let i = 0; i < media.length; i++) {
-          appProxy.state.media[i].compressedFile = {
-            ...(snapshot(appProxy).state.media[i].compressedFile ?? {}),
-            isSaving: false,
-            isSaved: false,
-          }
-        }
-      }
-      appProxy.state.isSaving = false
-    }
+    await saveCompressedMediaWithPrompt()
   }, [])
 
   const openInFileManager = async () => {

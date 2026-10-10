@@ -6,11 +6,12 @@ import ReactDOM from 'react-dom'
 import Icon from '@/components/Icon'
 import { toast } from '@/components/Toast'
 import { readFilesFromPaths } from '@/tauri/commands/fs'
+import { CollectedFile } from '@/types/fs'
 import { zoomInTransition } from '@/utils/animation'
 
 type DragAndDropFilesProps = {
   disable?: boolean
-  onFile?: (filePath: string | string[]) => void
+  onFile?: (files: CollectedFile[]) => void
   multiple?: boolean
 }
 

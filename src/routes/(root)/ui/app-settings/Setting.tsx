@@ -13,6 +13,7 @@ import { cn } from '@/utils/tailwind'
 import About from './About'
 import Credits from './Credits'
 import General from './General'
+import Output from './Output'
 
 type SettingsPage = {
   id: string
@@ -31,6 +32,12 @@ const SETTINGS_GROUPS: { label: string; pages: SettingsPage[] }[] = [
         label: 'General',
         icon: 'setting',
         Component: General,
+      },
+      {
+        id: 'output',
+        label: 'Output',
+        icon: 'fileExplorer',
+        Component: Output,
       },
     ],
   },
@@ -134,7 +141,9 @@ export function SettingsDialogHost() {
       motionVariant="bottomToTop"
       size="5xl"
     >
-      <ModalContent className="w-[90vw] max-w-[1000px] h-[min(720px,85vh)] overflow-hidden rounded-2xl">
+      {/* Opaque background: the translucent backdrop-blur look of other modals isn't preserved in
+      the theme switch's view transition snapshots, so the app behind would show through */}
+      <ModalContent className="w-[90vw] max-w-[1000px] h-[min(720px,85vh)] overflow-hidden rounded-2xl bg-zinc-100 dark:bg-zinc-900">
         <SettingsDialog onClose={close} hasNewVersion={hasNewVersion} />
       </ModalContent>
     </Modal>

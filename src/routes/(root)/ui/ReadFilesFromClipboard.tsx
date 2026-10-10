@@ -1,10 +1,11 @@
 import { useEffect } from 'react'
 
 import { readFilesFromClipboard } from '@/tauri/commands/fs'
+import { CollectedFile } from '@/types/fs'
 import { appProxy } from '../-state'
 
 type ReadFilesFromClipboardProps = {
-  onFiles: (files: string[]) => void
+  onFiles: (files: CollectedFile[]) => void
 }
 
 function ReadFilesFromClipboard({ onFiles }: ReadFilesFromClipboardProps) {
