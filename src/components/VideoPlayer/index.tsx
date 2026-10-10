@@ -14,6 +14,7 @@ import ReactPlayer from 'react-player'
 import { BaseReactPlayerProps } from 'react-player/base'
 import { ClassNameValue } from 'tailwind-merge'
 
+import { usePlayPauseOnSpace } from '@/hooks/usePlayPauseOnSpace'
 import { MediaTransformHistory } from '@/types/compression'
 import { cn } from '@/utils/tailwind'
 import { getTransformPreview } from '@/utils/transform'
@@ -64,24 +65,6 @@ const scales: TimelineScales = {
 } as const
 
 const SEEK_DURATION = 3
-
-const TEXT_INPUT_TYPES = new Set([
-  'text',
-  'search',
-  'email',
-  'password',
-  'url',
-  'tel',
-  'number',
-])
-
-/** Whether Space should type into the element instead of playing/pausing */
-function isTextEntryElement(element: HTMLElement) {
-  if (element instanceof HTMLInputElement) {
-    return TEXT_INPUT_TYPES.has(element.type)
-  }
-  return element instanceof HTMLTextAreaElement || element.isContentEditable
-}
 
 const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
   (
@@ -317,49 +300,11 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
       }
     }, [handleKeyDown, playPauseOnSpaceKeydown])
 
-    // Space always plays/pauses, even when a switch or button has focus (e.g. right after clicking
-    // it). Handled in the capture phase and swallowed on both keydown & keyup, since focused
-    // checkboxes/buttons otherwise toggle or click on Space.
-    useEffect(() => {
-      if (!playPauseOnSpaceKeydown) return
-
-      const shouldHandleSpace = (e: KeyboardEvent) => {
-        if (e.code !== 'Space') return false
-        const target = e.target as HTMLElement
-        return !(
-          isTextEntryElement(target) ||
-          target.closest?.('[role="listbox"], [role="menu"], [role="dialog"]')
-        )
-      }
-
-      const handleSpaceKeyDown = (e: KeyboardEvent) => {
-        if (!shouldHandleSpace(e)) return
-        e.preventDefault()
-        e.stopPropagation()
-        if (e.repeat) return
-        closeContextMenu()
-        togglePlayPause()
-        onSpaceKeydownForPlayPause?.()
-      }
-
-      const handleSpaceKeyUp = (e: KeyboardEvent) => {
-        if (!shouldHandleSpace(e)) return
-        e.preventDefault()
-        e.stopPropagation()
-      }
-
-      window.addEventListener('keydown', handleSpaceKeyDown, true)
-      window.addEventListener('keyup', handleSpaceKeyUp, true)
-      return () => {
-        window.removeEventListener('keydown', handleSpaceKeyDown, true)
-        window.removeEventListener('keyup', handleSpaceKeyUp, true)
-      }
-    }, [
-      playPauseOnSpaceKeydown,
-      closeContextMenu,
-      togglePlayPause,
-      onSpaceKeydownForPlayPause,
-    ])
+    usePlayPauseOnSpace(!!playPauseOnSpaceKeydown, () => {
+      closeContextMenu()
+      togglePlayPause()
+      onSpaceKeydownForPlayPause?.()
+    })
 
     useEffect(() => {
       if (playPauseButtonRef.current) {

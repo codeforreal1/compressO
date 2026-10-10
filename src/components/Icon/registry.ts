@@ -22,6 +22,7 @@ import Image from '@/assets/icons/image.svg?react'
 import Info from '@/assets/icons/info.svg?react'
 import LowResHeart from '@/assets/icons/low-res-heart.svg?react'
 import Moon from '@/assets/icons/moon.svg?react'
+import Music from '@/assets/icons/music.svg?react'
 import Pause from '@/assets/icons/pause.svg?react'
 import Pencil from '@/assets/icons/pencil.svg?react'
 import Play from '@/assets/icons/play.svg?react'
@@ -82,6 +83,7 @@ const registry = asRegistry({
   addMedia: AddMedia,
   caret: Caret,
   compare: Compare,
+  music: Music,
 })
 
 export default registry

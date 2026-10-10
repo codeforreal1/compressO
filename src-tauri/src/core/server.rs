@@ -209,7 +209,7 @@ fn mime_type_from_path(path: &PathBuf) -> &'static str {
             "m4v" => "video/x-m4v",
             "mp3" => "audio/mpeg",
             "wav" => "audio/wav",
-            "ogg" => "audio/ogg",
+            "ogg" | "opus" => "audio/ogg",
             "flac" => "audio/flac",
             "m4a" => "audio/mp4",
             "aac" => "audio/aac",

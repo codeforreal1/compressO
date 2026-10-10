@@ -57,7 +57,10 @@ export type SubtitlesConfig = {
 }
 
 export type VideoConfig = {
-  convertToExtension: keyof typeof extensions.video | '-'
+  convertToExtension:
+    | keyof typeof extensions.video
+    | keyof typeof extensions.audio
+    | '-'
   presetName: keyof typeof compressionPresets
   shouldDisableCompression: boolean
   audioConfig: AudioConfig

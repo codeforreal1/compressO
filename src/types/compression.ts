@@ -20,6 +20,15 @@ export const extensions = {
     svg: 'svg',
     avif: 'avif',
   },
+  // Audio extracted from a video
+  audio: {
+    mp3: 'mp3',
+    m4a: 'm4a',
+    wav: 'wav',
+    flac: 'flac',
+    ogg: 'ogg',
+    opus: 'opus',
+  },
 } as const
 
 // Formats that can be opened but aren't offered as an output extension
@@ -35,6 +44,14 @@ export const inputExtensions = {
 
 export type VideoExtension = keyof typeof extensions.video
 export type ImageExtension = keyof typeof extensions.image
+export type AudioExtension = keyof typeof extensions.audio
+
+/** Whether an output extension extracts only the audio of a video */
+export function isAudioExtension(
+  extension: string | null | undefined,
+): extension is AudioExtension {
+  return !!extension && extension in extensions.audio
+}
 
 export const compressionPresets = {
   ironclad: 'ironclad',

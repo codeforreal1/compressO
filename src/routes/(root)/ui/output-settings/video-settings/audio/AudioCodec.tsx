@@ -11,7 +11,9 @@ import { extensions } from '@/types/compression'
 import { slideDownTransition } from '@/utils/animation'
 import { appProxy, normalizeBatchMediaConfig } from '../../../../-state'
 
-type VideoExtension = keyof typeof extensions.video
+type VideoExtension =
+  | keyof typeof extensions.video
+  | keyof typeof extensions.audio
 
 type AudioCodecOption = {
   value: string
@@ -25,7 +27,13 @@ const AUDIO_CODECS: readonly AudioCodecOption[] = [
     value: 'aac',
     name: 'AAC',
     description: 'Standard codec, wide compatibility',
-    compatible_containers: ['mp4', 'mov', 'mkv', 'ts'] as VideoExtension[],
+    compatible_containers: [
+      'mp4',
+      'mov',
+      'mkv',
+      'ts',
+      'm4a',
+    ] as VideoExtension[],
   },
   {
     value: 'libmp3lame',
@@ -37,19 +45,20 @@ const AUDIO_CODECS: readonly AudioCodecOption[] = [
       'mkv',
       'avi',
       'ts',
+      'mp3',
     ] as VideoExtension[],
   },
   {
     value: 'libopus',
     name: 'Opus',
     description: 'Modern, high quality',
-    compatible_containers: ['webm', 'mkv'] as VideoExtension[],
+    compatible_containers: ['webm', 'mkv', 'ogg', 'opus'] as VideoExtension[],
   },
   {
     value: 'libvorbis',
     name: 'Vorbis',
     description: 'Open-source, good quality',
-    compatible_containers: ['webm', 'mkv'] as VideoExtension[],
+    compatible_containers: ['webm', 'mkv', 'ogg'] as VideoExtension[],
   },
   {
     value: 'ac3',
@@ -67,19 +76,19 @@ const AUDIO_CODECS: readonly AudioCodecOption[] = [
     value: 'alac',
     name: 'ALAC',
     description: 'Lossless compression optimized for Apple devices',
-    compatible_containers: ['mp4', 'mov'] as VideoExtension[],
+    compatible_containers: ['mp4', 'mov', 'm4a'] as VideoExtension[],
   },
   {
     value: 'flac',
     name: 'FLAC',
     description: 'Lossless compression',
-    compatible_containers: ['mkv'] as VideoExtension[],
+    compatible_containers: ['mkv', 'flac', 'ogg'] as VideoExtension[],
   },
   {
     value: 'pcm_s16le',
     name: 'PCM',
     description: 'Uncompressed, best quality',
-    compatible_containers: ['mov', 'avi'] as VideoExtension[],
+    compatible_containers: ['mov', 'avi', 'wav'] as VideoExtension[],
   },
 ]
 

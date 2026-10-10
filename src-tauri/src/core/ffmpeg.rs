@@ -29,6 +29,27 @@ const EXTENSIONS: [&str; 10] = [
     "mp4", "mov", "webm", "avi", "mkv", "ts", "gif", "m4v", "mts", "m2ts",
 ];
 
+/// Audio formats a video's audio can be extracted to
+const AUDIO_EXTENSIONS: [&str; 6] = ["mp3", "m4a", "wav", "flac", "ogg", "opus"];
+
+/// Audio codec for an audio-only output: the requested one when the format supports it, otherwise
+/// the format's usual codec
+fn audio_output_codec(extension: &str, requested_codec: Option<&str>) -> String {
+    let supported_codecs: &[&str] = match extension {
+        "mp3" => &["libmp3lame"],
+        "m4a" => &["aac", "alac"],
+        "wav" => &["pcm_s16le"],
+        "flac" => &["flac"],
+        "ogg" => &["libvorbis", "libopus", "flac"],
+        "opus" => &["libopus"],
+        _ => &[],
+    };
+    match requested_codec {
+        Some(codec) if supported_codecs.contains(&codec) => codec.to_string(),
+        _ => supported_codecs.first().copied().unwrap_or("copy").to_string(),
+    }
+}
+
 /// Container whose capabilities (codecs, subtitles, thumbnails) apply to the extension.
 fn output_container(extension: &str) -> &str {
     match extension {
@@ -81,7 +102,8 @@ impl FFMPEG {
         subtitles_config: Option<&SubtitlesConfig>,
         speed: Option<f32>,
     ) -> Result<VideoCompressionResult, String> {
-        if !EXTENSIONS.contains(&convert_to_extension) {
+        let is_audio_target = AUDIO_EXTENSIONS.contains(&convert_to_extension);
+        if !EXTENSIONS.contains(&convert_to_extension) && !is_audio_target {
             return Err(String::from("Invalid convert to extension."));
         }
         let container = output_container(convert_to_extension);
@@ -91,6 +113,25 @@ impl FFMPEG {
             ffprobe.get_audio_streams(video_path).await?
         };
         let has_audio_stream = !audio_streams.is_empty();
+
+        if is_audio_target && (!has_audio_stream || audio_config.volume == 0) {
+            return Err(String::from(if has_audio_stream {
+                "The audio cannot be extracted while it is muted."
+            } else {
+                "The video has no audio to extract."
+            }));
+        }
+
+        // Audio formats hold a single audio stream, so only the first selected track is extracted
+        let selected_audio_tracks: Option<Vec<usize>> = if is_audio_target {
+            Some(vec![audio_config
+                .selected_audio_tracks
+                .as_ref()
+                .and_then(|tracks| tracks.first().copied())
+                .unwrap_or(0)])
+        } else {
+            audio_config.selected_audio_tracks.clone()
+        };
 
         let (existing_subtitle_count, existing_subtitle_streams): (usize, Vec<SubtitleStream>) = {
             if let Some(subs_config) = subtitles_config {
@@ -134,7 +175,7 @@ impl FFMPEG {
         // Track input indices for mapping
         let mut input_index: usize = 1; // 0 is video, 1+ are thumbnails/subtitles
 
-        if !is_gif_target && container != "webm" && container != "ts" {
+        if !is_gif_target && !is_audio_target && container != "webm" && container != "ts" {
             if let Some(thumb_path) = custom_thumbnail_path {
                 if thumb_path.len() > 0 {
                     cmd_args.extend_from_slice(&["-i", thumb_path]);
@@ -143,7 +184,9 @@ impl FFMPEG {
             }
         }
 
-        let subtitle_input_indices: Vec<(usize, String, Option<String>)> = if !is_gif_target {
+        let subtitle_input_indices: Vec<(usize, String, Option<String>)> = if !is_gif_target
+            && !is_audio_target
+        {
             if let Some(subs_config) = subtitles_config {
                 if subs_config.should_enable_subtitles.unwrap_or(false) {
                     let mut indices = Vec::new();
@@ -189,7 +232,7 @@ impl FFMPEG {
             "error",
         ]);
 
-        let mut cmd_args = if !is_gif_target {
+        let mut cmd_args = if !is_gif_target && !is_audio_target {
             match preset_name {
                 Some(preset) => match preset {
                     "thunderbolt" => cmd_args,
@@ -273,7 +316,11 @@ impl FFMPEG {
                 }
             }
         };
-        cmd_args.extend_from_slice(&["-c:v:0", output_codec.as_str()]);
+        if is_audio_target {
+            cmd_args.push("-vn");
+        } else {
+            cmd_args.extend_from_slice(&["-c:v:0", output_codec.as_str()]);
+        }
 
         // Quality
         let compression_quality: String = {
@@ -287,7 +334,9 @@ impl FFMPEG {
                 format!("{default_crf}")
             }
         };
-        if preset_name.is_some() && !is_gif_target {
+        if is_audio_target {
+            // No video is encoded
+        } else if preset_name.is_some() && !is_gif_target {
             cmd_args.extend_from_slice(&["-crf", compression_quality.as_str()]);
         } else {
             cmd_args.extend_from_slice(&["-crf", "18"]);
@@ -402,7 +451,7 @@ impl FFMPEG {
             String::new()
         };
 
-        if let Some(segments) = trim_segments {
+        if let Some(segments) = trim_segments.filter(|_| !is_audio_target) {
             if !segments.is_empty() {
                 map_video = true;
                 if segments.len() == 1 {
@@ -446,7 +495,7 @@ impl FFMPEG {
         }
 
         // If no trimming, just apply post-processing to input
-        if !map_video {
+        if !map_video && !is_audio_target {
             let speed_part = video_speed_filter
                 .as_ref()
                 .map(|f| format!("{},", f))
@@ -461,7 +510,7 @@ impl FFMPEG {
                     map_audio = true;
 
                     let audio_tracks_to_process: Vec<usize> =
-                        if let Some(ref selected_tracks) = audio_config.selected_audio_tracks {
+                        if let Some(ref selected_tracks) = selected_audio_tracks {
                             selected_tracks.clone()
                         } else {
                             (0..audio_streams.len()).collect()
@@ -539,7 +588,7 @@ impl FFMPEG {
         }
 
         // FPS
-        if let Some(fps_val) = fps {
+        if let Some(fps_val) = fps.filter(|_| !is_audio_target) {
             cmd_args.push("-r");
             cmd_args.push(fps_val);
         }
@@ -554,7 +603,7 @@ impl FFMPEG {
         // Map output audio
         if map_audio {
             let processed_tracks: Vec<usize> =
-                if let Some(ref selected_tracks) = audio_config.selected_audio_tracks {
+                if let Some(ref selected_tracks) = selected_audio_tracks {
                     selected_tracks.clone()
                 } else {
                     (0..audio_streams.len()).collect()
@@ -572,7 +621,7 @@ impl FFMPEG {
                 audio_args_owned.push(out_label);
             }
         } else if audio_config.volume > 0 && has_audio_stream {
-            if let Some(ref selected_tracks) = audio_config.selected_audio_tracks {
+            if let Some(ref selected_tracks) = selected_audio_tracks {
                 for &track_index in selected_tracks {
                     audio_args_owned.push("-map".to_string());
                     audio_args_owned.push(format!("0:a:{}", track_index));
@@ -602,9 +651,11 @@ impl FFMPEG {
                         String::new()
                     };
 
-                if let Some(ref selected_tracks) = audio_config.selected_audio_tracks {
-                    for &track_index in selected_tracks {
-                        args.push(format!("-filter:a:{}", track_index));
+                if let Some(ref selected_tracks) = selected_audio_tracks {
+                    // `-filter:a:N` targets the Nth *output* audio stream (in mapping order), not
+                    // the input track number
+                    for output_index in 0..selected_tracks.len() {
+                        args.push(format!("-filter:a:{}", output_index));
                         args.push(audio_filters_with_speed.clone());
                     }
                 } else {
@@ -629,7 +680,13 @@ impl FFMPEG {
         }
 
         // Audio codec
-        if audio_config.volume > 0 && has_audio_stream {
+        if is_audio_target {
+            audio_args_owned.push("-c:a".to_string());
+            audio_args_owned.push(audio_output_codec(
+                convert_to_extension,
+                audio_config.audio_codec.as_deref(),
+            ));
+        } else if audio_config.volume > 0 && has_audio_stream {
             if let Some(codec) = &audio_config.audio_codec {
                 audio_args_owned.push("-c:a".to_string());
                 audio_args_owned.push(codec.clone());
@@ -703,7 +760,7 @@ impl FFMPEG {
         let mut subtitle_args_owned: Vec<String> = Vec::new();
         let mut subtitle_index = 0usize;
 
-        if !is_gif_target {
+        if !is_gif_target && !is_audio_target {
             if has_existing_subtitles {
                 let bitmap_codecs = ["hdmv_pgs_subtitle", "dvd_subtitle", "xsub"];
 
@@ -786,6 +843,7 @@ impl FFMPEG {
         cmd_args.extend(subtitle_args_owned.iter().map(|s| s.as_str()));
 
         if !is_gif_target
+            && !is_audio_target
             && custom_thumbnail_path.is_some()
             && container != "webm"
             && container != "ts"

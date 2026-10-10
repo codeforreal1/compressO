@@ -11,6 +11,7 @@ import { CircularProgress } from '@/components/Progress'
 import Switch from '@/components/Switch'
 import Tooltip from '@/components/Tooltip'
 import * as constants from '@/constants'
+import { isAudioExtension } from '@/types/compression'
 import { Ripple } from '@/ui/Patterns/Ripple'
 import { slideUpTransition, zoomInTransition } from '@/utils/animation'
 import { formatDuration } from '@/utils/string'
@@ -115,6 +116,7 @@ function PreviewSingleMedia({ mediaIndex }: PreviewSingleMediaProps) {
       ) : null}
 
       {isProcessCompleted &&
+      !isAudioExtension(mediaFile?.compressedFile?.extension) &&
       ((mediaFile?.type === 'video' && mediaFile?.previewMode === 'video') ||
         mediaFile?.type === 'image') ? (
         <div className="flex justify-center my-4">
@@ -137,6 +139,7 @@ function PreviewSingleMedia({ mediaIndex }: PreviewSingleMediaProps) {
       {mediaFile ? (
         isProcessCompleted &&
         compareOutput &&
+        !isAudioExtension(mediaFile?.compressedFile?.extension) &&
         ((mediaFile?.type === 'video' && mediaFile?.previewMode === 'video') ||
           mediaFile?.type === 'image') ? (
           <MediaOutputCompareSlider mediaIndex={mediaIndex} />

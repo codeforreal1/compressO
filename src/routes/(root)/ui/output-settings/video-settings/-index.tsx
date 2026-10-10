@@ -4,12 +4,14 @@ import { useSnapshot } from 'valtio'
 
 import Tabs from '@/components/Tabs'
 import { getAudioStreams } from '@/tauri/commands/ffprobe'
+import { isAudioExtension } from '@/types/compression'
 import AudioBitrate from './audio/AudioBitrate'
 import AudioChannels from './audio/AudioChannels'
 import AudioCodec from './audio/AudioCodec'
 import AudioTracks from './audio/AudioTracks'
 import AudioVolume from './audio/AudioVolume'
 import Others from './others/-index'
+import VideoOnlySection from './VideoOnlySection'
 import CompressionPreset from './video/CompressionPreset'
 import CustomThumbnail from './video/CustomThumbnail'
 import VideoDimensions from './video/Dimensions'
@@ -42,13 +44,18 @@ const TABS = {
 
 function VideoSettings({ mediaIndex }: VideoSettingsProps) {
   const {
-    state: { media },
+    state: { media, commonConfigForBatchCompression },
   } = useSnapshot(appProxy)
   const video =
     media.length && mediaIndex >= 0 && media[mediaIndex].type === 'video'
       ? media[mediaIndex]
       : null
   const { dimensions, pathRaw: videoPathRaw, videoInfoRaw } = video ?? {}
+  // Extracting audio: only the trim, speed & audio settings apply
+  const isAudioOutput = isAudioExtension(
+    (video?.config ?? commonConfigForBatchCompression.videoConfig)
+      ?.convertToExtension,
+  )
 
   const [tab, setTab] = useState<keyof typeof TABS>('video')
 
@@ -97,21 +104,22 @@ function VideoSettings({ mediaIndex }: VideoSettingsProps) {
         <div className="my-4">
           {tab === 'video' ? (
             <div>
-              <>
+              {/* Video-only settings stay in place but are disabled when extracting audio */}
+              <VideoOnlySection isDisabled={isAudioOutput}>
                 <CompressionPreset mediaIndex={mediaIndex} />
                 <Divider className="my-3" />
-              </>
-              <>
                 <VideoCodec mediaIndex={mediaIndex} />
                 <Divider className="my-3" />
-              </>
+              </VideoOnlySection>
 
               {mediaIndex >= 0 && dimensions ? (
                 <>
-                  <VideoDimensions mediaIndex={mediaIndex} />
-                  <Divider className="my-3" />
-                  <TransformVideo mediaIndex={mediaIndex} />
-                  <Divider className="my-3" />
+                  <VideoOnlySection isDisabled={isAudioOutput}>
+                    <VideoDimensions mediaIndex={mediaIndex} />
+                    <Divider className="my-3" />
+                    <TransformVideo mediaIndex={mediaIndex} />
+                    <Divider className="my-3" />
+                  </VideoOnlySection>
                   <TrimVideo mediaIndex={mediaIndex} />
                   <Divider className="my-3" />
                 </>
@@ -120,11 +128,11 @@ function VideoSettings({ mediaIndex }: VideoSettingsProps) {
                 <VideoSpeed mediaIndex={mediaIndex} />
                 <Divider className="my-3" />
               </>
-              <>
+              <VideoOnlySection isDisabled={isAudioOutput}>
                 <VideoFPS mediaIndex={mediaIndex} />
                 <Divider className="my-3" />
-              </>
-              <CustomThumbnail mediaIndex={mediaIndex} />
+                <CustomThumbnail mediaIndex={mediaIndex} />
+              </VideoOnlySection>
               <>
                 <div className="mt-8">
                   <VideoExtension mediaIndex={mediaIndex} />
@@ -164,7 +172,10 @@ function VideoSettings({ mediaIndex }: VideoSettingsProps) {
           ) : null}
           {tab === 'others' ? (
             <>
-              <Others mediaIndex={mediaIndex} />
+              <Others
+                mediaIndex={mediaIndex}
+                disableSubtitles={isAudioOutput}
+              />
             </>
           ) : null}
         </div>

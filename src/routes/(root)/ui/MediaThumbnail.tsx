@@ -14,8 +14,10 @@ import Popover, { PopoverContent, PopoverTrigger } from '@/components/Popover'
 import useTimelineEngine from '@/components/Timeline/useTimelineEngine'
 import Tooltip from '@/components/Tooltip'
 import VideoPlayer, { VideoPlayerRef } from '@/components/VideoPlayer'
+import { usePlayPauseOnSpace } from '@/hooks/usePlayPauseOnSpace'
 import { generateVideoThumbnail } from '@/tauri/commands/ffmpeg'
 import { copyFileToClipboard } from '@/tauri/commands/fs'
+import { isAudioExtension } from '@/types/compression'
 import VideoTrimmerTimeline, {
   rowIds,
   scales,
@@ -45,7 +47,7 @@ function MediaThumbnail({ mediaIndex }: MediaThumbnailProps) {
   if (mediaIndex < 0) return
 
   const {
-    state: { media, isSaved },
+    state: { media },
   } = useSnapshot(appProxy)
   const mediaFile = media.length > 0 ? media[mediaIndex] : null
   const {
@@ -70,6 +72,8 @@ function MediaThumbnail({ mediaIndex }: MediaThumbnailProps) {
   const trimmerRef = useRef<VideoTrimmerTimelineRef | null>(null)
   const trimConfigSetDebounceRef = useRef<NodeJS.Timeout | null>(null)
   const [isThumbnailRegenerating, setIsThumbnailRegenerating] = useState(false)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+  const [isAudioPlaying, setIsAudioPlaying] = useState(false)
   const thumbnailCacheRef = useRef<Record<string, string>>({})
   const [isCopyingFrame, setIsCopyingFrame] = useState(false)
 
@@ -321,14 +325,36 @@ function MediaThumbnail({ mediaIndex }: MediaThumbnailProps) {
     [compressedFile],
   )
 
+  // Saving moves the output out of the cache, so saved outputs are loaded from where they were saved
+  const savedOutputSrc =
+    compressedFile?.isSaved && compressedFile.savedPath
+      ? core.convertFileSrc(compressedFile.savedPath)
+      : null
+
+  // Audio extracted from a video: show the video's thumbnail with an audio player
+  const isAudioOutput =
+    !!isProcessCompleted && isAudioExtension(compressedFile?.extension)
+  const audioOutputSrc = isAudioOutput
+    ? (savedOutputSrc ?? compressedFileSrc)
+    : undefined
+
+  const toggleAudioPlayback = useCallback(() => {
+    const audio = audioRef.current
+    if (!audio) return
+    if (audio.paused) {
+      audio.play().catch(() => {})
+    } else {
+      audio.pause()
+    }
+  }, [])
+  usePlayPauseOnSpace(!!audioOutputSrc, toggleAudioPlayback)
+
   const imageToRenderSrc = isProcessCompleted
     ? mediaFile?.type === 'video' &&
       mediaFile?.previewMode === 'image' &&
       mediaFile?.compressedFile?.extension !== 'gif'
       ? mediaFile?.thumbnailPath!
-      : isSaved
-        ? core.convertFileSrc(mediaFile?.compressedFile?.savedPath!)
-        : compressedFileSrc
+      : (savedOutputSrc ?? compressedFileSrc)
     : thumbnailPath!
 
   return (
@@ -338,6 +364,7 @@ function MediaThumbnail({ mediaIndex }: MediaThumbnailProps) {
           {mediaFile?.type === 'video' &&
           mediaFile.previewMode === 'video' &&
           mediaPath &&
+          !isAudioOutput &&
           (mediaFile?.isProcessCompleted
             ? mediaFile?.compressedFile?.extension !== 'gif'
             : true) ? (
@@ -350,7 +377,7 @@ function MediaThumbnail({ mediaIndex }: MediaThumbnailProps) {
                 ref={playerRef}
                 url={
                   isProcessCompleted && compressedFile
-                    ? compressedFile.path!
+                    ? (savedOutputSrc ?? compressedFile.path!)
                     : mediaPath!
                 }
                 enableTimelinePlayer={
@@ -438,6 +465,34 @@ function MediaThumbnail({ mediaIndex }: MediaThumbnailProps) {
                 }}
               />
             </motion.div>
+          ) : audioOutputSrc ? (
+            // Audio extracted from a video has no picture: a music icon with the play button
+            <div className="relative flex flex-col justify-center items-center gap-6 mx-auto w-full max-w-[740px] min-h-[420px] rounded-3xl border-1 border-zinc-200 dark:border-zinc-900">
+              <Icon name="music" size={200} className="text-primary" />
+              <audio
+                ref={audioRef}
+                key={audioOutputSrc}
+                src={audioOutputSrc}
+                onPlay={() => setIsAudioPlaying(true)}
+                onPause={() => setIsAudioPlaying(false)}
+                onEnded={() => setIsAudioPlaying(false)}
+                className="hidden"
+              />
+              <Button
+                onPress={toggleAudioPlayback}
+                variant="bordered"
+                isIconOnly
+                radius="full"
+                aria-label={isAudioPlaying ? 'Pause audio' : 'Play audio'}
+                className="absolute bottom-4 left-1/2 -translate-x-1/2"
+              >
+                <Icon
+                  name={isAudioPlaying ? 'pause' : 'play'}
+                  size={20}
+                  className="text-white drop-shadow-lg"
+                />
+              </Button>
+            </div>
           ) : (
             <div className="relative w-fit mx-auto">
               {gifTransformPreview ? (

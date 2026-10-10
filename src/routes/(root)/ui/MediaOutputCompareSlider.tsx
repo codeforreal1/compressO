@@ -46,7 +46,7 @@ function MediaOutputCompareSlider({
   if (mediaIndex < 0) return
 
   const {
-    state: { media, isSaved },
+    state: { media },
   } = useSnapshot(appProxy)
   const mediaFile = media[mediaIndex]
 
@@ -136,9 +136,11 @@ function MediaOutputCompareSlider({
     [mediaFile?.dimensions?.width, mediaFile?.dimensions?.height],
   )
 
-  const outputPath = isSaved
-    ? core.convertFileSrc(mediaFile?.compressedFile?.savedPath!)
-    : mediaFile?.compressedFile?.path
+  // Saving moves the output out of the cache, so a saved output is loaded from where it was saved
+  const outputPath =
+    mediaFile?.compressedFile?.isSaved && mediaFile.compressedFile.savedPath
+      ? core.convertFileSrc(mediaFile.compressedFile.savedPath)
+      : mediaFile?.compressedFile?.path
 
   return (
     <div id={id} className="rounded-3xl overflow-hidden px-4">
