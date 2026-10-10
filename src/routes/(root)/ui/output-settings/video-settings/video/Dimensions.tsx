@@ -225,7 +225,7 @@ function Dimensions({ mediaIndex }: VideoDimensionsProps) {
           isDisabled={shouldDisableInput}
         >
           <p className="text-gray-600 dark:text-gray-400 text-sm mr-2 w-full">
-            Dimensions
+            Resolution
           </p>
         </Switch>
         {/* Always rendered (only faded) so showing it never shifts the layout; it is only needed
@@ -238,12 +238,12 @@ function Dimensions({ mediaIndex }: VideoDimensionsProps) {
           isDisabled={!canRevert}
           aria-hidden={!canRevert}
           tabIndex={canRevert ? undefined : -1}
-          aria-label="Revert to original dimensions"
+          aria-label="Revert to original resolution"
           className={`ml-auto transition-opacity ${canRevert ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         >
           <Tooltip
-            content="Revert to original dimensions"
-            aria-label="Revert to original dimensions"
+            content="Revert to original resolution"
+            aria-label="Revert to original resolution"
           >
             <Icon name="redo" size={18} className="-scale-x-100" />
           </Tooltip>
