@@ -62,6 +62,15 @@ impl PendingFiles {
     }
 }
 
+fn show_main_window(app_handle: &tauri::AppHandle) {
+    if let Some(window) = app_handle.get_webview_window("main") {
+        if !window.is_visible().unwrap_or(false) {
+            let _ = window.show();
+            let _ = window.set_focus();
+        }
+    }
+}
+
 struct FrontendReady(Arc<Mutex<bool>>);
 
 impl FrontendReady {
@@ -171,7 +180,15 @@ async fn main() {
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_shell::init())
-        .plugin(tauri_plugin_window_state::Builder::default().build())
+        .plugin(
+            // Don't restore visibility: the window starts hidden & is shown once the frontend is ready
+            tauri_plugin_window_state::Builder::default()
+                .with_state_flags(
+                    tauri_plugin_window_state::StateFlags::all()
+                        .difference(tauri_plugin_window_state::StateFlags::VISIBLE),
+                )
+                .build(),
+        )
         .plugin(tauri_plugin_updater::Builder::new().build())
         .setup(|app| {
             app.manage(PendingFiles::new());
@@ -239,9 +256,20 @@ async fn main() {
             file_system::setup_app_data_dir(app)?;
             file_system::ensure_assets_dir(&app.app_handle())?;
 
+            // The window starts hidden (see `tauri.conf.json`) so the webview isn't shown before it
+            // has painted, which flashed a blank background on launch
+            let fallback_app_handle = app.handle().clone();
+            tauri::async_runtime::spawn(async move {
+                // Fallback in case the frontend never signals readiness (e.g. a load error)
+                tokio::time::sleep(std::time::Duration::from_secs(3)).await;
+                show_main_window(&fallback_app_handle);
+            });
+
             let app_handle = app.handle().clone();
             app.once("frontend-ready", move |_| {
                 log::info!("Frontend is ready, checking for pending files");
+
+                show_main_window(&app_handle);
 
                 if let Some(ready_state) = app_handle.try_state::<FrontendReady>() {
                     ready_state.set_ready();

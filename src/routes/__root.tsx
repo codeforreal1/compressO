@@ -19,6 +19,7 @@ const { isMacOS } = getPlatform()
 
 function RootComponent() {
   useEffect(() => {
+    // Also tells the backend to show the window, which starts hidden to avoid a blank flash
     event.emit('frontend-ready')
     setupUpdateListeners()
     checkForUpdates()

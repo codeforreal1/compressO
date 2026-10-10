@@ -149,6 +149,7 @@
         "resizable": true,
         "hiddenTitle": true,
         "backgroundColor": "#FFFFFF",
+        "visible": false,
         "titleBarStyle": "Overlay"
       }
     ],

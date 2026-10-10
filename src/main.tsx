@@ -39,6 +39,13 @@ if (storedColor) {
   document.documentElement.style.setProperty('--color-primary', storedColor)
 }
 
+// Apply the theme before the first render (`useTheme` only applies it in an effect, after the
+// first paint), so the first frame shown when the window appears already matches it
+document.documentElement.classList.toggle(
+  'dark',
+  localStorage.getItem('theme') !== 'light',
+)
+
 const rootElement = document.getElementById('app')!
 
 if (!rootElement.innerHTML) {
