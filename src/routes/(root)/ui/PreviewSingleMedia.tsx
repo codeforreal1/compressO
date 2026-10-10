@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { useSnapshot } from 'valtio'
 
 import Button from '@/components/Button'
@@ -9,6 +9,7 @@ import Icon from '@/components/Icon'
 import Image from '@/components/Image'
 import { CircularProgress } from '@/components/Progress'
 import Switch from '@/components/Switch'
+import * as constants from '@/constants'
 import { Ripple } from '@/ui/Patterns/Ripple'
 import { slideUpTransition, zoomInTransition } from '@/utils/animation'
 import { formatDuration } from '@/utils/string'
@@ -47,7 +48,10 @@ function PreviewSingleMedia({ mediaIndex }: PreviewSingleMediaProps) {
   const { isImageTransformEditMode } =
     mediaFile?.type === 'image' ? (mediaFile?.config ?? {}) : {}
 
-  const [compareOutput, setCompareOutput] = useState(true)
+  // Off by default; remembers the user's last choice
+  const [compareOutput, setCompareOutput] = useState(
+    () => localStorage.getItem(constants.compareOutput) === 'true',
+  )
 
   const compressedSizeDiff: number = useMemo(
     () =>
@@ -59,12 +63,6 @@ function PreviewSingleMedia({ mediaIndex }: PreviewSingleMediaProps) {
         : 0,
     [compressedFile?.sizeInBytes, sizeInBytes],
   )
-
-  useEffect(() => {
-    if (isCompressing) {
-      setCompareOutput(true)
-    }
-  }, [isCompressing])
 
   const singleFileNameDisplay =
     (isProcessCompleted
@@ -101,8 +99,9 @@ function PreviewSingleMedia({ mediaIndex }: PreviewSingleMediaProps) {
           <Switch
             size="sm"
             isSelected={compareOutput}
-            onValueChange={() => {
-              setCompareOutput((s) => !s)
+            onValueChange={(isSelected) => {
+              setCompareOutput(isSelected)
+              localStorage.setItem(constants.compareOutput, String(isSelected))
             }}
           >
             <div className="flex justify-center items-center">
