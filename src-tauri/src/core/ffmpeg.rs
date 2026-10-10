@@ -1045,9 +1045,11 @@ impl FFMPEG {
             "-frames:v",
             "1",
             // Without an explicit quality, the jpeg encoder falls back to a 200kb/s bitrate target,
-            // giving a visibly soft image (it's also what the transform editor crops on)
+            // giving a visibly soft image (it's also what the transform editor crops on).
+            // 4 is visually close to the max (2) at ~40% smaller files. Keep the native resolution,
+            // since crop coordinates from the editor are applied to the source in these pixels.
             "-q:v",
-            "2",
+            "4",
             "-an",
             "-sn",
             &output_path.display().to_string(),

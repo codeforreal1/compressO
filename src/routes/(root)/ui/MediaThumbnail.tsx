@@ -176,64 +176,62 @@ function MediaThumbnail({ mediaIndex }: MediaThumbnailProps) {
     onSeek: seekPlayerTo,
   })
 
+  // Crop on the frame at the current playback time when the transform editor opens. Driven by the
+  // snapshot value (not `subscribeKey` on the config object), since the config/media objects get
+  // replaced (batch config normalization, resets, snapshot restores) which left a subscription stale.
   useEffect(() => {
-    let unsubscribeTransform: (() => void) | undefined
+    if (!isVideoTransformEditMode) return
 
-    if (
-      appProxy.state.media[mediaIndex]?.type === 'video' &&
-      appProxy.state.media[mediaIndex]?.config
-    ) {
-      unsubscribeTransform = subscribeKey(
-        appProxy.state.media[mediaIndex].config,
-        'isVideoTransformEditMode',
-        async () => {
-          const mediaSnapshot = appProxy.state.media[mediaIndex]
-          if (
-            (playerRef.current || trimmerRef.current) &&
-            mediaSnapshot.type === 'video' &&
-            mediaSnapshot.config.isVideoTransformEditMode
-          ) {
-            if (playerRef.current) {
-              playerRef.current.pauseVideo()
-            }
-            const { pathRaw: mediaPathRaw } = mediaSnapshot
-            const currentTime = playerRef.current
-              ? playerRef.current.playerRef?.getCurrentTime?.()
-              : trimmerRef.current?.getTime?.()
-            if (currentTime && mediaPathRaw) {
-              try {
-                const targetDuration =
-                  currentTime >= mediaSnapshot.videoDuration!
-                    ? currentTime - 0.02
-                    : currentTime <= 0
-                      ? 0.02
-                      : currentTime
-                const timestamp = formatDuration(targetDuration)
-
-                let thumbnailPath = thumbnailCacheRef.current[timestamp]
-
-                if (!thumbnailPath) {
-                  const result = await generateVideoThumbnail(
-                    mediaPathRaw,
-                    timestamp,
-                  )
-
-                  thumbnailPath = result.filePath
-                  thumbnailCacheRef.current[timestamp] = thumbnailPath
-                }
-
-                mediaSnapshot.thumbnailPathRaw = thumbnailPath
-                mediaSnapshot.thumbnailPath = core.convertFileSrc(thumbnailPath)
-              } catch {}
-            }
-          }
-        },
+    const generateThumbnailAtCurrentTime = async () => {
+      const targetMedia = appProxy.state.media[mediaIndex]
+      if (
+        targetMedia?.type !== 'video' ||
+        !targetMedia.pathRaw ||
+        !(playerRef.current || trimmerRef.current)
       )
+        return
+
+      playerRef.current?.pauseVideo()
+      const currentTime = playerRef.current
+        ? playerRef.current.playerRef?.getCurrentTime?.()
+        : trimmerRef.current?.getTime?.()
+      if (currentTime == null || Number.isNaN(currentTime)) return
+
+      try {
+        const targetDuration =
+          currentTime >= targetMedia.videoDuration!
+            ? currentTime - 0.02
+            : currentTime <= 0
+              ? 0.02
+              : currentTime
+        const timestamp = formatDuration(targetDuration)
+
+        let thumbnailPath = thumbnailCacheRef.current[timestamp]
+
+        if (!thumbnailPath) {
+          const result = await generateVideoThumbnail(
+            targetMedia.pathRaw,
+            timestamp,
+          )
+
+          thumbnailPath = result.filePath
+          thumbnailCacheRef.current[timestamp] = thumbnailPath
+        }
+
+        // Re-read in case the media entry was replaced while generating
+        const latestMedia = appProxy.state.media[mediaIndex]
+        if (
+          latestMedia?.type === 'video' &&
+          latestMedia.pathRaw === targetMedia.pathRaw
+        ) {
+          latestMedia.thumbnailPathRaw = thumbnailPath
+          latestMedia.thumbnailPath = core.convertFileSrc(thumbnailPath)
+        }
+      } catch {}
     }
-    return () => {
-      unsubscribeTransform?.()
-    }
-  }, [mediaIndex])
+
+    generateThumbnailAtCurrentTime()
+  }, [isVideoTransformEditMode, mediaIndex])
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: <Clear thumbnail cache when video changes>
   useEffect(() => {
@@ -323,6 +321,13 @@ function MediaThumbnail({ mediaIndex }: MediaThumbnailProps) {
       ? mediaFile.config.transformVideoConfig?.transformHistory
       : null
 
+  // Kept segments, so the player timeline can mark the trimmed out parts
+  const trimSegments = useMemo(
+    () =>
+      shouldTrimVideo ? trimConfig?.filter((a) => a.end >= a.start) : null,
+    [shouldTrimVideo, trimConfig],
+  )
+
   // Re-compressing writes to the same output file, so give each result a unique url to
   // bypass the webview's image cache (otherwise a previous result can be shown)
   const compressedFileSrc = useMemo(
@@ -373,6 +378,7 @@ function MediaThumbnail({ mediaIndex }: MediaThumbnailProps) {
                 progressInterval={10}
                 controls={false}
                 transformHistory={videoTransformHistory}
+                trimSegments={trimSegments}
                 playPauseOnSpaceKeydown={!showTransformerLayout}
                 autoFocus
                 containerClassName="w-full h-full"

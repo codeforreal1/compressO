@@ -53,6 +53,8 @@ export interface VideoPlayerProps extends BaseReactPlayerProps {
   disablePlayPauseViaContainerClick?: boolean
   /** Previews these transforms (crop/rotate/flip) on the playing video */
   transformHistory?: readonly MediaTransformHistory[] | null
+  /** Marks everything outside these segments as trimmed out on the timeline */
+  trimSegments?: readonly { start: number; end: number }[] | null
 }
 
 const scales: TimelineScales = {
@@ -84,6 +86,7 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
       onEnded,
       onReady,
       transformHistory,
+      trimSegments,
       style,
 
       ...props
@@ -568,7 +571,13 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
             }}
             getActionRender={(action, row) => {
               if (action.effectId === 'videoPlayer') {
-                return <BoundaryRowActionRender action={action} row={row} />
+                return (
+                  <BoundaryRowActionRender
+                    action={action}
+                    row={row}
+                    keptSegments={trimSegments}
+                  />
+                )
               }
             }}
             getScaleRender={(scale) => <ScaleRender scale={scale} />}

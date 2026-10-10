@@ -1,6 +1,12 @@
 import { core } from '@tauri-apps/api'
-import { useEffect, useRef } from 'react'
-import { Cropper, CropperRef, type CropperState } from 'react-advanced-cropper'
+import { type CSSProperties, forwardRef, useEffect, useRef } from 'react'
+import {
+  Cropper,
+  type CropperBackgroundImageProps,
+  CropperRef,
+  type CropperState,
+  getBackgroundStyle,
+} from 'react-advanced-cropper'
 import 'react-advanced-cropper/dist/style.css'
 import { useSnapshot } from 'valtio'
 
@@ -124,6 +130,47 @@ function MediaTransformer({ mediaIndex }: MediaTransformerProps) {
   )
 }
 
+/**
+ * The default cropper background lays the image out at ≤512px and scales it up with `translate3d`,
+ * which makes WebKit rasterize it as a 512px GPU layer and stretch it (very blurry for large video
+ * frames). A 2D translate keeps it on the normal paint path, drawn from the full resolution image.
+ */
+const SharpCropperBackground = forwardRef<
+  HTMLImageElement,
+  CropperBackgroundImageProps
+>(({ cropper, className, style }, ref) => {
+  const state = cropper.getState()
+  const image = cropper.getImage()
+  if (!image || !state) return null
+
+  const backgroundStyle = getBackgroundStyle(
+    image,
+    state,
+    cropper.getTransitions(),
+  ) as CSSProperties
+
+  return (
+    <img
+      key={image.src}
+      ref={ref}
+      alt=""
+      className={`advanced-cropper-background-image ${className ?? ''}`}
+      src={image.src}
+      crossOrigin="anonymous"
+      style={{
+        ...backgroundStyle,
+        transform: backgroundStyle.transform?.replace(
+          /translate3d\(([^,]+),([^,]+),[^)]+\)/,
+          'translate($1,$2)',
+        ),
+        ...style,
+      }}
+      onMouseDown={(e) => e.preventDefault()}
+    />
+  )
+})
+SharpCropperBackground.displayName = 'SharpCropperBackground'
+
 type TransformerProps = {
   src: string
   initialTransforms?: MediaTransforms
@@ -236,6 +283,7 @@ function Transformer({
       <Cropper
         ref={cropperRef}
         src={src}
+        backgroundComponent={SharpCropperBackground}
         stencilProps={{
           grid: true,
         }}
