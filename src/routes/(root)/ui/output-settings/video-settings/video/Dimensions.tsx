@@ -4,8 +4,10 @@ import { subscribe, useSnapshot } from 'valtio'
 import { subscribeKey } from 'valtio/utils'
 
 import Button from '@/components/Button'
+import Icon from '@/components/Icon'
 import NumberInput from '@/components/NumberInput'
 import Switch from '@/components/Switch'
+import Tooltip from '@/components/Tooltip'
 import { slideDownTransition } from '@/utils/animation'
 import { appProxy } from '../../../../-state'
 
@@ -165,34 +167,88 @@ function Dimensions({ mediaIndex }: VideoDimensionsProps) {
     [mediaIndex],
   )
 
+  // What "original" means: the media's size, or the crop size when a transform crop is applied
+  const transformCrop = config?.shouldTransformVideo
+    ? config.transformVideoConfig?.transforms?.crop
+    : null
+  const baseDimensions = transformCrop ?? videoOriginalDimensions
+  const isOriginalDimensions =
+    !baseDimensions ||
+    (dimensions.width === baseDimensions.width &&
+      dimensions.height === baseDimensions.height)
+
+  const handleRevert = useCallback(() => {
+    if (
+      !baseDimensions?.width ||
+      !baseDimensions?.height ||
+      appProxy.state.media[mediaIndex].type !== 'video'
+    ) {
+      return
+    }
+    setDimensions({
+      width: baseDimensions.width,
+      height: baseDimensions.height,
+    })
+    // No custom dimensions means the output keeps its original size, without resizing
+    appProxy.state.media[mediaIndex].config.customDimensions = undefined
+    appProxy.state.media[mediaIndex].isConfigDirty = true
+  }, [mediaIndex, baseDimensions?.width, baseDimensions?.height])
+
   const shouldDisableInput =
     media.length === 0 ||
     isCompressing ||
     isProcessCompleted ||
     isLoadingMediaFiles
 
+  const canRevert =
+    !!shouldEnableCustomDimensions &&
+    !isOriginalDimensions &&
+    !shouldDisableInput
+
   return (
     <>
-      <Switch
-        isSelected={shouldEnableCustomDimensions}
-        onValueChange={() => {
-          if (
-            appProxy.state.media[mediaIndex].type === 'video' &&
-            appProxy.state.media[mediaIndex]?.config
-          ) {
-            appProxy.state.media[
-              mediaIndex
-            ].config.shouldEnableCustomDimensions =
-              !shouldEnableCustomDimensions
-            appProxy.state.media[mediaIndex].isConfigDirty = true
-          }
-        }}
-        isDisabled={shouldDisableInput}
-      >
-        <p className="text-gray-600 dark:text-gray-400 text-sm mr-2 w-full">
-          Dimensions
-        </p>
-      </Switch>
+      <div className="w-full flex items-center">
+        <Switch
+          isSelected={shouldEnableCustomDimensions}
+          onValueChange={() => {
+            if (
+              appProxy.state.media[mediaIndex].type === 'video' &&
+              appProxy.state.media[mediaIndex]?.config
+            ) {
+              appProxy.state.media[
+                mediaIndex
+              ].config.shouldEnableCustomDimensions =
+                !shouldEnableCustomDimensions
+              appProxy.state.media[mediaIndex].isConfigDirty = true
+            }
+          }}
+          isDisabled={shouldDisableInput}
+        >
+          <p className="text-gray-600 dark:text-gray-400 text-sm mr-2 w-full">
+            Dimensions
+          </p>
+        </Switch>
+        {/* Always rendered (only faded) so showing it never shifts the layout; it is only needed
+        when the size differs from the original */}
+        <Button
+          isIconOnly
+          size="sm"
+          variant="light"
+          onPress={handleRevert}
+          isDisabled={!canRevert}
+          aria-hidden={!canRevert}
+          tabIndex={canRevert ? undefined : -1}
+          aria-label="Revert to original dimensions"
+          className={`ml-auto transition-opacity ${canRevert ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        >
+          <Tooltip
+            content="Revert to original dimensions"
+            aria-label="Revert to original dimensions"
+          >
+            <Icon name="redo" size={18} className="-scale-x-100" />
+          </Tooltip>
+        </Button>
+      </div>
       <AnimatePresence mode="wait">
         {shouldEnableCustomDimensions ? (
           <motion.div {...slideDownTransition}>
