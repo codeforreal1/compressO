@@ -86,6 +86,28 @@ body > * {
   cursor: default;
 }
 
+/* Like native macOS apps, only links show the pointer cursor; buttons & other controls keep the
+   default arrow. Tailwind's preflight gives all buttons a pointer (overridden in the base layer, so
+   explicit cursor utilities still apply), and this covers `cursor-pointer` & its variants from the
+   app & HeroUI. */
+@layer base {
+  button,
+  [role="button"] {
+    cursor: default;
+  }
+}
+
+[class*="cursor-pointer"] {
+  cursor: default !important;
+}
+
+a[href],
+a[href] *,
+[data-link],
+[data-link] * {
+  cursor: pointer !important;
+}
+
 #main {
   z-index: 999 !important;
 }

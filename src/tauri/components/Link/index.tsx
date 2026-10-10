@@ -13,6 +13,7 @@ function Link({ children, href, className }: LinkProps) {
   return (
     <button
       type="button"
+      data-link
       className={cn([
         'font-bold text-primary hover:underline hover:decoration-wavy',
         className,
