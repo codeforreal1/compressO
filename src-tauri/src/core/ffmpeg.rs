@@ -1044,6 +1044,10 @@ impl FFMPEG {
             "scale=trunc(iw*sar/2)*2:ih,setsar=1",
             "-frames:v",
             "1",
+            // Without an explicit quality, the jpeg encoder falls back to a 200kb/s bitrate target,
+            // giving a visibly soft image (it's also what the transform editor crops on)
+            "-q:v",
+            "2",
             "-an",
             "-sn",
             &output_path.display().to_string(),

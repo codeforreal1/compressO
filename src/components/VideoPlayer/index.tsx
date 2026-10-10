@@ -6,6 +6,7 @@ import {
   useEffect,
   useId,
   useImperativeHandle,
+  useMemo,
   useRef,
   useState,
 } from 'react'
@@ -13,7 +14,9 @@ import ReactPlayer from 'react-player'
 import { BaseReactPlayerProps } from 'react-player/base'
 import { ClassNameValue } from 'tailwind-merge'
 
+import { MediaTransformHistory } from '@/types/compression'
 import { cn } from '@/utils/tailwind'
+import { getTransformPreview } from '@/utils/transform'
 import { constructVideoUrl } from '@/utils/video'
 import Button from '../Button'
 import Icon from '../Icon'
@@ -48,6 +51,8 @@ export interface VideoPlayerProps extends BaseReactPlayerProps {
   disablePlayPauseControlAtCenter?: boolean
   autoPlay?: boolean
   disablePlayPauseViaContainerClick?: boolean
+  /** Previews these transforms (crop/rotate/flip) on the playing video */
+  transformHistory?: readonly MediaTransformHistory[] | null
 }
 
 const scales: TimelineScales = {
@@ -78,6 +83,8 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
       onPause,
       onEnded,
       onReady,
+      transformHistory,
+      style,
 
       ...props
     },
@@ -92,6 +99,11 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
     const [contextMenuPosition, setContextMenuPosition] = useState<{
       x: number
       y: number
+    } | null>(null)
+
+    const [videoSize, setVideoSize] = useState<{
+      width: number
+      height: number
     } | null>(null)
 
     const playerRef = useRef<ReactPlayer | null>(null)
@@ -381,6 +393,19 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
         }) satisfies VideoPlayerRef,
     )
 
+    // Uses the decoded size (not ffprobe's) since the webview & ffmpeg both apply rotation metadata
+    const transformPreview = useMemo(
+      () =>
+        transformHistory && videoSize
+          ? getTransformPreview(
+              transformHistory,
+              videoSize.width,
+              videoSize.height,
+            )
+          : null,
+      [transformHistory, videoSize],
+    )
+
     return (
       <div className={cn('w-full h-full', containerClassName)}>
         <div
@@ -397,51 +422,86 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
             }
           }}
         >
-          <ReactPlayer
-            ref={playerRef}
-            url={videoUrl!}
-            controls
-            width="100%"
-            height="100%"
-            playing={isPlaying}
-            onPlay={() => {
-              setIsPlaying(true)
-              onPlay?.()
-              setTimeout(() => {
-                autoScrollCursorToCurrentTime(scales)
-              }, 100)
-            }}
-            onPause={() => {
-              setIsPlaying(false)
-              onPause?.()
-            }}
-            onEnded={() => {
-              onEnded?.()
-              setIsPlaying(false)
-            }}
-            onProgress={(progress) => {
-              onProgress?.(progress)
-              if (timelinePlayerRef.current) {
-                timelinePlayerRef.current.setTime(progress.playedSeconds)
-                autoScrollCursorToCurrentTime(scales)
+          {/* Wrappers stay mounted (as `display: contents` when unused) so toggling the
+          preview doesn't remount & reload the video */}
+          <div
+            className={
+              transformPreview ? 'relative overflow-hidden mx-auto' : ''
+            }
+            style={
+              transformPreview
+                ? {
+                    aspectRatio: transformPreview.aspectRatio,
+                    // fit within the max height while keeping the output's aspect ratio
+                    width: style?.maxHeight
+                      ? `min(100%, calc(${style.maxHeight} * ${transformPreview.aspectRatio}))`
+                      : '100%',
+                  }
+                : { display: 'contents' }
+            }
+          >
+            <div
+              style={
+                transformPreview
+                  ? transformPreview.frameStyle
+                  : { display: 'contents' }
               }
-            }}
-            onDuration={(duration) => {
-              onDuration?.(duration)
-              setDuration(duration)
-              if (timelinePlayerRef.current) {
-                refreshTimeline()
-              }
-            }}
-            onReady={(player) => {
-              onReady?.(player)
-              toggleClosedCaptions(disableClosedCaptions)
-              if (autoPlay) {
-                setIsPlaying(true)
-              }
-            }}
-            {...props}
-          />
+            >
+              <ReactPlayer
+                ref={playerRef}
+                url={videoUrl!}
+                controls
+                width={transformPreview?.mediaStyle.width ?? '100%'}
+                height={transformPreview?.mediaStyle.height ?? '100%'}
+                style={transformPreview ? transformPreview.mediaStyle : style}
+                playing={isPlaying}
+                onPlay={() => {
+                  setIsPlaying(true)
+                  onPlay?.()
+                  setTimeout(() => {
+                    autoScrollCursorToCurrentTime(scales)
+                  }, 100)
+                }}
+                onPause={() => {
+                  setIsPlaying(false)
+                  onPause?.()
+                }}
+                onEnded={() => {
+                  onEnded?.()
+                  setIsPlaying(false)
+                }}
+                onProgress={(progress) => {
+                  onProgress?.(progress)
+                  if (timelinePlayerRef.current) {
+                    timelinePlayerRef.current.setTime(progress.playedSeconds)
+                    autoScrollCursorToCurrentTime(scales)
+                  }
+                }}
+                onDuration={(duration) => {
+                  onDuration?.(duration)
+                  setDuration(duration)
+                  if (timelinePlayerRef.current) {
+                    refreshTimeline()
+                  }
+                }}
+                onReady={(player) => {
+                  onReady?.(player)
+                  const video = player.getInternalPlayer() as HTMLVideoElement
+                  if (video?.videoWidth && video?.videoHeight) {
+                    setVideoSize({
+                      width: video.videoWidth,
+                      height: video.videoHeight,
+                    })
+                  }
+                  toggleClosedCaptions(disableClosedCaptions)
+                  if (autoPlay) {
+                    setIsPlaying(true)
+                  }
+                }}
+                {...props}
+              />
+            </div>
+          </div>
           {!disablePlayPauseControlAtCenter ? (
             <Button
               ref={playPauseButtonRef}

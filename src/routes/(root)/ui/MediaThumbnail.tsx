@@ -23,6 +23,7 @@ import VideoTrimmerTimeline, {
   VideoTrimmerTimelineRef,
 } from '@/ui/VideoTrimmerTimeline'
 import { formatDuration } from '@/utils/string'
+import { getTransformPreview } from '@/utils/transform'
 import MediaTransformer from './MediaTransformer'
 import { appProxy } from '../-state'
 
@@ -287,15 +288,40 @@ function MediaThumbnail({ mediaIndex }: MediaThumbnailProps) {
     !isProcessCompleted
 
   // Rendered result of the crop/rotate/flip, so the preview reflects the applied transforms
-  const transformedImagePreview =
+  const transformedThumbnailPreview =
     mediaFile?.type === 'image' && shouldTransformImage
       ? mediaFile.config.transformImageConfig?.previewUrl
-      : undefined
+      : mediaFile?.type === 'video' && shouldTransformVideo
+        ? mediaFile.config.transformVideoConfig?.previewUrl
+        : undefined
+
+  // Animated gifs preview the transforms live with css (like videos) instead of the still snapshot
+  const gifTransformPreview = useMemo(
+    () =>
+      mediaFile?.type === 'image' &&
+      mediaFile.extension === 'gif' &&
+      shouldTransformImage &&
+      !isProcessCompleted &&
+      mediaFile.config.transformImageConfig?.transformHistory &&
+      mediaFile.dimensions
+        ? getTransformPreview(
+            mediaFile.config.transformImageConfig.transformHistory,
+            mediaFile.dimensions.width,
+            mediaFile.dimensions.height,
+          )
+        : null,
+    [mediaFile, shouldTransformImage, isProcessCompleted],
+  )
 
   const thumbnailPath =
-    mediaFile?.type === 'video'
-      ? videoThumbnailPath
-      : (transformedImagePreview ?? mediaPath)
+    (gifTransformPreview ? undefined : transformedThumbnailPreview) ??
+    (mediaFile?.type === 'video' ? videoThumbnailPath : mediaPath)
+
+  // The compressed output already has the transforms applied
+  const videoTransformHistory =
+    mediaFile?.type === 'video' && shouldTransformVideo && !isProcessCompleted
+      ? mediaFile.config.transformVideoConfig?.transformHistory
+      : null
 
   // Re-compressing writes to the same output file, so give each result a unique url to
   // bypass the webview's image cache (otherwise a previous result can be shown)
@@ -346,6 +372,7 @@ function MediaThumbnail({ mediaIndex }: MediaThumbnailProps) {
                 }
                 progressInterval={10}
                 controls={false}
+                transformHistory={videoTransformHistory}
                 playPauseOnSpaceKeydown={!showTransformerLayout}
                 autoFocus
                 containerClassName="w-full h-full"
@@ -422,16 +449,36 @@ function MediaThumbnail({ mediaIndex }: MediaThumbnailProps) {
             </motion.div>
           ) : (
             <div className="relative w-fit mx-auto">
-              <Image
-                alt="image to compress"
-                src={imageToRenderSrc}
-                className="object-contain rounded-3xl max-h-[60vh] border-1 border-zinc-200 dark:border-zinc-900 min-w-[100px] min-h-[100px]"
-                onError={() => {
-                  if (!isProcessCompleted) {
-                    handleRegenerateThumbnail('00:00:01.00', 0, true)
-                  }
-                }}
-              />
+              {gifTransformPreview ? (
+                <div
+                  className="relative overflow-hidden rounded-3xl border-1 border-zinc-200 dark:border-zinc-900"
+                  style={{
+                    aspectRatio: gifTransformPreview.aspectRatio,
+                    // fit within 60vh without upscaling past the cropped size
+                    width: `min(calc(60vh * ${gifTransformPreview.aspectRatio}), ${gifTransformPreview.croppedWidth}px)`,
+                    maxWidth: '100%',
+                  }}
+                >
+                  <div style={gifTransformPreview.frameStyle}>
+                    <img
+                      alt="image to compress"
+                      src={imageToRenderSrc}
+                      style={gifTransformPreview.mediaStyle}
+                    />
+                  </div>
+                </div>
+              ) : (
+                <Image
+                  alt="image to compress"
+                  src={imageToRenderSrc}
+                  className="object-contain rounded-3xl max-h-[60vh] border-1 border-zinc-200 dark:border-zinc-900 min-w-[100px] min-h-[100px]"
+                  onError={() => {
+                    if (!isProcessCompleted) {
+                      handleRegenerateThumbnail('00:00:01.00', 0, true)
+                    }
+                  }}
+                />
+              )}
               {!showTransformerLayout ? (
                 <div className="absolute bottom-3 right-3 z-[10] flex items-center gap-3 bg-zinc-900/10 dark:bg-zinc-900/40 min-h-[25px] px-2 rounded-2xl">
                   {mediaFile?.type === 'video' &&
@@ -501,7 +548,13 @@ function MediaThumbnail({ mediaIndex }: MediaThumbnailProps) {
                         : {}
                     }
                   >
-                    <PhotoView src={imageToRenderSrc!}>
+                    <PhotoView
+                      src={
+                        (gifTransformPreview
+                          ? transformedThumbnailPreview
+                          : undefined) ?? imageToRenderSrc!
+                      }
+                    >
                       <div>
                         <Tooltip content="Enlarge image">
                           <Icon

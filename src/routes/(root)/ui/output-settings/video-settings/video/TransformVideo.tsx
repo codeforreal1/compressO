@@ -46,6 +46,12 @@ function TransformVideo({ mediaIndex }: TransformVideoProps) {
             appProxy.state.media[mediaIndex].isConfigDirty = true
 
             if (shouldTransformVideo) {
+              const previewUrl =
+                appProxy.state.media[mediaIndex].config.transformVideoConfig
+                  ?.previewUrl
+              if (previewUrl) {
+                URL.revokeObjectURL(previewUrl)
+              }
               appProxy.state.media[mediaIndex].config.transformVideoConfig =
                 undefined
               appProxy.state.media[mediaIndex].thumbnailPath =

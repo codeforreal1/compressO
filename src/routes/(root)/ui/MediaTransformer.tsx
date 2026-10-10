@@ -31,8 +31,10 @@ function MediaTransformer({ mediaIndex }: MediaTransformerProps) {
     const targetMedia = appProxy.state.media[mediaIndex]
     if (!targetMedia?.config) return
 
+    let previousPreviewUrl: string | undefined
     if (targetMedia.type === 'video') {
       const transformConfig = targetMedia.config.transformVideoConfig
+      previousPreviewUrl = transformConfig?.previewUrl
       targetMedia.config.transformVideoConfig = {
         ...transformConfig,
         transforms: transforms as MediaTransforms,
@@ -42,7 +44,7 @@ function MediaTransformer({ mediaIndex }: MediaTransformerProps) {
       }
     } else if (mediaItem.type === 'image') {
       const transformConfig = targetMedia.config.transformImageConfig
-      const previousPreviewUrl = transformConfig?.previewUrl
+      previousPreviewUrl = transformConfig?.previewUrl
       targetMedia.config.transformImageConfig = {
         ...transformConfig,
         transforms: transforms as MediaTransforms,
@@ -50,14 +52,14 @@ function MediaTransformer({ mediaIndex }: MediaTransformerProps) {
         transformHistory:
           transformConfig?.transformHistory ?? ([] as MediaTransformHistory[]),
       }
+    }
 
-      // Each preview is a full-size blob, so release the old one once nothing points to it
-      if (previousPreviewUrl && previousPreviewUrl !== previewUrl) {
-        if (targetMedia.thumbnailPath === previousPreviewUrl) {
-          targetMedia.thumbnailPath = previewUrl
-        }
-        URL.revokeObjectURL(previousPreviewUrl)
+    // Each preview is a full-size blob, so release the old one once nothing points to it
+    if (previousPreviewUrl && previousPreviewUrl !== previewUrl) {
+      if (targetMedia.thumbnailPath === previousPreviewUrl) {
+        targetMedia.thumbnailPath = previewUrl
       }
+      URL.revokeObjectURL(previousPreviewUrl)
     }
   }
 
