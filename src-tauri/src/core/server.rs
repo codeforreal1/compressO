@@ -203,7 +203,7 @@ fn mime_type_from_path(path: &PathBuf) -> &'static str {
             "webm" => "video/webm",
             "mkv" => "video/x-matroska",
             "avi" => "video/x-msvideo",
-            "ts" => "video/mp2t",
+            "ts" | "mts" | "m2ts" => "video/mp2t",
             "mov" => "video/quicktime",
             "flv" => "video/x-flv",
             "m4v" => "video/x-m4v",

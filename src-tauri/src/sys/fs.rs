@@ -80,8 +80,21 @@ pub fn get_image_dimension(image_path: &str) -> Result<(u32, u32), String> {
 
     match image.into_dimensions() {
         Ok(dimension) => Ok((dimension.0, dimension.1)),
-        Err(err) => Err(err.to_string()),
+        Err(err) => get_heif_dimension(image_path).ok_or(err.to_string()),
     }
+}
+
+/// Read dimension of AVIF/HEIF images (which the image crate can't decode) from
+/// the `ispe` (image spatial extents) property box.
+fn get_heif_dimension(image_path: &str) -> Option<(u32, u32)> {
+    let data = fs::read(image_path).ok()?;
+    let header = &data[..data.len().min(64 * 1024)];
+    let box_start = header.windows(4).position(|w| w == b"ispe")?;
+    // box type (4) + version & flags (4), followed by u32 width and u32 height
+    let dims = header.get(box_start + 8..box_start + 16)?;
+    let width = u32::from_be_bytes(dims[0..4].try_into().ok()?);
+    let height = u32::from_be_bytes(dims[4..8].try_into().ok()?);
+    Some((width, height))
 }
 
 // Parse & extract dimension from svg

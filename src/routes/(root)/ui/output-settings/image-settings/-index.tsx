@@ -72,18 +72,26 @@ function ImageSettings({ mediaIndex }: ImageSettingsProps) {
               {(['svg'] as ImageExtensionType[]).includes(
                 image?.extension as ImageExtensionType,
               ) &&
-              (['png', 'jpg', 'jpeg', 'webp'] as ImageExtensionType[]).includes(
-                convertToExtension as ImageExtensionType,
-              ) ? (
+              (
+                ['png', 'jpg', 'jpeg', 'webp', 'avif'] as ImageExtensionType[]
+              ).includes(convertToExtension as ImageExtensionType) ? (
                 <div>
                   <SvgScaleFactor mediaIndex={mediaIndex} />
                   <Divider className="my-3 !mt-6" />
                 </div>
               ) : null}
 
-              {(
-                ['png', 'jpg', 'jpeg', 'webp', 'gif'] as ImageExtensionType[]
-              ).includes(imageExtension as ImageExtensionType) &&
+              {[
+                'png',
+                'jpg',
+                'jpeg',
+                'webp',
+                'gif',
+                'avif',
+                'bmp',
+                'tiff',
+                'tif',
+              ].includes(imageExtension ?? '') &&
               !(['svg'] as ImageExtensionType[]).includes(
                 convertToExtension as ImageExtensionType,
               ) ? (

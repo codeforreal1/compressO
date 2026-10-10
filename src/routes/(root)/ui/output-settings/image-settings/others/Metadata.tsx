@@ -76,10 +76,10 @@ function Metadata({ mediaIndex }: MetadataProps) {
     isCompressing ||
     isProcessCompleted ||
     isLoadingMediaFiles ||
-    (['gif', 'svg', 'webp'] as ImageExtension[]).includes(
-      image?.extension as ImageExtension,
+    ['gif', 'svg', 'webp', 'avif', 'bmp', 'tiff', 'tif'].includes(
+      image?.extension ?? '',
     ) ||
-    (['svg', 'webp'] as ImageExtension[]).includes(
+    (['svg', 'webp', 'avif'] as ImageExtension[]).includes(
       convertToExtension as ImageExtension,
     )
 

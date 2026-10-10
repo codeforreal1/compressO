@@ -48,3 +48,21 @@ export async function constructVideoUrl(filePath: string): Promise<string> {
 
   return filePath
 }
+
+/** Container a video is written as, resolving "Same as input" and input-only aliases. */
+export function getOutputVideoContainer(
+  convertToExtension: string | undefined,
+  sourceExtension: string | null | undefined,
+) {
+  const extension =
+    convertToExtension === '-' ? sourceExtension : convertToExtension
+  switch (extension) {
+    case 'm4v':
+      return 'mp4'
+    case 'mts':
+    case 'm2ts':
+      return 'ts'
+    default:
+      return extension ?? ''
+  }
+}

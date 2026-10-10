@@ -26,7 +26,10 @@ use std::sync::Arc;
 use tauri::{AppHandle, Emitter, Listener, Manager};
 use tauri_plugin_shell::ShellExt;
 
-pub const EXTENSIONS: [&str; 6] = ["png", "jpg", "jpeg", "webp", "gif", "svg"];
+pub const EXTENSIONS: [&str; 7] = ["png", "jpg", "jpeg", "webp", "gif", "svg", "avif"];
+
+/// Formats accepted as input but never written; they're converted to PNG by default.
+pub const INPUT_ONLY_EXTENSIONS: [&str; 3] = ["bmp", "tiff", "tif"];
 
 pub struct ImageCompressor {
     app: AppHandle,
@@ -93,6 +96,11 @@ impl ImageCompressor {
         let original_metadata = get_file_metadata(input_path)?;
         let original_extension = original_metadata.extension.to_lowercase();
 
+        let convert_to_extension = if INPUT_ONLY_EXTENSIONS.contains(&convert_to_extension) {
+            "png"
+        } else {
+            convert_to_extension
+        };
         let output_extension = convert_to_extension;
 
         let supported = EXTENSIONS.iter().any(|&ext| ext == output_extension);
@@ -110,8 +118,15 @@ impl ImageCompressor {
 
         let need_conversion = convert_to_extension != original_extension;
 
+        // avif is decoded to png upfront, so its intermediate files hold png data
+        let working_extension = if original_extension == "avif" {
+            "png"
+        } else {
+            original_extension.as_str()
+        };
+
         let intermediate_path: Option<PathBuf> = if need_conversion {
-            let temp_filename = format!("{}_temp.{}", image_id, original_extension);
+            let temp_filename = format!("{}_temp.{}", image_id, working_extension);
             Some(
                 [self.assets_dir.clone(), PathBuf::from(&temp_filename)]
                     .iter()
@@ -126,11 +141,29 @@ impl ImageCompressor {
             None => nanoid!(),
         };
 
+        let decoded_avif_path: Option<PathBuf> = if original_extension == "avif" {
+            let decoded_path: PathBuf = [
+                self.assets_dir.clone(),
+                PathBuf::from(format!("{}_decoded.png", image_id)),
+            ]
+            .iter()
+            .collect();
+            self.decode_avif_to_png(input_path, decoded_path.to_str().unwrap())
+                .await?;
+            Some(decoded_path)
+        } else {
+            None
+        };
+        let source_path = decoded_avif_path
+            .as_ref()
+            .and_then(|p| p.to_str())
+            .unwrap_or(input_path);
+
         let transform_input_path = if !original_extension.eq("svg")
             && (dimensions.is_some() || transform_history.is_some())
         {
             let transform_temp_filename =
-                format!("{}_transformed.{}", image_id, original_extension);
+                format!("{}_transformed.{}", image_id, working_extension);
             let transform_temp_path: PathBuf = [
                 self.assets_dir.clone(),
                 PathBuf::from(&transform_temp_filename),
@@ -158,7 +191,7 @@ impl ImageCompressor {
             };
 
             self.apply_spatial_transformations(
-                input_path,
+                source_path,
                 transform_temp_path.to_str().unwrap(),
                 filtered_dimensions,
                 transform_history,
@@ -174,7 +207,7 @@ impl ImageCompressor {
 
             transform_temp_path.to_str().unwrap().to_string()
         } else {
-            input_path.to_string()
+            source_path.to_string()
         };
 
         let compression_output_path = intermediate_path.as_ref().unwrap_or(&output_path);
@@ -223,6 +256,17 @@ impl ImageCompressor {
                 )
                 .await?
             }
+            "avif" if !need_conversion => {
+                self.compress_avif(
+                    &transform_input_path,
+                    compression_output_path.to_str().unwrap(),
+                    quality,
+                )
+                .await?
+            }
+            "bmp" | "tiff" | "tif" | "avif" => {
+                // No dedicated compressor; these are re-encoded during the conversion below
+            }
             "svg" => {
                 if convert_to_extension != "svg" {
                     // Completely skip the compression for svg if converting to another format
@@ -250,7 +294,7 @@ impl ImageCompressor {
         if need_conversion {
             let convert_to_ext = convert_to_extension;
             match original_extension.as_str() {
-                "png" | "jpg" | "jpeg" | "webp" => {
+                "png" | "jpg" | "jpeg" | "webp" | "bmp" | "tiff" | "tif" | "avif" => {
                     if convert_to_ext.eq("svg") {
                         let svg_result = self.convert_raster_to_svg_img(
                             compression_output_path.to_str().unwrap(),
@@ -295,6 +339,13 @@ impl ImageCompressor {
                         } else {
                             svg_result?;
                         }
+                    } else if convert_to_ext.eq("avif") {
+                        self.compress_avif(
+                            compression_output_path.to_str().unwrap(),
+                            output_path.to_str().unwrap(),
+                            quality,
+                        )
+                        .await?;
                     } else {
                         self.convert_image_via_ffmpeg(
                             compression_output_path.to_str().unwrap(),
@@ -304,6 +355,23 @@ impl ImageCompressor {
                         )
                         .await?;
                     }
+                }
+                "svg" if convert_to_ext.eq("avif") => {
+                    let temp_png_path = format!(
+                        "{}_temp_png.png",
+                        output_path.to_str().unwrap().trim_end_matches(".avif")
+                    );
+                    self.convert_svg_to_raster_img(
+                        compression_output_path.to_str().unwrap(),
+                        &temp_png_path,
+                        "png",
+                        svg_scale_factor,
+                    )?;
+                    let avif_result = self
+                        .compress_avif(&temp_png_path, output_path.to_str().unwrap(), quality)
+                        .await;
+                    let _ = fs::remove_file(&temp_png_path);
+                    avif_result?;
                 }
                 "svg" => self.convert_svg_to_raster_img(
                     compression_output_path.to_str().unwrap(),
@@ -318,6 +386,10 @@ impl ImageCompressor {
             if let Some(intermediate) = intermediate_path {
                 let _ = fs::remove_file(&intermediate);
             }
+        }
+
+        if let Some(decoded_avif) = decoded_avif_path {
+            let _ = fs::remove_file(&decoded_avif);
         }
 
         if !strip_metadata.unwrap_or(true) {
@@ -634,6 +706,70 @@ impl ImageCompressor {
         std::fs::write(&output_path, webp_data.to_vec()).map_err(|e| e.to_string())?;
 
         Ok(())
+    }
+
+    async fn compress_avif(
+        &self,
+        input_path: &str,
+        output_path: &str,
+        quality: u8,
+    ) -> Result<(), String> {
+        // Intermediate files may carry another format's extension, so detect it from content
+        let img = ImageReader::open(input_path)
+            .and_then(|reader| reader.with_guessed_format())
+            .map_err(|e| e.to_string())?
+            .decode()
+            .map_err(|e| e.to_string())?;
+
+        let width = img.width();
+        let height = img.height();
+        let rgba: Vec<u8> = img.to_rgba8().into_raw();
+
+        let file = fs::File::create(output_path).map_err(|e| e.to_string())?;
+        let mut writer = BufWriter::new(file);
+        // speed: 1 (slowest, smallest) - 10 (fastest)
+        let encoder = image::codecs::avif::AvifEncoder::new_with_speed_quality(
+            &mut writer,
+            6,
+            quality.clamp(1, 100),
+        );
+        encoder
+            .write_image(&rgba, width, height, image::ExtendedColorType::Rgba8)
+            .map_err(|e| e.to_string())?;
+
+        Ok(())
+    }
+
+    /// The image crate can't decode avif, so let ffmpeg decode it to png first
+    async fn decode_avif_to_png(&self, input_path: &str, output_path: &str) -> Result<(), String> {
+        // ffmpeg exposes the avif alpha plane as a second stream, so merge it back when present
+        let with_alpha = vec![
+            "-i",
+            input_path,
+            "-filter_complex",
+            "[0:v:0][0:v:1]alphamerge",
+            "-frames:v",
+            "1",
+            "-y",
+            output_path,
+        ];
+        let without_alpha = vec!["-i", input_path, "-frames:v", "1", "-y", output_path];
+
+        for cmd_args in [with_alpha, without_alpha] {
+            let ffmpeg = FFMPEG::new(&self.app)?;
+            let mut ffmpeg_cmd = ffmpeg.get_ffmpeg_command()?;
+            ffmpeg_cmd.args(&cmd_args);
+
+            let executor = MediaProcessExecutorBuilder::new(self.app.clone())
+                .command(ffmpeg_cmd)
+                .build()?;
+
+            if executor.spawn_and_wait().await?.success() && Path::new(output_path).exists() {
+                return Ok(());
+            }
+        }
+
+        Err(String::from("Failed to decode avif image."))
     }
 
     async fn compress_gif(

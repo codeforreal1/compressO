@@ -25,7 +25,18 @@ pub struct FFMPEG {
     assets_dir: PathBuf,
 }
 
-const EXTENSIONS: [&str; 7] = ["mp4", "mov", "webm", "avi", "mkv", "ts", "gif"];
+const EXTENSIONS: [&str; 10] = [
+    "mp4", "mov", "webm", "avi", "mkv", "ts", "gif", "m4v", "mts", "m2ts",
+];
+
+/// Container whose capabilities (codecs, subtitles, thumbnails) apply to the extension.
+fn output_container(extension: &str) -> &str {
+    match extension {
+        "m4v" => "mp4",
+        "mts" | "m2ts" => "ts",
+        _ => extension,
+    }
+}
 
 impl FFMPEG {
     pub fn new(app: &tauri::AppHandle) -> Result<Self, String> {
@@ -73,6 +84,7 @@ impl FFMPEG {
         if !EXTENSIONS.contains(&convert_to_extension) {
             return Err(String::from("Invalid convert to extension."));
         }
+        let container = output_container(convert_to_extension);
 
         let audio_streams = {
             let mut ffprobe = FFPROBE::new(&self.app)?;
@@ -122,7 +134,7 @@ impl FFMPEG {
         // Track input indices for mapping
         let mut input_index: usize = 1; // 0 is video, 1+ are thumbnails/subtitles
 
-        if !is_gif_target && convert_to_extension != "webm" && convert_to_extension != "ts" {
+        if !is_gif_target && container != "webm" && container != "ts" {
             if let Some(thumb_path) = custom_thumbnail_path {
                 if thumb_path.len() > 0 {
                     cmd_args.extend_from_slice(&["-i", thumb_path]);
@@ -229,7 +241,7 @@ impl FFMPEG {
             }
 
             if is_gif_target {
-                default_codec(convert_to_extension)
+                default_codec(container)
             } else if let Some(codec) = video_codec {
                 codec.to_string()
             } else {
@@ -247,17 +259,17 @@ impl FFMPEG {
                                 stream.codec.clone()
                             };
                             if original_extension == convert_to_extension
-                                || is_codec_compatible(&source_codec, convert_to_extension)
+                                || is_codec_compatible(&source_codec, container)
                             {
                                 source_codec
                             } else {
-                                default_codec(convert_to_extension)
+                                default_codec(container)
                             }
                         }
-                        None => default_codec(convert_to_extension),
+                        None => default_codec(container),
                     }
                 } else {
-                    default_codec(convert_to_extension)
+                    default_codec(container)
                 }
             }
         };
@@ -697,7 +709,7 @@ impl FFMPEG {
 
                 for (idx, stream) in existing_subtitle_streams.iter().enumerate() {
                     let is_bitmap = bitmap_codecs.contains(&stream.codec.as_str());
-                    let output_container = convert_to_extension;
+                    let output_container = container;
 
                     if is_bitmap && output_container != "mkv" {
                         log::warn!(
@@ -742,15 +754,15 @@ impl FFMPEG {
             }
 
             for (sub_input_idx, language, title) in subtitle_input_indices.iter() {
-                if convert_to_extension == "avi" || convert_to_extension == "ts" {
-                    log::warn!("[ffmpeg] Skipping external subtitle file - {} container has limited subtitle support", convert_to_extension);
+                if container == "avi" || container == "ts" {
+                    log::warn!("[ffmpeg] Skipping external subtitle file - {} container has limited subtitle support", container);
                     continue;
                 }
 
                 subtitle_args_owned.push("-map".to_string());
                 subtitle_args_owned.push(format!("{}:s", sub_input_idx));
 
-                let subtitle_codec = match convert_to_extension {
+                let subtitle_codec = match container {
                     "mkv" => "copy",
                     "webm" => "webvtt",
                     _ => "mov_text",
@@ -775,8 +787,8 @@ impl FFMPEG {
 
         if !is_gif_target
             && custom_thumbnail_path.is_some()
-            && convert_to_extension != "webm"
-            && convert_to_extension != "ts"
+            && container != "webm"
+            && container != "ts"
         {
             if let Some(thumb_path) = custom_thumbnail_path {
                 if thumb_path.len() > 0 {

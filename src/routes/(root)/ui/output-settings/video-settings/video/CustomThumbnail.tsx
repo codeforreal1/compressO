@@ -13,6 +13,7 @@ import Switch from '@/components/Switch'
 import TextInput from '@/components/TextInput'
 import { slideDownTransition } from '@/utils/animation'
 import { cn } from '@/utils/tailwind'
+import { getOutputVideoContainer } from '@/utils/video'
 import { appProxy, normalizeBatchMediaConfig } from '../../../../-state'
 
 type CustomThumbnailProps = {
@@ -42,6 +43,10 @@ function CustomThumbnail({ mediaIndex }: CustomThumbnailProps) {
     shouldEnableCustomThumbnail,
     convertToExtension,
   } = config ?? commonConfigForBatchCompression.videoConfig ?? {}
+  const outputContainer = getOutputVideoContainer(
+    convertToExtension,
+    video?.extension,
+  )
 
   const thumbnailFileName = customThumbnailPath
     ? customThumbnailPath.split(/[/\\]/).pop()
@@ -124,10 +129,10 @@ function CustomThumbnail({ mediaIndex }: CustomThumbnailProps) {
     isCompressing ||
     isProcessCompleted ||
     isLoadingMediaFiles ||
-    (['webm', 'ts', 'gif'] as string[]).includes(convertToExtension ?? '')
+    (['webm', 'ts', 'gif'] as string[]).includes(outputContainer)
 
   const isThumbnailUnsupported =
-    convertToExtension === 'webm' || convertToExtension === 'ts'
+    outputContainer === 'webm' || outputContainer === 'ts'
 
   return (
     <>
@@ -203,7 +208,7 @@ function CustomThumbnail({ mediaIndex }: CustomThumbnailProps) {
               )}
               {isThumbnailUnsupported ? (
                 <p className="text-xs italic text-danger-300 mt-2">
-                  {convertToExtension} does not support custom thumbnail
+                  {outputContainer} does not support custom thumbnail
                 </p>
               ) : null}
             </div>

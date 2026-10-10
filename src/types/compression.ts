@@ -18,8 +18,20 @@ export const extensions = {
     webp: 'webp',
     gif: 'gif',
     svg: 'svg',
+    avif: 'avif',
   },
 } as const
+
+// Formats that can be opened but aren't offered as an output extension
+export const inputOnlyExtensions = {
+  video: ['m4v', 'mts', 'm2ts'],
+  image: ['bmp', 'tiff', 'tif'],
+} as const
+
+export const inputExtensions = {
+  video: [...Object.keys(extensions.video), ...inputOnlyExtensions.video],
+  image: [...Object.keys(extensions.image), ...inputOnlyExtensions.image],
+}
 
 export type VideoExtension = keyof typeof extensions.video
 export type ImageExtension = keyof typeof extensions.image

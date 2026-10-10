@@ -49,8 +49,13 @@
         "role": "Editor"
       },
       {
-        "ext": ["ts"],
+        "ext": ["ts", "mts", "m2ts"],
         "mimeType": "video/mp2t",
+        "role": "Editor"
+      },
+      {
+        "ext": ["m4v"],
+        "mimeType": "video/x-m4v",
         "role": "Editor"
       },
       {
@@ -76,6 +81,21 @@
       {
         "ext": ["svg"],
         "mimeType": "image/svg+xml",
+        "role": "Editor"
+      },
+      {
+        "ext": ["avif"],
+        "mimeType": "image/avif",
+        "role": "Editor"
+      },
+      {
+        "ext": ["bmp"],
+        "mimeType": "image/bmp",
+        "role": "Editor"
+      },
+      {
+        "ext": ["tiff", "tif"],
+        "mimeType": "image/tiff",
         "role": "Editor"
       }
     ],

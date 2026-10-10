@@ -14,6 +14,7 @@ import {
   slideDownStaggerAnimation,
   slideDownTransition,
 } from '@/utils/animation'
+import { getOutputVideoContainer } from '@/utils/video'
 import { appProxy, normalizeBatchMediaConfig } from '../../../../-state'
 
 type SubtitlesProps = {
@@ -412,8 +413,11 @@ function Subtitles({ mediaIndex }: SubtitlesProps) {
     isLoadingMediaFiles ||
     convertToExtension === 'gif'
 
-  const isUnsupported =
-    convertToExtension === 'avi' || convertToExtension === 'ts'
+  const outputContainer = getOutputVideoContainer(
+    convertToExtension,
+    video?.extension,
+  )
+  const isUnsupported = outputContainer === 'avi' || outputContainer === 'ts'
 
   return (
     <>
@@ -528,7 +532,7 @@ function Subtitles({ mediaIndex }: SubtitlesProps) {
 
               {isUnsupported ? (
                 <p className="text-xs italic text-danger-300 mt-2">
-                  {convertToExtension} does not support soft subtitles
+                  {outputContainer} does not support soft subtitles
                 </p>
               ) : null}
             </motion.div>

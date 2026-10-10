@@ -18,7 +18,11 @@ import {
   getSvgDimension,
 } from '@/tauri/commands/fs'
 import { convertSvgToPng } from '@/tauri/commands/image'
-import { extensions } from '@/types/compression'
+import {
+  extensions,
+  inputExtensions,
+  inputOnlyExtensions,
+} from '@/types/compression'
 import { formatBytes } from '@/utils/fs'
 import {
   appProxy,
@@ -56,15 +60,13 @@ function Root() {
     async (path: string | string[]) => {
       if (appProxy.state.isCompressing) return
 
-      const videoExtensions = Object.keys(extensions.video)
-      const imageExtensions = Object.keys(extensions.image)
-
       const rawPaths = Array.isArray(path) ? path : [path]
       const mediaPaths = rawPaths.filter((filePath) => {
         const ext = filePath.split('.').pop()?.toLowerCase()
         return (
           ext &&
-          (videoExtensions.includes(ext) || imageExtensions.includes(ext))
+          (inputExtensions.video.includes(ext) ||
+            inputExtensions.image.includes(ext))
         )
       })
 
@@ -115,9 +117,13 @@ function Root() {
               previewMode: 'video',
             }
 
-            if (fileMetadata?.extension) {
+            // input-only formats stay "Same as input" since they aren't in the extension list
+            if (
+              videoState.extension &&
+              videoState.extension in extensions.video
+            ) {
               videoState.config.convertToExtension =
-                fileMetadata?.extension as keyof (typeof extensions)['video']
+                videoState.extension as keyof (typeof extensions)['video']
             }
 
             if (videoInfo) {
@@ -172,13 +178,28 @@ function Root() {
               },
             }
 
-            // create a static image thumbnail for gif due to performance reason
-            if (path.endsWith('.gif')) {
+            // input-only formats can't be written back, so default to lossless png
+            if (
+              (inputOnlyExtensions.image as readonly string[]).includes(
+                imageState.extension ?? '',
+              )
+            ) {
+              imageState.config.convertToExtension = 'png'
+            }
+
+            // create a static image thumbnail for gif due to performance reason,
+            // and for tiff since webviews other than Safari can't display it
+            const isTiff = ['tiff', 'tif'].includes(imageState.extension ?? '')
+            if (path.endsWith('.gif') || isTiff) {
               try {
-                const gifThumbnail = await generateVideoThumbnail(path)
-                imageState.thumbnailPathRaw = gifThumbnail.filePath
+                const thumbnail = await generateVideoThumbnail(
+                  path,
+                  // a still image has no frame at the default 1s timestamp
+                  isTiff ? '00:00:00.00' : undefined,
+                )
+                imageState.thumbnailPathRaw = thumbnail.filePath
                 imageState.thumbnailPath = core.convertFileSrc(
-                  gifThumbnail.filePath,
+                  thumbnail.filePath,
                 )
               } catch {}
             }
@@ -225,8 +246,8 @@ function Root() {
         multiple: true,
         title: `Select images/videos to compress.`,
         filters: [
-          { name: 'video', extensions: Object.keys(extensions?.video) },
-          { name: 'image', extensions: Object.keys(extensions?.image) },
+          { name: 'video', extensions: inputExtensions.video },
+          { name: 'image', extensions: inputExtensions.image },
         ],
       })
       if (filePath == null) {
