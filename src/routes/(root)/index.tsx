@@ -1,279 +1,39 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { core } from '@tauri-apps/api'
-import { open } from '@tauri-apps/plugin-dialog'
 import { motion } from 'framer-motion'
-import cloneDeep from 'lodash/cloneDeep'
-import React, { useCallback } from 'react'
 import { useSnapshot } from 'valtio'
 
 import Icon from '@/components/Icon'
 import Layout from '@/components/Layout'
 import Spinner from '@/components/Spinner'
-import { toast } from '@/components/Toast'
-import { generateVideoThumbnail } from '@/tauri/commands/ffmpeg'
-import { getVideoBasicInfo } from '@/tauri/commands/ffprobe'
-import {
-  getFileMetadata,
-  getImageDimension,
-  getSvgDimension,
-} from '@/tauri/commands/fs'
-import { convertSvgToPng } from '@/tauri/commands/image'
-import {
-  extensions,
-  inputExtensions,
-  inputOnlyExtensions,
-} from '@/types/compression'
-import { CollectedFile } from '@/types/fs'
-import { formatBytes } from '@/utils/fs'
-import {
-  appProxy,
-  imageConfigInitialState,
-  videoConfigInitialState,
-} from './-state'
+import { addMedia, pickMediaToAdd } from './-media'
+import { appProxy } from './-state'
 import Setting, { SettingsDialogHost } from './ui/app-settings/Setting'
 import DragAndDropFiles from './ui/DragAndDropFiles'
 import MediaConfig from './ui/MediaConfig'
 import OpenWithApp from './ui/OpenWithApp'
 import ReadFilesFromClipboard from './ui/ReadFilesFromClipboard'
-import { Image, Video } from '../../types/app'
 
 export const Route = createFileRoute('/(root)/')({
   component: Root,
 })
 
-async function getSvgDimensionSilently(
-  path: string,
-): Promise<[number, number] | null> {
-  try {
-    const dimension = await getSvgDimension(path)
-    return dimension
-  } catch {
-    return null
-  }
-}
-
-// File paths (picker, Open with) or files from dropped/pasted folders
-type MediaSelection = string | CollectedFile
-
 function Root() {
-  const { state, resetProxy } = useSnapshot(appProxy)
+  const { state } = useSnapshot(appProxy)
 
-  const { media, isLoadingMediaFiles, totalSelectedMediaCount } = state
-
-  const handleMediaSelection = React.useCallback(
-    async (selection: MediaSelection | MediaSelection[]) => {
-      if (appProxy.state.isCompressing) return
-
-      const selectedFiles = (
-        Array.isArray(selection) ? selection : [selection]
-      ).map((file) =>
-        typeof file === 'string' ? { path: file, relativeDir: '' } : file,
-      )
-      const mediaPaths = selectedFiles.filter(({ path: filePath }) => {
-        const ext = filePath.split('.').pop()?.toLowerCase()
-        return (
-          ext &&
-          (inputExtensions.video.includes(ext) ||
-            inputExtensions.image.includes(ext))
-        )
-      })
-
-      if (mediaPaths.length === 0) {
-        toast.error('No valid media files found.')
-        return
-      }
-
-      appProxy.state.isLoadingMediaFiles = true
-      appProxy.state.totalSelectedMediaCount = mediaPaths.length
-
-      let corruptedFilesCount = 0
-      for (const index in mediaPaths) {
-        const { path, relativeDir } = mediaPaths[index]
-        try {
-          const fileMetadata = await getFileMetadata(path)
-          const mediaType = fileMetadata.mimeType.startsWith('video')
-            ? 'video'
-            : 'image'
-
-          if (
-            !fileMetadata ||
-            (typeof fileMetadata?.size === 'number' && mediaType === 'video'
-              ? fileMetadata?.size <= 1000
-              : fileMetadata?.size < 100)
-          ) {
-            corruptedFilesCount++
-            continue
-          }
-
-          if (mediaType === 'video') {
-            const [videoInfo, videoThumbnail] = await Promise.all([
-              getVideoBasicInfo(path),
-              generateVideoThumbnail(path),
-            ])
-
-            const videoState: Video & { type: 'video' } = {
-              type: 'video',
-              id: videoThumbnail?.id ?? `${index}-${+new Date()}`,
-              pathRaw: path,
-              path: core.convertFileSrc(path),
-              relativeDir,
-              fileName: fileMetadata?.fileName,
-              mimeType: fileMetadata?.mimeType,
-              sizeInBytes: fileMetadata?.size,
-              size: formatBytes(fileMetadata?.size ?? 0),
-              extension: fileMetadata?.extension?.toLowerCase?.(),
-              config: cloneDeep(videoConfigInitialState),
-              previewMode: 'video',
-            }
-
-            // input-only formats stay "Same as input" since they aren't in the extension list
-            if (
-              videoState.extension &&
-              videoState.extension in extensions.video
-            ) {
-              videoState.config.convertToExtension =
-                videoState.extension as keyof (typeof extensions)['video']
-            }
-
-            if (videoInfo) {
-              const dimensions = videoInfo.dimensions
-              if (
-                !Number.isNaN(videoInfo.dimensions?.[0]) &&
-                !Number.isNaN(videoInfo.dimensions?.[1])
-              ) {
-                videoState.dimensions = {
-                  width: dimensions[0],
-                  height: dimensions[1],
-                }
-              }
-
-              if (videoInfo.duration) {
-                videoState.videoDuration = videoInfo.duration
-              }
-
-              if (videoInfo.fps) {
-                videoState.fps = Math.ceil(videoInfo.fps)
-              }
-            }
-
-            if (videoThumbnail) {
-              videoState.id = videoThumbnail?.id
-              videoState.thumbnailPathRaw = videoThumbnail?.filePath
-              videoState.thumbnailPath = core.convertFileSrc(
-                videoThumbnail?.filePath,
-              )
-            }
-            appProxy.state.media.push(videoState)
-          } else if (mediaType === 'image') {
-            const imageDimension = await (path.endsWith('.svg')
-              ? getSvgDimensionSilently(path)
-              : getImageDimension(path))
-            const imageState: Image & { type: 'image' } = {
-              type: 'image',
-              id: `${index}-${+new Date()}`,
-              pathRaw: path,
-              path: core.convertFileSrc(path),
-              relativeDir,
-              thumbnailPathRaw: path,
-              thumbnailPath: core.convertFileSrc(path),
-              fileName: fileMetadata?.fileName,
-              mimeType: fileMetadata?.mimeType,
-              sizeInBytes: fileMetadata?.size,
-              size: formatBytes(fileMetadata?.size ?? 0),
-              extension: fileMetadata?.extension?.toLowerCase?.(),
-              config: cloneDeep(imageConfigInitialState),
-              dimensions: {
-                width: imageDimension?.[0] ?? 0,
-                height: imageDimension?.[1] ?? 0,
-              },
-            }
-
-            // input-only formats can't be written back, so default to lossless png
-            if (
-              (inputOnlyExtensions.image as readonly string[]).includes(
-                imageState.extension ?? '',
-              )
-            ) {
-              imageState.config.convertToExtension = 'png'
-            }
-
-            // create a static image thumbnail for gif due to performance reason,
-            // and for tiff since webviews other than Safari can't display it
-            const isTiff = ['tiff', 'tif'].includes(imageState.extension ?? '')
-            if (path.endsWith('.gif') || isTiff) {
-              try {
-                const thumbnail = await generateVideoThumbnail(
-                  path,
-                  // a still image has no frame at the default 1s timestamp
-                  isTiff ? '00:00:00.00' : undefined,
-                )
-                imageState.thumbnailPathRaw = thumbnail.filePath
-                imageState.thumbnailPath = core.convertFileSrc(
-                  thumbnail.filePath,
-                )
-              } catch {}
-            }
-
-            // create a static image thumbnail for large svg due to performance reason
-            if (
-              path.endsWith('.svg') &&
-              fileMetadata?.size >= 0.5 * 1024 * 1024
-            ) {
-              try {
-                const outputPngPath = await convertSvgToPng(
-                  path,
-                  imageState.id!,
-                )
-                imageState.thumbnailPathRaw = outputPngPath
-                imageState.thumbnailPath = core.convertFileSrc(outputPngPath)
-              } catch {}
-            }
-            appProxy.state.media.push(imageState)
-          } else {
-            throw new Error('Invalid media type.')
-          }
-        } catch {
-          corruptedFilesCount++
-        }
-      }
-      appProxy.state.isLoadingMediaFiles = false
-      if (corruptedFilesCount > 0) {
-        toast.error(
-          `${mediaPaths.length > 1 ? 'Some files seem' : 'File seems'} to be corrupted/invalid ${mediaPaths.length > 1 ? 'and are filtered out' : ''}.`,
-        )
-        if (corruptedFilesCount === mediaPaths.length) {
-          resetProxy()
-        }
-      }
-    },
-    [resetProxy],
-  )
-
-  const pickMediaToCompress = useCallback(async () => {
-    try {
-      const filePath = await open({
-        directory: false,
-        multiple: true,
-        title: `Select images/videos to compress.`,
-        filters: [
-          { name: 'video', extensions: inputExtensions.video },
-          { name: 'image', extensions: inputExtensions.image },
-        ],
-      })
-      if (filePath == null) {
-        const message = 'File selection config is invalid.'
-        // biome-ignore lint/suspicious/noConsole: <>
-        console.warn(message)
-        return
-      }
-      handleMediaSelection(filePath)
-    } catch (error: any) {
-      toast.error(error?.message ?? 'Could not select media.')
-    }
-  }, [handleMediaSelection])
+  const {
+    media,
+    isLoadingMediaFiles,
+    totalSelectedMediaCount,
+    isCompressing,
+    isProcessCompleted,
+    isAppendingMedia,
+  } = state
 
   const screen = isLoadingMediaFiles ? (
-    !media.length || (totalSelectedMediaCount > 1 && media.length === 1) ? (
+    // Spinner until a fresh multi-media selection has more than one media (to not flash the single
+    // media view); when adding to an existing selection, the current view stays visible
+    !media.length ||
+    (!isAppendingMedia && totalSelectedMediaCount > 1 && media.length === 1) ? (
       <div className="w-full h-full flex justify-center items-center">
         <Spinner />
       </div>
@@ -301,10 +61,10 @@ function Root() {
             type: 'spring',
           },
         }}
-        onClick={pickMediaToCompress}
+        onClick={pickMediaToAdd}
         onKeyDown={(evt) => {
           if (evt?.key === 'Enter') {
-            pickMediaToCompress()
+            pickMediaToAdd()
           }
         }}
       >
@@ -317,13 +77,6 @@ function Root() {
           </p>
         </div>
       </motion.div>
-      <DragAndDropFiles
-        multiple
-        disable={media.length > 0}
-        onFile={handleMediaSelection}
-      />
-      <OpenWithApp onFiles={handleMediaSelection} />
-      <ReadFilesFromClipboard onFiles={handleMediaSelection} />
       <Setting />
     </Layout>
   )
@@ -331,6 +84,14 @@ function Root() {
   return (
     <>
       {screen}
+      {/* Available on every screen, so media can also be added to an existing selection */}
+      <DragAndDropFiles
+        multiple
+        disable={isCompressing || isProcessCompleted}
+        onFile={addMedia}
+      />
+      <OpenWithApp onFiles={addMedia} />
+      <ReadFilesFromClipboard onFiles={addMedia} />
       <SettingsDialogHost />
     </>
   )

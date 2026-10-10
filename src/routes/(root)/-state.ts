@@ -81,6 +81,7 @@ const appInitialState: App = {
   media: [],
   isLoadingMediaFiles: false,
   totalSelectedMediaCount: 0,
+  isAppendingMedia: false,
   currentMediaIndex: 0,
   isCompressing: false,
   totalProgress: 0,

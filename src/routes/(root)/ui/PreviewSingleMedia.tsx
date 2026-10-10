@@ -9,6 +9,7 @@ import Icon from '@/components/Icon'
 import Image from '@/components/Image'
 import { CircularProgress } from '@/components/Progress'
 import Switch from '@/components/Switch'
+import Tooltip from '@/components/Tooltip'
 import * as constants from '@/constants'
 import { Ripple } from '@/ui/Patterns/Ripple'
 import { slideUpTransition, zoomInTransition } from '@/utils/animation'
@@ -19,6 +20,7 @@ import MediaOutputCompareSlider from './MediaOutputCompareSlider'
 import MediaThumbnail from './MediaThumbnail'
 import styles from './styles.module.css'
 import VideoInfo from './VideoInfo'
+import { pickMediaToAdd } from '../-media'
 import { appProxy } from '../-state'
 
 type PreviewSingleMediaProps = {
@@ -29,7 +31,13 @@ function PreviewSingleMedia({ mediaIndex }: PreviewSingleMediaProps) {
   if (mediaIndex < 0) return
 
   const {
-    state: { media, isProcessCompleted, isCompressing, showMediaInfo },
+    state: {
+      media,
+      isProcessCompleted,
+      isCompressing,
+      showMediaInfo,
+      isLoadingMediaFiles,
+    },
   } = useSnapshot(appProxy)
   const mediaFile = media.length > 0 ? media[mediaIndex] : null
   const {
@@ -80,16 +88,30 @@ function PreviewSingleMedia({ mediaIndex }: PreviewSingleMediaProps) {
     >
       {!(isMediaTransformEditMode || isMediaTrimEditMode) &&
       !isProcessCompleted ? (
-        <Code
-          size="sm"
-          className="w-fit mx-auto mb-3 text-center rounded-xl px-4 text-xs"
-        >
-          {singleFileNameDisplay?.length > 50
-            ? `${singleFileNameDisplay?.slice(0, 20)}...${singleFileNameDisplay?.slice(
-                -10,
-              )}`
-            : singleFileNameDisplay}
-        </Code>
+        <div className="flex justify-center items-center gap-2 mb-3">
+          <Code size="sm" className="w-fit text-center rounded-xl px-4 text-xs">
+            {singleFileNameDisplay?.length > 50
+              ? `${singleFileNameDisplay?.slice(0, 20)}...${singleFileNameDisplay?.slice(
+                  -10,
+                )}`
+              : singleFileNameDisplay}
+          </Code>
+          {/* Not when customizing a media of a batch, which has its own "Add more" card */}
+          {media.length === 1 ? (
+            <Tooltip content="Add more media" aria-label="Add more media">
+              <Button
+                size="sm"
+                variant="flat"
+                onPress={pickMediaToAdd}
+                isDisabled={isLoadingMediaFiles}
+                className="h-7 min-w-[unset] px-3 text-xs"
+              >
+                <Icon name="addMedia" size={14} />
+                Add more
+              </Button>
+            </Tooltip>
+          ) : null}
+        </div>
       ) : null}
 
       {isProcessCompleted &&

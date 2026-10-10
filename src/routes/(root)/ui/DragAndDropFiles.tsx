@@ -11,7 +11,7 @@ import { zoomInTransition } from '@/utils/animation'
 
 type DragAndDropFilesProps = {
   disable?: boolean
-  onFile?: (files: CollectedFile[]) => void
+  onFile?: (files: CollectedFile[]) => void | Promise<void>
   multiple?: boolean
 }
 
@@ -96,7 +96,7 @@ function DragAndDropFiles({
           {dragAndDropState === 'dragging' ? (
             <div
               ref={dragAndDropContainerRef}
-              className="fixed top-0 right-0 bottom-0 left-0 w-screen h-screen bg-zinc-200 dark:bg-zinc-900 flex justify-center items-center flex-col z-[2]"
+              className="fixed top-0 right-0 bottom-0 left-0 w-screen h-screen bg-zinc-200 dark:bg-zinc-900 flex justify-center items-center flex-col z-[60]"
             >
               <motion.div
                 className="flex justify-center items-center flex-col py-16 px-20 border-2 border-dashed border-zinc-300 dark:border-zinc-700 rounded-3xl"

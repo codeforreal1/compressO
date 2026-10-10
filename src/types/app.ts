@@ -205,6 +205,8 @@ export type App = {
   media: ((Video & { type: 'video' }) | (Image & { type: 'image' }))[]
   isLoadingMediaFiles: boolean
   totalSelectedMediaCount: number
+  /** Media is being added to an existing selection (see `addMedia`) */
+  isAppendingMedia: boolean
   currentMediaIndex: number
   isCompressing: boolean
   totalProgress: number

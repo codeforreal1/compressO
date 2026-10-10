@@ -17,6 +17,7 @@ import { zoomInStaggerAnimation } from '@/utils/animation'
 import { formatBytes } from '@/utils/fs'
 import { formatDuration } from '@/utils/string'
 import { cn } from '@/utils/tailwind'
+import { pickMediaToAdd } from '../-media'
 import { appProxy } from '../-state'
 
 function PreviewBatchMedia() {
@@ -679,7 +680,26 @@ function PreviewBatchMedia() {
                     </p>
                   </div>
                 </>
-              ) : null}
+              ) : (
+                <>
+                  <Divider orientation="vertical" className="h-8" />
+                  <Tooltip
+                    content="Add more media. You can also drop or paste files."
+                    aria-label="Add more media"
+                  >
+                    <Button
+                      size="sm"
+                      variant="flat"
+                      onPress={pickMediaToAdd}
+                      isDisabled={isLoadingMediaFiles}
+                      className="h-7 min-w-[unset] px-3 text-xs"
+                    >
+                      <Icon name="addMedia" size={14} />
+                      Add more
+                    </Button>
+                  </Tooltip>
+                </>
+              )}
             </div>
           )}
         </div>
