@@ -143,7 +143,7 @@ export function SettingsDialogHost() {
     >
       {/* Opaque background: the translucent backdrop-blur look of other modals isn't preserved in
       the theme switch's view transition snapshots, so the app behind would show through */}
-      <ModalContent className="w-[90vw] max-w-[1000px] h-[min(720px,85vh)] overflow-hidden rounded-2xl bg-zinc-100 dark:bg-zinc-900">
+      <ModalContent className="w-[90vw] max-w-[1000px] h-[min(720px,85vh)] overflow-hidden rounded-2xl bg-zinc-100 dark:bg-zinc-900 settings-dialog">
         <SettingsDialog onClose={close} hasNewVersion={hasNewVersion} />
       </ModalContent>
     </Modal>

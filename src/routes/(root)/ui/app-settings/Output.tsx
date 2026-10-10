@@ -115,6 +115,7 @@ function Output() {
               if (key) handleSaveLocationChange(key as SaveLocation)
             }}
             className="w-[220px]"
+            classNames={{ popoverContent: 'settings-dialog' }}
           >
             {SAVE_LOCATION_OPTIONS.map((option) => (
               <SelectItem key={option.key}>{option.label}</SelectItem>

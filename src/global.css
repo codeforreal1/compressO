@@ -97,6 +97,12 @@ body > * {
   }
 }
 
+/* Settings dialog: only headings (section titles) are bold; controls, links & labels use the normal
+   weight. Also set on popovers that render outside the dialog, e.g. dropdown menus. */
+.settings-dialog :not(h1, h2, h3) {
+  font-weight: 400 !important;
+}
+
 [class*="cursor-pointer"] {
   cursor: default !important;
 }
