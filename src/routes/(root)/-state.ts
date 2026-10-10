@@ -25,7 +25,6 @@ export const videoMetadataConfigInitialState: MediaMetadataConfig = {
 
 export const videoConfigInitialState: VideoConfig = {
   convertToExtension: '-',
-  presetName: 'ironclad',
   shouldDisableCompression: false,
   shouldEnableCustomVideoCodec: false,
   shouldEnableCustomDimensions: false,

@@ -118,8 +118,10 @@ function StartCompression() {
                     convertToExtension: (v.config?.convertToExtension === '-'
                       ? v.extension
                       : v.config.convertToExtension)!,
+                    // The backend compresses (CRF from the quality) when a preset is set, and keeps
+                    // the source codec otherwise (lossless)
                     presetName: !v.config?.shouldDisableCompression
-                      ? v.config.presetName
+                      ? 'ironclad'
                       : null,
                     quality: !v.config?.shouldDisableCompression
                       ? (v.config?.quality as number)

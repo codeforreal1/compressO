@@ -68,11 +68,6 @@ export function isAudioExtension(
   return !!extension && extension in extensions.audio
 }
 
-export const compressionPresets = {
-  ironclad: 'ironclad',
-  thunderbolt: 'thunderbolt',
-} as const
-
 export type VideoCompressionResult = {
   videoId: string
   fileName: string

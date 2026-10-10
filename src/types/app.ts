@@ -7,7 +7,6 @@ import {
   BatchResolution,
   Chapter,
   ContainerInfo,
-  compressionPresets,
   ExifInfo,
   extensions,
   ImageBasicInfo,
@@ -62,7 +61,6 @@ export type VideoConfig = {
     | keyof typeof extensions.video
     | keyof typeof extensions.audio
     | '-'
-  presetName: keyof typeof compressionPresets
   shouldDisableCompression: boolean
   audioConfig: AudioConfig
   quality?: number | null

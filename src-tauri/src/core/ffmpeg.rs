@@ -232,30 +232,10 @@ impl FFMPEG {
             "error",
         ]);
 
-        let mut cmd_args = if !is_gif_target && !is_audio_target {
-            match preset_name {
-                Some(preset) => match preset {
-                    "thunderbolt" => cmd_args,
-                    _ => {
-                        cmd_args.extend_from_slice(&[
-                            "-pix_fmt:v:0",
-                            "yuv420p",
-                            "-b:v:0",
-                            "0",
-                            "-movflags",
-                            "+faststart",
-                            "-preset",
-                            "slow",
-                        ]);
-                        cmd_args
-                    }
-                },
-                None => cmd_args,
-            }
-        } else {
+        // The GIF is converted from an intermediate video encoded as fast as possible
+        if is_gif_target {
             cmd_args.extend_from_slice(&["-preset", "ultrafast"]);
-            cmd_args
-        };
+        }
 
         let file_metadata = get_file_metadata(video_path).map_err(|err| err.to_string())?;
         let original_extension = &file_metadata.extension;
@@ -320,6 +300,18 @@ impl FFMPEG {
             cmd_args.push("-vn");
         } else {
             cmd_args.extend_from_slice(&["-c:v:0", output_codec.as_str()]);
+        }
+
+        // Compression settings (`preset_name` is unset for lossless): constant quality via CRF, and
+        // only the options the encoder & container support
+        if preset_name.is_some() && !is_gif_target && !is_audio_target {
+            cmd_args.extend_from_slice(&["-pix_fmt:v:0", "yuv420p", "-b:v:0", "0"]);
+            if matches!(output_codec.as_str(), "libx264" | "libx265") {
+                cmd_args.extend_from_slice(&["-preset", "slow"]);
+            }
+            if matches!(container, "mp4" | "mov") {
+                cmd_args.extend_from_slice(&["-movflags", "+faststart"]);
+            }
         }
 
         // Quality
