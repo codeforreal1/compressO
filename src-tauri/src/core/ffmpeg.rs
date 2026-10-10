@@ -1297,6 +1297,19 @@ pub fn build_ffmpeg_filters(
     transform_history: Option<&MediaTransformHistory>,
     dimensions: Option<(f64, f64)>,
 ) -> String {
+    let mut filters = build_transform_filters(transform_history, dimensions);
+
+    // Video encoders (e.g. yuv420p) require even dimensions
+    filters.push("pad=ceil(iw/2)*2:ceil(ih/2)*2".to_string());
+
+    filters.join(",")
+}
+
+/// Crop, rotate, flip and scale filters, without any encoder-specific padding
+pub fn build_transform_filters(
+    transform_history: Option<&MediaTransformHistory>,
+    dimensions: Option<(f64, f64)>,
+) -> Vec<String> {
     let mut filters: Vec<String> = Vec::new();
     let mut latest_crop: Option<&MediaTransformCrop> = None;
 
@@ -1343,7 +1356,5 @@ pub fn build_ffmpeg_filters(
         filters.push(format!("scale={}:{}:flags=lanczos", w, h));
     }
 
-    filters.push("pad=ceil(iw/2)*2:ceil(ih/2)*2".to_string());
-
-    filters.join(",")
+    filters
 }

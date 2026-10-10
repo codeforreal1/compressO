@@ -45,6 +45,12 @@ function Transform({ mediaIndex }: TransformProps) {
             appProxy.state.media[mediaIndex].isConfigDirty = true
 
             if (shouldTransformImage) {
+              const previewUrl =
+                appProxy.state.media[mediaIndex].config.transformImageConfig
+                  ?.previewUrl
+              if (previewUrl) {
+                URL.revokeObjectURL(previewUrl)
+              }
               appProxy.state.media[mediaIndex].config.transformImageConfig =
                 undefined
               appProxy.state.media[mediaIndex].thumbnailPath =

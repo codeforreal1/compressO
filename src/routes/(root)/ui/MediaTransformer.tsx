@@ -42,12 +42,21 @@ function MediaTransformer({ mediaIndex }: MediaTransformerProps) {
       }
     } else if (mediaItem.type === 'image') {
       const transformConfig = targetMedia.config.transformImageConfig
+      const previousPreviewUrl = transformConfig?.previewUrl
       targetMedia.config.transformImageConfig = {
         ...transformConfig,
         transforms: transforms as MediaTransforms,
         previewUrl,
         transformHistory:
           transformConfig?.transformHistory ?? ([] as MediaTransformHistory[]),
+      }
+
+      // Each preview is a full-size blob, so release the old one once nothing points to it
+      if (previousPreviewUrl && previousPreviewUrl !== previewUrl) {
+        if (targetMedia.thumbnailPath === previousPreviewUrl) {
+          targetMedia.thumbnailPath = previewUrl
+        }
+        URL.revokeObjectURL(previousPreviewUrl)
       }
     }
   }

@@ -1,7 +1,7 @@
 import { Button } from '@heroui/react'
 import { core } from '@tauri-apps/api'
 import { motion } from 'framer-motion'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { PhotoView } from 'react-photo-view'
 import { OnProgressProps } from 'react-player/base'
 import { toast } from 'sonner'
@@ -286,8 +286,24 @@ function MediaThumbnail({ mediaIndex }: MediaThumbnailProps) {
       (shouldTransformImage && isImageTransformEditMode)) &&
     !isProcessCompleted
 
+  // Rendered result of the crop/rotate/flip, so the preview reflects the applied transforms
+  const transformedImagePreview =
+    mediaFile?.type === 'image' && shouldTransformImage
+      ? mediaFile.config.transformImageConfig?.previewUrl
+      : undefined
+
   const thumbnailPath =
-    mediaFile?.type === 'video' ? videoThumbnailPath : mediaPath
+    mediaFile?.type === 'video'
+      ? videoThumbnailPath
+      : (transformedImagePreview ?? mediaPath)
+
+  // Re-compressing writes to the same output file, so give each result a unique url to
+  // bypass the webview's image cache (otherwise a previous result can be shown)
+  const compressedFileSrc = useMemo(
+    () =>
+      compressedFile?.path ? `${compressedFile.path}?v=${Date.now()}` : '',
+    [compressedFile],
+  )
 
   const imageToRenderSrc = isProcessCompleted
     ? mediaFile?.type === 'video' &&
@@ -296,7 +312,7 @@ function MediaThumbnail({ mediaIndex }: MediaThumbnailProps) {
       ? mediaFile?.thumbnailPath!
       : isSaved
         ? core.convertFileSrc(mediaFile?.compressedFile?.savedPath!)
-        : mediaFile?.compressedFile?.path!
+        : compressedFileSrc
     : thumbnailPath!
 
   return (

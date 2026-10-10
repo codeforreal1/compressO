@@ -3,7 +3,7 @@ use crate::core::domain::{
     ImageBatchIndividualCompressionResult, ImageCompressionConfig, ImageCompressionProgress,
     ImageCompressionResult, ImageContainer, MediaTransformHistory, SvgConfig,
 };
-use crate::core::ffmpeg::build_ffmpeg_filters;
+use crate::core::ffmpeg::build_transform_filters;
 use crate::core::ffmpeg::FFMPEG;
 use crate::core::media_process::MediaProcessExecutorBuilder;
 use crate::sys::fs::{ensure_assets_dir, get_file_metadata, get_image_dimension};
@@ -1179,7 +1179,20 @@ impl ImageCompressor {
             return Err(String::from("Input image file does not exist."));
         }
 
-        let filter_complex = build_ffmpeg_filters(transform_history, dimensions);
+        let mut filters = build_transform_filters(transform_history, dimensions);
+
+        // Palette images (e.g. pngquant output) can't go through the transform filters as-is, and
+        // ffmpeg's automatic conversion picks a format without alpha, turning transparent pixels
+        // opaque. Converting to rgba first keeps the transparency.
+        let extension = Path::new(input_path)
+            .extension()
+            .and_then(|ext| ext.to_str())
+            .unwrap_or_default()
+            .to_lowercase();
+        if !filters.is_empty() && !["jpg", "jpeg", "gif"].contains(&extension.as_str()) {
+            filters.insert(0, "format=rgba".to_string());
+        }
+        let filter_complex = filters.join(",");
 
         let mut cmd_args: Vec<String> = Vec::new();
         cmd_args.push("-i".to_string());
