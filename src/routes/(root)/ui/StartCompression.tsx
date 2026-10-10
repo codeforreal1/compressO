@@ -320,7 +320,8 @@ function StartCompression() {
           as={motion.button}
           onPress={handleCompression}
           fullWidth
-          className="w-full text-primary bg-primary/20"
+          className="w-full bg-primary"
+          variant="solid"
           isDisabled={isLoadingMediaFiles}
         >
           Process

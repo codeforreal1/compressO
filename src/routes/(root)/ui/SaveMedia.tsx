@@ -147,12 +147,13 @@ function SaveMedia() {
         isLoading={isSaving}
         isDisabled={isSaving || isSaved}
         fullWidth
+        variant="solid"
       >
         {isSaving ? 'Saving...' : isSaved ? 'Saved' : `Save Media`}
         {!isSaving ? (
           <Icon
             name={isSaved ? 'tick' : 'download'}
-            className="text-green-300"
+            className="text-green-800"
           />
         ) : null}
       </Button>
