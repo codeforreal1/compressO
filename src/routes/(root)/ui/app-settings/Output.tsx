@@ -144,14 +144,14 @@ function Output() {
         ) : null}
         {saveLocation !== 'ask' ? (
           <SettingsRow
-            title="Save larger outputs"
-            description="Save the compressed media even when it is larger than the original."
+            title="Skip larger outputs"
+            description="Do not save the compressed media when it is larger than the original."
           >
             <Switch
-              aria-label="Save larger outputs"
-              isSelected={saveLargerOutputs}
+              aria-label="Skip larger outputs"
+              isSelected={!saveLargerOutputs}
               onValueChange={(isSelected) => {
-                settingsStore.saveLargerOutputs = isSelected
+                settingsStore.saveLargerOutputs = !isSelected
               }}
             />
           </SettingsRow>

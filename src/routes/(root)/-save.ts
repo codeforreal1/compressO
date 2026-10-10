@@ -166,7 +166,7 @@ export async function saveCompressedMediaWithPrompt() {
  *
  * Some outputs are always left for the Save button:
  * - pasted images, which only exist in the app's data folder (no original folder to save next to)
- * - outputs larger than their original, when "Save larger outputs" is off
+ * - outputs larger than their original, when "Skip larger outputs" is on
  */
 export async function autoSaveCompressedMedia() {
   const { saveLocation, saveFolder, saveLargerOutputs } = settingsStore
