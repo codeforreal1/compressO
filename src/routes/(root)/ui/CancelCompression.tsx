@@ -6,6 +6,7 @@ import { snapshot, useSnapshot } from 'valtio'
 import Button from '@/components/Button'
 import { toast } from '@/components/Toast'
 import { CustomEvents } from '@/types/compression'
+import { autoSaveCompressedMedia } from '../-save'
 import { appProxy } from '../-state'
 
 function CancelCompression() {
@@ -51,6 +52,9 @@ function CancelCompression() {
         appProxy.state.isCompressing = false
         appProxy.state.totalProgress = 100
         appProxy.state.isBatchCompressionCancelled = true
+        // Save the media that finished before the cancellation, like a completed batch would be;
+        // unfinished media has no output and is skipped
+        await autoSaveCompressedMedia()
       } else {
         appProxy.timeTravel('beforeCompressionStarted')
       }

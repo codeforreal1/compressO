@@ -22,6 +22,7 @@ type Media = (Video & { type: 'video' }) | (Image & { type: 'image' })
  */
 async function saveCompressedMedia(
   getBaseDirectory: (media: Media) => string | null,
+  { isAutomatic = false }: { isAutomatic?: boolean } = {},
 ) {
   const prefix = settingsStore.outputFilePrefix
   // Resolved once per save so all of a dropped folder's files go into the same top folder
@@ -93,11 +94,15 @@ async function saveCompressedMedia(
         : [...savedLocations][0]
   }
 
+  // Failures (e.g. no write permission for the folder) stay unsaved, so the Save button can still
+  // save them to a location chosen manually
   if (failedCount > 0) {
     toast.error(
       savedCount > 0
-        ? `Saved ${savedCount} of ${savedCount + failedCount} files. ${failedCount} could not be saved. Use Save to try another location.`
-        : 'Could not save media to the given path.',
+        ? `Saved ${savedCount} of ${savedCount + failedCount} files. ${failedCount} could not be saved. Use Save Media to choose another location.`
+        : isAutomatic
+          ? 'Could not save automatically, possibly due to missing folder permissions. Use Save Media to choose a location.'
+          : 'Could not save media to the given path.',
     )
   }
 
@@ -175,32 +180,35 @@ export async function autoSaveCompressedMedia() {
   const appDataDirectory = await appDataDir().catch(() => null)
   let largerCount = 0
 
-  await saveCompressedMedia((mediaFile) => {
-    if (
-      !mediaFile.pathRaw ||
-      !appDataDirectory ||
-      mediaFile.pathRaw.startsWith(appDataDirectory)
-    ) {
-      return null
-    }
+  await saveCompressedMedia(
+    (mediaFile) => {
+      if (
+        !mediaFile.pathRaw ||
+        !appDataDirectory ||
+        mediaFile.pathRaw.startsWith(appDataDirectory)
+      ) {
+        return null
+      }
 
-    const originalSize = mediaFile.sizeInBytes ?? 0
-    const outputSize = mediaFile.compressedFile?.sizeInBytes ?? 0
-    if (!saveLargerOutputs && originalSize > 0 && outputSize > originalSize) {
-      largerCount++
-      return null
-    }
+      const originalSize = mediaFile.sizeInBytes ?? 0
+      const outputSize = mediaFile.compressedFile?.sizeInBytes ?? 0
+      if (!saveLargerOutputs && originalSize > 0 && outputSize > originalSize) {
+        largerCount++
+        return null
+      }
 
-    if (saveLocation === 'fixedFolder') {
-      return saveFolder
-    }
-    // Same folder: where the file (or its dropped folder) is, e.g. `/a/Vacation/Day1/clip.mp4`
-    // with `Vacation/Day1` -> `/a`
-    const depth = mediaFile.relativeDir
-      ? mediaFile.relativeDir.split('/').length
-      : 0
-    return getParentDirectory(mediaFile.pathRaw, depth + 1)
-  })
+      if (saveLocation === 'fixedFolder') {
+        return saveFolder
+      }
+      // Same folder: where the file (or its dropped folder) is, e.g. `/a/Vacation/Day1/clip.mp4`
+      // with `Vacation/Day1` -> `/a`
+      const depth = mediaFile.relativeDir
+        ? mediaFile.relativeDir.split('/').length
+        : 0
+      return getParentDirectory(mediaFile.pathRaw, depth + 1)
+    },
+    { isAutomatic: true },
+  )
 
   if (largerCount > 0) {
     toast.info(
