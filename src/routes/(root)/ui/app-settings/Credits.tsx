@@ -1,138 +1,73 @@
-import { Divider } from '@heroui/react'
-
-import Icon from '@/components/Icon'
-import Title from '@/components/Title'
 import Link from '@/tauri/components/Link'
+import { SettingsRow, SettingsSection } from './SettingsLayout'
+
+const CREDITS = [
+  {
+    name: 'FFmpeg & FFprobe',
+    copyright: 'Copyright © 2000-2024 Fabrice Bellard, et al.',
+    license: 'Licensed under GPL v2+ and LGPL v2.1+',
+    website: 'https://ffmpeg.org/',
+    github: 'https://github.com/FFmpeg/FFmpeg',
+  },
+  {
+    name: 'pngquant',
+    copyright: 'Copyright © 2009-2024 Kornel Lesiński',
+    license: 'Licensed under GPL v3+',
+    website: 'https://pngquant.org/',
+    github: 'https://github.com/kornelski/pngquant',
+  },
+  {
+    name: 'jpegoptim',
+    copyright: 'Copyright © 1996-2024 Timo Kokkonen',
+    license: 'Licensed under GPL v3+',
+    website: null,
+    github: 'https://github.com/tjko/jpegoptim',
+  },
+  {
+    name: 'gifski',
+    copyright: 'Copyright © 2019-2024 ImageOptim LLC, Kornel Lesiński',
+    license: 'Licensed under AGPL v3+',
+    website: 'https://gif.ski/',
+    github: 'https://github.com/ImageOptim/gifski/',
+  },
+] as const
 
 export default function Credits() {
   return (
-    <div className="w-full py-10 pb-4 px-6">
-      <section className="mb-4">
-        <Title
-          title="Credits"
-          iconProps={{ name: 'lowResHeart' }}
-          className="mb-6"
-        />
-        <p className="text-gray-600 dark:text-gray-400 text-[12px] text-center mt-1">
-          CompressO would not be possible without these incredible open-source
-          tools and libraries:
-        </p>
-      </section>
-      <div className="grid grid-cols-2 gap-4">
-        <div className="bg-zinc-100 dark:bg-zinc-900 rounded-lg p-4">
-          <div className="flex items-center gap-3 mb-2">
-            <Icon name="video" size={20} />
-            <h3 className="font-bold text-sm">FFmpeg & FFprobe</h3>
+    <SettingsSection title="Credits">
+      <SettingsRow
+        title="Open-source tools"
+        description="CompressO would not be possible without these incredible open-source tools and libraries."
+      />
+      {CREDITS.map((credit) => (
+        <SettingsRow
+          key={credit.name}
+          title={credit.name}
+          description={
+            <>
+              {credit.copyright}
+              <br />
+              {credit.license}
+            </>
+          }
+        >
+          <div className="flex items-center gap-3 text-sm">
+            {credit.website ? <Link href={credit.website}>Website</Link> : null}
+            <Link href={credit.github}>GitHub</Link>
           </div>
-          <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">
-            Copyright © 2000-2024 Fabrice Bellard, et al.
-          </p>
-          <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
-            Licensed under GPL v2+ and LGPL v2.1+
-          </p>
-          <div className="flex gap-2">
-            <Link
-              href="https://ffmpeg.org/"
-              className="text-xs text-primary hover:underline"
-            >
-              Website
-            </Link>
-            <Divider orientation="vertical" className="mx-1 h-4" />
-            <Link
-              href="https://github.com/FFmpeg/FFmpeg"
-              className="text-xs text-primary hover:underline"
-            >
-              GitHub
-            </Link>
-          </div>
-        </div>
-
-        <div className="bg-zinc-100 dark:bg-zinc-900 rounded-lg p-4">
-          <div className="flex items-center gap-3 mb-2">
-            <Icon name="image" size={20} />
-            <h3 className="font-bold text-sm">pngquant</h3>
-          </div>
-          <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">
-            Copyright © 2009-2024 Kornel Lesiński
-          </p>
-          <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
-            Licensed under GPL v3+
-          </p>
-          <div className="flex gap-2">
-            <Link
-              href="https://pngquant.org/"
-              className="text-xs text-primary hover:underline"
-            >
-              Website
-            </Link>
-            <Divider orientation="vertical" className="mx-1 h-4" />
-            <Link
-              href="https://github.com/kornelski/pngquant"
-              className="text-xs text-primary hover:underline"
-            >
-              GitHub
-            </Link>
-          </div>
-        </div>
-
-        <div className="bg-zinc-100 dark:bg-zinc-900 rounded-lg p-4">
-          <div className="flex items-center gap-3 mb-2">
-            <Icon name="image" size={20} />
-            <h3 className="font-bold text-sm">jpegoptim</h3>
-          </div>
-          <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">
-            Copyright © 1996-2024 Timo Kokkonen
-          </p>
-          <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
-            Licensed under GPL v3+
-          </p>
-          <div className="flex gap-2">
-            <Link
-              href="https://github.com/tjko/jpegoptim"
-              className="text-xs text-primary hover:underline"
-            >
-              GitHub
-            </Link>
-          </div>
-        </div>
-
-        <div className="bg-zinc-100 dark:bg-zinc-900 rounded-lg p-4">
-          <div className="flex items-center gap-3 mb-2">
-            <Icon name="image" size={20} />
-            <h3 className="font-bold text-sm">gifski</h3>
-          </div>
-          <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">
-            Copyright © 2019-2024 ImageOptim LLC, Kornel Lesiński
-          </p>
-          <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
-            Licensed under AGPL v3+
-          </p>
-          <div className="flex gap-2">
-            <Link
-              href="https://gif.ski/"
-              className="text-xs text-primary hover:underline"
-            >
-              Website
-            </Link>
-            <Divider orientation="vertical" className="mx-1 h-4" />
-            <Link
-              href="https://github.com/ImageOptim/gifski/"
-              className="text-xs text-primary hover:underline"
-            >
-              GitHub
-            </Link>
-          </div>
-        </div>
-
-        <div className="text-center pt-2 col-span-full">
-          <p className="text-xs text-gray-600 dark:text-gray-400">
-            Complete third-party notices and licenses is available{' '}
-            <Link href="https://github.com/codeforreal1/compressO/blob/main/THIRD_PARTY_NOTICES.md">
-              here
-            </Link>
-          </p>
-        </div>
-      </div>
-    </div>
+        </SettingsRow>
+      ))}
+      <SettingsRow
+        title="Third-party notices"
+        description="Complete third-party notices and licenses."
+      >
+        <Link
+          href="https://github.com/codeforreal1/compressO/blob/main/THIRD_PARTY_NOTICES.md"
+          className="text-sm"
+        >
+          View
+        </Link>
+      </SettingsRow>
+    </SettingsSection>
   )
 }

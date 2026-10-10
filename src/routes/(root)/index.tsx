@@ -29,7 +29,7 @@ import {
   imageConfigInitialState,
   videoConfigInitialState,
 } from './-state'
-import Setting from './ui/app-settings/Setting'
+import Setting, { SettingsDialogHost } from './ui/app-settings/Setting'
 import DragAndDropFiles from './ui/DragAndDropFiles'
 import MediaConfig from './ui/MediaConfig'
 import OpenWithApp from './ui/OpenWithApp'
@@ -262,7 +262,7 @@ function Root() {
     }
   }, [handleMediaSelection])
 
-  return isLoadingMediaFiles ? (
+  const screen = isLoadingMediaFiles ? (
     !media.length || (totalSelectedMediaCount > 1 && media.length === 1) ? (
       <div className="w-full h-full flex justify-center items-center">
         <Spinner />
@@ -316,6 +316,13 @@ function Root() {
       <ReadFilesFromClipboard onFiles={handleMediaSelection} />
       <Setting />
     </Layout>
+  )
+
+  return (
+    <>
+      {screen}
+      <SettingsDialogHost />
+    </>
   )
 }
 

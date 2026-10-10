@@ -1,281 +1,204 @@
-import { DropdownItem, useDisclosure } from '@heroui/react'
-import { AnimatePresence, motion } from 'framer-motion'
 import React from 'react'
-import { useSnapshot } from 'valtio'
+import { proxy, useSnapshot } from 'valtio'
 
 import Badge from '@/components/Badge'
 import Button from '@/components/Button'
-import ColorPicker from '@/components/ColorPicker'
-import Divider from '@/components/Divider'
-import Dropdown, { DropdownMenu, DropdownTrigger } from '@/components/Dropdown'
-import Icon from '@/components/Icon'
-import Markdown from '@/components/Markdown'
+import Icon, { IconProps } from '@/components/Icon'
 import Modal, { ModalContent } from '@/components/Modal'
 import ScrollShadow from '@/components/ScrollShadow'
-import { ThemeSwitcher } from '@/components/ThemeSwitcher'
-import Title from '@/components/Title'
-import { toast } from '@/components/Toast'
 import Tooltip from '@/components/Tooltip'
-import { usePrimaryColor } from '@/hooks/usePrimaryColor'
-import { downloadAndInstallUpdateApp, updateStore } from '@/stores/updateStore'
-import { deleteCache as invokeDeleteCache } from '@/tauri/commands/fs'
+import { updateStore } from '@/stores/updateStore'
+import { getPlatform } from '@/utils/fs'
+import { cn } from '@/utils/tailwind'
 import About from './About'
 import Credits from './Credits'
+import General from './General'
 
-type DropdownKey = 'settings' | 'about' | 'update' | 'credits'
-
-function Setting() {
-  const modalDisclosure = useDisclosure()
-  const { isUpdateAvailable, latestVersion } = useSnapshot(updateStore)
-
-  const [selectedKey, setSelectedKey] = React.useState<DropdownKey>('settings')
-  const handleDropdownAction = (item: string | number) => {
-    modalDisclosure.onOpen()
-    setSelectedKey(item as DropdownKey)
-  }
-
-  const hasNewVersion = isUpdateAvailable && latestVersion
-
-  return (
-    <>
-      <div className="absolute bottom-4 left-4 p-0 z-[1]">
-        <Dropdown placement="right">
-          <DropdownTrigger>
-            <Button isIconOnly size="sm" variant="light">
-              <Tooltip
-                content="Open Settings"
-                aria-label="Open Settings"
-                placement="right"
-              >
-                <Badge
-                  color="primary"
-                  content=""
-                  placement="bottom-right"
-                  shape="circle"
-                  isInvisible={!hasNewVersion}
-                >
-                  <Icon name="setting" size={23} />
-                </Badge>
-              </Tooltip>
-            </Button>
-          </DropdownTrigger>
-          <DropdownMenu
-            variant="faded"
-            aria-label="Dropdown menu with description"
-            onAction={handleDropdownAction}
-          >
-            <DropdownItem key="settings" startContent={<Icon name="setting" />}>
-              Settings
-            </DropdownItem>
-            <DropdownItem key="about" startContent={<Icon name="info" />}>
-              About
-            </DropdownItem>
-            <DropdownItem
-              key="credits"
-              startContent={<Icon name="lowResHeart" />}
-            >
-              Credits
-            </DropdownItem>
-            {hasNewVersion ? (
-              <DropdownItem
-                key="update"
-                className="text-primary"
-                startContent={<Icon name="download" />}
-              >
-                Update to {latestVersion}
-              </DropdownItem>
-            ) : null}
-          </DropdownMenu>
-        </Dropdown>
-      </div>
-      <Modal
-        isOpen={modalDisclosure.isOpen}
-        onClose={modalDisclosure.onClose}
-        motionVariant="bottomToTop"
-      >
-        <ModalContent className="max-w-[30rem] pb-2 overflow-hidden rounded-2xl">
-          {selectedKey === 'settings' ? (
-            <AppSetting />
-          ) : selectedKey === 'update' ? (
-            <UpdateModal onClose={modalDisclosure.onClose} />
-          ) : selectedKey === 'credits' ? (
-            <Credits />
-          ) : (
-            <About />
-          )}
-        </ModalContent>
-      </Modal>
-    </>
-  )
+type SettingsPage = {
+  id: string
+  label: string
+  // TODO: replace with dedicated icons
+  icon: IconProps['name']
+  Component: React.ComponentType
 }
 
-function AppSetting() {
-  const [confirmClearCache, setConfirmClearCache] = React.useState(false)
-  const [isCacheDeleting, setIsCacheDeleting] = React.useState(false)
-  const { color, setColor } = usePrimaryColor()
+const SETTINGS_GROUPS: { label: string; pages: SettingsPage[] }[] = [
+  {
+    label: 'Settings',
+    pages: [
+      {
+        id: 'general',
+        label: 'General',
+        icon: 'setting',
+        Component: General,
+      },
+    ],
+  },
+  {
+    label: 'CompressO',
+    pages: [
+      {
+        id: 'about',
+        label: 'About',
+        icon: 'info',
+        Component: About,
+      },
+      {
+        id: 'credits',
+        label: 'Credits',
+        icon: 'lowResHeart',
+        Component: Credits,
+      },
+    ],
+  },
+]
 
-  const deleteCache = async () => {
-    setIsCacheDeleting(true)
-    try {
-      await invokeDeleteCache()
-      toast.success('All cache was cleared.')
-      setConfirmClearCache(false)
-    } catch (_) {
-      toast.error('There was a problem clearing cache.')
-    }
-    setIsCacheDeleting(false)
-  }
+const ALL_PAGES = SETTINGS_GROUPS.flatMap((group) => group.pages)
+
+const settingsDialogProxy = proxy({ isOpen: false })
+
+const { isMacOS } = getPlatform()
+
+/** Settings button, shown on the home screen */
+function Setting() {
+  const { isUpdateAvailable, latestVersion } = useSnapshot(updateStore)
+
+  const hasNewVersion = !!(isUpdateAvailable && latestVersion)
 
   return (
-    <div className="w-full py-10 px-8">
-      <section className="mb-6">
-        <Title title="Settings" iconProps={{ name: 'setting' }} />
-      </section>
-      <div className="mx-auto bg-zinc-100 dark:bg-zinc-800 rounded-lg px-4 py-3 overflow-hidden">
-        <div className="flex justify-between items-center">
-          <p className="text-gray-600 dark:text-gray-400 text-sm">Theme</p>
-          <ThemeSwitcher />
-        </div>
-        <Divider className="my-2 dark:bg-zinc-700" />
-        <div className="flex justify-between items-center">
-          <p className="text-gray-600 dark:text-gray-400 text-sm">Color</p>
-          <ColorPicker color={color} onChange={setColor} />
-        </div>
-        <Divider className="my-2 dark:bg-zinc-700" />
-        <div className="flex justify-between items-center">
-          <p className="dark:text-red-400 text-sm text-red-400">Clear Cache</p>
-          <Tooltip
-            content="Clear cache"
-            aria-label="Clear cache"
-            placement="right"
-            isDisabled={confirmClearCache}
+    <div className="absolute bottom-4 left-4 p-0 z-[1]">
+      <Button
+        isIconOnly
+        size="sm"
+        variant="light"
+        onPress={() => {
+          settingsDialogProxy.isOpen = true
+        }}
+      >
+        <Tooltip
+          content={`Open Settings (${isMacOS ? '⌘' : 'Ctrl'} ,)`}
+          aria-label="Open Settings"
+          placement="right"
+        >
+          <Badge
+            color="primary"
+            content=""
+            placement="bottom-right"
+            shape="circle"
+            isInvisible={!hasNewVersion}
           >
-            <div className="flex items-center">
-              <Button
-                isIconOnly={!confirmClearCache}
-                size="sm"
-                color="danger"
-                variant={confirmClearCache ? 'solid' : 'flat'}
-                onPress={() => {
-                  if (!confirmClearCache) {
-                    setConfirmClearCache(true)
-                  } else {
-                    deleteCache()
-                  }
-                }}
-                isLoading={isCacheDeleting}
-              >
-                <div>
-                  <Icon name="trash" />
-                </div>
-                <AnimatePresence initial={false} mode="wait">
-                  {confirmClearCache ? (
-                    <motion.span
-                      layout="position"
-                      initial={{ opacity: 0, width: 0 }}
-                      animate={{ opacity: 1, width: 'auto' }}
-                      exit={{ opacity: 0, width: 0 }}
-                      transition={{
-                        duration: 0.25,
-                        ease: [0.4, 0, 0.2, 1],
-                      }}
-                      className="inline-block whitespace-nowrap"
-                    >
-                      Clear Now
-                    </motion.span>
-                  ) : null}
-                </AnimatePresence>
-              </Button>
-            </div>
-          </Tooltip>
-        </div>
-      </div>
+            <Icon name="setting" size={23} />
+          </Badge>
+        </Tooltip>
+      </Button>
     </div>
   )
 }
 
-interface UpdateModalProps {
-  onClose: () => void
-}
+/**
+ * The settings dialog. Rendered on every screen (not only where the button is) so it can also be
+ * opened with Ctrl+, (or ⌘+, on macOS) while media is being edited.
+ */
+export function SettingsDialogHost() {
+  const { isOpen } = useSnapshot(settingsDialogProxy)
+  const { isUpdateAvailable, latestVersion } = useSnapshot(updateStore)
 
-function UpdateModal({ onClose }: UpdateModalProps) {
-  const {
-    isUpdateAvailable,
-    latestVersion,
-    currentVersion,
-    body,
-    isInstalling,
-    installProgress,
-  } = useSnapshot(updateStore)
+  const hasNewVersion = !!(isUpdateAvailable && latestVersion)
 
-  const handleInstall = async () => {
-    try {
-      await downloadAndInstallUpdateApp()
-      onClose()
-    } catch {
-      toast.error('Failed to install update. Please try again.')
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const isShortcut =
+        e.key === ',' &&
+        (e.ctrlKey || (isMacOS && e.metaKey)) &&
+        !e.altKey &&
+        !e.shiftKey
+      if (isShortcut) {
+        e.preventDefault()
+        settingsDialogProxy.isOpen = true
+      }
     }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [])
+
+  const close = () => {
+    settingsDialogProxy.isOpen = false
   }
 
   return (
-    <div className="w-full py-10 pb-4 px-8">
-      <section className="mb-6">
-        <Title title="Update Available" iconProps={{ name: 'download' }} />
-      </section>
-      <div>
-        {isUpdateAvailable && latestVersion ? (
-          <>
-            <div className="flex justify-between items-center mb-4">
-              <div>
-                <p className="text-gray-600 dark:text-gray-400 text-xs">
-                  Current Version
-                </p>
-                <p className="font-bold text-sm">{currentVersion}</p>
-              </div>
-              <div className="text-right">
-                <p className="text-gray-600 dark:text-gray-400 text-xs">
-                  Latest Version
-                </p>
-                <p className="font-bold text-sm text-primary">
-                  {latestVersion}
-                </p>
-              </div>
-            </div>
-            <Divider className="my-2" />
-            {body && (
-              <div className="mt-4">
-                <p className="text-primary text-sm mb-2">What's New?</p>
-                <ScrollShadow className="max-h-[50vh]">
-                  <Markdown content={body} className="text-sm" />
-                </ScrollShadow>
-              </div>
-            )}
-            <Divider className="my-2 mt-4" />
-            <div className="mt-4 flex justify-end gap-2">
-              {!isInstalling ? (
-                <Button variant="flat" size="sm" onPress={onClose}>
-                  Cancel
-                </Button>
-              ) : null}
-              <Button
-                size="sm"
-                className="bg-primary"
-                onPress={handleInstall}
-                isLoading={isInstalling}
-                isDisabled={isInstalling}
-              >
-                Update Now {isInstalling ? `(${installProgress}%)` : ''}
-              </Button>
-            </div>
-          </>
-        ) : (
-          <div className="text-center py-4">
-            <p className="text-gray-600 dark:text-gray-400 text-sm">
-              No updates available. You are on the latest version.
-            </p>
-          </div>
-        )}
-      </div>
+    <Modal
+      isOpen={isOpen}
+      onClose={close}
+      motionVariant="bottomToTop"
+      size="5xl"
+    >
+      <ModalContent className="w-[90vw] max-w-[1000px] h-[min(720px,85vh)] overflow-hidden rounded-2xl">
+        <SettingsDialog onClose={close} hasNewVersion={hasNewVersion} />
+      </ModalContent>
+    </Modal>
+  )
+}
+
+type SettingsDialogProps = {
+  onClose: () => void
+  hasNewVersion: boolean
+}
+
+function SettingsDialog({ onClose, hasNewVersion }: SettingsDialogProps) {
+  const [selectedPageId, setSelectedPageId] = React.useState(ALL_PAGES[0].id)
+  const selectedPage =
+    ALL_PAGES.find((page) => page.id === selectedPageId) ?? ALL_PAGES[0]
+
+  return (
+    <div className="relative flex w-full h-full">
+      <aside className="w-[240px] flex-shrink-0 flex flex-col border-r border-zinc-200 dark:border-zinc-800 p-3">
+        <ScrollShadow className="flex-1" hideScrollBar>
+          {SETTINGS_GROUPS.map((group) => (
+            <nav key={group.label} className="mt-5 first:mt-2">
+              <p className="px-3 mb-1 text-xs text-zinc-500">{group.label}</p>
+              {group.pages.map((page) => (
+                <button
+                  key={page.id}
+                  type="button"
+                  onClick={() => setSelectedPageId(page.id)}
+                  className={cn([
+                    'w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-left transition-colors',
+                    page.id === selectedPage.id
+                      ? 'bg-zinc-200/70 dark:bg-zinc-800 text-foreground font-medium'
+                      : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/60',
+                  ])}
+                >
+                  <Icon name={page.icon} size={18} />
+                  <span className="flex-1">{page.label}</span>
+                  {page.id === 'about' && hasNewVersion ? (
+                    <span
+                      className="w-2 h-2 rounded-full bg-primary"
+                      aria-label="Update available"
+                    />
+                  ) : null}
+                </button>
+              ))}
+            </nav>
+          ))}
+        </ScrollShadow>
+      </aside>
+
+      <ScrollShadow className="flex-1 px-10 py-12" hideScrollBar>
+        <selectedPage.Component />
+      </ScrollShadow>
+
+      <Button
+        isIconOnly
+        size="sm"
+        variant="light"
+        onPress={onClose}
+        aria-label="Close settings"
+        className="absolute top-3 right-3"
+      >
+        <Icon name="cross" size={18} />
+      </Button>
     </div>
   )
 }
