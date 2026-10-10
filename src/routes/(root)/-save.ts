@@ -164,7 +164,7 @@ export async function saveCompressedMediaWithPrompt() {
  * - outputs larger than their original, when "Save larger outputs" is off
  */
 export async function autoSaveCompressedMedia() {
-  const { saveLocation, saveFolder, skipLargerOutputs } = settingsStore
+  const { saveLocation, saveFolder, saveLargerOutputs } = settingsStore
   if (
     saveLocation === 'ask' ||
     (saveLocation === 'fixedFolder' && !saveFolder)
@@ -186,7 +186,7 @@ export async function autoSaveCompressedMedia() {
 
     const originalSize = mediaFile.sizeInBytes ?? 0
     const outputSize = mediaFile.compressedFile?.sizeInBytes ?? 0
-    if (skipLargerOutputs && originalSize > 0 && outputSize > originalSize) {
+    if (!saveLargerOutputs && originalSize > 0 && outputSize > originalSize) {
       largerCount++
       return null
     }

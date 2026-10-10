@@ -21,11 +21,17 @@ export type SettingsState = {
   saveLocation: SaveLocation
   /** Folder used when `saveLocation` is `fixedFolder` */
   saveFolder: string | null
-  /** Leave outputs that are larger than their original for the Save button when auto-saving */
-  skipLargerOutputs: boolean
+  /**
+   * Auto-save outputs even when they are larger than their original (on by default). When off,
+   * such outputs are left for the Save button.
+   */
+  saveLargerOutputs: boolean
 }
 
 const storedSaveLocation = localStorage.getItem(constants.saveLocation)
+
+// Replaced by `saveLargerOutputs`, which defaults to on
+localStorage.removeItem('skipLargerOutputs')
 
 export const settingsStore = proxy<SettingsState>({
   outputFilePrefix:
@@ -36,8 +42,9 @@ export const settingsStore = proxy<SettingsState>({
       ? (storedSaveLocation as SaveLocation)
       : saveLocations.ask,
   saveFolder: localStorage.getItem(constants.saveFolder),
-  skipLargerOutputs:
-    localStorage.getItem(constants.skipLargerOutputs) === 'true',
+  // Only an explicit opt-out turns it off
+  saveLargerOutputs:
+    localStorage.getItem(constants.saveLargerOutputs) !== 'false',
 })
 
 subscribe(settingsStore, () => {
@@ -47,8 +54,8 @@ subscribe(settingsStore, () => {
   )
   localStorage.setItem(constants.saveLocation, settingsStore.saveLocation)
   localStorage.setItem(
-    constants.skipLargerOutputs,
-    String(settingsStore.skipLargerOutputs),
+    constants.saveLargerOutputs,
+    String(settingsStore.saveLargerOutputs),
   )
   if (settingsStore.saveFolder) {
     localStorage.setItem(constants.saveFolder, settingsStore.saveFolder)

@@ -64,7 +64,7 @@ async function pickSaveFolder() {
 function Output() {
   const [confirmClearCache, setConfirmClearCache] = React.useState(false)
   const [isCacheDeleting, setIsCacheDeleting] = React.useState(false)
-  const { outputFilePrefix, saveLocation, saveFolder, skipLargerOutputs } =
+  const { outputFilePrefix, saveLocation, saveFolder, saveLargerOutputs } =
     useSnapshot(settingsStore)
   const selectedSaveLocation = SAVE_LOCATION_OPTIONS.find(
     (option) => option.key === saveLocation,
@@ -148,9 +148,9 @@ function Output() {
           >
             <Switch
               aria-label="Save larger outputs"
-              isSelected={!skipLargerOutputs}
+              isSelected={saveLargerOutputs}
               onValueChange={(isSelected) => {
-                settingsStore.skipLargerOutputs = !isSelected
+                settingsStore.saveLargerOutputs = isSelected
               }}
             />
           </SettingsRow>
