@@ -9,6 +9,7 @@ import {
   getFileMetadata,
   getImageDimension,
   getSvgDimension,
+  readFilesFromPaths,
 } from '@/tauri/commands/fs'
 import { convertSvgToPng } from '@/tauri/commands/image'
 import { Image, Video } from '@/types/app'
@@ -278,5 +279,32 @@ export async function pickMediaToAdd() {
     await addMedia(filePath)
   } catch (error: any) {
     toast.error(error?.message ?? 'Could not select media.')
+  }
+}
+
+/**
+ * Opens files & folders from outside the window ("Open with CompressO", or dropped on the menu bar
+ * popover). A finished compression whose outputs are all saved is replaced by the new media; with
+ * unsaved outputs, the new media is refused (see `addMedia`) so nothing is lost.
+ */
+export async function openExternalMedia(paths: string[]) {
+  const { isCompressing, isProcessCompleted, media } = appProxy.state
+  if (isCompressing) return
+
+  const hasUnsavedOutput = media.some(
+    (mediaFile) =>
+      mediaFile.compressedFile?.isSuccessful &&
+      !mediaFile.compressedFile?.isSaved,
+  )
+  if (isProcessCompleted && !hasUnsavedOutput) {
+    appProxy.resetProxy()
+  }
+
+  try {
+    // Folders are expanded into the media they contain
+    const files = await readFilesFromPaths(paths)
+    await addMedia(files)
+  } catch {
+    toast.error('Invalid files/folders')
   }
 }

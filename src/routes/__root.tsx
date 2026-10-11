@@ -6,6 +6,7 @@ import { useEffect } from 'react'
 import { subscribeKey } from 'valtio/utils'
 
 import { Toaster } from '@/components/Toast'
+import { useClipboardWatchSync } from '@/hooks/useClipboardWatchSync'
 import { useWindowTint } from '@/hooks/useWindowTint'
 import { settingsStore } from '@/stores/settingsStore'
 import { checkForUpdates, setupUpdateListeners } from '@/stores/updateStore'
@@ -31,6 +32,7 @@ function RootComponent() {
 
 function MainRoot() {
   useWindowTint()
+  useClipboardWatchSync({ applyOnMount: true })
 
   useEffect(() => {
     // Also tells the backend to show the window, which starts hidden to avoid a blank flash
@@ -62,6 +64,7 @@ function MainRoot() {
 }
 
 function TrayRoot() {
+  useClipboardWatchSync({ applyOnMount: false })
   useEffect(() => {
     // The popover's native material follows the system appearance, so its content does too
     const root = document.documentElement

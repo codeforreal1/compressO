@@ -27,7 +27,7 @@ function readTintOpacity(key: string, fallback: number) {
 export type SaveLocation = keyof typeof saveLocations
 
 export type SettingsState = {
-  /** Added to the start of saved file (and top folder) names. Empty keeps the original names. */
+  /** Added to the start of saved file names (not folders). Empty keeps the original names. */
   outputFilePrefix: string
   saveLocation: SaveLocation
   /** Folder used when `saveLocation` is `fixedFolder` */
@@ -43,6 +43,11 @@ export type SettingsState = {
   copyBatchOutputToClipboard: boolean
   /** Show the CompressO icon in the macOS menu bar (on by default) */
   showMenuBarIcon: boolean
+  /**
+   * Add files copied to the clipboard to the media dropped on the menu bar (macOS, with the menu
+   * bar icon; off by default)
+   */
+  watchClipboard: boolean
   /** Translucent, tinted window background (macOS & Windows 11 only, off by default) */
   tintedWindow: boolean
   /** Opacity (%) of the app background over the tinted window's material (both themes) */
@@ -71,6 +76,7 @@ export const settingsStore = proxy<SettingsState>({
   copyBatchOutputToClipboard:
     localStorage.getItem(constants.copyBatchOutputToClipboard) !== 'false',
   showMenuBarIcon: localStorage.getItem(constants.showMenuBarIcon) !== 'false',
+  watchClipboard: localStorage.getItem(constants.watchClipboard) === 'true',
   tintedWindow: localStorage.getItem(constants.tintedWindow) === 'true',
   tintOpacity: readTintOpacity(constants.tintOpacity, DEFAULT_TINT_OPACITY),
 })
@@ -96,6 +102,10 @@ subscribe(settingsStore, () => {
   localStorage.setItem(
     constants.showMenuBarIcon,
     String(settingsStore.showMenuBarIcon),
+  )
+  localStorage.setItem(
+    constants.watchClipboard,
+    String(settingsStore.watchClipboard),
   )
   localStorage.setItem(
     constants.tintedWindow,

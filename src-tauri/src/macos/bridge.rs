@@ -13,6 +13,10 @@ pub mod ffi {
 
     extern "Rust" {
         fn tray_popover_event(event_type: TrayPopoverEventType);
+
+        // files dropped on the status bar icon
+        fn tray_can_accept_files() -> bool;
+        fn tray_files_dropped(pathsJson: String) -> bool;
     }
 
     extern "Swift" {
@@ -24,6 +28,7 @@ pub mod ffi {
         fn openTrayPopover();
         fn closeTrayPopover();
         fn destroyTrayPopover();
+        fn setTrayPopoverPinned(pinned: bool);
         fn isTrayPopoverVisible() -> bool;
         fn resizeTrayPopover(width: f64, height: f64, animate: bool, blurOverlayOnResize: bool);
     }
@@ -32,6 +37,26 @@ pub mod ffi {
 // tray popover
 fn tray_popover_event(event_type: ffi::TrayPopoverEventType) {
     log::debug!("Tray popover event {:?}", event_type);
+}
+
+// files dropped on the status bar icon
+fn tray_can_accept_files() -> bool {
+    crate::macos::tray_popover::app_handle()
+        .map(|app_handle| crate::can_open_files_in_main_window(&app_handle))
+        .unwrap_or(false)
+}
+
+fn tray_files_dropped(paths_json: String) -> bool {
+    let Some(app_handle) = crate::macos::tray_popover::app_handle() else {
+        return false;
+    };
+    let paths = serde_json::from_str::<Vec<String>>(&paths_json).unwrap_or_default();
+    let path_count = paths.len();
+    // Collected in the popover until "Open App"; unsupported files are skipped
+    matches!(
+        crate::tauri_commands::tray::add_dropped_files(app_handle, paths),
+        Ok(skipped_count) if skipped_count < path_count
+    )
 }
 
 pub fn resize_tray_popover(

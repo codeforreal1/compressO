@@ -19,9 +19,9 @@ type Media = (Video & { type: 'video' }) | (Image & { type: 'image' })
  * Saves every compressed output that isn't saved yet into the directory returned by
  * `getBaseDirectory` (skipped when it returns `null`).
  *
- * Dropped folders keep their structure with the top folder prefixed (`Vacation/Day1` ->
- * `<base>/compressO-Vacation/Day1`). Existing files & folders are never replaced; numbered names
- * like `clip (1).mp4` are used instead. Each file is saved independently, so one failure doesn't
+ * Dropped folders keep their structure & names (`Vacation/Day1` -> `<base>/Vacation/Day1`); only
+ * files get the prefix. Existing files & folders are never replaced; numbered names like
+ * `clip (1).mp4` or `Vacation (1)` are used instead. Each file is saved independently, so one failure doesn't
  * stop the rest; failed files stay unsaved for the Save button.
  */
 async function saveCompressedMedia(
@@ -59,7 +59,7 @@ async function saveCompressedMedia(
         let destinationTopFolder = destinationTopFolders.get(topFolderKey)
         if (!destinationTopFolder) {
           destinationTopFolder = await getAvailablePath(
-            `${baseDirectory}/${prefix}${topFolder}`,
+            `${baseDirectory}/${topFolder}`,
             true,
           )
           destinationTopFolders.set(topFolderKey, destinationTopFolder)

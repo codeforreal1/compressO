@@ -164,7 +164,7 @@ function Output() {
         ) : null}
         <SettingsRow
           title="File name prefix"
-          description="Added to the start of saved files, and of the top folder when saving a dropped folder. Leave empty to keep the original names."
+          description="Added to the start of saved files. Folders keep their names. Leave empty to keep the original names."
         >
           <TextInput
             aria-label="File name prefix"

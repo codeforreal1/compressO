@@ -14,7 +14,7 @@ const { isMacOS } = getPlatform()
 
 function General() {
   const { color, setColor } = usePrimaryColor()
-  const { showMenuBarIcon, tintedWindow, tintOpacity } =
+  const { showMenuBarIcon, watchClipboard, tintedWindow, tintOpacity } =
     useSnapshot(settingsStore)
 
   return (
@@ -86,6 +86,20 @@ function General() {
               }}
             />
           </SettingsRow>
+          {showMenuBarIcon ? (
+            <SettingsRow
+              title="Watch clipboard"
+              description="Add media files you copy, for example in Finder, to the drop zone of the menu bar."
+            >
+              <Switch
+                aria-label="Watch clipboard"
+                isSelected={watchClipboard}
+                onValueChange={(isSelected) => {
+                  settingsStore.watchClipboard = isSelected
+                }}
+              />
+            </SettingsRow>
+          ) : null}
         </SettingsSection>
       ) : null}
     </>

@@ -8,6 +8,38 @@ private final class TrayPopoverStorage {
     static var delegate: TrayPopoverDelegateHandler? = nil
     static var clickMonitor: Any? = nil
     static var globalClickMonitor: Any? = nil
+    static var dropDelegate: TrayIconDropDelegate? = nil
+    /// A pinned popover stays open when clicking outside it (closed from the status bar icon)
+    static var isPinned = false
+}
+
+/// Makes the status bar icon a drop target for files: dragging over it opens the popover (which has
+/// its own drop zone), dropping on it hands the files to Rust. Files are only accepted when Rust
+/// allows it (e.g. not while compressing).
+@MainActor
+final class TrayIconDropDelegate: NSObject, NSWindowDelegate, NSDraggingDestination {
+    func draggingEntered(_ sender: NSDraggingInfo) -> NSDragOperation {
+        guard tray_can_accept_files() else { return [] }
+        openTrayPopover()
+        return .copy
+    }
+
+    func draggingUpdated(_ sender: NSDraggingInfo) -> NSDragOperation {
+        return tray_can_accept_files() ? .copy : []
+    }
+
+    func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
+        let urls =
+            sender.draggingPasteboard.readObjects(
+                forClasses: [NSURL.self],
+                options: [.urlReadingFileURLsOnly: true]
+            ) as? [URL] ?? []
+        guard !urls.isEmpty,
+            let data = try? JSONSerialization.data(withJSONObject: urls.map { $0.path }),
+            let pathsJson = String(data: data, encoding: .utf8)
+        else { return false }
+        return tray_files_dropped(pathsJson)
+    }
 }
 
 private struct TraySendablePointers: @unchecked Sendable {
@@ -20,7 +52,9 @@ class TrayPopoverDelegateHandler: NSObject, NSPopoverDelegate {
         tray_popover_event(.Opened)
 
         MainActor.assumeIsolated {
-            TrayPopoverDelegateHandler.setupOutsideClickMonitors()
+            if !TrayPopoverStorage.isPinned {
+                TrayPopoverDelegateHandler.setupOutsideClickMonitors()
+            }
         }
     }
 
@@ -134,7 +168,7 @@ public func initTrayPopoverManager(
         viewController.view = hostingContainerView
 
         let popover = NSPopover()
-        popover.behavior = .transient
+        popover.behavior = TrayPopoverStorage.isPinned ? .applicationDefined : .transient
         popover.contentViewController = viewController
         popover.contentSize = targetSize
         popover.animates = true
@@ -156,6 +190,14 @@ public func initTrayPopoverManager(
         TrayPopoverStorage.popover = popover
         TrayPopoverStorage.statusButton = button
         TrayPopoverStorage.delegate = delegate
+
+        // The status bar window forwards drag & drop to its delegate
+        if let statusWindow = button.window {
+            let dropDelegate = TrayIconDropDelegate()
+            statusWindow.registerForDraggedTypes([.fileURL])
+            statusWindow.delegate = dropDelegate
+            TrayPopoverStorage.dropDelegate = dropDelegate
+        }
     }
 }
 
@@ -192,9 +234,31 @@ public func destroyTrayPopover() {
             }
             popover.contentViewController = nil
         }
+        if let statusWindow = TrayPopoverStorage.statusButton?.window {
+            statusWindow.unregisterDraggedTypes()
+            if statusWindow.delegate === TrayPopoverStorage.dropDelegate {
+                statusWindow.delegate = nil
+            }
+        }
         TrayPopoverStorage.popover = nil
         TrayPopoverStorage.statusButton = nil
         TrayPopoverStorage.delegate = nil
+        TrayPopoverStorage.dropDelegate = nil
+        TrayPopoverStorage.isPinned = false
+    }
+}
+
+/// Pins the popover (it stays open when clicking outside it) or restores the default behavior
+public func setTrayPopoverPinned(pinned: Bool) {
+    DispatchQueue.main.async {
+        TrayPopoverStorage.isPinned = pinned
+        guard let popover = TrayPopoverStorage.popover else { return }
+        popover.behavior = pinned ? .applicationDefined : .transient
+        if pinned {
+            TrayPopoverDelegateHandler.removeOutsideClickMonitors()
+        } else if popover.isShown {
+            TrayPopoverDelegateHandler.setupOutsideClickMonitors()
+        }
     }
 }
 

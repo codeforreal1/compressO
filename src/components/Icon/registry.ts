@@ -26,6 +26,8 @@ import Music from '@/assets/icons/music.svg?react'
 import OpenApp from '@/assets/icons/open-app.svg?react'
 import Pause from '@/assets/icons/pause.svg?react'
 import Pencil from '@/assets/icons/pencil.svg?react'
+import Pin from '@/assets/icons/pin.svg?react'
+import PinFilled from '@/assets/icons/pin-filled.svg?react'
 import Play from '@/assets/icons/play.svg?react'
 import Power from '@/assets/icons/power.svg?react'
 import Question from '@/assets/icons/question.svg?react'
@@ -88,6 +90,8 @@ const registry = asRegistry({
   music: Music,
   openApp: OpenApp,
   power: Power,
+  pin: Pin,
+  pinFilled: PinFilled,
 })
 
 export default registry

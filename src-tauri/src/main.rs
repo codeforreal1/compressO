@@ -52,7 +52,9 @@ use tauri_commands::file_manager::DbusState;
 #[cfg(target_os = "macos")]
 use tauri_commands::tray::{
     close_tray_popover, focus_main_window, is_tray_popover_visible, open_tray_popover, quit_app,
-    resize_tray_popover, set_tray_icon_enabled,
+    add_dropped_files, clear_dropped_files, get_dropped_files, is_clipboard_watch_enabled,
+    remove_dropped_file, resize_tray_popover, set_clipboard_watch_enabled,
+    set_supported_drop_extensions, set_tray_icon_enabled, set_tray_popover_pinned,
 };
 
 #[cfg(any(windows, target_os = "linux"))]
@@ -186,6 +188,13 @@ fn handle_open_with_app(app_handle: &tauri::AppHandle, urls: Vec<Url>) -> Result
     }
 
     Ok(())
+}
+
+/// Files dropped on the menu bar can be opened unless compressing or compressed media is unsaved,
+/// which the new media would replace
+#[cfg(target_os = "macos")]
+fn can_open_files_in_main_window(app_handle: &tauri::AppHandle) -> bool {
+    !is_compressing(app_handle) && !has_unsaved_output(app_handle)
 }
 
 #[tokio::main]
@@ -421,6 +430,22 @@ async fn main() {
             quit_app,
             #[cfg(target_os = "macos")]
             set_tray_icon_enabled,
+            #[cfg(target_os = "macos")]
+            add_dropped_files,
+            #[cfg(target_os = "macos")]
+            remove_dropped_file,
+            #[cfg(target_os = "macos")]
+            get_dropped_files,
+            #[cfg(target_os = "macos")]
+            clear_dropped_files,
+            #[cfg(target_os = "macos")]
+            set_clipboard_watch_enabled,
+            #[cfg(target_os = "macos")]
+            is_clipboard_watch_enabled,
+            #[cfg(target_os = "macos")]
+            set_supported_drop_extensions,
+            #[cfg(target_os = "macos")]
+            set_tray_popover_pinned,
             set_compression_status,
             get_compression_status
         ])

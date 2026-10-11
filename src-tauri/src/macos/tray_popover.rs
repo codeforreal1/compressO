@@ -11,8 +11,8 @@ use crate::macos::bridge::ffi;
 pub const TRAY_WINDOW_LABEL: &str = "tray";
 
 const TRAY_WINDOW_URL: &str = "webviews/tray";
-const TRAY_WINDOW_WIDTH: f64 = 280.0;
-const TRAY_WINDOW_HEIGHT: f64 = 340.0;
+const TRAY_WINDOW_WIDTH: f64 = 300.0;
+const TRAY_WINDOW_HEIGHT: f64 = 400.0;
 
 pub trait WindowExt<R: Runtime> {
     fn to_popover(&self) -> Result<(), String>;
@@ -142,13 +142,26 @@ fn create_tray_window(app_handle: &AppHandle) -> Result<WebviewWindow, String> {
     .decorations(false)
     .transparent(true)
     .visible(false)
+    // A pinned popover is often not the active window; the first click should still act (e.g.
+    // on "Open App") instead of only activating it
+    .accept_first_mouse(true)
     .inner_size(TRAY_WINDOW_WIDTH, TRAY_WINDOW_HEIGHT)
     .build()
     .map_err(|err| err.to_string())
 }
 
+static APP_HANDLE: std::sync::OnceLock<AppHandle> = std::sync::OnceLock::new();
+
+/// For callbacks from Swift, which have no access to the app otherwise
+pub fn app_handle() -> Option<AppHandle> {
+    APP_HANDLE.get().cloned()
+}
+
 pub fn init(app: &App) {
     app.manage(TrayPopoverState(Mutex::new(false)));
+    app.manage(crate::tauri_commands::tray::DroppedFilesState::default());
+    let _ = APP_HANDLE.set(app.handle().clone());
+    crate::macos::clipboard_watch::init(app.handle());
 }
 
 /// Shows or removes the status bar (tray) icon, which toggles a native popover (NSPopover) hosting

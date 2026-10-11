@@ -1,4 +1,5 @@
 import { event } from '@tauri-apps/api'
+import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow'
 import { AnimatePresence, motion } from 'framer-motion'
 import React, { useEffect } from 'react'
 import ReactDOM from 'react-dom'
@@ -8,6 +9,9 @@ import { toast } from '@/components/Toast'
 import { readFilesFromPaths } from '@/tauri/commands/fs'
 import { CollectedFile } from '@/types/fs'
 import { zoomInTransition } from '@/utils/animation'
+
+// Only this window's drops (a global listener also receives drops on the menu bar popover)
+const currentWindow = getCurrentWebviewWindow()
 
 type DragAndDropFilesProps = {
   disable?: boolean
@@ -47,7 +51,7 @@ function DragAndDropFiles({
       cancelDragAndDropEvents()
 
       if (!disable) {
-        dragAndDropListenerRef.current.drop = await event.listen<{
+        dragAndDropListenerRef.current.drop = await currentWindow.listen<{
           paths: string[]
         }>(event.TauriEvent.DRAG_DROP, async (evt) => {
           setDragAndDropState('dropped')
@@ -67,18 +71,16 @@ function DragAndDropFiles({
             }
           }
         })
-        dragAndDropListenerRef.current.drag = await event.listen(
+        dragAndDropListenerRef.current.drag = await currentWindow.listen(
           event.TauriEvent.DRAG_ENTER,
           () => {
             setDragAndDropState('dragging')
           },
         )
-        dragAndDropListenerRef.current.dragCancelled = await event.listen(
-          event.TauriEvent.DRAG_LEAVE,
-          () => {
+        dragAndDropListenerRef.current.dragCancelled =
+          await currentWindow.listen(event.TauriEvent.DRAG_LEAVE, () => {
             setDragAndDropState('idle')
-          },
-        )
+          })
       } else {
         cancelDragAndDropEvents()
       }
