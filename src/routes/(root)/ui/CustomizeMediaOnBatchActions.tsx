@@ -2,10 +2,11 @@ import { Button } from '@heroui/react'
 import { core } from '@tauri-apps/api'
 import { motion } from 'framer-motion'
 import { cloneDeep } from 'lodash'
-import { memo, useCallback } from 'react'
-import { useSnapshot } from 'valtio'
+import { memo, useCallback, useEffect } from 'react'
+import { snapshot, useSnapshot } from 'valtio'
 
 import { zoomInTransition } from '@/utils/animation'
+import { isOverlayOpen, isTextEntryElement } from '@/utils/keyboard'
 import PreviewSingleVideo from './PreviewSingleMedia'
 import { appProxy } from '../-state'
 
@@ -96,6 +97,41 @@ function CustomizeMediaOnBatchActions() {
       appProxy.state.selectedMediaIndexForCustomization = -1
     }
   }, [])
+
+  // Escape acts like the Apply button (Close after compression), back to the batch
+  useEffect(() => {
+    // Capture phase, so it runs before the Escape handler of the full media info, which is skipped
+    // below (Escape closes the info first)
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        e.key !== 'Escape' ||
+        e.repeat ||
+        e.defaultPrevented ||
+        e.metaKey ||
+        e.ctrlKey ||
+        e.altKey ||
+        e.shiftKey ||
+        isTextEntryElement(e.target as HTMLElement | null) ||
+        isOverlayOpen()
+      ) {
+        return
+      }
+      const { state } = snapshot(appProxy)
+      if (state.showMediaInfo || state.selectedMediaIndexForCustomization < 0) {
+        return
+      }
+      e.preventDefault()
+      if (state.isProcessCompleted) {
+        appProxy.state.selectedMediaIndexForCustomization = -1
+      } else {
+        handleApplyVideoConfig()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown, true)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown, true)
+    }
+  }, [handleApplyVideoConfig])
 
   return (
     <div
