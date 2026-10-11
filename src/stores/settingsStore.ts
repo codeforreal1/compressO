@@ -30,6 +30,8 @@ export type SettingsState = {
   copyOutputToClipboard: boolean
   /** With `copyOutputToClipboard`, also copy all outputs of a batch (on by default) */
   copyBatchOutputToClipboard: boolean
+  /** Show the CompressO icon in the macOS menu bar (on by default) */
+  showMenuBarIcon: boolean
 }
 
 const storedSaveLocation = localStorage.getItem(constants.saveLocation)
@@ -53,6 +55,7 @@ export const settingsStore = proxy<SettingsState>({
     localStorage.getItem(constants.copyOutputToClipboard) === 'true',
   copyBatchOutputToClipboard:
     localStorage.getItem(constants.copyBatchOutputToClipboard) !== 'false',
+  showMenuBarIcon: localStorage.getItem(constants.showMenuBarIcon) !== 'false',
 })
 
 subscribe(settingsStore, () => {
@@ -72,6 +75,10 @@ subscribe(settingsStore, () => {
   localStorage.setItem(
     constants.copyBatchOutputToClipboard,
     String(settingsStore.copyBatchOutputToClipboard),
+  )
+  localStorage.setItem(
+    constants.showMenuBarIcon,
+    String(settingsStore.showMenuBarIcon),
   )
   if (settingsStore.saveFolder) {
     localStorage.setItem(constants.saveFolder, settingsStore.saveFolder)

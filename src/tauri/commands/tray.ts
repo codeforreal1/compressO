@@ -32,6 +32,11 @@ export function isTrayPopoverVisible() {
   return core.invoke<boolean>('is_tray_popover_visible')
 }
 
+/** Shows or removes the menu bar (tray) icon */
+export function setTrayIconEnabled(enabled: boolean) {
+  return core.invoke<void>('set_tray_icon_enabled', { enabled })
+}
+
 /** Shows & focuses the main window, recreating it if it was closed */
 export function focusMainWindow() {
   return core.invoke<void>('focus_main_window')

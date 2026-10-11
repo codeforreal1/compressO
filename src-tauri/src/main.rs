@@ -46,7 +46,7 @@ use tauri_commands::file_manager::DbusState;
 #[cfg(target_os = "macos")]
 use tauri_commands::tray::{
     close_tray_popover, focus_main_window, is_tray_popover_visible, open_tray_popover, quit_app,
-    resize_tray_popover,
+    resize_tray_popover, set_tray_icon_enabled,
 };
 
 #[cfg(any(windows, target_os = "linux"))]
@@ -264,10 +264,9 @@ async fn main() {
             file_system::setup_app_data_dir(app)?;
             file_system::ensure_assets_dir(&app.app_handle())?;
 
+            // The tray icon itself is added by the frontend, depending on the user's setting
             #[cfg(target_os = "macos")]
-            if let Err(e) = macos::tray_popover::init(app) {
-                log::error!("Failed to set up the tray popover: {}", e);
-            }
+            macos::tray_popover::init(app);
 
             // The window starts hidden (see `tauri.conf.json`) so the webview isn't shown before it
             // has painted, which flashed a blank background on launch
@@ -398,7 +397,9 @@ async fn main() {
             #[cfg(target_os = "macos")]
             focus_main_window,
             #[cfg(target_os = "macos")]
-            quit_app
+            quit_app,
+            #[cfg(target_os = "macos")]
+            set_tray_icon_enabled
         ])
         .build(tauri::generate_context!())
         .expect("error while running tauri application")

@@ -2,7 +2,7 @@ use tauri::{webview::PageLoadEvent, AppHandle, Manager, WebviewWindowBuilder};
 
 use crate::macos::{
     bridge,
-    tray_popover::{WindowExt, TRAY_WINDOW_LABEL},
+    tray_popover::{self, WindowExt, TRAY_WINDOW_LABEL},
 };
 
 const MAIN_WINDOW_LABEL: &str = "main";
@@ -52,6 +52,12 @@ pub fn is_tray_popover_visible(app_handle: AppHandle) -> bool {
         .get_webview_window(TRAY_WINDOW_LABEL)
         .map(|tray_window| tray_window.is_tray_popover_visible())
         .unwrap_or(false)
+}
+
+/// Shows or removes the menu bar (tray) icon
+#[tauri::command]
+pub fn set_tray_icon_enabled(app_handle: AppHandle, enabled: bool) -> Result<(), String> {
+    tray_popover::set_tray_icon_enabled(&app_handle, enabled)
 }
 
 #[tauri::command]

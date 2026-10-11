@@ -3,10 +3,12 @@ import { TanStackRouterDevtools } from '@tanstack/router-devtools'
 import { event } from '@tauri-apps/api'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { useEffect } from 'react'
+import { subscribeKey } from 'valtio/utils'
 
 import { Toaster } from '@/components/Toast'
+import { settingsStore } from '@/stores/settingsStore'
 import { checkForUpdates, setupUpdateListeners } from '@/stores/updateStore'
-import { TRAY_WINDOW_LABEL } from '@/tauri/commands/tray'
+import { setTrayIconEnabled, TRAY_WINDOW_LABEL } from '@/tauri/commands/tray'
 import Titlebar from '@/tauri/components/Titlebar'
 import { getPlatform } from '@/utils/fs'
 import UIProvider from '../providers/UIProvider'
@@ -32,6 +34,16 @@ function MainRoot() {
     event.emit('frontend-ready')
     setupUpdateListeners()
     checkForUpdates()
+  }, [])
+
+  useEffect(() => {
+    if (!isMacOS) return
+    // The backend adds the menu bar icon only when the setting (General -> Show menu bar icon) is on
+    const applyMenuBarIcon = () => {
+      setTrayIconEnabled(settingsStore.showMenuBarIcon).catch(() => {})
+    }
+    applyMenuBarIcon()
+    return subscribeKey(settingsStore, 'showMenuBarIcon', applyMenuBarIcon)
   }, [])
 
   return (

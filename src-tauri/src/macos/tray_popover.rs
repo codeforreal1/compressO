@@ -147,10 +147,25 @@ fn create_tray_window(app_handle: &AppHandle) -> Result<WebviewWindow, String> {
     .map_err(|err| err.to_string())
 }
 
-/// Adds the status bar (tray) icon, which toggles a native popover (NSPopover) hosting the tray
-/// webview window
-pub fn init(app: &App) -> Result<(), String> {
+pub fn init(app: &App) {
     app.manage(TrayPopoverState(Mutex::new(false)));
+}
+
+/// Shows or removes the status bar (tray) icon, which toggles a native popover (NSPopover) hosting
+/// the tray webview window. Removing it also destroys the tray window, so the app quits again when
+/// the main window is closed.
+pub fn set_tray_icon_enabled(app_handle: &AppHandle, enabled: bool) -> Result<(), String> {
+    if enabled {
+        enable_tray_icon(app_handle)
+    } else {
+        disable_tray_icon(app_handle)
+    }
+}
+
+fn enable_tray_icon(app_handle: &AppHandle) -> Result<(), String> {
+    if app_handle.tray_by_id(TRAY_WINDOW_LABEL).is_some() {
+        return Ok(());
+    }
 
     TrayIconBuilder::with_id(TRAY_WINDOW_LABEL)
         .icon(tray_icon_image())
@@ -179,11 +194,29 @@ pub fn init(app: &App) -> Result<(), String> {
                 }
             }
         })
-        .build(app)
+        .build(app_handle)
         .map_err(|err| err.to_string())?;
 
-    let tray_window = create_tray_window(app.handle())?;
-    tray_window.to_popover()?;
+    if app_handle.get_webview_window(TRAY_WINDOW_LABEL).is_none() {
+        let tray_window = create_tray_window(app_handle)?;
+        tray_window.to_popover()?;
+    }
+
+    Ok(())
+}
+
+fn disable_tray_icon(app_handle: &AppHandle) -> Result<(), String> {
+    if let Some(tray_window) = app_handle.get_webview_window(TRAY_WINDOW_LABEL) {
+        let _ = tray_window.close_tray_popover();
+        tray_window.destroy().map_err(|err| err.to_string())?;
+    }
+
+    let state = app_handle.state::<TrayPopoverState>();
+    *state.0.lock().map_err(|err| err.to_string())? = false;
+
+    if let Some(tray) = app_handle.remove_tray_by_id(TRAY_WINDOW_LABEL) {
+        tray.set_visible(false).map_err(|err| err.to_string())?;
+    }
 
     Ok(())
 }
