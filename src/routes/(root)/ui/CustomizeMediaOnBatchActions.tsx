@@ -11,7 +11,11 @@ import { appProxy } from '../-state'
 
 function CustomizeMediaOnBatchActions() {
   const {
-    state: { selectedMediaIndexForCustomization, isProcessCompleted },
+    state: {
+      selectedMediaIndexForCustomization,
+      isProcessCompleted,
+      showMediaInfo,
+    },
   } = useSnapshot(appProxy)
 
   const handleApplyVideoConfig = useCallback(() => {
@@ -94,47 +98,53 @@ function CustomizeMediaOnBatchActions() {
   }, [])
 
   return (
-    <div className="absolute top-0 right-0 bottom-0 left-0 w-full h-full z-[10] flex flex-col justify-center bg-white1 dark:bg-black1">
+    <div
+      data-tint-overlay=""
+      className="absolute top-0 right-0 bottom-0 left-0 w-full h-full z-[10] flex flex-col justify-center bg-white1 dark:bg-black1"
+    >
       <motion.div
         className="flex flex-col justify-center items-center"
         {...zoomInTransition}
       >
         <PreviewSingleVideo mediaIndex={selectedMediaIndexForCustomization} />
       </motion.div>
-      <div className="flex items-center gap-2 absolute top-4 right-4">
-        {isProcessCompleted ? (
-          <Button
-            size="sm"
-            onPress={() => {
-              appProxy.state.selectedMediaIndexForCustomization = -1
-            }}
-            variant="flat"
-            radius="md"
-          >
-            Close
-          </Button>
-        ) : (
-          <>
+      {/* The full media info covers the media with its own close button in this corner */}
+      {!showMediaInfo ? (
+        <div className="flex items-center gap-2 absolute top-4 right-4">
+          {isProcessCompleted ? (
             <Button
               size="sm"
-              onPress={handleResetMediaConfig}
-              color="danger"
+              onPress={() => {
+                appProxy.state.selectedMediaIndexForCustomization = -1
+              }}
               variant="flat"
               radius="md"
             >
-              Reset
+              Close
             </Button>
-            <Button
-              size="sm"
-              variant="flat"
-              radius="md"
-              onPress={handleApplyVideoConfig}
-            >
-              Apply
-            </Button>
-          </>
-        )}
-      </div>
+          ) : (
+            <>
+              <Button
+                size="sm"
+                onPress={handleResetMediaConfig}
+                color="danger"
+                variant="flat"
+                radius="md"
+              >
+                Reset
+              </Button>
+              <Button
+                size="sm"
+                variant="flat"
+                radius="md"
+                onPress={handleApplyVideoConfig}
+              >
+                Apply
+              </Button>
+            </>
+          )}
+        </div>
+      ) : null}
     </div>
   )
 }

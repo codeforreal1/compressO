@@ -66,6 +66,44 @@ body #app {
   background-color: theme("colors.white1");
 }
 
+/* Tinted window (Settings -> General): the native translucent material (macOS sidebar material,
+   Windows 11 Mica) shows through a lightly tinted app background */
+html[data-tinted="true"],
+html[data-tinted="true"] body,
+html[data-tinted="true"] body #app,
+html[data-tinted="true"] #titlebar,
+html[data-tinted="true"] [data-layout],
+html[data-tinted="true"] [data-tint-overlay],
+html[data-tinted="true"] [data-tint-transparent] {
+  background-color: transparent;
+}
+
+/* Full-window overlays (e.g. while dragging files in) get the tint, frosted over the content */
+html[data-tinted="true"] [data-tint-frosted] {
+  background-color: rgb(var(--color-white1) / var(--tint-opacity, 0.5));
+  backdrop-filter: blur(40px);
+}
+
+html.dark[data-tinted="true"] [data-tint-frosted] {
+  background-color: rgb(var(--color-black1) / var(--tint-opacity, 0.5));
+}
+
+/* Views opened on top of others (full media info, a batch item being customized, the transform
+   editor) normally cover them with a solid background. When tinted, that background is see-through,
+   so what they cover (their siblings) is hidden instead. */
+html[data-tinted="true"] :has(> [data-tint-overlay])
+  > :not([data-tint-overlay]) {
+  visibility: hidden;
+}
+
+html[data-tinted="true"] #main {
+  background-color: rgb(var(--color-white1) / var(--tint-opacity, 0.5));
+}
+
+html.dark[data-tinted="true"] #main {
+  background-color: rgb(var(--color-black1) / var(--tint-opacity, 0.5));
+}
+
 /* The tray popover's webview is transparent so the native popover material shows through */
 html[data-window="tray"],
 html[data-window="tray"] body,

@@ -35,6 +35,7 @@ use tauri_commands::{
     },
     media::compress_media_batch,
     updater::{check_update, download_and_install_update},
+    window::set_window_tint,
 };
 
 #[cfg(target_os = "linux")]
@@ -382,6 +383,7 @@ async fn main() {
             get_image_dimensions,
             get_image_color_info,
             get_exif_info,
+            set_window_tint,
             #[cfg(target_os = "linux")]
             get_server_url,
             #[cfg(target_os = "linux")]

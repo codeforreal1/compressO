@@ -149,7 +149,7 @@
         "minHeight": 800,
         "resizable": true,
         "hiddenTitle": true,
-        "backgroundColor": "#FFFFFF",
+        "transparent": true,
         "visible": false,
         "titleBarStyle": "Overlay"
       }

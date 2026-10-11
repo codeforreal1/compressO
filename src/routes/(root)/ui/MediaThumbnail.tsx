@@ -667,7 +667,10 @@ function MediaThumbnail({ mediaIndex }: MediaThumbnailProps) {
         </div>
       </div>
       {showTransformerLayout ? (
-        <div className="absolute top-0 right-0 bottom-0 left-0 w-full h-full m-auto z-[10] p-4 bg-white1 dark:bg-black1 flex flex-col">
+        <div
+          data-tint-overlay=""
+          className="absolute top-0 right-0 bottom-0 left-0 w-full h-full m-auto z-[10] p-4 bg-white1 dark:bg-black1 flex flex-col"
+        >
           <MediaTransformer mediaIndex={mediaIndex} />
         </div>
       ) : null}

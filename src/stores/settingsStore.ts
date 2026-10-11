@@ -13,6 +13,17 @@ export const saveLocations = {
   sameFolder: 'sameFolder',
 } as const
 
+/** Range (%) of the tinted window's background opacity */
+export const TINT_OPACITY_RANGE = { min: 5, max: 95 } as const
+const DEFAULT_TINT_OPACITY = 75
+
+function readTintOpacity(key: string, fallback: number) {
+  const value = Number(localStorage.getItem(key))
+  return localStorage.getItem(key) != null && Number.isFinite(value)
+    ? Math.min(TINT_OPACITY_RANGE.max, Math.max(TINT_OPACITY_RANGE.min, value))
+    : fallback
+}
+
 export type SaveLocation = keyof typeof saveLocations
 
 export type SettingsState = {
@@ -32,6 +43,10 @@ export type SettingsState = {
   copyBatchOutputToClipboard: boolean
   /** Show the CompressO icon in the macOS menu bar (on by default) */
   showMenuBarIcon: boolean
+  /** Translucent, tinted window background (macOS & Windows 11 only, off by default) */
+  tintedWindow: boolean
+  /** Opacity (%) of the app background over the tinted window's material (both themes) */
+  tintOpacity: number
 }
 
 const storedSaveLocation = localStorage.getItem(constants.saveLocation)
@@ -56,6 +71,8 @@ export const settingsStore = proxy<SettingsState>({
   copyBatchOutputToClipboard:
     localStorage.getItem(constants.copyBatchOutputToClipboard) !== 'false',
   showMenuBarIcon: localStorage.getItem(constants.showMenuBarIcon) !== 'false',
+  tintedWindow: localStorage.getItem(constants.tintedWindow) === 'true',
+  tintOpacity: readTintOpacity(constants.tintOpacity, DEFAULT_TINT_OPACITY),
 })
 
 subscribe(settingsStore, () => {
@@ -80,6 +97,11 @@ subscribe(settingsStore, () => {
     constants.showMenuBarIcon,
     String(settingsStore.showMenuBarIcon),
   )
+  localStorage.setItem(
+    constants.tintedWindow,
+    String(settingsStore.tintedWindow),
+  )
+  localStorage.setItem(constants.tintOpacity, String(settingsStore.tintOpacity))
   if (settingsStore.saveFolder) {
     localStorage.setItem(constants.saveFolder, settingsStore.saveFolder)
   } else {

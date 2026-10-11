@@ -244,6 +244,7 @@ function PreviewSingleMedia({ mediaIndex }: PreviewSingleMediaProps) {
       ) : null}
       {showMediaInfo ? (
         <motion.div
+          data-tint-overlay=""
           className="absolute right-0 bottom-0 left-0 top-0 w-full h-full z-[10] bg-white1 dark:bg-black1 p-6 rounded-xl"
           {...slideUpTransition}
         >

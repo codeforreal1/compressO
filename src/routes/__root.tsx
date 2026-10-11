@@ -6,6 +6,7 @@ import { useEffect } from 'react'
 import { subscribeKey } from 'valtio/utils'
 
 import { Toaster } from '@/components/Toast'
+import { useWindowTint } from '@/hooks/useWindowTint'
 import { settingsStore } from '@/stores/settingsStore'
 import { checkForUpdates, setupUpdateListeners } from '@/stores/updateStore'
 import { setTrayIconEnabled, TRAY_WINDOW_LABEL } from '@/tauri/commands/tray'
@@ -29,6 +30,8 @@ function RootComponent() {
 }
 
 function MainRoot() {
+  useWindowTint()
+
   useEffect(() => {
     // Also tells the backend to show the window, which starts hidden to avoid a blank flash
     event.emit('frontend-ready')

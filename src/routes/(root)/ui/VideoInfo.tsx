@@ -185,7 +185,10 @@ function VideoInfo({ mediaIndex, onClose }: VideoInfoProps) {
   }, [onClose])
 
   return (
-    <section className="w-full h-full bg-white1 dark:bg-black1 p-6">
+    <section
+      data-tint-transparent=""
+      className="w-full h-full bg-white1 dark:bg-black1 p-6"
+    >
       <div className="w-full flex justify-center">
         <Tabs
           aria-label="Video Information"

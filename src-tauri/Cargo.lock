@@ -894,6 +894,7 @@ dependencies = [
  "vtracer",
  "webp",
  "wgpu",
+ "window-vibrancy",
 ]
 
 [[package]]

@@ -45,6 +45,8 @@ const Layout = (props: LayoutProps) => {
   return (
     <LayoutContext.Provider value={value}>
       <section
+        // The page background, made transparent for the tinted window (see `global.css`)
+        data-layout=""
         {...(containerProps ?? {})}
         className={cn([
           'w-full h-full flex flex-col overflow-y-auto dark:bg-black1 bg-white1',
