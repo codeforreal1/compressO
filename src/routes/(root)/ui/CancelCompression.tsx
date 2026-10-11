@@ -4,8 +4,10 @@ import React from 'react'
 import { snapshot, useSnapshot } from 'valtio'
 
 import Button from '@/components/Button'
+import ShortcutHint from '@/components/ShortcutHint'
 import { toast } from '@/components/Toast'
 import { useCommandEnterShortcut } from '@/hooks/useCommandEnterShortcut'
+import { useCommandKeyHeld } from '@/hooks/useCommandKeyHeld'
 import { CustomEvents } from '@/types/compression'
 import {
   autoCopyCompressedMediaToClipboard,
@@ -78,6 +80,8 @@ function CancelCompression() {
       cancelOngoingCompression()
     }
   })
+  // Holding ⌘ (Ctrl) reveals the shortcut on the button
+  const isCommandKeyHeld = useCommandKeyHeld(isCompressing && !isCancelling)
 
   return isCompressing ? (
     <Button
@@ -103,6 +107,7 @@ function CancelCompression() {
               : 'Cancel'}
         </motion.div>
       </AnimatePresence>
+      <ShortcutHint isVisible={isCommandKeyHeld && !isCancelling} />
     </Button>
   ) : null
 }

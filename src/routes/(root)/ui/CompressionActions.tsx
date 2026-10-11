@@ -1,5 +1,5 @@
 import { UseDisclosureProps, useDisclosure } from '@heroui/react'
-import { memo } from 'react'
+import { memo, useEffect, useRef } from 'react'
 import { snapshot, useSnapshot } from 'valtio'
 
 import Button from '@/components/Button'
@@ -7,6 +7,7 @@ import Icon from '@/components/Icon'
 import Tooltip from '@/components/Tooltip'
 import { deleteFile } from '@/tauri/commands/fs'
 import AlertDialog, { AlertDialogButton } from '@/ui/Dialogs/AlertDialog'
+import { isOverlayOpen, isTextEntryElement } from '@/utils/keyboard'
 import { appProxy } from '../-state'
 
 function CompressionActions() {
@@ -48,6 +49,47 @@ function CompressionActions() {
       resetProxy()
     }
   }
+
+  // Escape acts like the Exit button: back to the home screen, after a confirmation when the
+  // compressed media is not saved yet
+  const handleExitRef = useRef(handleCancelCompression)
+  handleExitRef.current = handleCancelCompression
+  useEffect(() => {
+    // Capture phase, so it runs before the Escape handlers of what is open on top (e.g. the full
+    // media info), which are skipped below
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        e.key !== 'Escape' ||
+        e.repeat ||
+        e.defaultPrevented ||
+        e.metaKey ||
+        e.ctrlKey ||
+        e.altKey ||
+        e.shiftKey ||
+        isTextEntryElement(e.target as HTMLElement | null) ||
+        isOverlayOpen()
+      ) {
+        return
+      }
+      const { state } = snapshot(appProxy)
+      if (
+        !state.media.length ||
+        state.isLoadingMediaFiles ||
+        state.isCompressing ||
+        state.isSaving ||
+        state.showMediaInfo ||
+        state.selectedMediaIndexForCustomization > -1
+      ) {
+        return
+      }
+      e.preventDefault()
+      handleExitRef.current()
+    }
+    window.addEventListener('keydown', handleKeyDown, true)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown, true)
+    }
+  }, [])
 
   const handleReconfigure = () => {
     appProxy.timeTravel('beforeCompressionStarted')

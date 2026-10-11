@@ -524,6 +524,7 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
         </div>
         {contextMenuOpen && contextMenuPosition && contextMenu ? (
           <div
+            role="menu"
             className="fixed z-50 bg-content1 rounded-xl"
             style={{
               left: contextMenuPosition.x,

@@ -1,26 +1,7 @@
 import { useEffect, useRef } from 'react'
 
 import { getPlatform } from '@/utils/fs'
-
-const NON_TEXT_INPUT_TYPES = new Set([
-  'checkbox',
-  'radio',
-  'range',
-  'button',
-  'submit',
-  'reset',
-  'color',
-  'file',
-])
-
-/** Whether the element takes typed text, where the shortcut should not trigger actions */
-function isTextEntryElement(element: HTMLElement | null) {
-  if (!element) return false
-  if (element instanceof HTMLInputElement) {
-    return !NON_TEXT_INPUT_TYPES.has(element.type)
-  }
-  return element instanceof HTMLTextAreaElement || element.isContentEditable
-}
+import { isTextEntryElement } from '@/utils/keyboard'
 
 /**
  * Runs `onShortcut` on ⌘+Shift+Enter (Ctrl+Shift+Enter on other platforms; also accepted on macOS),
