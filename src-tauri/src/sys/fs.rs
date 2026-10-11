@@ -32,6 +32,38 @@ pub fn ensure_assets_dir(app_handle: &tauri::AppHandle) -> Result<PathBuf, Strin
     Ok(assets_dir)
 }
 
+/// Empties (or creates) the folder holding the named copies of files put on the clipboard. Only the
+/// latest clipboard content is needed, so earlier copies are removed.
+pub fn reset_clipboard_dir(app_handle: &tauri::AppHandle) -> Result<PathBuf, String> {
+    let clipboard_dir = ensure_assets_dir(app_handle)?.join("clipboard");
+    if clipboard_dir.exists() {
+        fs::remove_dir_all(&clipboard_dir)
+            .map_err(|err| format!("Failed to clear clipboard directory: {}", err))?;
+    }
+    fs::create_dir_all(&clipboard_dir)
+        .map_err(|err| format!("Failed to create clipboard directory: {}", err))?;
+    Ok(clipboard_dir)
+}
+
+/// Makes `file_path` available as `<dir>/<unique folder>/<file_name>` without copying its data (a
+/// hard link, or a copy if linking fails). Each file gets its own folder, so equal names in a batch
+/// don't clash.
+pub fn link_file_with_name(dir: &Path, file_path: &str, file_name: &str) -> Result<PathBuf, String> {
+    // Only the name itself, so it can't point outside `dir`
+    let file_name = Path::new(file_name)
+        .file_name()
+        .ok_or_else(|| format!("Invalid file name: {}", file_name))?;
+
+    let target_dir = dir.join(nanoid::nanoid!());
+    fs::create_dir_all(&target_dir).map_err(|err| err.to_string())?;
+    let target_path = target_dir.join(file_name);
+
+    if fs::hard_link(file_path, &target_path).is_err() {
+        fs::copy(file_path, &target_path).map_err(|err| err.to_string())?;
+    }
+    Ok(target_path)
+}
+
 /// Get metadata of a file from it's full path
 pub fn get_file_metadata(path: &str) -> Result<FileMetadata, String> {
     let metadata_ref = fs::metadata(path);

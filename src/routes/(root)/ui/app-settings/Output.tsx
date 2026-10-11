@@ -64,8 +64,14 @@ async function pickSaveFolder() {
 function Output() {
   const [confirmClearCache, setConfirmClearCache] = React.useState(false)
   const [isCacheDeleting, setIsCacheDeleting] = React.useState(false)
-  const { outputFilePrefix, saveLocation, saveFolder, saveLargerOutputs } =
-    useSnapshot(settingsStore)
+  const {
+    outputFilePrefix,
+    saveLocation,
+    saveFolder,
+    saveLargerOutputs,
+    copyOutputToClipboard,
+    copyBatchOutputToClipboard,
+  } = useSnapshot(settingsStore)
   const selectedSaveLocation = SAVE_LOCATION_OPTIONS.find(
     (option) => option.key === saveLocation,
   )
@@ -170,6 +176,37 @@ function Output() {
             className="w-[180px]"
           />
         </SettingsRow>
+      </SettingsSection>
+
+      <SettingsSection title="Clipboard">
+        <SettingsRow
+          title="Copy output to clipboard"
+          description="Copy the compressed media to the clipboard after each compression, so it can be pasted right away."
+        >
+          <Switch
+            aria-label="Copy output to clipboard"
+            isSelected={copyOutputToClipboard}
+            onValueChange={(isSelected) => {
+              settingsStore.copyOutputToClipboard = isSelected
+              // Batch outputs are included again whenever copying is turned on
+              if (isSelected) settingsStore.copyBatchOutputToClipboard = true
+            }}
+          />
+        </SettingsRow>
+        {copyOutputToClipboard ? (
+          <SettingsRow
+            title="Include batch outputs"
+            description="Also copy all compressed media of a batch. Turn this off to copy single outputs only, since a batch can contain many files."
+          >
+            <Switch
+              aria-label="Include batch outputs"
+              isSelected={copyBatchOutputToClipboard}
+              onValueChange={(isSelected) => {
+                settingsStore.copyBatchOutputToClipboard = isSelected
+              }}
+            />
+          </SettingsRow>
+        ) : null}
       </SettingsSection>
 
       <SettingsSection title="Storage">

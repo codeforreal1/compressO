@@ -26,6 +26,10 @@ export type SettingsState = {
    * such outputs are left for the Save button.
    */
   saveLargerOutputs: boolean
+  /** Copy the output to the clipboard after compression */
+  copyOutputToClipboard: boolean
+  /** With `copyOutputToClipboard`, also copy all outputs of a batch (on by default) */
+  copyBatchOutputToClipboard: boolean
 }
 
 const storedSaveLocation = localStorage.getItem(constants.saveLocation)
@@ -45,6 +49,10 @@ export const settingsStore = proxy<SettingsState>({
   // Only an explicit opt-out turns it off
   saveLargerOutputs:
     localStorage.getItem(constants.saveLargerOutputs) !== 'false',
+  copyOutputToClipboard:
+    localStorage.getItem(constants.copyOutputToClipboard) === 'true',
+  copyBatchOutputToClipboard:
+    localStorage.getItem(constants.copyBatchOutputToClipboard) !== 'false',
 })
 
 subscribe(settingsStore, () => {
@@ -56,6 +64,14 @@ subscribe(settingsStore, () => {
   localStorage.setItem(
     constants.saveLargerOutputs,
     String(settingsStore.saveLargerOutputs),
+  )
+  localStorage.setItem(
+    constants.copyOutputToClipboard,
+    String(settingsStore.copyOutputToClipboard),
+  )
+  localStorage.setItem(
+    constants.copyBatchOutputToClipboard,
+    String(settingsStore.copyBatchOutputToClipboard),
   )
   if (settingsStore.saveFolder) {
     localStorage.setItem(constants.saveFolder, settingsStore.saveFolder)

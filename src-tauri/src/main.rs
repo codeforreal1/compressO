@@ -26,7 +26,7 @@ use tauri_commands::{
     },
     file_manager::show_item_in_file_manager,
     fs::{
-        copy_file_to_clipboard, delete_cache, delete_file, get_file_metadata, get_image_dimension,
+        copy_file_to_clipboard, copy_files_to_clipboard, delete_cache, delete_file, get_file_metadata, get_image_dimension,
         get_available_path, get_svg_dimension, move_file, read_files_from_clipboard, read_files_from_paths,
     },
     image::{
@@ -366,6 +366,7 @@ async fn main() {
             delete_cache,
             show_item_in_file_manager,
             copy_file_to_clipboard,
+            copy_files_to_clipboard,
             read_files_from_clipboard,
             read_files_from_paths,
             get_audio_streams,

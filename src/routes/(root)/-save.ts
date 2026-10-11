@@ -4,7 +4,11 @@ import { snapshot } from 'valtio'
 
 import { toast } from '@/components/Toast'
 import { settingsStore } from '@/stores/settingsStore'
-import { getAvailablePath, moveFile } from '@/tauri/commands/fs'
+import {
+  copyFilesToClipboard,
+  getAvailablePath,
+  moveFile,
+} from '@/tauri/commands/fs'
 import { Image, Video } from '@/types/app'
 import { getParentDirectory } from '@/utils/fs'
 import { appProxy } from './-state'
@@ -214,5 +218,40 @@ export async function autoSaveCompressedMedia() {
     toast.info(
       `${largerCount} ${largerCount > 1 ? 'outputs were' : 'output was'} larger than the original and not saved automatically. Use Save if you still want ${largerCount > 1 ? 'them' : 'it'}.`,
     )
+  }
+}
+
+/**
+ * Copies the outputs to the clipboard after compression when enabled in Settings
+ * (Output -> Copy output to clipboard). Runs after the automatic save, so saved outputs are copied
+ * from where they were saved. Unsaved outputs are pasted under the name they would be saved with
+ * (prefix & original name), not their generated cache name. A batch is only copied when
+ * "Include batch outputs" is also on.
+ * Happens silently; only a failure shows a toast.
+ */
+export async function autoCopyCompressedMediaToClipboard() {
+  const { copyOutputToClipboard, copyBatchOutputToClipboard } = settingsStore
+  const { media } = appProxy.state
+  if (!copyOutputToClipboard || !media.length) return
+  if (media.length > 1 && !copyBatchOutputToClipboard) return
+
+  const files = media.flatMap(({ compressedFile, fileName }) => {
+    if (!compressedFile?.isSuccessful) return []
+    if (compressedFile.savedPath) return [{ path: compressedFile.savedPath }]
+    if (!compressedFile.pathRaw) return []
+    const name = compressedFile.fileNameToDisplay || fileName
+    return [
+      {
+        path: compressedFile.pathRaw,
+        fileName: name ? `${settingsStore.outputFilePrefix}${name}` : undefined,
+      },
+    ]
+  })
+  if (!files.length) return
+
+  try {
+    await copyFilesToClipboard(files)
+  } catch {
+    toast.error('The output could not be copied to the clipboard.')
   }
 }

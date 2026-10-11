@@ -7,7 +7,10 @@ import Button from '@/components/Button'
 import { toast } from '@/components/Toast'
 import { useCommandEnterShortcut } from '@/hooks/useCommandEnterShortcut'
 import { CustomEvents } from '@/types/compression'
-import { autoSaveCompressedMedia } from '../-save'
+import {
+  autoCopyCompressedMediaToClipboard,
+  autoSaveCompressedMedia,
+} from '../-save'
 import { appProxy } from '../-state'
 
 function CancelCompression() {
@@ -56,6 +59,7 @@ function CancelCompression() {
         // Save the media that finished before the cancellation, like a completed batch would be;
         // unfinished media has no output and is skipped
         await autoSaveCompressedMedia()
+        await autoCopyCompressedMediaToClipboard()
       } else {
         appProxy.timeTravel('beforeCompressionStarted')
       }

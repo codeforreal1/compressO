@@ -47,6 +47,18 @@ export function copyFileToClipboard(filePath: string) {
   })
 }
 
+/**
+ * Copies several files to the clipboard at once. A file with a `fileName` is pasted under that name
+ * (the file itself is not renamed).
+ */
+export function copyFilesToClipboard(
+  files: { path: string; fileName?: string }[],
+) {
+  return core.invoke('copy_files_to_clipboard', {
+    files,
+  })
+}
+
 export function readFilesFromClipboard() {
   return core.invoke<CollectedFile[]>('read_files_from_clipboard')
 }

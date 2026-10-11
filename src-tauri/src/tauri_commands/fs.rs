@@ -99,6 +99,7 @@ pub async fn delete_cache(app: tauri::AppHandle) -> Result<(), String> {
     if let Err(err) = fs::delete_stale_files(&ffmpeg.get_asset_dir(), 0).await {
         return Err(err.to_string());
     }
+    fs::reset_clipboard_dir(&app)?;
     Ok(())
 }
 
@@ -107,6 +108,39 @@ pub async fn copy_file_to_clipboard(_: tauri::AppHandle, file_path: &str) -> Res
     let ctx = ClipboardContext::new().map_err(|err| err.to_string())?;
     ctx.set_files(vec![file_path.to_owned()])
         .map_err(|err| err.to_string())?;
+    Ok(())
+}
+
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ClipboardFile {
+    path: String,
+    /// Name the file should be pasted with. Unsaved outputs live in the cache under generated
+    /// names, so they're exposed under this name instead (the original file is kept as is).
+    file_name: Option<String>,
+}
+
+/// Copies several files to the clipboard at once (e.g. all outputs of a batch)
+#[tauri::command]
+pub async fn copy_files_to_clipboard(
+    app: tauri::AppHandle,
+    files: Vec<ClipboardFile>,
+) -> Result<(), String> {
+    let clipboard_dir = fs::reset_clipboard_dir(&app)?;
+
+    let mut file_paths = Vec::with_capacity(files.len());
+    for file in files {
+        match file.file_name {
+            Some(file_name) => {
+                let named_path = fs::link_file_with_name(&clipboard_dir, &file.path, &file_name)?;
+                file_paths.push(named_path.to_string_lossy().to_string());
+            }
+            None => file_paths.push(file.path),
+        }
+    }
+
+    let ctx = ClipboardContext::new().map_err(|err| err.to_string())?;
+    ctx.set_files(file_paths).map_err(|err| err.to_string())?;
     Ok(())
 }
 

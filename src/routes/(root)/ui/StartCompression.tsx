@@ -25,7 +25,10 @@ import {
 } from '@/utils/video'
 import CancelCompression from './CancelCompression'
 import SaveMedia from './SaveMedia'
-import { autoSaveCompressedMedia } from '../-save'
+import {
+  autoCopyCompressedMediaToClipboard,
+  autoSaveCompressedMedia,
+} from '../-save'
 import { appProxy } from '../-state'
 
 function StartCompression() {
@@ -335,6 +338,7 @@ function StartCompression() {
 
       // Saves right away when a save location is set in Settings (Output -> Save location)
       await autoSaveCompressedMedia()
+      await autoCopyCompressedMediaToClipboard()
     } catch (error) {
       if (error !== 'CANCELLED') {
         toast.error('Something went wrong during compression.')
