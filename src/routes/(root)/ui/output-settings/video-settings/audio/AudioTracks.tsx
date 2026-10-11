@@ -190,8 +190,7 @@ function AudioTracks({ mediaIndex }: AudioTracksProps) {
                     size="sm"
                     classNames={{
                       base: cn(
-                        'inline-flex w-full max-w-md bg-content1',
-                        'hover:bg-content2 items-center justify-start',
+                        'inline-flex w-full max-w-md items-center justify-start',
                         'cursor-pointer rounded-xl gap-2 p-4 py-2 pl-6 border-2 border-transparent',
                       ),
                       label: 'w-full',

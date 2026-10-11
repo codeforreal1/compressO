@@ -150,32 +150,38 @@ function VideoSettings({ mediaIndex }: VideoSettingsProps) {
           ) : null}
           {tab === 'audio' ? (
             <div className="relative">
-              <div className="mb-4">
-                <AudioVolume mediaIndex={mediaIndex} />
-                <Divider className="mt-8" />
-              </div>
-              <>
+              {hasNoAudio ? (
+                <p className="text-sm text-center mb-4 text-zinc-600 dark:text-zinc-400 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                  No audio found
+                </p>
+              ) : null}
+              {/* Without audio, the controls are dimmed & cannot be used */}
+              <div
+                className={
+                  hasNoAudio ? 'opacity-40 pointer-events-none' : undefined
+                }
+                aria-disabled={hasNoAudio || undefined}
+              >
+                <div className="mb-4">
+                  <AudioVolume mediaIndex={mediaIndex} />
+                  <Divider className="mt-8" />
+                </div>
                 <>
-                  <AudioCodec mediaIndex={mediaIndex} />
+                  <>
+                    <AudioCodec mediaIndex={mediaIndex} />
+                    <Divider className="my-3" />
+                  </>
+                  <AudioChannels mediaIndex={mediaIndex} />
                   <Divider className="my-3" />
                 </>
-                <AudioChannels mediaIndex={mediaIndex} />
-                <Divider className="my-3" />
-              </>
-              <>
-                <AudioBitrate mediaIndex={mediaIndex} />
-                <Divider className="my-3" />
-              </>
-              <>
-                <AudioTracks mediaIndex={mediaIndex} />
-              </>
-              {hasNoAudio ? (
-                <div className="flex justify-center items-center absolute left-0 top-0 w-full h-full bg-white1/50 dark:bg-black1/50">
-                  <p className="text-xs text-center mt-1 text-zinc-600 dark:text-zinc-400">
-                    No audio found
-                  </p>
-                </div>
-              ) : null}
+                <>
+                  <AudioBitrate mediaIndex={mediaIndex} />
+                  <Divider className="my-3" />
+                </>
+                <>
+                  <AudioTracks mediaIndex={mediaIndex} />
+                </>
+              </div>
             </div>
           ) : null}
           {tab === 'others' ? (
