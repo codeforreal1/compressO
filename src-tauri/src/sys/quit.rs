@@ -1,38 +1,72 @@
 #![allow(unexpected_cfgs)]
 
 //! Asks for confirmation before quitting (or closing the main window) while media is being
-//! compressed, since that cancels the compression.
+//! compressed or compressed media is not saved yet, since both would be lost.
 
 use std::sync::atomic::{AtomicBool, Ordering};
 use tauri::AppHandle;
 use tauri_plugin_dialog::{DialogExt, MessageDialogButtons, MessageDialogKind};
 
-use crate::tauri_commands::compression_status::is_compressing;
+use crate::tauri_commands::compression_status::{has_unsaved_output, is_compressing};
 
 /// Set once quitting was confirmed, so the quit that follows isn't asked about again
 static IS_QUIT_CONFIRMED: AtomicBool = AtomicBool::new(false);
 /// Only one confirmation is shown at a time (e.g. ⌘Q pressed twice)
 static IS_CONFIRMATION_OPEN: AtomicBool = AtomicBool::new(false);
 
-/// Whether quitting needs a confirmation first
-pub fn should_confirm_quit(app_handle: &AppHandle) -> bool {
-    !IS_QUIT_CONFIRMED.load(Ordering::SeqCst) && is_compressing(app_handle)
+/// Why quitting needs a confirmation
+#[derive(Clone, Copy)]
+pub enum QuitReason {
+    /// Quitting cancels the compression
+    Compressing,
+    /// Quitting discards compressed outputs that are not saved yet
+    UnsavedOutput,
 }
 
-/// Asks whether to quit during the compression; `on_confirm` runs if the user chooses to quit
-pub fn confirm_quit(app_handle: &AppHandle, on_confirm: impl FnOnce() + Send + 'static) {
+/// Why quitting needs a confirmation first, if it does
+pub fn quit_reason(app_handle: &AppHandle) -> Option<QuitReason> {
+    if IS_QUIT_CONFIRMED.load(Ordering::SeqCst) {
+        None
+    } else if is_compressing(app_handle) {
+        Some(QuitReason::Compressing)
+    } else if has_unsaved_output(app_handle) {
+        Some(QuitReason::UnsavedOutput)
+    } else {
+        None
+    }
+}
+
+/// Asks whether to quit anyway; `on_confirm` runs if the user chooses to quit
+pub fn confirm_quit(
+    app_handle: &AppHandle,
+    reason: QuitReason,
+    on_confirm: impl FnOnce() + Send + 'static,
+) {
     if IS_CONFIRMATION_OPEN.swap(true, Ordering::SeqCst) {
         return;
     }
 
+    let (title, message, cancel_label) = match reason {
+        QuitReason::Compressing => (
+            "Compression in progress",
+            "Media is still being compressed. Quitting now will cancel the compression.",
+            "Continue Compressing",
+        ),
+        QuitReason::UnsavedOutput => (
+            "Media not saved",
+            "Your compressed media is not saved yet. Quitting now will discard it.",
+            "Go Back",
+        ),
+    };
+
     app_handle
         .dialog()
-        .message("Media is still being compressed. Quitting now will cancel the compression.")
-        .title("Compression in progress")
+        .message(message)
+        .title(title)
         .kind(MessageDialogKind::Warning)
         .buttons(MessageDialogButtons::OkCancelCustom(
             "Quit".to_string(),
-            "Continue Compressing".to_string(),
+            cancel_label.to_string(),
         ))
         .show(move |is_confirmed| {
             IS_CONFIRMATION_OPEN.store(false, Ordering::SeqCst);
@@ -61,11 +95,11 @@ pub fn install_macos_quit_confirmation(app_handle: &AppHandle) {
         let Some(app_handle) = APP_HANDLE.get() else {
             return NS_TERMINATE_NOW;
         };
-        if !should_confirm_quit(app_handle) {
+        let Some(reason) = quit_reason(app_handle) else {
             return NS_TERMINATE_NOW;
-        }
+        };
         let exit_app_handle = app_handle.clone();
-        confirm_quit(app_handle, move || exit_app_handle.exit(0));
+        confirm_quit(app_handle, reason, move || exit_app_handle.exit(0));
         NS_TERMINATE_CANCEL
     }
 

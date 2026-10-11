@@ -20,7 +20,7 @@ use tauri_plugin_log::{Target as LogTarget, TargetKind as LogTargetKind};
 
 use tauri_commands::{
     compression_status::{
-        get_compression_status, is_compressing, set_compression_status,
+        get_compression_status, has_unsaved_output, is_compressing, set_compression_status,
         update_compression_status, CompressionStatusState,
     },
     dock::{clear_dock_badge, set_dock_progress},
@@ -203,6 +203,8 @@ async fn main() {
         .plugin(
             // Don't restore visibility: the window starts hidden & is shown once the frontend is ready
             tauri_plugin_window_state::Builder::default()
+                // The tray popover window has a fixed size (set in code), so it must not be restored
+                .with_denylist(&["tray"])
                 .with_state_flags(
                     tauri_plugin_window_state::StateFlags::all()
                         .difference(tauri_plugin_window_state::StateFlags::VISIBLE),
@@ -429,13 +431,14 @@ async fn main() {
             let app_handle = window.app_handle();
             match event {
                 tauri::WindowEvent::CloseRequested { api, .. } => {
-                    if !is_compressing(app_handle) {
+                    if !is_compressing(app_handle) && !has_unsaved_output(app_handle) {
                         return;
                     }
 
-                    // With the menu bar icon, closing the window during a compression only hides
-                    // it: the compression continues (its progress shows in the menu bar) & the
-                    // window comes back from the menu bar or the dock
+                    // With the menu bar icon, closing the window during a compression (or with
+                    // unsaved outputs) only hides it: the compression continues (its progress
+                    // shows in the menu bar), nothing is lost & the window comes back from the
+                    // menu bar or the dock
                     #[cfg(target_os = "macos")]
                     if app_handle
                         .tray_by_id(macos::tray_popover::TRAY_WINDOW_LABEL)
@@ -446,11 +449,12 @@ async fn main() {
                         return;
                     }
 
-                    // Otherwise closing the window cancels the compression (& quits), so ask first
-                    if quit::should_confirm_quit(app_handle) {
+                    // Otherwise closing the window loses the compression or the unsaved outputs (&
+                    // quits), so ask first
+                    if let Some(reason) = quit::quit_reason(app_handle) {
                         api.prevent_close();
                         let window_to_close = window.clone();
-                        quit::confirm_quit(app_handle, move || {
+                        quit::confirm_quit(app_handle, reason, move || {
                             let _ = window_to_close.destroy();
                         });
                     }
@@ -494,12 +498,13 @@ async fn main() {
                     core::media_process::kill_running_processes();
                 }
 
-                // Quitting (e.g. from the menu bar popover) cancels the compression, so ask first
+                // Quitting (e.g. from the menu bar popover) cancels the compression or discards unsaved
+                // outputs, so ask first
                 if let tauri::RunEvent::ExitRequested { api, .. } = &event {
-                    if quit::should_confirm_quit(app_handle) {
+                    if let Some(reason) = quit::quit_reason(app_handle) {
                         api.prevent_exit();
                         let exit_app_handle = app_handle.clone();
-                        quit::confirm_quit(app_handle, move || exit_app_handle.exit(0));
+                        quit::confirm_quit(app_handle, reason, move || exit_app_handle.exit(0));
                     }
                 }
 

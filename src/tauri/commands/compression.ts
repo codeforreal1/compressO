@@ -7,6 +7,8 @@ export type CompressionStatus = {
   mediaCount: number
   /** Name of the file, for a single media */
   fileName: string | null
+  /** Compressed outputs that are not saved yet (quitting asks for confirmation) */
+  hasUnsavedOutput: boolean
 }
 
 /** Sent to the tray window whenever the main window's compression status changes */

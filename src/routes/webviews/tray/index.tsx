@@ -80,7 +80,8 @@ function TrayWindow() {
 
   return (
     <div className="w-screen h-screen flex flex-col">
-      <div className="flex flex-1 flex-col items-center justify-center gap-2 px-5 min-h-0">
+      {/* Top padding clears the popover's arrow, which overlaps the content */}
+      <div className="flex flex-1 flex-col items-center justify-center gap-2 px-5 pt-5 min-h-0">
         {status?.state === 'compressing' ? (
           <>
             <CircularProgress

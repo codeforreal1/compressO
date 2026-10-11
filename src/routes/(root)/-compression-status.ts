@@ -16,6 +16,14 @@ function getCompressionStatus(): CompressionStatus {
   } = appProxy.state
   const mediaCount = media.length
   const fileName = mediaCount === 1 ? (media[0].fileName ?? null) : null
+  // Also the finished media of a cancelled batch
+  const hasUnsavedOutput =
+    isProcessCompleted &&
+    media.some(
+      (mediaFile) =>
+        mediaFile.compressedFile?.isSuccessful &&
+        !mediaFile.compressedFile?.isSaved,
+    )
 
   if (isCompressing && mediaCount > 0) {
     // Same overall progress as the dock badge
@@ -29,6 +37,7 @@ function getCompressionStatus(): CompressionStatus {
       progress: Math.round(progress),
       mediaCount,
       fileName,
+      hasUnsavedOutput: false,
     }
   }
   if (
@@ -36,9 +45,15 @@ function getCompressionStatus(): CompressionStatus {
     !isBatchCompressionCancelled &&
     media.some((mediaFile) => mediaFile.compressedFile?.isSuccessful)
   ) {
-    return { state: 'completed', progress: 100, mediaCount, fileName }
+    return {
+      state: 'completed',
+      progress: 100,
+      mediaCount,
+      fileName,
+      hasUnsavedOutput,
+    }
   }
-  return getIdleStatus()
+  return { ...getIdleStatus(), hasUnsavedOutput }
 }
 
 /**
@@ -69,5 +84,11 @@ export function useCompressionStatusSync() {
 }
 
 function getIdleStatus(): CompressionStatus {
-  return { state: 'idle', progress: 0, mediaCount: 0, fileName: null }
+  return {
+    state: 'idle',
+    progress: 0,
+    mediaCount: 0,
+    fileName: null,
+    hasUnsavedOutput: false,
+  }
 }

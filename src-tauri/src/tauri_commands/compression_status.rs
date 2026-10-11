@@ -13,7 +13,8 @@ pub enum CompressionState {
     Completed,
 }
 
-/// What the main window is doing. Shown in the menu bar popover (macOS) & used to confirm quitting during a compression. A batch only has an overall progress.
+/// What the main window is doing. Shown in the menu bar popover (macOS) & used to confirm quitting
+/// during a compression or with unsaved outputs. A batch only has an overall progress.
 #[derive(Clone, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CompressionStatus {
@@ -23,17 +24,27 @@ pub struct CompressionStatus {
     pub media_count: usize,
     /// Name of the file, for a single media
     pub file_name: Option<String>,
+    /// Compressed outputs that are not saved yet (lost when quitting)
+    pub has_unsaved_output: bool,
 }
 
 pub struct CompressionStatusState(pub Mutex<CompressionStatus>);
 
 const COMPRESSION_STATUS_EVENT: &str = "compression-status";
 
-pub fn is_compressing(app_handle: &AppHandle) -> bool {
+fn current_status(app_handle: &AppHandle) -> CompressionStatus {
     app_handle
         .try_state::<CompressionStatusState>()
-        .and_then(|state| state.0.lock().ok().map(|s| s.state))
-        == Some(CompressionState::Compressing)
+        .and_then(|state| state.0.lock().ok().map(|s| s.clone()))
+        .unwrap_or_default()
+}
+
+pub fn is_compressing(app_handle: &AppHandle) -> bool {
+    current_status(app_handle).state == CompressionState::Compressing
+}
+
+pub fn has_unsaved_output(app_handle: &AppHandle) -> bool {
+    current_status(app_handle).has_unsaved_output
 }
 
 /// Stores the main window's compression status & sends it to the tray popover (macOS)
@@ -53,8 +64,5 @@ pub fn set_compression_status(app_handle: AppHandle, status: CompressionStatus) 
 
 #[tauri::command]
 pub fn get_compression_status(app_handle: AppHandle) -> CompressionStatus {
-    app_handle
-        .try_state::<CompressionStatusState>()
-        .and_then(|state| state.0.lock().ok().map(|s| s.clone()))
-        .unwrap_or_default()
+    current_status(&app_handle)
 }
