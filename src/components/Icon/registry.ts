@@ -23,9 +23,11 @@ import Info from '@/assets/icons/info.svg?react'
 import LowResHeart from '@/assets/icons/low-res-heart.svg?react'
 import Moon from '@/assets/icons/moon.svg?react'
 import Music from '@/assets/icons/music.svg?react'
+import OpenApp from '@/assets/icons/open-app.svg?react'
 import Pause from '@/assets/icons/pause.svg?react'
 import Pencil from '@/assets/icons/pencil.svg?react'
 import Play from '@/assets/icons/play.svg?react'
+import Power from '@/assets/icons/power.svg?react'
 import Question from '@/assets/icons/question.svg?react'
 import Redo from '@/assets/icons/redo.svg?react'
 import RotateLeft from '@/assets/icons/rotate-left.svg?react'
@@ -84,6 +86,8 @@ const registry = asRegistry({
   caret: Caret,
   compare: Compare,
   music: Music,
+  openApp: OpenApp,
+  power: Power,
 })
 
 export default registry

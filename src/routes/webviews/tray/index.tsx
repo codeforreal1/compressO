@@ -3,8 +3,8 @@ import { event } from '@tauri-apps/api'
 import { useEffect, useState } from 'react'
 
 import Button from '@/components/Button'
-import Image from '@/components/Image'
-import Progress from '@/components/Progress'
+import Icon from '@/components/Icon'
+import { CircularProgress } from '@/components/Progress'
 import { toast } from '@/components/Toast'
 import {
   COMPRESSION_STATUS_EVENT,
@@ -79,53 +79,64 @@ function TrayWindow() {
   }
 
   return (
-    <div className="w-screen h-screen overflow-auto p-4 flex flex-col">
-      <div className="flex flex-1 flex-col items-center justify-center gap-3">
-        <Image
-          disableAnimation
-          src="/logo.png"
-          alt="logo"
-          width={64}
-          height={64}
-        />
-        <div className="text-center">
-          <h2 className="text-lg font-bold text-primary">CompressO</h2>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400">
-            Version {window.__appVersion}
-          </p>
-        </div>
+    <div className="w-screen h-screen flex flex-col">
+      <div className="flex flex-1 flex-col items-center justify-center gap-2 px-5 min-h-0">
         {status?.state === 'compressing' ? (
-          <div className="w-full mt-2">
-            <div className="flex justify-between gap-2 text-xs mb-1">
-              <span className="truncate">
-                Compressing {getMediaLabel(status)}
-              </span>
-              <span className="tabular-nums">{status.progress}%</span>
-            </div>
-            <Progress
+          <>
+            <CircularProgress
               aria-label="Compression progress"
-              size="sm"
               value={status.progress}
-              classNames={{ indicator: 'bg-primary' }}
+              showValueLabel
+              strokeWidth={3}
+              classNames={{
+                svg: 'w-20 h-20',
+                indicator: 'stroke-primary',
+                track: 'stroke-black/10 dark:stroke-white/10',
+                value: 'text-base font-semibold',
+              }}
             />
-          </div>
+            <p className="w-full text-xs text-center truncate text-zinc-600 dark:text-zinc-300">
+              Compressing...
+            </p>
+          </>
         ) : status?.state === 'completed' ? (
-          <p className="w-full mt-2 text-xs text-center truncate">
-            Compression of {getMediaLabel(status)} is complete.
+          <>
+            <div className="w-20 h-20 flex items-center justify-center rounded-full bg-success/15 text-success">
+              <Icon name="tick" size={44} />
+            </div>
+            <p className="text-sm font-semibold">Completed</p>
+            <p className="w-full text-xs text-center truncate text-zinc-600 dark:text-zinc-300">
+              {getMediaLabel(status)}
+            </p>
+          </>
+        ) : (
+          <p className="text-xs text-center text-zinc-500 dark:text-zinc-400">
+            No compression in progress.
           </p>
-        ) : null}
-        <Button size="sm" className="mt-2" onPress={handleOpenMainWindow}>
-          Open CompressO
-        </Button>
+        )}
       </div>
-      <div className="flex justify-end">
+      <div className="flex items-center justify-around gap-2 px-6 py-6">
         <Button
           size="sm"
-          variant="light"
-          color="danger"
-          onPress={handleQuitApp}
+          variant="bordered"
+          radius="md"
+          className="gap-1.5 px-2 text-[11px] font-normal border-1"
+          onPress={handleOpenMainWindow}
+          fullWidth
         >
-          Quit CompressO
+          <Icon name="openApp" size={20} />
+          Open App
+        </Button>
+        <Button
+          size="sm"
+          variant="bordered"
+          radius="md"
+          className="gap-1.5 px-2 text-[11px] font-normal border-1 text-red-400"
+          onPress={handleQuitApp}
+          fullWidth
+        >
+          <Icon name="power" size={20} />
+          Quit App
         </Button>
       </div>
     </div>

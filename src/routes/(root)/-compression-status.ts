@@ -59,7 +59,8 @@ export function useCompressionStatusSync() {
     }
 
     sync()
-    const unsubscribe = subscribe(appProxy.state, sync)
+    // The whole proxy, since resetting or going back a step replaces `appProxy.state`
+    const unsubscribe = subscribe(appProxy, sync)
     return () => {
       unsubscribe()
       setCompressionStatus(getIdleStatus()).catch(() => {})

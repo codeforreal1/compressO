@@ -11,8 +11,8 @@ use crate::macos::bridge::ffi;
 pub const TRAY_WINDOW_LABEL: &str = "tray";
 
 const TRAY_WINDOW_URL: &str = "webviews/tray";
-const TRAY_WINDOW_WIDTH: f64 = 320.0;
-const TRAY_WINDOW_HEIGHT: f64 = 400.0;
+const TRAY_WINDOW_WIDTH: f64 = 280.0;
+const TRAY_WINDOW_HEIGHT: f64 = 220.0;
 
 pub trait WindowExt<R: Runtime> {
     fn to_popover(&self) -> Result<(), String>;
