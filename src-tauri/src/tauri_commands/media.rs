@@ -5,6 +5,7 @@ use crate::core::domain::{
 };
 use crate::core::ffmpeg::FFMPEG;
 use crate::core::image::ImageCompressor;
+use crate::utils::event::EventListenerGuard;
 use tauri::{Emitter, Listener, Manager};
 
 #[tauri::command]
@@ -26,30 +27,31 @@ pub async fn compress_media_batch(
             let video_id = video_config.video_id.clone();
             let video_id_clone_for_listener = video_id.clone();
 
-            tokio::spawn(async move {
-                if let Some(window) = app_clone.get_webview_window("main") {
-                    let _ = window.clone().listen(
-                        CustomEvents::VideoCompressionProgress.as_ref(),
-                        move |evt| {
-                            if let Ok(progress) =
-                                serde_json::from_str::<VideoCompressionProgress>(evt.payload())
-                            {
-                                if progress.video_id == video_id_clone_for_listener {
-                                    let batch_progress = BatchMediaCompressionProgress {
-                                        batch_id: batch_id_clone.to_owned(),
-                                        current_index: index,
-                                        total_count,
-                                        media_progress: progress.into(),
-                                    };
-                                    let _ = window.emit(
-                                        CustomEvents::BatchMediaCompressionProgress.as_ref(),
-                                        batch_progress,
-                                    );
-                                }
+            // Removed again once this media is done (see `EventListenerGuard`)
+            let _progress_listener = app_clone.get_webview_window("main").map(|window| {
+                let listener_window = window.clone();
+                let event_id = listener_window.listen(
+                    CustomEvents::VideoCompressionProgress.as_ref(),
+                    move |evt| {
+                        if let Ok(progress) =
+                            serde_json::from_str::<VideoCompressionProgress>(evt.payload())
+                        {
+                            if progress.video_id == video_id_clone_for_listener {
+                                let batch_progress = BatchMediaCompressionProgress {
+                                    batch_id: batch_id_clone.to_owned(),
+                                    current_index: index,
+                                    total_count,
+                                    media_progress: progress.into(),
+                                };
+                                let _ = window.emit(
+                                    CustomEvents::BatchMediaCompressionProgress.as_ref(),
+                                    batch_progress,
+                                );
                             }
-                        },
-                    );
-                }
+                        }
+                    },
+                );
+                EventListenerGuard::new(listener_window, event_id)
             });
 
             let video_id = &video_config.video_id;

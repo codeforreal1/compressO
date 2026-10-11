@@ -5,7 +5,7 @@ use crate::macos::{
     tray_popover::{self, WindowExt, TRAY_WINDOW_LABEL},
 };
 
-const MAIN_WINDOW_LABEL: &str = "main";
+pub const MAIN_WINDOW_LABEL: &str = "main";
 
 #[tauri::command]
 pub fn open_tray_popover(app_handle: AppHandle) -> Result<(), String> {
@@ -22,11 +22,10 @@ pub fn close_tray_popover(app_handle: AppHandle, suspend: Option<bool>) -> Resul
     let tray_window = app_handle
         .get_webview_window(TRAY_WINDOW_LABEL)
         .ok_or("Tray window not found")?;
-    tray_window.close_tray_popover()?;
     if suspend.unwrap_or(false) {
-        tray_window.destroy().map_err(|err| err.to_string())?;
+        return tray_popover::destroy_tray_window(&app_handle);
     }
-    Ok(())
+    tray_window.close_tray_popover()
 }
 
 #[tauri::command]

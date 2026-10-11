@@ -10,6 +10,7 @@ use crate::core::image::ImageCompressor;
 use crate::core::media_process::{CancelCallback, MediaProcessExecutorBuilder};
 use crate::sys::fs::{ensure_assets_dir, get_file_metadata};
 use crate::utils;
+use crate::utils::event::EventListenerGuard;
 use nanoid::nanoid;
 use regex::Regex;
 use std::{
@@ -964,30 +965,31 @@ impl FFMPEG {
             let batch_id_clone = batch_id.to_string();
             let video_id_clone = video_id.clone();
 
-            tokio::spawn(async move {
-                if let Some(window) = app_clone.get_webview_window("main") {
-                    let _ = window.clone().listen(
-                        CustomEvents::VideoCompressionProgress.as_ref(),
-                        move |evt| {
-                            if let Ok(progress) =
-                                serde_json::from_str::<VideoCompressionProgress>(evt.payload())
-                            {
-                                if progress.video_id == video_id_clone {
-                                    let batch_progress = BatchVideoCompressionProgress {
-                                        batch_id: batch_id_clone.to_owned(),
-                                        current_index: index,
-                                        total_count,
-                                        video_progress: progress,
-                                    };
-                                    let _ = window.emit(
-                                        CustomEvents::BatchVideoCompressionProgress.as_ref(),
-                                        batch_progress,
-                                    );
-                                }
+            // Removed again once this media is done (see `EventListenerGuard`)
+            let _progress_listener = app_clone.get_webview_window("main").map(|window| {
+                let listener_window = window.clone();
+                let event_id = listener_window.listen(
+                    CustomEvents::VideoCompressionProgress.as_ref(),
+                    move |evt| {
+                        if let Ok(progress) =
+                            serde_json::from_str::<VideoCompressionProgress>(evt.payload())
+                        {
+                            if progress.video_id == video_id_clone {
+                                let batch_progress = BatchVideoCompressionProgress {
+                                    batch_id: batch_id_clone.to_owned(),
+                                    current_index: index,
+                                    total_count,
+                                    video_progress: progress,
+                                };
+                                let _ = window.emit(
+                                    CustomEvents::BatchVideoCompressionProgress.as_ref(),
+                                    batch_progress,
+                                );
                             }
-                        },
-                    );
-                }
+                        }
+                    },
+                );
+                EventListenerGuard::new(listener_window, event_id)
             });
 
             let mut ffmpeg_instance = match FFMPEG::new(&self.app) {

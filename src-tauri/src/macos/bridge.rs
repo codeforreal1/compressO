@@ -23,6 +23,7 @@ pub mod ffi {
         );
         fn openTrayPopover();
         fn closeTrayPopover();
+        fn destroyTrayPopover();
         fn isTrayPopoverVisible() -> bool;
         fn resizeTrayPopover(width: f64, height: f64, animate: bool, blurOverlayOnResize: bool);
     }

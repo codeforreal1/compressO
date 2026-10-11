@@ -7,6 +7,7 @@ use crate::core::ffmpeg::build_transform_filters;
 use crate::core::ffmpeg::FFMPEG;
 use crate::core::media_process::MediaProcessExecutorBuilder;
 use crate::sys::fs::{ensure_assets_dir, get_file_metadata, get_image_dimension};
+use crate::utils::event::EventListenerGuard;
 use image::{ImageEncoder, ImageReader};
 use img_parts::{
     jpeg::Jpeg,
@@ -440,30 +441,31 @@ impl ImageCompressor {
             let batch_id_clone = batch_id.to_string();
             let image_id_clone = image_id.clone();
 
-            tokio::spawn(async move {
-                if let Some(window) = app_clone.get_webview_window("main") {
-                    let _ = window.clone().listen(
-                        CustomEvents::ImageCompressionProgress.as_ref(),
-                        move |evt| {
-                            if let Ok(progress) =
-                                serde_json::from_str::<ImageCompressionProgress>(evt.payload())
-                            {
-                                if progress.image_id == image_id_clone {
-                                    let batch_progress = BatchImageCompressionProgress {
-                                        batch_id: batch_id_clone.to_owned(),
-                                        current_index: index,
-                                        total_count,
-                                        image_progress: progress,
-                                    };
-                                    let _ = window.emit(
-                                        CustomEvents::BatchImageCompressionProgress.as_ref(),
-                                        batch_progress,
-                                    );
-                                }
+            // Removed again once this media is done (see `EventListenerGuard`)
+            let _progress_listener = app_clone.get_webview_window("main").map(|window| {
+                let listener_window = window.clone();
+                let event_id = listener_window.listen(
+                    CustomEvents::ImageCompressionProgress.as_ref(),
+                    move |evt| {
+                        if let Ok(progress) =
+                            serde_json::from_str::<ImageCompressionProgress>(evt.payload())
+                        {
+                            if progress.image_id == image_id_clone {
+                                let batch_progress = BatchImageCompressionProgress {
+                                    batch_id: batch_id_clone.to_owned(),
+                                    current_index: index,
+                                    total_count,
+                                    image_progress: progress,
+                                };
+                                let _ = window.emit(
+                                    CustomEvents::BatchImageCompressionProgress.as_ref(),
+                                    batch_progress,
+                                );
                             }
-                        },
-                    );
-                }
+                        }
+                    },
+                );
+                EventListenerGuard::new(listener_window, event_id)
             });
 
             let input_path = &image_config.image_path;

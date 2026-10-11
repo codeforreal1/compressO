@@ -1,3 +1,4 @@
+pub mod compression_status;
 pub mod dock;
 pub mod ffmpeg;
 pub mod ffprobe;

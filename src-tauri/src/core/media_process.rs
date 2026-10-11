@@ -1,12 +1,34 @@
 use crate::core::domain::{CancelInProgressCompressionPayload, CustomEvents, TauriEvents};
+use crate::utils::event::EventListenerGuard;
 use shared_child::SharedChild;
 use std::{
     io::{BufRead, BufReader},
     process::Command,
-    sync::{Arc, Mutex},
+    sync::{Arc, Mutex, Weak},
 };
 use strum::EnumProperty;
 use tauri::{AppHandle, Listener, Manager};
+
+/// Running processes, killed when the app quits: they are separate processes, so they would keep
+/// running otherwise (closing the main window already kills them). Weak, so finished processes are
+/// not kept alive.
+static RUNNING_PROCESSES: Mutex<Vec<Weak<SharedChild>>> = Mutex::new(Vec::new());
+
+fn register_running_process(process: &Arc<SharedChild>) {
+    if let Ok(mut processes) = RUNNING_PROCESSES.lock() {
+        processes.retain(|process| process.strong_count() > 0);
+        processes.push(Arc::downgrade(process));
+    }
+}
+
+/// Kills every process still running (e.g. compressions), when the app quits
+pub fn kill_running_processes() {
+    if let Ok(mut processes) = RUNNING_PROCESSES.lock() {
+        for process in processes.drain(..).filter_map(|process| process.upgrade()) {
+            process.kill().ok();
+        }
+    }
+}
 
 pub type CancelCallback = Arc<dyn Fn() + Send + Sync>;
 
@@ -148,6 +170,7 @@ impl MediaProcessExecutor {
         for mut cmd in self.commands {
             let child = SharedChild::spawn(&mut cmd).map_err(|e| e.to_string())?;
             let cp = Arc::new(child);
+            register_running_process(&cp);
             processes.push(cp.clone());
         }
 
@@ -197,6 +220,11 @@ impl MediaProcessExecutor {
             );
             event_ids.push(cancel_id);
         }
+        // Removed on every return, including cancellations
+        let _listener_guards: Vec<EventListenerGuard<_>> = event_ids
+            .drain(..)
+            .map(|event_id| EventListenerGuard::new(window.clone(), event_id))
+            .collect();
 
         for (idx, proc) in processes.iter().enumerate() {
             let proc_clone = proc.clone();
@@ -326,9 +354,6 @@ impl MediaProcessExecutor {
             }
         }
 
-        for event_id in event_ids {
-            window.unlisten(event_id);
-        }
 
         for proc in &processes {
             proc.kill().ok();
@@ -410,6 +435,7 @@ impl MediaProcessExecutor {
                 previous_stdout = None;
             }
 
+            register_running_process(&child);
             processes.push(child.clone());
             log::debug!(
                 "[media_process] Piped processes spawned process {} successfully",
@@ -468,6 +494,11 @@ impl MediaProcessExecutor {
             );
             event_ids.push(cancel_id);
         }
+        // Removed on every return, including cancellations
+        let _listener_guards: Vec<EventListenerGuard<_>> = event_ids
+            .drain(..)
+            .map(|event_id| EventListenerGuard::new(window.clone(), event_id))
+            .collect();
 
         for (idx, proc) in processes.iter().enumerate() {
             let proc_clone = proc.clone();
@@ -643,9 +674,6 @@ impl MediaProcessExecutor {
             }
         }
 
-        for event_id in event_ids {
-            window.unlisten(event_id);
-        }
 
         if !all_success {
             return Err("Piped process chain failed".to_string());

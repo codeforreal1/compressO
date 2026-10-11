@@ -5,6 +5,7 @@ import { useSnapshot } from 'valtio'
 import Icon from '@/components/Icon'
 import Layout from '@/components/Layout'
 import Spinner from '@/components/Spinner'
+import { useCompressionStatusSync } from './-compression-status'
 import { addMedia, pickMediaToAdd } from './-media'
 import { appProxy } from './-state'
 import Setting, { SettingsDialogHost } from './ui/app-settings/Setting'
@@ -19,6 +20,7 @@ export const Route = createFileRoute('/(root)/')({
 
 function Root() {
   const { state } = useSnapshot(appProxy)
+  useCompressionStatusSync()
 
   const {
     media,

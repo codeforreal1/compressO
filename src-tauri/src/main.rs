@@ -13,11 +13,16 @@ use core::server;
 
 use std::sync::{Arc, Mutex, OnceLock};
 use sys::fs::{self as file_system};
+use sys::quit;
 use tauri::{Emitter, Listener, Manager, Url};
 use tauri_plugin_fs::FsExt;
 use tauri_plugin_log::{Target as LogTarget, TargetKind as LogTargetKind};
 
 use tauri_commands::{
+    compression_status::{
+        get_compression_status, is_compressing, set_compression_status,
+        update_compression_status, CompressionStatusState,
+    },
     dock::{clear_dock_badge, set_dock_progress},
     ffmpeg::{compress_video, compress_videos_batch, extract_subtitle, generate_video_thumbnail},
     ffprobe::{
@@ -59,6 +64,8 @@ const LOG_TARGETS: [LogTarget; 1] = [LogTarget::new(LogTargetKind::Stdout)];
 #[cfg(not(debug_assertions))]
 const LOG_TARGETS: [LogTarget; 0] = [];
 
+const MAIN_WINDOW_LABEL: &str = "main";
+
 // Global storage for URLs that arrive before app setup completes.
 // "Open with CompressO" triggers `application:openURLs` before app setup is complete
 static EARLY_URLS: OnceLock<Mutex<Vec<Url>>> = OnceLock::new();
@@ -89,6 +96,10 @@ impl FrontendReady {
 
     fn set_ready(&self) {
         *self.0.lock().unwrap() = true;
+    }
+
+    fn set_not_ready(&self) {
+        *self.0.lock().unwrap() = false;
     }
 
     fn is_ready(&self) -> bool {
@@ -202,6 +213,10 @@ async fn main() {
         .setup(|app| {
             app.manage(PendingFiles::new());
             app.manage(FrontendReady::new());
+            app.manage(CompressionStatusState(Mutex::new(Default::default())));
+
+            #[cfg(target_os = "macos")]
+            quit::install_macos_quit_confirmation(app.handle());
 
             #[cfg(target_os = "linux")]
             app.manage(DbusState(Mutex::new(
@@ -279,7 +294,9 @@ async fn main() {
             });
 
             let app_handle = app.handle().clone();
-            app.once("frontend-ready", move |_| {
+            // Every main window sends it (it can be closed & recreated while the app keeps running
+            // in the menu bar), so files opened in the meantime are delivered to the new one
+            app.listen("frontend-ready", move |_| {
                 log::info!("Frontend is ready, checking for pending files");
 
                 show_main_window(&app_handle);
@@ -401,8 +418,57 @@ async fn main() {
             #[cfg(target_os = "macos")]
             quit_app,
             #[cfg(target_os = "macos")]
-            set_tray_icon_enabled
+            set_tray_icon_enabled,
+            set_compression_status,
+            get_compression_status
         ])
+        .on_window_event(|window, event| {
+            if window.label() != MAIN_WINDOW_LABEL {
+                return;
+            }
+            let app_handle = window.app_handle();
+            match event {
+                tauri::WindowEvent::CloseRequested { api, .. } => {
+                    if !is_compressing(app_handle) {
+                        return;
+                    }
+
+                    // With the menu bar icon, closing the window during a compression only hides
+                    // it: the compression continues (its progress shows in the menu bar) & the
+                    // window comes back from the menu bar or the dock
+                    #[cfg(target_os = "macos")]
+                    if app_handle
+                        .tray_by_id(macos::tray_popover::TRAY_WINDOW_LABEL)
+                        .is_some()
+                    {
+                        api.prevent_close();
+                        let _ = window.hide();
+                        return;
+                    }
+
+                    // Otherwise closing the window cancels the compression (& quits), so ask first
+                    if quit::should_confirm_quit(app_handle) {
+                        api.prevent_close();
+                        let window_to_close = window.clone();
+                        quit::confirm_quit(app_handle, move || {
+                            let _ = window_to_close.destroy();
+                        });
+                    }
+                }
+                // The compression stops with the window, so its progress is cleared
+                tauri::WindowEvent::Destroyed => {
+                    // Files opened before a new main window is ready wait for it
+                    if let Some(ready_state) = app_handle.try_state::<FrontendReady>() {
+                        ready_state.set_not_ready();
+                    }
+                    // Also clears the menu bar progress
+                    #[cfg(target_os = "macos")]
+                    let _ = clear_dock_badge(app_handle.clone());
+                    update_compression_status(app_handle, Default::default());
+                }
+                _ => {}
+            }
+        })
         .build(tauri::generate_context!())
         .expect("error while running tauri application")
         .run(
@@ -412,6 +478,28 @@ async fn main() {
                 if let tauri::RunEvent::Opened { ref urls } = event {
                     if let Err(e) = handle_open_with_app(app_handle, urls.clone()) {
                         log::error!("Failed to handle open with app: {:?}", e);
+                    }
+                    // The app may still be running in the menu bar without a main window
+                    if app_handle.get_webview_window(MAIN_WINDOW_LABEL).is_none() {
+                        if let Err(e) = tauri_commands::tray::focus_or_create_main_window(app_handle)
+                        {
+                            log::error!("Failed to open the main window: {}", e);
+                        }
+                    }
+                }
+
+                // Running compressions (ffmpeg etc.) are separate processes, so they are stopped
+                // with the app
+                if let tauri::RunEvent::Exit = event {
+                    core::media_process::kill_running_processes();
+                }
+
+                // Quitting (e.g. from the menu bar popover) cancels the compression, so ask first
+                if let tauri::RunEvent::ExitRequested { api, .. } = &event {
+                    if quit::should_confirm_quit(app_handle) {
+                        api.prevent_exit();
+                        let exit_app_handle = app_handle.clone();
+                        quit::confirm_quit(app_handle, move || exit_app_handle.exit(0));
                     }
                 }
 

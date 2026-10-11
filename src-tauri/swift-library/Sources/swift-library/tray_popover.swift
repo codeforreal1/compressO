@@ -90,8 +90,9 @@ public func initTrayPopoverManager(
 
     DispatchQueue.main.async {
         let window = Unmanaged<NSWindow>.fromOpaque(containers.window).takeUnretainedValue()
+        // Rust hands over an owned (+1) reference, which is consumed here
         let button = Unmanaged<NSStatusBarButton>.fromOpaque(containers.button)
-            .takeUnretainedValue()
+            .takeRetainedValue()
 
         window.styleMask = []
         window.titlebarAppearsTransparent = true
@@ -176,6 +177,24 @@ public func closeTrayPopover() {
         if popover.isShown {
             popover.performClose(nil)
         }
+    }
+}
+
+/// Releases the popover & the tray window's view it hosts (e.g. when the tray icon is removed), so
+/// the destroyed webview is not kept alive
+public func destroyTrayPopover() {
+    DispatchQueue.main.async {
+        TrayPopoverDelegateHandler.removeOutsideClickMonitors()
+        if let popover = TrayPopoverStorage.popover {
+            popover.delegate = nil
+            if popover.isShown {
+                popover.close()
+            }
+            popover.contentViewController = nil
+        }
+        TrayPopoverStorage.popover = nil
+        TrayPopoverStorage.statusButton = nil
+        TrayPopoverStorage.delegate = nil
     }
 }
 

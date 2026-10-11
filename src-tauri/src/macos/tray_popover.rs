@@ -205,14 +205,21 @@ fn enable_tray_icon(app_handle: &AppHandle) -> Result<(), String> {
     Ok(())
 }
 
-fn disable_tray_icon(app_handle: &AppHandle) -> Result<(), String> {
-    if let Some(tray_window) = app_handle.get_webview_window(TRAY_WINDOW_LABEL) {
-        let _ = tray_window.close_tray_popover();
-        tray_window.destroy().map_err(|err| err.to_string())?;
-    }
-
+/// Destroys the tray webview window along with the native popover hosting it (which would
+/// otherwise keep the destroyed webview alive). A new one is created when the tray icon is clicked.
+pub fn destroy_tray_window(app_handle: &AppHandle) -> Result<(), String> {
     let state = app_handle.state::<TrayPopoverState>();
     *state.0.lock().map_err(|err| err.to_string())? = false;
+    ffi::destroyTrayPopover();
+
+    if let Some(tray_window) = app_handle.get_webview_window(TRAY_WINDOW_LABEL) {
+        tray_window.destroy().map_err(|err| err.to_string())?;
+    }
+    Ok(())
+}
+
+fn disable_tray_icon(app_handle: &AppHandle) -> Result<(), String> {
+    destroy_tray_window(app_handle)?;
 
     if let Some(tray) = app_handle.remove_tray_by_id(TRAY_WINDOW_LABEL) {
         tray.set_visible(false).map_err(|err| err.to_string())?;
