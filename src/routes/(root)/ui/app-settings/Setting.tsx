@@ -197,17 +197,6 @@ function SettingsDialog({ onClose, hasNewVersion }: SettingsDialogProps) {
       <ScrollShadow className="flex-1 px-10 py-12" hideScrollBar>
         <selectedPage.Component />
       </ScrollShadow>
-
-      <Button
-        isIconOnly
-        size="sm"
-        variant="light"
-        onPress={onClose}
-        aria-label="Close settings"
-        className="absolute top-3 right-3"
-      >
-        <Icon name="cross" size={18} />
-      </Button>
     </div>
   )
 }
