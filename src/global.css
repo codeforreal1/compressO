@@ -66,6 +66,13 @@ body #app {
   background-color: theme("colors.white1");
 }
 
+/* The tray popover's webview is transparent so the native popover material shows through */
+html[data-window="tray"],
+html[data-window="tray"] body,
+html[data-window="tray"] body #app {
+  background-color: transparent;
+}
+
 h1,
 h2,
 h3,

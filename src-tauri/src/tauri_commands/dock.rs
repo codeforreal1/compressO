@@ -20,8 +20,12 @@ use objc::{msg_send, sel, sel_impl};
 /// set_dock_progress(0)  // Clears the badge
 /// ```
 #[tauri::command]
-pub fn set_dock_progress(progress: f64) -> Result<(), String> {
+pub fn set_dock_progress(app_handle: tauri::AppHandle, progress: f64) -> Result<(), String> {
     let progress = progress.clamp(0.0, 100.0);
+
+    // The menu bar (tray) icon shows the same progress
+    #[cfg(target_os = "macos")]
+    crate::macos::tray_popover::set_tray_progress(&app_handle, progress)?;
 
     #[cfg(target_os = "macos")]
     unsafe {
@@ -50,6 +54,7 @@ pub fn set_dock_progress(progress: f64) -> Result<(), String> {
     #[cfg(not(target_os = "macos"))]
     {
         // No-op on non-macOS platforms
+        let _ = app_handle;
         log::debug!(
             "set_dock_progress called with {} on non-macOS platform",
             progress
@@ -61,7 +66,9 @@ pub fn set_dock_progress(progress: f64) -> Result<(), String> {
 
 #[cfg(target_os = "macos")]
 #[tauri::command]
-pub fn clear_dock_badge() -> Result<(), String> {
+pub fn clear_dock_badge(app_handle: tauri::AppHandle) -> Result<(), String> {
+    crate::macos::tray_popover::set_tray_progress(&app_handle, 0.0)?;
+
     unsafe {
         let app = NSApp();
         if app.is_null() {

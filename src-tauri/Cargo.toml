@@ -15,7 +15,7 @@ tauri-build = { version = "2.0.0", features = [] }
 [dependencies]
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
-tauri = { version = "2.0.0", features = ["protocol-asset"] }
+tauri = { version = "2.0.0", features = ["protocol-asset", "tray-icon", "macos-private-api"] }
 tokio = { version = "1.34.0", features = [
     "rt",
     "rt-multi-thread",
@@ -59,6 +59,12 @@ tokio-util = "0.7"
 [target.'cfg(target_os = "macos")'.dependencies]
 objc = "0.2"
 cocoa = "0.25"
+swift-bridge = "0.1"
+objc2 = "0.6"
+objc2-app-kit = "0.3"
+
+[target.'cfg(target_os = "macos")'.build-dependencies]
+swift-bridge-build = "0.1"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem and the built-in dev server is disabled.

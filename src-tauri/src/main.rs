@@ -2,6 +2,8 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod core;
+#[cfg(target_os = "macos")]
+mod macos;
 mod sys;
 mod tauri_commands;
 mod utils;
@@ -40,6 +42,12 @@ use tauri_commands::server::{construct_video_url, get_server_url};
 
 #[cfg(target_os = "linux")]
 use tauri_commands::file_manager::DbusState;
+
+#[cfg(target_os = "macos")]
+use tauri_commands::tray::{
+    close_tray_popover, focus_main_window, is_tray_popover_visible, open_tray_popover, quit_app,
+    resize_tray_popover,
+};
 
 #[cfg(any(windows, target_os = "linux"))]
 use std::path::PathBuf;
@@ -256,6 +264,11 @@ async fn main() {
             file_system::setup_app_data_dir(app)?;
             file_system::ensure_assets_dir(&app.app_handle())?;
 
+            #[cfg(target_os = "macos")]
+            if let Err(e) = macos::tray_popover::init(app) {
+                log::error!("Failed to set up the tray popover: {}", e);
+            }
+
             // The window starts hidden (see `tauri.conf.json`) so the webview isn't shown before it
             // has painted, which flashed a blank background on launch
             let fallback_app_handle = app.handle().clone();
@@ -372,7 +385,19 @@ async fn main() {
             #[cfg(target_os = "linux")]
             get_server_url,
             #[cfg(target_os = "linux")]
-            construct_video_url
+            construct_video_url,
+            #[cfg(target_os = "macos")]
+            open_tray_popover,
+            #[cfg(target_os = "macos")]
+            close_tray_popover,
+            #[cfg(target_os = "macos")]
+            resize_tray_popover,
+            #[cfg(target_os = "macos")]
+            is_tray_popover_visible,
+            #[cfg(target_os = "macos")]
+            focus_main_window,
+            #[cfg(target_os = "macos")]
+            quit_app
         ])
         .build(tauri::generate_context!())
         .expect("error while running tauri application")
@@ -383,6 +408,19 @@ async fn main() {
                 if let tauri::RunEvent::Opened { ref urls } = event {
                     if let Err(e) = handle_open_with_app(app_handle, urls.clone()) {
                         log::error!("Failed to handle open with app: {:?}", e);
+                    }
+                }
+
+                // The hidden tray window keeps the app alive after the main window is closed, so
+                // clicking the dock icon brings the main window back
+                #[cfg(target_os = "macos")]
+                if let tauri::RunEvent::Reopen {
+                    has_visible_windows: false,
+                    ..
+                } = event
+                {
+                    if let Err(e) = tauri_commands::tray::focus_or_create_main_window(app_handle) {
+                        log::error!("Failed to reopen the main window: {}", e);
                     }
                 }
 

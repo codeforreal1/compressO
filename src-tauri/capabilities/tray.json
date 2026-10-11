@@ -1,0 +1,15 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "tray",
+  "description": "Capability for the macOS status bar (tray) popover window",
+  "platforms": ["macOS"],
+  "local": true,
+  "windows": ["tray"],
+  "permissions": [
+    "core:path:default",
+    "core:event:default",
+    "core:window:default",
+    "core:app:default",
+    "os:allow-platform"
+  ]
+}
