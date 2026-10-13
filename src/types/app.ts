@@ -94,6 +94,10 @@ export type VideoConfig = {
   subtitlesConfig?: SubtitlesConfig | null
   shouldEnableCustomSpeed?: boolean
   customSpeed?: number | null
+  /** Video preset the settings come from (see `src/types/preset.ts`) */
+  presetId?: string
+  /** Preset settings that could not be applied to this video (e.g. audio without an audio track) */
+  presetSkippedFields?: string[]
 }
 
 export type Video = {
@@ -160,6 +164,15 @@ export type ImageConfig = {
     previewUrl?: string
   }
   isImageTransformEditMode?: boolean
+  /**
+   * Size of the longer side all images of a batch are resized to (set on the batch config only, by a
+   * preset). Images with their own custom dimensions keep those; smaller images are upscaled.
+   */
+  batchLongerSide?: number | null
+  /** Image preset the settings come from (see `src/types/preset.ts`) */
+  presetId?: string
+  /** Preset settings that could not be applied to this image (e.g. the format of a GIF) */
+  presetSkippedFields?: string[]
 }
 
 export type Image = {

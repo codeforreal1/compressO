@@ -21,6 +21,11 @@ import {
 import { CollectedFile } from '@/types/fs'
 import { formatBytes } from '@/utils/fs'
 import {
+  applyDefaultPresetsToBatchConfig,
+  getInitialImageConfig,
+  getInitialVideoConfig,
+} from './-presets'
+import {
   appProxy,
   imageConfigInitialState,
   normalizeBatchMediaConfig,
@@ -97,6 +102,10 @@ export async function addMedia(selection: MediaSelection | MediaSelection[]) {
 
   appProxy.state.isLoadingMediaFiles = true
   appProxy.state.isAppendingMedia = existingMediaCount > 0
+  // The batch settings start from the default presets (added media follows the batch settings)
+  if (existingMediaCount === 0) {
+    applyDefaultPresetsToBatchConfig()
+  }
   // Includes the media already selected, for the batch loading progress
   appProxy.state.totalSelectedMediaCount =
     existingMediaCount + mediaPaths.length
@@ -168,6 +177,18 @@ export async function addMedia(selection: MediaSelection | MediaSelection[]) {
           }
         }
 
+        // Settings from the default video preset
+        const { config: presetConfig, audioStreams } =
+          await getInitialVideoConfig(videoState.config, {
+            sourceExtension: videoState.extension,
+            path,
+            dimensions: videoState.dimensions,
+          })
+        videoState.config = presetConfig
+        if (audioStreams) {
+          videoState.videoInfoRaw = { audioStreams }
+        }
+
         if (videoThumbnail) {
           videoState.id = videoThumbnail?.id
           videoState.thumbnailPathRaw = videoThumbnail?.filePath
@@ -208,6 +229,12 @@ export async function addMedia(selection: MediaSelection | MediaSelection[]) {
         ) {
           imageState.config.convertToExtension = 'png'
         }
+
+        // Settings from the default image preset
+        imageState.config = getInitialImageConfig(imageState.config, {
+          sourceExtension: imageState.extension,
+          dimensions: imageState.dimensions,
+        })
 
         // create a static image thumbnail for gif due to performance reason,
         // and for tiff since webviews other than Safari can't display it

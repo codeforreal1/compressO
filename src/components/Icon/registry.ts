@@ -29,6 +29,7 @@ import Pencil from '@/assets/icons/pencil.svg?react'
 import Pin from '@/assets/icons/pin.svg?react'
 import PinFilled from '@/assets/icons/pin-filled.svg?react'
 import Play from '@/assets/icons/play.svg?react'
+import Plus from '@/assets/icons/plus.svg?react'
 import Power from '@/assets/icons/power.svg?react'
 import Question from '@/assets/icons/question.svg?react'
 import Redo from '@/assets/icons/redo.svg?react'
@@ -92,6 +93,7 @@ const registry = asRegistry({
   power: Power,
   pin: Pin,
   pinFilled: PinFilled,
+  plus: Plus,
 })
 
 export default registry

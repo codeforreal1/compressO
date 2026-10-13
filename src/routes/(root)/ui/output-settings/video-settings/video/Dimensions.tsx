@@ -8,8 +8,14 @@ import Icon from '@/components/Icon'
 import NumberInput from '@/components/NumberInput'
 import Switch from '@/components/Switch'
 import Tooltip from '@/components/Tooltip'
+import { batchResolutions } from '@/types/compression'
 import { slideDownTransition } from '@/utils/animation'
 import { appProxy } from '../../../../-state'
+
+/** The listed resolutions, as the size of the longer side (see `batchResolutions`) */
+const RESOLUTION_BUTTONS = Object.entries(batchResolutions).flatMap(
+  ([label, width]) => (width ? [{ label, width }] : []),
+)
 
 type VideoDimensionsProps = {
   mediaIndex: number
@@ -172,6 +178,23 @@ function Dimensions({ mediaIndex }: VideoDimensionsProps) {
     ? config.transformVideoConfig?.transforms?.crop
     : null
   const baseDimensions = transformCrop ?? videoOriginalDimensions
+  // Follows dimensions set outside the inputs (e.g. by a preset); none means the original size
+  const customWidth = videoCustomDimensions?.[0]
+  const customHeight = videoCustomDimensions?.[1]
+  const baseWidth = baseDimensions?.width
+  const baseHeight = baseDimensions?.height
+  useEffect(() => {
+    const width = customWidth ?? baseWidth
+    const height = customHeight ?? baseHeight
+    if (width && height) {
+      setDimensions((current) =>
+        current.width === width && current.height === height
+          ? current
+          : { width, height },
+      )
+    }
+  }, [customWidth, customHeight, baseWidth, baseHeight])
+
   const isOriginalDimensions =
     !baseDimensions ||
     (dimensions.width === baseDimensions.width &&
@@ -193,6 +216,9 @@ function Dimensions({ mediaIndex }: VideoDimensionsProps) {
     appProxy.state.media[mediaIndex].config.customDimensions = undefined
     appProxy.state.media[mediaIndex].isConfigDirty = true
   }, [mediaIndex, baseDimensions?.width, baseDimensions?.height])
+
+  const isPortrait = dimensions.height > dimensions.width
+  const longerSide = Math.max(dimensions.width, dimensions.height)
 
   const shouldDisableInput =
     media.length === 0 ||
@@ -278,18 +304,19 @@ function Dimensions({ mediaIndex }: VideoDimensionsProps) {
               />
             </div>
             <div className="mt-3 flex flex-wrap gap-2">
-              {[
-                { label: '480p', width: 640 },
-                { label: '720p', width: 1280 },
-                { label: '1080p', width: 1920 },
-                { label: '2k', width: 2560 },
-                { label: '4k', width: 3840 },
-              ].map((preset) => (
+              {RESOLUTION_BUTTONS.map((preset) => (
                 <Button
                   size="sm"
                   radius="md"
                   key={preset.label}
-                  onPress={() => handleChange(preset.width, 'width')}
+                  // Sets the longer side: the width of a landscape media, the height of a portrait one
+                  onPress={() =>
+                    handleChange(preset.width, isPortrait ? 'height' : 'width')
+                  }
+                  // Highlighted while the longer side matches it (a custom size matches none)
+                  color={longerSide === preset.width ? 'primary' : 'default'}
+                  variant={longerSide === preset.width ? 'solid' : 'flat'}
+                  aria-pressed={longerSide === preset.width}
                   isDisabled={shouldDisableInput}
                   className="min-w-[unset]"
                 >

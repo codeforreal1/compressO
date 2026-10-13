@@ -23,6 +23,7 @@ import TransformVideo from './video/TransformVideo'
 import TrimVideo from './video/TrimVideo'
 import VideoCodec from './video/VideoCodec'
 import { appProxy } from '../../../-state'
+import PresetSelector from '../PresetSelector'
 
 type VideoSettingsProps = {
   mediaIndex: number // if mediaIndex < 0, we'll only show settings that applies to all videos
@@ -86,6 +87,7 @@ function VideoSettings({ mediaIndex }: VideoSettingsProps) {
   return (
     <>
       <section>
+        <PresetSelector mediaType="video" mediaIndex={mediaIndex} />
         <Tabs
           aria-label="Compression Settings"
           size="sm"

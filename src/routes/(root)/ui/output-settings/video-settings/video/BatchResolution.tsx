@@ -8,7 +8,7 @@ import {
 } from '@/types/compression'
 import { appProxy, normalizeBatchMediaConfig } from '../../../../-state'
 
-const RESOLUTION_LABELS: Record<BatchResolutionKey, string> = {
+const RESOLUTION_LABELS: Record<keyof typeof batchResolutions, string> = {
   original: 'Original',
   '480p': '480p',
   '720p': '720p',
@@ -19,8 +19,9 @@ const RESOLUTION_LABELS: Record<BatchResolutionKey, string> = {
 
 /**
  * Resolution for all videos of a batch (the per-video dimensions need a single video's size). Each
- * video's shorter side is scaled to the resolution, keeping its aspect ratio; smaller videos keep
- * their size. Videos with their own custom dimensions keep those.
+ * video's longer side (the width of a landscape video, the height of a portrait one) is scaled to
+ * the resolution, keeping its aspect ratio; smaller videos are upscaled. Videos with their own
+ * custom dimensions keep those.
  */
 function BatchResolution() {
   const {
@@ -33,6 +34,11 @@ function BatchResolution() {
   } = useSnapshot(appProxy)
   const batchResolution =
     commonConfigForBatchCompression.videoConfig.batchResolution ?? 'original'
+  // A size that is not listed (from a preset, e.g. `1700px`) is shown as an extra option
+  const resolutions: BatchResolutionKey[] = [
+    ...(Object.keys(batchResolutions) as BatchResolutionKey[]),
+    ...(batchResolution in batchResolutions ? [] : [batchResolution]),
+  ]
 
   return (
     <div>
@@ -54,11 +60,16 @@ function BatchResolution() {
           label: '!text-gray-600 dark:!text-gray-400 text-sm',
         }}
       >
-        {(Object.keys(batchResolutions) as BatchResolutionKey[]).map((key) => (
-          <SelectItem key={key} textValue={RESOLUTION_LABELS[key]}>
-            {RESOLUTION_LABELS[key]}
-          </SelectItem>
-        ))}
+        {resolutions.map((key) => {
+          const label =
+            RESOLUTION_LABELS[key as keyof typeof batchResolutions] ??
+            key.replace('px', ' px')
+          return (
+            <SelectItem key={key} textValue={label}>
+              {label}
+            </SelectItem>
+          )
+        })}
       </Select>
     </div>
   )

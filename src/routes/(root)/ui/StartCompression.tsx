@@ -12,8 +12,8 @@ import { useCommandKeyHeld } from '@/hooks/useCommandKeyHeld'
 import { compressMediaBatch } from '@/tauri/commands/media'
 import { MediaMetadataConfig } from '@/types/app'
 import {
-  batchResolutions,
   CustomEvents,
+  getBatchResolutionLongerSide,
   ImageCompressionConfig,
   MediaBatchCompressionResult,
   MediaTransformHistory,
@@ -22,7 +22,7 @@ import {
 } from '@/types/compression'
 import { formatBytes, getOutputFileName } from '@/utils/fs'
 import {
-  getBatchResolutionDimensions,
+  getLongerSideDimensions,
   getTransformedDimensions,
 } from '@/utils/video'
 import CancelCompression from './CancelCompression'
@@ -104,12 +104,19 @@ function StartCompression() {
       )
 
       // A batch resolution applies to every video of a batch without its own custom dimensions
-      const batchResolutionShorterSide =
+      const batchVideoLongerSide =
         appSnapshot.state.media.length > 1
-          ? batchResolutions[
+          ? getBatchResolutionLongerSide(
               appSnapshot.state.commonConfigForBatchCompression.videoConfig
-                .batchResolution ?? 'original'
-            ]
+                .batchResolution,
+            )
+          : null
+
+      // Size of the longer side of a batch's images (from a preset)
+      const batchImageLongerSide =
+        appSnapshot.state.media.length > 1
+          ? (appSnapshot.state.commonConfigForBatchCompression.imageConfig
+              .batchLongerSide ?? null)
           : null
 
       const { results } = (await Promise.race([
@@ -161,7 +168,7 @@ function StartCompression() {
                             Math.round(v.config.customDimensions[1]),
                           ] as [number, number])
                         : v.dimensions
-                          ? getBatchResolutionDimensions(
+                          ? getLongerSideDimensions(
                               getTransformedDimensions(
                                 v.dimensions,
                                 v.config?.shouldTransformVideo
@@ -169,7 +176,7 @@ function StartCompression() {
                                       ?.transformHistory
                                   : null,
                               ),
-                              batchResolutionShorterSide,
+                              batchVideoLongerSide,
                             )
                           : null,
 
@@ -267,7 +274,22 @@ function StartCompression() {
                             v.config.customDimensions[0],
                             v.config.customDimensions[1],
                           ] as [number, number])
-                        : null,
+                        : // The size of a batch (from a preset) for images without their own;
+                          // SVGs are resized with the SVG scale factor instead
+                          v.dimensions?.width &&
+                            v.extension !== 'svg' &&
+                            v.config.convertToExtension !== 'svg'
+                          ? getLongerSideDimensions(
+                              getTransformedDimensions(
+                                v.dimensions,
+                                v.config?.shouldTransformImage
+                                  ? v.config.transformImageConfig
+                                      ?.transformHistory
+                                  : null,
+                              ),
+                              batchImageLongerSide,
+                            )
+                          : null,
                     transformHistory: v.config?.shouldTransformImage
                       ? (v.config.transformImageConfig?.transformHistory as
                           | MediaTransformHistory[]

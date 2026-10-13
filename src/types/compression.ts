@@ -47,19 +47,44 @@ export type ImageExtension = keyof typeof extensions.image
 export type AudioExtension = keyof typeof extensions.audio
 
 /**
- * Resolutions applicable to all videos of a batch: the target size of each video's shorter side
- * (so landscape & portrait videos both work). `original` keeps the original size.
+ * Resolutions as the size of the longer side (the width of a landscape media, the height of a
+ * portrait one; 16:9 sizes, e.g. 1080p is 1920x1080 or 1080x1920). Used by the resolution buttons,
+ * the batch resolution & presets. Smaller media is upscaled. `original` keeps the original size.
  */
 export const batchResolutions = {
   original: null,
-  '480p': 480,
-  '720p': 720,
-  '1080p': 1080,
-  '2k': 1440,
-  '4k': 2160,
+  '480p': 854,
+  '720p': 1280,
+  '1080p': 1920,
+  '2k': 2560,
+  '4k': 3840,
 } as const
 
-export type BatchResolution = keyof typeof batchResolutions
+/** A listed resolution, or another size of the longer side (e.g. `1700px`, from a preset) */
+export type BatchResolution = keyof typeof batchResolutions | `${number}px`
+
+/** Size of the longer side of a batch resolution (`null` keeps the original size) */
+export function getBatchResolutionLongerSide(
+  resolution: BatchResolution | null | undefined,
+): number | null {
+  if (!resolution) return null
+  if (resolution in batchResolutions) {
+    return batchResolutions[resolution as keyof typeof batchResolutions]
+  }
+  const longerSide = Number.parseInt(resolution, 10)
+  return Number.isFinite(longerSide) && longerSide > 0 ? longerSide : null
+}
+
+/** Batch resolution for a size of the longer side, e.g. `1920` -> `1080p`, `1700` -> `1700px` */
+export function getBatchResolutionForLongerSide(
+  longerSide: number | null | undefined,
+): BatchResolution {
+  if (!longerSide) return 'original'
+  const listed = (
+    Object.keys(batchResolutions) as (keyof typeof batchResolutions)[]
+  ).find((key) => batchResolutions[key] === longerSide)
+  return listed ?? `${longerSide}px`
+}
 
 /** Whether an output extension extracts only the audio of a video */
 export function isAudioExtension(

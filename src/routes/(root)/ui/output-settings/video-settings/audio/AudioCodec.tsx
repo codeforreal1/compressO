@@ -22,7 +22,7 @@ type AudioCodecOption = {
   compatible_containers: VideoExtension[]
 }
 
-const AUDIO_CODECS: readonly AudioCodecOption[] = [
+export const AUDIO_CODECS: readonly AudioCodecOption[] = [
   {
     value: 'aac',
     name: 'AAC',

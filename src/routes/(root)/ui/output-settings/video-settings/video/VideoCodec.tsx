@@ -20,7 +20,7 @@ type VideoCodecOption = {
   compatible_containers: VideoExtension[]
 }
 
-const VIDEO_CODECS: readonly VideoCodecOption[] = [
+export const VIDEO_CODECS: readonly VideoCodecOption[] = [
   {
     value: 'libx264',
     name: 'H.264 (AVC)',

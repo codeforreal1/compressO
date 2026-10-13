@@ -12,6 +12,7 @@ import SvgConfig from './image/SvgConfig'
 import SvgScaleFactor from './image/SvgScaleFactor'
 import TransformImage from './image/TransformImage'
 import Others from './others/-index'
+import PresetSelector from '../PresetSelector'
 
 type ImageSettingsProps = {
   mediaIndex: number
@@ -45,6 +46,7 @@ function ImageSettings({ mediaIndex }: ImageSettingsProps) {
   return (
     <>
       <section>
+        <PresetSelector mediaType="image" mediaIndex={mediaIndex} />
         <Tabs
           aria-label="Compression Settings"
           size="sm"

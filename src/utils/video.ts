@@ -94,21 +94,20 @@ export function getTransformedDimensions(
 }
 
 /**
- * Dimensions for a batch resolution: scales the shorter side to `shorterSide` and keeps the aspect
- * ratio, rounded to even numbers (required by video encoders). Videos already that size or smaller
- * are not upscaled; `null` (keep the original size) is returned for them.
+ * Dimensions with the longer side (the width of a landscape media, the height of a portrait one)
+ * scaled to `longerSide`, keeping the aspect ratio, rounded to even numbers (required by video
+ * encoders). Smaller media is upscaled; `null` without a size.
  */
-export function getBatchResolutionDimensions(
+export function getLongerSideDimensions(
   dimensions: Dimensions,
-  shorterSide: number | null,
+  longerSide: number | null,
 ): [number, number] | null {
   const { width, height } = dimensions
-  if (!shorterSide || !width || !height) return null
+  if (!longerSide || !width || !height) return null
 
-  const originalShorterSide = Math.min(width, height)
-  if (originalShorterSide <= shorterSide) return null
+  const originalLongerSide = Math.max(width, height)
 
   const toEven = (value: number) => Math.max(2, Math.round(value / 2) * 2)
-  const scale = shorterSide / originalShorterSide
+  const scale = longerSide / originalLongerSide
   return [toEven(width * scale), toEven(height * scale)]
 }
