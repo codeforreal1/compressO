@@ -160,7 +160,7 @@ function Metadata({ mediaIndex }: MetadataProps) {
       <AnimatePresence mode="wait">
         {!shouldStripMetadata ? (
           <Card className="px-2 my-2 pb-4 shadow-none border-1 dark:border-none">
-            <motion.div {...slideDownTransition} className="space-y-4 mt-2">
+            <motion.div {...slideDownTransition} className="space-y-4 pt-2">
               <div className="text-zinc-700 dark:text-zinc-400">
                 <p className="text-xs  italic">
                   - Leave the field empty to keep the original

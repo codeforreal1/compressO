@@ -329,7 +329,7 @@ function AudioChannels({ mediaIndex }: AudioChannelsProps) {
             </Select>
             <AnimatePresence mode="wait">
               {audioConfig?.audioChannelConfig?.channelLayout === 'mono' ? (
-                <motion.div {...slideDownTransition} className="mt-4">
+                <motion.div {...slideDownTransition} className="pt-4">
                   <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
                     Mono Source:
                   </p>
@@ -359,7 +359,7 @@ function AudioChannels({ mediaIndex }: AudioChannelsProps) {
                 </motion.div>
               ) : null}
               {audioConfig?.audioChannelConfig?.channelLayout === 'stereo' ? (
-                <motion.div {...slideDownTransition} className="mt-4">
+                <motion.div {...slideDownTransition} className="pt-4">
                   <Switch
                     isSelected={
                       audioConfig?.audioChannelConfig?.stereoSwapChannels ??

@@ -439,7 +439,7 @@ function Subtitles({ mediaIndex }: SubtitlesProps) {
         </div>
         {shouldEnableSubtitles ? (
           <Card className="px-2 my-2 pb-4 shadow-none border-1 dark:border-none">
-            <motion.div {...slideDownTransition} className="mt-2">
+            <motion.div {...slideDownTransition} className="pt-2">
               <div className="flex items-center gap-2 mb-3">
                 <Switch
                   isSelected={preserveExistingSubtitles}

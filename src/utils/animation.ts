@@ -22,27 +22,40 @@ export const zoomInTransition: Variants = {
   },
 } as const
 
+const easeOut = [0.4, 0, 0.2, 1] as const
+
+/**
+ * Expands content that appears below a switch (e.g. the quality under Lossless Compression) and
+ * collapses it again. The height is animated too, so the content below moves smoothly instead of
+ * jumping when the space is added or removed. Spacing must be padding (`pt-*`), not a margin: a
+ * margin is kept at 0 height. The overflow is hidden while animating only, so focus rings & slider
+ * thumbs are not cut off.
+ */
 export const slideDownTransition: Variants = {
-  initial: { y: -10, opacity: 0 },
+  initial: { height: 0, opacity: 0, y: -6, overflow: 'hidden' },
   animate: {
-    y: 0,
+    height: 'auto',
     opacity: 1,
+    y: 0,
     transition: {
-      duration: 0.6,
-      bounce: 0.3,
-      type: 'spring',
+      height: { duration: 0.25, ease: easeOut },
+      opacity: { duration: 0.2, delay: 0.05 },
+      y: { duration: 0.25, ease: easeOut },
     },
+    transitionEnd: { overflow: 'visible' },
   },
   exit: {
-    y: -10,
+    height: 0,
     opacity: 0,
+    y: -6,
+    overflow: 'hidden',
     transition: {
-      duration: 0.2,
-      bounce: 0.2,
-      type: 'spring',
+      height: { duration: 0.2, ease: easeOut },
+      opacity: { duration: 0.12 },
+      y: { duration: 0.2, ease: easeOut },
     },
   },
-} as const
+}
 
 export const slideUpTransition: Variants = {
   initial: { y: 10, opacity: 0 },

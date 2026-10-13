@@ -172,7 +172,7 @@ function AudioTracks({ mediaIndex }: AudioTracksProps) {
       </Switch>
       <AnimatePresence mode="wait">
         {shouldEnableAudioTrackSelection && audioStreams.length > 0 ? (
-          <motion.div {...slideDownTransition} className="mt-1">
+          <motion.div {...slideDownTransition} className="pt-1">
             <div className="w-full rounded-2xl overflow-hidden">
               {audioStreams.map((stream: AudioStream, index: number) => {
                 const isSelected = (selectedAudioTracks ?? []).includes(index)

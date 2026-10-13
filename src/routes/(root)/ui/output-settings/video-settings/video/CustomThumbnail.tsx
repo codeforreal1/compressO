@@ -1,6 +1,6 @@
 import { core } from '@tauri-apps/api'
 import { open } from '@tauri-apps/plugin-dialog'
-import { motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import { useCallback } from 'react'
 import { toast } from 'sonner'
 import { useSnapshot } from 'valtio'
@@ -152,68 +152,70 @@ function CustomThumbnail({ mediaIndex }: CustomThumbnailProps) {
             </div>
           </Switch>
         </div>
-        {shouldEnableCustomThumbnail ? (
-          <motion.div {...slideDownTransition} className="mt-2">
-            <TextInput
-              type="text"
-              label=""
-              placeholder="No thumbnail selected"
-              value={thumbnailFileName ?? 'No thumbnail selected'}
-              isDisabled={shouldDisableInput}
-              isReadOnly
-              classNames={{
-                input: 'text-xs',
-                mainWrapper: 'my-3',
-              }}
-            />
-            {customThumbnailPath ? (
-              <div
-                className={cn(
-                  'flex justify-center items-center w-full',
-                  shouldDisableInput ? 'opacity-50' : '',
-                )}
-              >
-                <Image
-                  alt="custom thumbnail"
-                  src={core.convertFileSrc(customThumbnailPath)}
-                  className={
-                    'max-w-[200px] max-h-[200px] mx-auto object-contain mb-4'
-                  }
-                />
-              </div>
-            ) : null}
-            <div>
-              {!thumbnailFileName ? (
-                <Button
-                  type="button"
-                  onPress={handleThumbnailSelect}
-                  fullWidth
-                  size="sm"
-                  isDisabled={shouldDisableInput || isThumbnailUnsupported}
+        <AnimatePresence initial={false}>
+          {shouldEnableCustomThumbnail ? (
+            <motion.div {...slideDownTransition} className="pt-2">
+              <TextInput
+                type="text"
+                label=""
+                placeholder="No thumbnail selected"
+                value={thumbnailFileName ?? 'No thumbnail selected'}
+                isDisabled={shouldDisableInput}
+                isReadOnly
+                classNames={{
+                  input: 'text-xs',
+                  mainWrapper: 'my-3',
+                }}
+              />
+              {customThumbnailPath ? (
+                <div
+                  className={cn(
+                    'flex justify-center items-center w-full',
+                    shouldDisableInput ? 'opacity-50' : '',
+                  )}
                 >
-                  Choose
-                  <Icon name="fileExplorer" size={14} />
-                </Button>
-              ) : (
-                <Button
-                  type="button"
-                  onPress={handleClearThumbnail}
-                  fullWidth
-                  size="sm"
-                  isDisabled={shouldDisableInput || isThumbnailUnsupported}
-                  color="danger"
-                >
-                  Clear
-                </Button>
-              )}
-              {isThumbnailUnsupported ? (
-                <p className="text-xs italic text-danger-300 mt-2">
-                  {outputContainer} does not support custom thumbnail
-                </p>
+                  <Image
+                    alt="custom thumbnail"
+                    src={core.convertFileSrc(customThumbnailPath)}
+                    className={
+                      'max-w-[200px] max-h-[200px] mx-auto object-contain mb-4'
+                    }
+                  />
+                </div>
               ) : null}
-            </div>
-          </motion.div>
-        ) : null}
+              <div>
+                {!thumbnailFileName ? (
+                  <Button
+                    type="button"
+                    onPress={handleThumbnailSelect}
+                    fullWidth
+                    size="sm"
+                    isDisabled={shouldDisableInput || isThumbnailUnsupported}
+                  >
+                    Choose
+                    <Icon name="fileExplorer" size={14} />
+                  </Button>
+                ) : (
+                  <Button
+                    type="button"
+                    onPress={handleClearThumbnail}
+                    fullWidth
+                    size="sm"
+                    isDisabled={shouldDisableInput || isThumbnailUnsupported}
+                    color="danger"
+                  >
+                    Clear
+                  </Button>
+                )}
+                {isThumbnailUnsupported ? (
+                  <p className="text-xs italic text-danger-300 mt-2">
+                    {outputContainer} does not support custom thumbnail
+                  </p>
+                ) : null}
+              </div>
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
         <Divider className="mt-3 mb-6" />
       </div>
     </>
