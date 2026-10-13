@@ -142,8 +142,9 @@ body > * {
   }
 }
 
-/* Settings dialog: only headings (section titles) are bold; controls, links & labels use the normal
-   weight. Also set on popovers that render outside the dialog, e.g. dropdown menus. */
+/* Settings dialog (and other dialogs like it, e.g. Save preset): only headings (section titles) are
+   bold; titles, descriptions, controls, links & labels use the normal weight. Also set on popovers
+   that render outside the dialog, e.g. dropdown menus. */
 .settings-dialog :not(h1, h2, h3) {
   font-weight: 400 !important;
 }
@@ -336,4 +337,43 @@ a[href] *,
   -moz-user-select: text !important;
   -ms-user-select: text !important;
   user-select: text !important;
+}
+
+/* Settings that depend on the one above (see `SettingsRow`): a thread from that setting curving
+   into the setting's title, continued down to the next dependent setting */
+.settings-row-nested {
+  --thread-color: theme("colors.zinc.300");
+  position: relative;
+  padding-left: 2.25rem;
+  /* No divider, so the thread connects to the setting above */
+  border-top-width: 0 !important;
+}
+
+.dark .settings-row-nested {
+  --thread-color: theme("colors.zinc.700");
+}
+
+.settings-row-nested::before {
+  content: "";
+  position: absolute;
+  left: 0.75rem;
+  /* From the spacing below the setting above, to the middle of the title (1rem padding + half of
+     its 1.25rem line) */
+  top: -0.5rem;
+  height: 2.125rem;
+  width: 1rem;
+  border-left: 1px solid var(--thread-color);
+  border-bottom: 1px solid var(--thread-color);
+  border-bottom-left-radius: 0.625rem;
+  pointer-events: none;
+}
+
+.settings-row-nested:has(+ .settings-row-nested)::after {
+  content: "";
+  position: absolute;
+  left: 0.75rem;
+  top: 1rem;
+  bottom: -0.5rem;
+  border-left: 1px solid var(--thread-color);
+  pointer-events: none;
 }

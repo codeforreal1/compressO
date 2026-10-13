@@ -61,8 +61,15 @@ export const ThemeSwitcher = ({
       return
     }
 
+    // Lets translucent surfaces (e.g. the settings dialog) be opaque in the transition snapshots,
+    // which do not preserve backdrop blur
+    const root = document.documentElement
+    root.classList.add('theme-transitioning')
     const transition = document.startViewTransition(() => {
       flushSync(applyTheme)
+    })
+    transition.finished.finally(() => {
+      root.classList.remove('theme-transitioning')
     })
 
     const ready = transition?.ready

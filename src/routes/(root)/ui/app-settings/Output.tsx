@@ -130,6 +130,7 @@ function Output() {
         </SettingsRow>
         {saveLocation === 'fixedFolder' ? (
           <SettingsRow
+            isNested
             title="Folder"
             description={
               <span className="break-all">
@@ -150,6 +151,7 @@ function Output() {
         ) : null}
         {saveLocation !== 'ask' ? (
           <SettingsRow
+            isNested
             title="Skip larger outputs"
             description="Do not save the compressed media when it is larger than the original."
           >
@@ -195,6 +197,7 @@ function Output() {
         </SettingsRow>
         {copyOutputToClipboard ? (
           <SettingsRow
+            isNested
             title="Include batch outputs"
             description="Also copy all compressed media of a batch. Turn this off to copy single outputs only, since a batch can contain many files."
           >

@@ -29,6 +29,11 @@ type SettingsRowProps = {
   description?: React.ReactNode
   /** Control shown on the right, e.g. a switch, button or value */
   children?: React.ReactNode
+  /**
+   * A setting that depends on the one above it (e.g. only shown when that one is on): indented,
+   * with a thread from that setting
+   */
+  isNested?: boolean
   className?: string
 }
 
@@ -37,12 +42,15 @@ export function SettingsRow({
   title,
   description,
   children,
+  isNested,
   className,
 }: SettingsRowProps) {
   return (
     <div
       className={cn([
         'flex items-center justify-between gap-8 py-4 first:pt-1',
+        // A thread from the setting above (see `global.css`)
+        isNested && 'settings-row-nested',
         className,
       ])}
     >

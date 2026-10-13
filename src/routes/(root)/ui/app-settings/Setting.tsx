@@ -12,8 +12,10 @@ import { getPlatform } from '@/utils/fs'
 import { cn } from '@/utils/tailwind'
 import About from './About'
 import Credits from './Credits'
+import DropZone from './DropZone'
 import General from './General'
 import Output from './Output'
+import Presets from './Presets'
 
 type SettingsPage = {
   id: string
@@ -22,6 +24,8 @@ type SettingsPage = {
   icon: IconProps['name']
   Component: React.ComponentType
 }
+
+const { isMacOS } = getPlatform()
 
 const SETTINGS_GROUPS: { label: string; pages: SettingsPage[] }[] = [
   {
@@ -39,6 +43,23 @@ const SETTINGS_GROUPS: { label: string; pages: SettingsPage[] }[] = [
         icon: 'fileExplorer',
         Component: Output,
       },
+      {
+        id: 'presets',
+        label: 'Presets',
+        icon: 'star',
+        Component: Presets,
+      },
+      // The drop zone is in the menu bar, only on macOS
+      ...(isMacOS
+        ? [
+            {
+              id: 'dropZone',
+              label: 'Drop Zone',
+              icon: 'dragAndDrop' as const,
+              Component: DropZone,
+            },
+          ]
+        : []),
     ],
   },
   {
@@ -63,8 +84,6 @@ const SETTINGS_GROUPS: { label: string; pages: SettingsPage[] }[] = [
 const ALL_PAGES = SETTINGS_GROUPS.flatMap((group) => group.pages)
 
 const settingsDialogProxy = proxy({ isOpen: false })
-
-const { isMacOS } = getPlatform()
 
 /** Settings button, shown on the home screen */
 function Setting() {
@@ -141,9 +160,10 @@ export function SettingsDialogHost() {
       motionVariant="bottomToTop"
       size="5xl"
     >
-      {/* Opaque background: the translucent backdrop-blur look of other modals isn't preserved in
-      the theme switch's view transition snapshots, so the app behind would show through */}
-      <ModalContent className="w-[90vw] max-w-[1000px] h-[min(720px,85vh)] overflow-hidden rounded-2xl bg-zinc-100 dark:bg-zinc-900 settings-dialog">
+      {/* Translucent with the tinted window like other modals, but opaque while the theme switches:
+      the backdrop blur isn't preserved in the view transition snapshots, so the app behind would
+      show through */}
+      <ModalContent className="w-[90vw] max-w-[1000px] h-[min(720px,85vh)] overflow-hidden rounded-2xl settings-dialog [.theme-transitioning_&]:bg-zinc-100 dark:[.theme-transitioning_&]:bg-zinc-900">
         <SettingsDialog onClose={close} hasNewVersion={hasNewVersion} />
       </ModalContent>
     </Modal>

@@ -14,7 +14,7 @@ const { isMacOS } = getPlatform()
 
 function General() {
   const { color, setColor } = usePrimaryColor()
-  const { showMenuBarIcon, watchClipboard, tintedWindow, tintOpacity } =
+  const { tintedWindow, tintOpacity, showMenuBarIcon } =
     useSnapshot(settingsStore)
 
   return (
@@ -48,6 +48,7 @@ function General() {
         ) : null}
         {isWindowTintSupported && tintedWindow ? (
           <SettingsRow
+            isNested
             title="Tint opacity"
             description="How solid the window background is. Lower values are more translucent."
           >
@@ -76,7 +77,7 @@ function General() {
         <SettingsSection title="Menu bar">
           <SettingsRow
             title="Show menu bar icon"
-            description="Show the CompressO icon and the compression progress in the menu bar."
+            description="Show the CompressO icon, the compression progress and the drop zone in the menu bar."
           >
             <Switch
               aria-label="Show menu bar icon"
@@ -86,20 +87,6 @@ function General() {
               }}
             />
           </SettingsRow>
-          {showMenuBarIcon ? (
-            <SettingsRow
-              title="Watch clipboard"
-              description="Add media files you copy, for example in Finder, to the drop zone of the menu bar."
-            >
-              <Switch
-                aria-label="Watch clipboard"
-                isSelected={watchClipboard}
-                onValueChange={(isSelected) => {
-                  settingsStore.watchClipboard = isSelected
-                }}
-              />
-            </SettingsRow>
-          ) : null}
         </SettingsSection>
       ) : null}
     </>

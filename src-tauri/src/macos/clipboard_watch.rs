@@ -1,7 +1,7 @@
 #![allow(unexpected_cfgs)]
 
 //! Watches the clipboard: files copied anywhere (e.g. in Finder) are added to the media dropped on
-//! the menu bar, as if they were dropped there. Optional & off by default (Settings -> General ->
+//! the menu bar, as if they were dropped there. Optional & off by default (Settings -> Drop Zone ->
 //! Watch clipboard, or the switch in the menu bar popover), only while the menu bar icon is shown.
 
 use std::sync::atomic::{AtomicBool, AtomicIsize, Ordering};
