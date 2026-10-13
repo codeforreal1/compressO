@@ -255,7 +255,7 @@ function TrayWindow() {
                 ? 'Save the compressed media to add new media.'
                 : isDragging
                   ? 'Release to add the media.'
-                  : 'Drop media here to start a new compression.'}
+                  : ''}
             </p>
           </>
         ) : (
@@ -302,13 +302,13 @@ function DropZone({ isDragging }: { isDragging: boolean }) {
       )}
     >
       <Icon name="dragAndDrop" size={36} />
-      <p className="text-xs text-center px-4">
+      <p className="text-[13px] text-center px-4 my-[-5px]">
         {isDragging ? 'Release to add the media' : 'Drop media here to store'}
       </p>
       <p className="text-[11px] text-center px-4 opacity-70">
         Videos, images, or folders...
       </p>
-      <div className="mt-2">
+      <div className="mt-1">
         <ClipboardWatchSwitch />
       </div>
     </div>
@@ -396,7 +396,7 @@ function ClipboardWatchSwitch() {
 
   return (
     <Switch
-      size="sm"
+      size="xs"
       isSelected={watchClipboard}
       onValueChange={(isSelected) => {
         settingsStore.watchClipboard = isSelected
