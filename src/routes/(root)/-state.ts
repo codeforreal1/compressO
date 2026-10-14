@@ -2,6 +2,8 @@ import { getLocalTimeZone, now } from '@internationalized/date'
 import cloneDeep from 'lodash/cloneDeep'
 import { proxy } from 'valtio'
 
+import { getBatchResolutionLongerSide } from '@/types/compression'
+import { getLongerSideDimensions } from '@/utils/video'
 import {
   App,
   ImageConfig,
@@ -145,22 +147,50 @@ export const appProxy: AppProxy = proxy({
 })
 
 /**
- * Normalizes the individual non-dirty media config to match with batch config.
+ * Normalizes the individual non-dirty media config to match with batch config. The batch's
+ * resolution is set as each media's own dimensions (computed from its size), so the settings of a
+ * single media show the size it is compressed to.
  */
 export function normalizeBatchMediaConfig() {
   if (appProxy.state.media.length > 1) {
+    const { videoConfig, imageConfig } =
+      appProxy.state.commonConfigForBatchCompression
+    const videoLongerSide = getBatchResolutionLongerSide(
+      videoConfig.batchResolution,
+    )
+    const imageLongerSide = imageConfig.batchLongerSide ?? null
     for (const index in appProxy.state.media) {
-      if (!appProxy.state.media[index]?.isConfigDirty) {
-        if (appProxy.state.media[index].type === 'video') {
-          appProxy.state.media[index].config = cloneDeep(
-            appProxy.state.commonConfigForBatchCompression.videoConfig,
-          )
-        } else if (appProxy.state.media[index].type === 'image') {
-          appProxy.state.media[index].config = cloneDeep(
-            appProxy.state.commonConfigForBatchCompression.imageConfig,
-          )
+      const mediaFile = appProxy.state.media[index]
+      if (mediaFile?.isConfigDirty) continue
+      if (mediaFile.type === 'video') {
+        const config = cloneDeep(videoConfig)
+        applyBatchSize(config, mediaFile.dimensions, videoLongerSide)
+        mediaFile.config = config
+      } else if (mediaFile.type === 'image') {
+        const config = cloneDeep(imageConfig)
+        // SVGs are resized with the SVG scale factor instead
+        if (
+          mediaFile.extension !== 'svg' &&
+          config.convertToExtension !== 'svg'
+        ) {
+          applyBatchSize(config, mediaFile.dimensions, imageLongerSide)
         }
+        mediaFile.config = config
       }
     }
   }
+}
+
+/** Sets the batch's size (of the longer side) as a media's custom dimensions */
+function applyBatchSize(
+  config: VideoConfig | ImageConfig,
+  dimensions: { width: number; height: number } | undefined,
+  longerSide: number | null,
+) {
+  const customDimensions =
+    longerSide && dimensions?.width && dimensions?.height
+      ? getLongerSideDimensions(dimensions, longerSide)
+      : null
+  config.shouldEnableCustomDimensions = !!customDimensions
+  config.customDimensions = customDimensions ?? undefined
 }

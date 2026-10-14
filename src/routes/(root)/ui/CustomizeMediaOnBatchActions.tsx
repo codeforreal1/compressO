@@ -8,7 +8,7 @@ import { snapshot, useSnapshot } from 'valtio'
 import { zoomInTransition } from '@/utils/animation'
 import { isOverlayOpen, isTextEntryElement } from '@/utils/keyboard'
 import PreviewSingleVideo from './PreviewSingleMedia'
-import { appProxy } from '../-state'
+import { appProxy, normalizeBatchMediaConfig } from '../-state'
 
 function CustomizeMediaOnBatchActions() {
   const {
@@ -94,6 +94,8 @@ function CustomizeMediaOnBatchActions() {
       }
       appProxy.state.media[selectedMediaIndexForCustomization].isConfigDirty =
         false
+      // Also sets the batch's resolution as its own dimensions
+      normalizeBatchMediaConfig()
       appProxy.state.selectedMediaIndexForCustomization = -1
     }
   }, [])
