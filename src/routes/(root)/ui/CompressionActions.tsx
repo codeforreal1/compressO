@@ -5,10 +5,14 @@ import { snapshot, useSnapshot } from 'valtio'
 import Button from '@/components/Button'
 import Icon from '@/components/Icon'
 import Tooltip from '@/components/Tooltip'
+import { useCommandShiftShortcut } from '@/hooks/useCommandEnterShortcut'
 import { deleteFile } from '@/tauri/commands/fs'
 import AlertDialog, { AlertDialogButton } from '@/ui/Dialogs/AlertDialog'
+import { getPlatform } from '@/utils/fs'
 import { isOverlayOpen, isTextEntryElement } from '@/utils/keyboard'
 import { appProxy } from '../-state'
+
+const { isMacOS } = getPlatform()
 
 function CompressionActions() {
   const {
@@ -95,11 +99,21 @@ function CompressionActions() {
     appProxy.timeTravel('beforeCompressionStarted')
   }
 
+  // ⌘+Shift+R acts like the Reconfigure button
+  useCommandShiftShortcut(
+    'r',
+    !!media.length && isProcessCompleted && !isLoadingMediaFiles && !isSaving,
+    handleReconfigure,
+  )
+
   return media.length && !isLoadingMediaFiles ? (
     <>
       <div className="w-fit flex justify-center items-center z-[10]">
         {isProcessCompleted ? (
-          <Tooltip content="Reconfigure" aria-label="Reset">
+          <Tooltip
+            content={`Reconfigure (${isMacOS ? '⌘⇧R' : 'Ctrl+Shift+R'})`}
+            aria-label="Reconfigure"
+          >
             <Button
               size="sm"
               onPress={handleReconfigure}
@@ -113,7 +127,7 @@ function CompressionActions() {
             </Button>
           </Tooltip>
         ) : null}
-        <Tooltip content="Exit" aria-label="Exit">
+        <Tooltip content="Exit (Esc)" aria-label="Exit">
           <Button
             size="sm"
             onPress={handleCancelCompression}

@@ -230,6 +230,9 @@ async fn main() {
             #[cfg(target_os = "macos")]
             quit::install_macos_quit_confirmation(app.handle());
 
+            #[cfg(target_os = "macos")]
+            macos::app_menu::init(app)?;
+
             #[cfg(target_os = "linux")]
             app.manage(DbusState(Mutex::new(
                 dbus::blocking::SyncConnection::new_session().ok(),
@@ -318,6 +321,9 @@ async fn main() {
                 }
 
                 emit_pending_open_with_app_files(&app_handle);
+
+                #[cfg(target_os = "macos")]
+                macos::app_menu::on_frontend_ready(&app_handle);
             });
 
             if let Some(early_urls) = EARLY_URLS.get() {

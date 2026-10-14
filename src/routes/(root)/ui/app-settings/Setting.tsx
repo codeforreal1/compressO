@@ -1,3 +1,4 @@
+import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow'
 import React from 'react'
 import { proxy, useSnapshot } from 'valtio'
 
@@ -85,6 +86,9 @@ const ALL_PAGES = SETTINGS_GROUPS.flatMap((group) => group.pages)
 
 const settingsDialogProxy = proxy({ isOpen: false })
 
+/** Sent by the backend when "Settings…" is chosen in the app menu */
+const OPEN_SETTINGS_EVENT = 'open-settings'
+
 /** Settings button, shown on the home screen */
 function Setting() {
   const { isUpdateAvailable, latestVersion } = useSnapshot(updateStore)
@@ -144,8 +148,17 @@ export function SettingsDialogHost() {
       }
     }
     window.addEventListener('keydown', handleKeyDown)
+
+    // "Settings…" in the app menu (macOS)
+    const unlistenPromise = getCurrentWebviewWindow().listen(
+      OPEN_SETTINGS_EVENT,
+      () => {
+        settingsDialogProxy.isOpen = true
+      },
+    )
     return () => {
       window.removeEventListener('keydown', handleKeyDown)
+      unlistenPromise.then((unlisten) => unlisten())
     }
   }, [])
 
@@ -182,7 +195,7 @@ function SettingsDialog({ onClose, hasNewVersion }: SettingsDialogProps) {
 
   return (
     <div className="relative flex w-full h-full">
-      <aside className="w-[240px] flex-shrink-0 flex flex-col border-r border-zinc-200 dark:border-zinc-800 p-3">
+      <aside className="w-[240px] flex-shrink-0 flex flex-col border-r border-zinc-400 dark:border-zinc-800 p-3">
         <ScrollShadow className="flex-1" hideScrollBar>
           {SETTINGS_GROUPS.map((group) => (
             <nav key={group.label} className="mt-5 first:mt-2">

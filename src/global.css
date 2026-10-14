@@ -342,7 +342,7 @@ a[href] *,
 /* Settings that depend on the one above (see `SettingsRow`): a thread from that setting curving
    into the setting's title, continued down to the next dependent setting */
 .settings-row-nested {
-  --thread-color: theme("colors.zinc.300");
+  --thread-color: theme("colors.zinc.400");
   position: relative;
   padding-left: 2.25rem;
   /* No divider, so the thread connects to the setting above */

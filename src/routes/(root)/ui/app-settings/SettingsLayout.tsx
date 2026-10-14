@@ -17,7 +17,7 @@ export function SettingsSection({
   return (
     <section className={cn(['mb-12 last:mb-0', className])}>
       <h2 className="text-base font-semibold text-foreground mb-3">{title}</h2>
-      <div className="divide-y divide-zinc-200 dark:divide-zinc-800">
+      <div className="divide-y divide-zinc-400 dark:divide-zinc-800">
         {children}
       </div>
     </section>

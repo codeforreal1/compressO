@@ -4,13 +4,14 @@ import { getPlatform } from '@/utils/fs'
 import { isTextEntryElement } from '@/utils/keyboard'
 
 /**
- * Runs `onShortcut` on ⌘+Shift+Enter (Ctrl+Shift+Enter on other platforms; also accepted on macOS),
+ * Runs `onShortcut` on ⌘+Shift+`key` (Ctrl+Shift+`key` on other platforms; also accepted on macOS),
  * except while typing in a text field or while a dialog (e.g. settings) is open.
  *
  * Handled in the capture phase and swallowed on both keydown & keyup, so a focused element never
  * receives it (e.g. the video player's focused play/pause button would otherwise toggle playback).
  */
-export function useCommandEnterShortcut(
+export function useCommandShiftShortcut(
+  key: string,
   isEnabled: boolean,
   onShortcut: () => void,
 ) {
@@ -22,8 +23,11 @@ export function useCommandEnterShortcut(
     if (!isEnabled) return
 
     const { isMacOS } = getPlatform()
+    // Shift changes letters to uppercase (e.g. `R`)
+    const isKey = (e: KeyboardEvent) =>
+      e.key.toLowerCase() === key.toLowerCase()
     const isShortcut = (e: KeyboardEvent) =>
-      e.key === 'Enter' &&
+      isKey(e) &&
       e.shiftKey &&
       !e.altKey &&
       (e.ctrlKey || (isMacOS && e.metaKey)) &&
@@ -44,7 +48,7 @@ export function useCommandEnterShortcut(
     }
 
     const handleKeyUp = (e: KeyboardEvent) => {
-      if (e.key !== 'Enter' || !isShortcutPressed) return
+      if (!isKey(e) || !isShortcutPressed) return
       isShortcutPressed = false
       e.preventDefault()
       e.stopPropagation()
@@ -56,5 +60,13 @@ export function useCommandEnterShortcut(
       window.removeEventListener('keydown', handleKeyDown, true)
       window.removeEventListener('keyup', handleKeyUp, true)
     }
-  }, [isEnabled])
+  }, [key, isEnabled])
+}
+
+/** ⌘+Shift+Enter (Ctrl+Shift+Enter on other platforms), see `useCommandShiftShortcut` */
+export function useCommandEnterShortcut(
+  isEnabled: boolean,
+  onShortcut: () => void,
+) {
+  useCommandShiftShortcut('Enter', isEnabled, onShortcut)
 }
