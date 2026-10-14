@@ -9,7 +9,9 @@ import Button from '@/components/Button'
 import ShortcutHint from '@/components/ShortcutHint'
 import { useCommandEnterShortcut } from '@/hooks/useCommandEnterShortcut'
 import { useCommandKeyHeld } from '@/hooks/useCommandKeyHeld'
+import { settingsStore } from '@/stores/settingsStore'
 import { compressMediaBatch } from '@/tauri/commands/media'
+import { playCompletionSound } from '@/tauri/commands/sound'
 import { MediaMetadataConfig } from '@/types/app'
 import {
   CustomEvents,
@@ -358,6 +360,16 @@ function StartCompression() {
             extension: imageResult?.fileMetadata?.extension,
           }
         }
+      }
+
+      // Once for the whole compression (a batch too), when anything was compressed
+      if (
+        settingsStore.playCompletionSound &&
+        appProxy.state.media.some(
+          (mediaFile) => mediaFile.compressedFile?.isSuccessful,
+        )
+      ) {
+        playCompletionSound().catch(() => {})
       }
 
       // Saves right away when a save location is set in Settings (Output -> Save location)

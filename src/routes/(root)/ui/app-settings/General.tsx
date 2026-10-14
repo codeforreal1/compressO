@@ -7,6 +7,7 @@ import { ThemeSwitcher } from '@/components/ThemeSwitcher'
 import { usePrimaryColor } from '@/hooks/usePrimaryColor'
 import { isWindowTintSupported } from '@/hooks/useWindowTint'
 import { settingsStore, TINT_OPACITY_RANGE } from '@/stores/settingsStore'
+import { playCompletionSound as playSound } from '@/tauri/commands/sound'
 import { getPlatform } from '@/utils/fs'
 import { SettingsRow, SettingsSection } from './SettingsLayout'
 
@@ -14,7 +15,7 @@ const { isMacOS } = getPlatform()
 
 function General() {
   const { color, setColor } = usePrimaryColor()
-  const { tintedWindow, tintOpacity, showMenuBarIcon } =
+  const { tintedWindow, tintOpacity, showMenuBarIcon, playCompletionSound } =
     useSnapshot(settingsStore)
 
   return (
@@ -35,7 +36,7 @@ function General() {
         {isWindowTintSupported ? (
           <SettingsRow
             title="Tinted window"
-            description="Make the window background translucent, so the desktop behind it tints the app like native windows."
+            description="Let the desktop show softly through the window background."
           >
             <Switch
               aria-label="Tinted window"
@@ -50,7 +51,7 @@ function General() {
           <SettingsRow
             isNested
             title="Tint opacity"
-            description="How solid the window background is. Lower values are more translucent."
+            description="How much of the desktop shows through. Lower values show more of it."
           >
             <div className="flex items-center gap-3 w-[220px]">
               <Slider
@@ -72,6 +73,22 @@ function General() {
             </div>
           </SettingsRow>
         ) : null}
+      </SettingsSection>
+      <SettingsSection title="Sound">
+        <SettingsRow
+          title="Completion sound"
+          description="Play a sound when a compression completes."
+        >
+          <Switch
+            aria-label="Completion sound"
+            isSelected={playCompletionSound}
+            onValueChange={(isSelected) => {
+              settingsStore.playCompletionSound = isSelected
+              // A preview of the sound that will play
+              if (isSelected) playSound().catch(() => {})
+            }}
+          />
+        </SettingsRow>
       </SettingsSection>
       {isMacOS ? (
         <SettingsSection title="Menu bar">

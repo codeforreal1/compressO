@@ -6,6 +6,7 @@ pub mod file_manager;
 pub mod fs;
 pub mod image;
 pub mod media;
+pub mod sound;
 pub mod updater;
 pub mod window;
 

@@ -39,6 +39,7 @@ use tauri_commands::{
         get_image_color_info, get_image_dimensions,
     },
     media::compress_media_batch,
+    sound::play_completion_sound,
     updater::{check_update, download_and_install_update},
     window::set_window_tint,
 };
@@ -412,6 +413,7 @@ async fn main() {
             get_image_color_info,
             get_exif_info,
             set_window_tint,
+            play_completion_sound,
             #[cfg(target_os = "linux")]
             get_server_url,
             #[cfg(target_os = "linux")]

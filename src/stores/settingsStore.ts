@@ -48,6 +48,8 @@ export type SettingsState = {
    * bar icon; off by default)
    */
   watchClipboard: boolean
+  /** Play a sound when a compression completes (off by default) */
+  playCompletionSound: boolean
   /** Translucent, tinted window background (macOS & Windows 11 only, off by default) */
   tintedWindow: boolean
   /** Opacity (%) of the app background over the tinted window's material (both themes) */
@@ -77,6 +79,8 @@ export const settingsStore = proxy<SettingsState>({
     localStorage.getItem(constants.copyBatchOutputToClipboard) !== 'false',
   showMenuBarIcon: localStorage.getItem(constants.showMenuBarIcon) !== 'false',
   watchClipboard: localStorage.getItem(constants.watchClipboard) === 'true',
+  playCompletionSound:
+    localStorage.getItem(constants.playCompletionSound) === 'true',
   tintedWindow: localStorage.getItem(constants.tintedWindow) === 'true',
   tintOpacity: readTintOpacity(constants.tintOpacity, DEFAULT_TINT_OPACITY),
 })
@@ -106,6 +110,10 @@ subscribe(settingsStore, () => {
   localStorage.setItem(
     constants.watchClipboard,
     String(settingsStore.watchClipboard),
+  )
+  localStorage.setItem(
+    constants.playCompletionSound,
+    String(settingsStore.playCompletionSound),
   )
   localStorage.setItem(
     constants.tintedWindow,

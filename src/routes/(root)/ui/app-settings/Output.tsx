@@ -166,7 +166,7 @@ function Output() {
         ) : null}
         <SettingsRow
           title="File name prefix"
-          description="Added to the start of saved files. Folders keep their names. Leave empty to keep the original names."
+          description="Text added to the start of saved file names. Leave empty to keep the original names."
         >
           <TextInput
             aria-label="File name prefix"
@@ -199,7 +199,7 @@ function Output() {
           <SettingsRow
             isNested
             title="Include batch outputs"
-            description="Also copy all compressed media of a batch. Turn this off to copy single outputs only, since a batch can contain many files."
+            description="Also copy the files when several are compressed at once."
           >
             <Switch
               aria-label="Include batch outputs"
@@ -217,8 +217,8 @@ function Output() {
           title="Clear cache"
           description={
             canClearCache
-              ? 'Delete generated thumbnails and compressed files that have not been saved. Saved files are not affected.'
-              : 'Close the media you are working on to clear the cache, since it is still in use.'
+              ? 'Free up space by deleting temporary files. Your saved files are not affected.'
+              : 'Close the media you are working on first.'
           }
         >
           <Button
