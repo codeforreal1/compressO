@@ -16,6 +16,7 @@ import {
   getBatchResolutionLongerSide,
   inputOnlyExtensions,
   isAudioExtension,
+  type PortableTransform,
 } from '@/types/compression'
 import {
   type ImagePreset,
@@ -32,6 +33,11 @@ import {
   type VideoPresetSettings,
   videoPresetFields,
 } from '@/types/preset'
+import {
+  applyPortableTransform,
+  getPortableTransform,
+  normalizeRotation,
+} from '@/utils/transform'
 import {
   getLongerSideDimensions,
   getOutputVideoContainer,
@@ -87,6 +93,19 @@ export function getVideoConfigResolution(
     : null
 }
 
+/**
+ * Portable transform of a config: the batch's (set on the batch config only), or the media's own
+ * (a free crop is not portable)
+ */
+function getConfigTransform(
+  batchTransform: PortableTransform | null | undefined,
+  shouldTransform: boolean | undefined,
+  transformConfig: Parameters<typeof getPortableTransform>[0],
+) {
+  if (batchTransform !== undefined) return batchTransform
+  return shouldTransform ? getPortableTransform(transformConfig) : null
+}
+
 export function pickVideoPresetSettings(
   config: VideoConfig,
   resolution: number | null,
@@ -104,6 +123,11 @@ export function pickVideoPresetSettings(
     bitrate,
   })
   settings.resolution = resolution
+  settings.transform = getConfigTransform(
+    config.batchTransform,
+    config.shouldTransformVideo,
+    config.transformVideoConfig,
+  )
   return settings as VideoPresetSettings
 }
 
@@ -140,6 +164,11 @@ export function pickImagePresetSettings(
     settings[field] = cloneDeep(config[field])
   }
   settings.resolution = resolution
+  settings.transform = getConfigTransform(
+    config.batchTransform,
+    config.shouldTransformImage,
+    config.transformImageConfig,
+  )
   return settings as ImagePresetSettings
 }
 
@@ -307,6 +336,21 @@ export function applyVideoPresetToConfig(
   if (skippedFields.has('shouldEnableCustomAudioCodec')) {
     nextConfig.audioConfig.audioCodec = defaults.audioConfig.audioCodec
   }
+  // The transform first: the resolution is for the size after the crop
+  const transform = settings.transform ?? null
+  if (isBatchConfig) {
+    nextConfig.batchTransform = transform
+  } else if (isAudioExtension(nextConfig.convertToExtension)) {
+    // Extracting audio: nothing to transform
+    if (transform) skippedFields.add('transform')
+  } else if (
+    applyPortableTransform(nextConfig, 'video', transform, dimensions) !==
+      'applied' &&
+    transform
+  ) {
+    skippedFields.add('transform')
+  }
+
   const resolution = getValidResolution(settings.resolution)
   if (isBatchConfig) {
     nextConfig.batchResolution = getBatchResolutionForLongerSide(resolution)
@@ -377,6 +421,24 @@ export function applyImagePresetToConfig(
   ) {
     skippedFields.add('convertToExtension')
     nextConfig.convertToExtension = 'png'
+  }
+
+  // The transform first: the resolution is for the size after the crop
+  const transform = settings.transform ?? null
+  if (isBatchConfig) {
+    nextConfig.batchTransform = transform
+  } else if (
+    sourceExtension === 'svg' ||
+    nextConfig.convertToExtension === 'svg'
+  ) {
+    // SVGs cannot be transformed
+    if (transform) skippedFields.add('transform')
+  } else if (
+    applyPortableTransform(nextConfig, 'image', transform, dimensions) !==
+      'applied' &&
+    transform
+  ) {
+    skippedFields.add('transform')
   }
 
   const resolution = getValidResolution(settings.resolution)
@@ -610,14 +672,19 @@ export function hasChangesOutsidePreset(config: VideoConfig | ImageConfig) {
   ) {
     const imageConfig = config as ImageConfig
     return !!(
-      imageConfig.shouldTransformImage ||
-      imageConfig.isImageTransformEditMode ||
-      hasMetadataValues(imageConfig)
+      // Transforms set by the preset are part of it
+      (
+        (imageConfig.shouldTransformImage &&
+          !imageConfig.transformImageConfig?.isFromPreset) ||
+        imageConfig.isImageTransformEditMode ||
+        hasMetadataValues(imageConfig)
+      )
     )
   }
   const videoConfig = config as VideoConfig
   return !!(
-    videoConfig.shouldTransformVideo ||
+    (videoConfig.shouldTransformVideo &&
+      !videoConfig.transformVideoConfig?.isFromPreset) ||
     videoConfig.isVideoTransformEditMode ||
     videoConfig.shouldTrimVideo ||
     videoConfig.isVideoTrimEditMode ||
@@ -874,6 +941,18 @@ function formatExtension(extension: string | undefined) {
     : extension.toUpperCase()
 }
 
+function describeTransform(transform: PortableTransform | null | undefined) {
+  if (!transform) return []
+  const lines: string[] = []
+  const rotate = normalizeRotation(transform.rotate)
+  if (rotate) lines.push(`Rotated ${rotate}°`)
+  if (transform.flip?.horizontal || transform.flip?.vertical) {
+    lines.push('Flipped')
+  }
+  if (transform.aspectRatio) lines.push(`Cropped to ${transform.aspectRatio}`)
+  return lines
+}
+
 /** Short summary of what a video preset changes, e.g. `["MP4", "Quality 70%", ...]` */
 export function describeVideoPresetSettings(settings: VideoPresetSettings) {
   const lines = [formatExtension(settings.convertToExtension)]
@@ -893,6 +972,7 @@ export function describeVideoPresetSettings(settings: VideoPresetSettings) {
     if (settings.resolution) {
       lines.push(`${settings.resolution} px longer side`)
     }
+    lines.push(...describeTransform(settings.transform))
     if (settings.shouldEnableCustomFPS && settings.customFPS) {
       lines.push(`${settings.customFPS} FPS`)
     }
@@ -940,6 +1020,7 @@ export function describeImagePresetSettings(settings: ImagePresetSettings) {
   if (settings.resolution) {
     lines.push(`${settings.resolution} px longer side`)
   }
+  lines.push(...describeTransform(settings.transform))
   if (settings.svgScaleFactor && settings.svgScaleFactor !== 1) {
     lines.push(`SVG scale ${settings.svgScaleFactor}x`)
   }

@@ -230,6 +230,29 @@ export type MediaTransforms = {
   flip: { horizontal: boolean; vertical: boolean }
 }
 
+/** Shapes a crop can be locked to, as width:height */
+export const cropAspectRatios = {
+  '1:1': [1, 1],
+  '4:5': [4, 5],
+  '9:16': [9, 16],
+  '16:9': [16, 9],
+  '4:3': [4, 3],
+} as const
+
+export type CropAspectRatio = keyof typeof cropAspectRatios
+
+/**
+ * Transforms that apply to any media (e.g. in a preset): rotation & flips, and a crop as a shape
+ * (the largest centered area of the ratio), which is turned into each media's own crop
+ */
+export type PortableTransform = {
+  /** Clockwise, in degrees (0, 90, 180 or 270) */
+  rotate: number
+  /** Flips after the rotation, in the output's axes */
+  flip: { horizontal: boolean; vertical: boolean }
+  aspectRatio: CropAspectRatio | null
+}
+
 export type MediaTransformHistory =
   | {
       type: 'crop'

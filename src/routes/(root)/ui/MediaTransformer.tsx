@@ -1,5 +1,11 @@
 import { core } from '@tauri-apps/api'
-import { type CSSProperties, forwardRef, useEffect, useRef } from 'react'
+import {
+  type CSSProperties,
+  forwardRef,
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
 import {
   Cropper,
   type CropperBackgroundImageProps,
@@ -14,7 +20,13 @@ import Button from '@/components/Button'
 import Divider from '@/components/Divider'
 import Icon from '@/components/Icon'
 import Tooltip from '@/components/Tooltip'
-import { MediaTransformHistory, MediaTransforms } from '@/types/compression'
+import {
+  type CropAspectRatio,
+  cropAspectRatios,
+  MediaTransformHistory,
+  MediaTransforms,
+} from '@/types/compression'
+import { getAspectRatioCrop } from '@/utils/transform'
 import { appProxy } from '../-state'
 
 type MediaTransformerProps = {
@@ -33,6 +45,7 @@ function MediaTransformer({ mediaIndex }: MediaTransformerProps) {
   const handleTransformChange = (
     transforms: MediaTransforms,
     previewUrl: string,
+    aspectRatio: CropAspectRatio | null,
   ) => {
     const targetMedia = appProxy.state.media[mediaIndex]
     if (!targetMedia?.config) return
@@ -45,6 +58,7 @@ function MediaTransformer({ mediaIndex }: MediaTransformerProps) {
         ...transformConfig,
         transforms: transforms as MediaTransforms,
         previewUrl,
+        aspectRatio,
         transformHistory:
           transformConfig?.transformHistory ?? ([] as MediaTransformHistory[]),
       }
@@ -55,6 +69,7 @@ function MediaTransformer({ mediaIndex }: MediaTransformerProps) {
         ...transformConfig,
         transforms: transforms as MediaTransforms,
         previewUrl,
+        aspectRatio,
         transformHistory:
           transformConfig?.transformHistory ?? ([] as MediaTransformHistory[]),
       }
@@ -82,6 +97,8 @@ function MediaTransformer({ mediaIndex }: MediaTransformerProps) {
       targetMedia.config.transformVideoConfig = {
         ...(transformConfig! ?? {}),
         transformHistory,
+        // Changed in the editor, so it is the media's own transform
+        isFromPreset: false,
       }
     } else if (mediaItem.type === 'image') {
       const transformConfig = targetMedia.config.transformImageConfig
@@ -92,6 +109,7 @@ function MediaTransformer({ mediaIndex }: MediaTransformerProps) {
       targetMedia.config.transformImageConfig = {
         ...(transformConfig! ?? {}),
         transformHistory,
+        isFromPreset: false,
       }
     }
   }
@@ -102,6 +120,10 @@ function MediaTransformer({ mediaIndex }: MediaTransformerProps) {
     mediaItem.type === 'video'
       ? mediaItem.config.transformVideoConfig?.transforms
       : mediaItem.config.transformImageConfig?.transforms
+  const initialAspectRatio =
+    (mediaItem.type === 'video'
+      ? mediaItem.config.transformVideoConfig?.aspectRatio
+      : mediaItem.config.transformImageConfig?.aspectRatio) ?? null
 
   const shouldTransform =
     mediaItem.type === 'video'
@@ -124,6 +146,7 @@ function MediaTransformer({ mediaIndex }: MediaTransformerProps) {
     <Transformer
       src={src}
       initialTransforms={initialTransforms}
+      initialAspectRatio={initialAspectRatio}
       onTransformChange={handleTransformChange}
       onTransformHistoryChange={handleTransformHistoryChange}
     />
@@ -171,21 +194,75 @@ const SharpCropperBackground = forwardRef<
 })
 SharpCropperBackground.displayName = 'SharpCropperBackground'
 
+const ASPECT_RATIO_OPTIONS: (CropAspectRatio | null)[] = [
+  null,
+  ...(Object.keys(cropAspectRatios) as CropAspectRatio[]),
+]
+
 type TransformerProps = {
   src: string
   initialTransforms?: MediaTransforms
-  onTransformChange: (transforms: MediaTransforms, previewUrl: string) => void
+  /** Shape the crop is locked to (`null` for a free crop) */
+  initialAspectRatio: CropAspectRatio | null
+  onTransformChange: (
+    transforms: MediaTransforms,
+    previewUrl: string,
+    aspectRatio: CropAspectRatio | null,
+  ) => void
   onTransformHistoryChange: (action: MediaTransformHistory) => void
 }
 
 function Transformer({
   src,
   initialTransforms,
+  initialAspectRatio,
   onTransformChange,
   onTransformHistoryChange,
 }: TransformerProps) {
   const cropperRef = useRef<CropperRef>(null)
   const debouncedRef = useRef<NodeJS.Timeout | null>(null)
+  const [aspectRatio, setAspectRatio] = useState(initialAspectRatio)
+  // Read by the debounced change handler
+  const aspectRatioRef = useRef(aspectRatio)
+  aspectRatioRef.current = aspectRatio
+
+  // Counts the picks of a shape; the crop is moved once the cropper has the new shape (otherwise it
+  // is fitted to the previous shape, and ends up elsewhere). Picking the current shape again centers
+  // it again.
+  const [aspectRatioPicks, setAspectRatioPicks] = useState(0)
+
+  /** Locks the crop to a shape: the largest centered area of it in the (rotated) media */
+  const changeAspectRatio = (ratio: CropAspectRatio | null) => {
+    aspectRatioRef.current = ratio
+    setAspectRatio(ratio)
+    setAspectRatioPicks((picks) => picks + 1)
+  }
+
+  // Runs after the cropper received the new shape, a frame later so it has applied it
+  useEffect(() => {
+    // The free crop keeps the current area
+    if (!aspectRatioPicks || !aspectRatio) return
+    const frame = requestAnimationFrame(() => {
+      const cropper = cropperRef.current
+      const state = cropper?.getState()
+      if (!cropper || !state?.imageSize) return
+      const isQuarterTurned = Math.abs(state.transforms.rotate % 180) === 90
+      cropper.setCoordinates(
+        getAspectRatioCrop(
+          isQuarterTurned
+            ? {
+                width: state.imageSize.height,
+                height: state.imageSize.width,
+              }
+            : state.imageSize,
+          aspectRatio,
+        ),
+        // Animated from the area the cropper fitted to the new shape
+        { transitions: true },
+      )
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [aspectRatio, aspectRatioPicks])
 
   const flip = (horizontal: boolean, vertical: boolean) => {
     if (cropperRef.current) {
@@ -273,7 +350,11 @@ function Transformer({
           })
         }
 
-        onTransformChange(newTransforms, URL.createObjectURL(blob!))
+        onTransformChange(
+          newTransforms,
+          URL.createObjectURL(blob!),
+          aspectRatioRef.current,
+        )
       }
     }, 500)
   }
@@ -291,6 +372,10 @@ function Transformer({
         checkOrientation={false}
         stencilProps={{
           grid: true,
+          aspectRatio: aspectRatio
+            ? cropAspectRatios[aspectRatio][0] /
+              cropAspectRatios[aspectRatio][1]
+            : undefined,
         }}
         onChange={onChange}
         className="w-full h-full"
@@ -329,7 +414,23 @@ function Transformer({
           }
         }}
       />
-      <div className="mx-auto flex items-center justify-center gap-2 mt-4">
+      <div className="mx-auto flex flex-wrap items-center justify-center gap-2 mt-4">
+        {ASPECT_RATIO_OPTIONS.map((ratio) => (
+          <Button
+            key={ratio ?? 'free'}
+            size="sm"
+            radius="md"
+            color={aspectRatio === ratio ? 'primary' : 'default'}
+            variant={aspectRatio === ratio ? 'solid' : 'flat'}
+            aria-pressed={aspectRatio === ratio}
+            onPress={() => changeAspectRatio(ratio)}
+            className="min-w-[unset] h-7 px-3 text-xs"
+          >
+            {ratio ?? 'Free'}
+          </Button>
+        ))}
+      </div>
+      <div className="mx-auto flex items-center justify-center gap-2 mt-2">
         <>
           <Button size="sm" isIconOnly onPress={() => rotate(-90)}>
             <Tooltip content="Rotate Left" aria-label="Rotate Left">

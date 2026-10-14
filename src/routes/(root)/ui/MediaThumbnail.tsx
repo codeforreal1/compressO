@@ -1,6 +1,7 @@
 import { Button } from '@heroui/react'
 import { core } from '@tauri-apps/api'
 import { motion } from 'framer-motion'
+import isEqual from 'lodash/isEqual'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { PhotoView } from 'react-photo-view'
 import { OnProgressProps } from 'react-player/base'
@@ -24,7 +25,7 @@ import VideoTrimmerTimeline, {
   VideoTrimmerTimelineRef,
 } from '@/ui/VideoTrimmerTimeline'
 import { formatDuration } from '@/utils/string'
-import { getTransformPreview } from '@/utils/transform'
+import { getTransformPreview, renderTransformPreview } from '@/utils/transform'
 import MediaTransformer from './MediaTransformer'
 import { appProxy } from '../-state'
 
@@ -270,6 +271,64 @@ function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
 
   const showTrimmerLayout =
     shouldTrimVideo && isVideoTrimEditMode && !isProcessCompleted
+
+  // Transforms set by a preset have no preview yet (the editor renders one when used), so it is
+  // rendered here, for the media being shown
+  const transformConfigToPreview =
+    mediaFile?.type === 'image'
+      ? shouldTransformImage && mediaFile.extension !== 'gif'
+        ? mediaFile.config.transformImageConfig
+        : undefined
+      : mediaFile?.type === 'video' && shouldTransformVideo
+        ? mediaFile.config.transformVideoConfig
+        : undefined
+  const isEditingTransform = !!(
+    isImageTransformEditMode || isVideoTransformEditMode
+  )
+  useEffect(() => {
+    const transforms = transformConfigToPreview?.transforms
+    const thumbnailPathRaw = appProxy.state.media[mediaIndex]?.thumbnailPathRaw
+    if (
+      !transforms ||
+      transformConfigToPreview?.previewUrl ||
+      isEditingTransform ||
+      isProcessCompleted ||
+      !thumbnailPathRaw
+    ) {
+      return
+    }
+    let isCancelled = false
+    renderTransformPreview(core.convertFileSrc(thumbnailPathRaw), transforms)
+      .then((previewUrl) => {
+        const targetMedia = appProxy.state.media[mediaIndex]
+        const targetConfig =
+          targetMedia?.type === 'image'
+            ? targetMedia.config.transformImageConfig
+            : targetMedia?.type === 'video'
+              ? targetMedia.config.transformVideoConfig
+              : undefined
+        // Only for the transforms it was rendered for
+        if (
+          isCancelled ||
+          !targetConfig ||
+          targetConfig.previewUrl ||
+          !isEqual(targetConfig.transforms, transforms)
+        ) {
+          URL.revokeObjectURL(previewUrl)
+          return
+        }
+        targetConfig.previewUrl = previewUrl
+      })
+      .catch(() => {})
+    return () => {
+      isCancelled = true
+    }
+  }, [
+    transformConfigToPreview,
+    isEditingTransform,
+    isProcessCompleted,
+    mediaIndex,
+  ])
 
   const showTransformerLayout =
     ((shouldTransformVideo && isVideoTransformEditMode) ||

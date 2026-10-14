@@ -2,8 +2,16 @@ import { getLocalTimeZone, now } from '@internationalized/date'
 import cloneDeep from 'lodash/cloneDeep'
 import { proxy } from 'valtio'
 
-import { getBatchResolutionLongerSide } from '@/types/compression'
-import { getLongerSideDimensions } from '@/utils/video'
+import {
+  getBatchResolutionLongerSide,
+  isAudioExtension,
+  type MediaTransformHistory,
+} from '@/types/compression'
+import { applyPortableTransform } from '@/utils/transform'
+import {
+  getLongerSideDimensions,
+  getTransformedDimensions,
+} from '@/utils/video'
 import {
   App,
   ImageConfig,
@@ -148,8 +156,8 @@ export const appProxy: AppProxy = proxy({
 
 /**
  * Normalizes the individual non-dirty media config to match with batch config. The batch's
- * resolution is set as each media's own dimensions (computed from its size), so the settings of a
- * single media show the size it is compressed to.
+ * transform (rotation, flips, crop shape) & resolution are set as each media's own (computed from
+ * its size), so the settings of a single media show what it is compressed to.
  */
 export function normalizeBatchMediaConfig() {
   if (appProxy.state.media.length > 1) {
@@ -164,21 +172,66 @@ export function normalizeBatchMediaConfig() {
       if (mediaFile?.isConfigDirty) continue
       if (mediaFile.type === 'video') {
         const config = cloneDeep(videoConfig)
-        applyBatchSize(config, mediaFile.dimensions, videoLongerSide)
+        // Only the batch's config holds the batch transform
+        delete config.batchTransform
+        if (!isAudioExtension(config.convertToExtension)) {
+          applyPortableTransform(
+            config,
+            'video',
+            videoConfig.batchTransform,
+            mediaFile.dimensions,
+          )
+        }
+        applyBatchSize(
+          config,
+          getOutputDimensions(
+            mediaFile.dimensions,
+            config.shouldTransformVideo
+              ? config.transformVideoConfig?.transformHistory
+              : null,
+          ),
+          videoLongerSide,
+        )
         mediaFile.config = config
       } else if (mediaFile.type === 'image') {
         const config = cloneDeep(imageConfig)
-        // SVGs are resized with the SVG scale factor instead
+        delete config.batchTransform
+        // SVGs cannot be transformed, and are resized with the SVG scale factor instead
         if (
           mediaFile.extension !== 'svg' &&
           config.convertToExtension !== 'svg'
         ) {
-          applyBatchSize(config, mediaFile.dimensions, imageLongerSide)
+          applyPortableTransform(
+            config,
+            'image',
+            imageConfig.batchTransform,
+            mediaFile.dimensions,
+          )
+          applyBatchSize(
+            config,
+            getOutputDimensions(
+              mediaFile.dimensions,
+              config.shouldTransformImage
+                ? config.transformImageConfig?.transformHistory
+                : null,
+            ),
+            imageLongerSide,
+          )
         }
         mediaFile.config = config
       }
     }
   }
+}
+
+/** Size of a media after its transforms (rotations & crop) */
+function getOutputDimensions(
+  dimensions: { width: number; height: number } | undefined,
+  transformHistory: readonly MediaTransformHistory[] | null | undefined,
+) {
+  return dimensions?.width && dimensions?.height
+    ? getTransformedDimensions(dimensions, transformHistory)
+    : undefined
 }
 
 /** Sets the batch's size (of the longer side) as a media's custom dimensions */

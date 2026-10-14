@@ -7,6 +7,7 @@ import {
   BatchResolution,
   Chapter,
   ContainerInfo,
+  CropAspectRatio,
   ExifInfo,
   extensions,
   ImageBasicInfo,
@@ -14,6 +15,7 @@ import {
   ImageDimensions,
   MediaTransformHistory,
   MediaTransforms,
+  PortableTransform,
   SubtitleStream,
   SvgConfig,
   VideoStream,
@@ -77,6 +79,10 @@ export type VideoConfig = {
     transforms: MediaTransforms
     transformHistory: MediaTransformHistory[]
     previewUrl?: string
+    /** Shape the crop is locked to in the editor (`null` for a free crop) */
+    aspectRatio?: CropAspectRatio | null
+    /** Set by a preset, until it is changed in the editor */
+    isFromPreset?: boolean
   }
   isVideoTransformEditMode?: boolean
   shouldTrimVideo?: boolean
@@ -94,6 +100,11 @@ export type VideoConfig = {
   subtitlesConfig?: SubtitlesConfig | null
   shouldEnableCustomSpeed?: boolean
   customSpeed?: number | null
+  /**
+   * Transforms of all videos of a batch (set on the batch config only, by a preset); each video's
+   * own crop is computed from its size
+   */
+  batchTransform?: PortableTransform | null
   /** Video preset the settings come from (see `src/types/preset.ts`) */
   presetId?: string
   /** Preset settings that could not be applied to this video (e.g. audio without an audio track) */
@@ -162,6 +173,10 @@ export type ImageConfig = {
     transforms: MediaTransforms
     transformHistory: MediaTransformHistory[]
     previewUrl?: string
+    /** Shape the crop is locked to in the editor (`null` for a free crop) */
+    aspectRatio?: CropAspectRatio | null
+    /** Set by a preset, until it is changed in the editor */
+    isFromPreset?: boolean
   }
   isImageTransformEditMode?: boolean
   /**
@@ -169,6 +184,11 @@ export type ImageConfig = {
    * preset). Images with their own custom dimensions keep those; smaller images are upscaled.
    */
   batchLongerSide?: number | null
+  /**
+   * Transforms of all images of a batch (set on the batch config only, by a preset); each image's
+   * own crop is computed from its size
+   */
+  batchTransform?: PortableTransform | null
   /** Image preset the settings come from (see `src/types/preset.ts`) */
   presetId?: string
   /** Preset settings that could not be applied to this image (e.g. the format of a GIF) */

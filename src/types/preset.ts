@@ -1,4 +1,5 @@
 import type { AudioConfig, ImageConfig, VideoConfig } from './app'
+import type { PortableTransform } from './compression'
 
 /**
  * Settings of a video that a preset holds: only those that apply to any video. Settings tied to a
@@ -39,6 +40,8 @@ export type VideoPresetSettings = Omit<
    * a video, or from the resolution of a batch.
    */
   resolution: number | null
+  /** Rotation, flips & crop shape; a free crop is not part of presets */
+  transform: PortableTransform | null
 }
 
 /** Any setting of a video preset, including the resolution */
@@ -63,6 +66,8 @@ export type ImagePresetField = (typeof imagePresetFields)[number]
 export type ImagePresetSettings = Pick<ImageConfig, ImagePresetField> & {
   /** Size of the longer side images are resized to (see `VideoPresetSettings['resolution']`) */
   resolution: number | null
+  /** See `VideoPresetSettings['transform']` */
+  transform: PortableTransform | null
 }
 
 /** Any setting of an image preset, including the resolution */
