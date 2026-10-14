@@ -284,6 +284,11 @@ function Transformer({
         ref={cropperRef}
         src={src}
         backgroundComponent={SharpCropperBackground}
+        // Photos stored sideways with an EXIF orientation are already shown upright by the webview.
+        // The cropper's own handling would show the raw (sideways) pixels, rotated by its default
+        // rotation, which `defaultTransforms` replaces with the user's. The crop & rotations are for
+        // the image as it is displayed, like the backend makes it upright before transforming it.
+        checkOrientation={false}
         stencilProps={{
           grid: true,
         }}

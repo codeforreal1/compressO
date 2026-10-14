@@ -99,7 +99,8 @@ fn is_mpeg_ts(buf: &[u8]) -> bool {
     has_sync_bytes(0, 188) || has_sync_bytes(4, 192)
 }
 
-/// Get [width, height] of an image (only raster images PNG, JPEG, GIF, BMP, WebP, TIFF, etc.)
+/// Get [width, height] of an image (only raster images PNG, JPEG, GIF, BMP, WebP, TIFF, etc.), as it
+/// is displayed: photos stored sideways with an EXIF orientation are reported upright
 pub fn get_image_dimension(image_path: &str) -> Result<(u32, u32), String> {
     if fs::metadata(image_path).is_err() {
         return Err(String::from("Image does not exist in the given path."));
@@ -111,7 +112,15 @@ pub fn get_image_dimension(image_path: &str) -> Result<(u32, u32), String> {
     };
 
     match image.into_dimensions() {
-        Ok(dimension) => Ok((dimension.0, dimension.1)),
+        Ok((width, height)) => Ok(
+            if crate::core::orientation::get_image_orientation(image_path)
+                .is_some_and(crate::core::orientation::swaps_width_and_height)
+            {
+                (height, width)
+            } else {
+                (width, height)
+            },
+        ),
         Err(err) => get_heif_dimension(image_path).ok_or(err.to_string()),
     }
 }

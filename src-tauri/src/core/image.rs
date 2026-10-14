@@ -6,6 +6,7 @@ use crate::core::domain::{
 use crate::core::ffmpeg::build_transform_filters;
 use crate::core::ffmpeg::FFMPEG;
 use crate::core::media_process::MediaProcessExecutorBuilder;
+use crate::core::orientation::{get_image_orientation, reset_exif_orientation, write_upright_copy};
 use crate::sys::fs::{ensure_assets_dir, get_file_metadata, get_image_dimension};
 use crate::utils::event::EventListenerGuard;
 use image::{ImageEncoder, ImageReader};
@@ -159,6 +160,35 @@ impl ImageCompressor {
             .as_ref()
             .and_then(|p| p.to_str())
             .unwrap_or(input_path);
+
+        // Photos stored sideways with an EXIF orientation (e.g. portrait photos from phones) are made
+        // upright first: the transforms, the dimensions & the crop are all for the image as it is
+        // displayed, and the compressors drop the orientation
+        let orientation = if matches!(
+            original_extension.as_str(),
+            "jpg" | "jpeg" | "png" | "webp" | "tiff" | "tif"
+        ) {
+            get_image_orientation(input_path)
+        } else {
+            None
+        };
+        let upright_path: Option<PathBuf> = match orientation {
+            Some(orientation) => {
+                let upright_path: PathBuf = [
+                    self.assets_dir.clone(),
+                    PathBuf::from(format!("{}_upright.{}", image_id, working_extension)),
+                ]
+                .iter()
+                .collect();
+                write_upright_copy(source_path, upright_path.to_str().unwrap(), orientation)?;
+                Some(upright_path)
+            }
+            None => None,
+        };
+        let source_path = upright_path
+            .as_ref()
+            .and_then(|p| p.to_str())
+            .unwrap_or(source_path);
 
         let transform_input_path = if !original_extension.eq("svg")
             && (dimensions.is_some() || transform_history.is_some())
@@ -392,6 +422,9 @@ impl ImageCompressor {
         if let Some(decoded_avif) = decoded_avif_path {
             let _ = fs::remove_file(&decoded_avif);
         }
+        if let Some(upright) = upright_path {
+            let _ = fs::remove_file(&upright);
+        }
 
         if !strip_metadata.unwrap_or(true) {
             match output_extension {
@@ -412,6 +445,10 @@ impl ImageCompressor {
                 _ => {
                     // No support for now
                 }
+            }
+            // The kept orientation would rotate the upright pixels again
+            if orientation.is_some() {
+                let _ = reset_exif_orientation(output_path.to_str().unwrap());
             }
         }
 
