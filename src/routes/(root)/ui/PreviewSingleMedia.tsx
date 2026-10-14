@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useSnapshot } from 'valtio'
 
 import Button from '@/components/Button'
@@ -9,13 +9,16 @@ import Icon from '@/components/Icon'
 import Image from '@/components/Image'
 import { CircularProgress } from '@/components/Progress'
 import Switch from '@/components/Switch'
+import { toast } from '@/components/Toast'
 import Tooltip from '@/components/Tooltip'
 import * as constants from '@/constants'
+import { showItemInFileManager } from '@/tauri/commands/fs'
 import { isAudioExtension } from '@/types/compression'
 import { Ripple } from '@/ui/Patterns/Ripple'
 import { slideUpTransition, zoomInTransition } from '@/utils/animation'
 import { formatDuration } from '@/utils/string'
 import { cn } from '@/utils/tailwind'
+import ExitMedia from './ExitMedia'
 import ImageInfo from './ImageInfo'
 import MediaOutputCompareSlider from './MediaOutputCompareSlider'
 import MediaThumbnail from './MediaThumbnail'
@@ -26,9 +29,17 @@ import { appProxy } from '../-state'
 
 type PreviewSingleMediaProps = {
   mediaIndex: number
+  /**
+   * Shown at the end of the header, also while editing (e.g. the Apply & Reset of a media
+   * customized in a batch)
+   */
+  headerEnd?: React.ReactNode
 }
 
-function PreviewSingleMedia({ mediaIndex }: PreviewSingleMediaProps) {
+function PreviewSingleMedia({
+  mediaIndex,
+  headerEnd,
+}: PreviewSingleMediaProps) {
   if (mediaIndex < 0) return
 
   const {
@@ -57,6 +68,24 @@ function PreviewSingleMedia({ mediaIndex }: PreviewSingleMediaProps) {
   const { isImageTransformEditMode } =
     mediaFile?.type === 'image' ? (mediaFile?.config ?? {}) : {}
 
+  // With a transform (crop, rotation, flip), the preview shows the edited media; this switch shows
+  // the original instead, to compare
+  const hasTransformPreview =
+    mediaFile?.type === 'image'
+      ? !!mediaFile.config.shouldTransformImage &&
+        !!mediaFile.config.transformImageConfig?.transformHistory?.length
+      : mediaFile?.type === 'video'
+        ? !!mediaFile.config.shouldTransformVideo &&
+          !!mediaFile.config.transformVideoConfig?.transformHistory?.length
+        : false
+  const [showOriginal, setShowOriginal] = useState(false)
+  // Back to the edited preview when editing again
+  useEffect(() => {
+    if (isVideoTransformEditMode || isImageTransformEditMode) {
+      setShowOriginal(false)
+    }
+  }, [isVideoTransformEditMode, isImageTransformEditMode])
+
   // Off by default; remembers the user's last choice
   const [compareOutput, setCompareOutput] = useState(
     () => localStorage.getItem(constants.compareOutput) === 'true',
@@ -81,37 +110,85 @@ function PreviewSingleMedia({ mediaIndex }: PreviewSingleMediaProps) {
   const isMediaTransformEditMode =
     isVideoTransformEditMode || isImageTransformEditMode
   const isMediaTrimEditMode = isVideoTrimEditMode
+  const isEditing = !!(isMediaTransformEditMode || isMediaTrimEditMode)
 
   return !isCompressing ? (
     <motion.div
-      className="w-full h-full flex flex-col justify-center"
+      className="relative w-full h-full flex flex-col justify-center"
       {...zoomInTransition}
     >
-      {!(isMediaTransformEditMode || isMediaTrimEditMode) &&
-      !isProcessCompleted ? (
-        <div className="flex justify-center items-center gap-2 mb-3">
-          <Code size="sm" className="w-fit text-center rounded-xl px-4 text-xs">
-            {singleFileNameDisplay?.length > 50
-              ? `${singleFileNameDisplay?.slice(0, 20)}...${singleFileNameDisplay?.slice(
-                  -10,
-                )}`
-              : singleFileNameDisplay}
-          </Code>
-          {/* Not when customizing a media of a batch, which has its own "Add more" card */}
-          {media.length === 1 ? (
-            <Tooltip content="Add more media" aria-label="Add more media">
-              <Button
-                size="sm"
-                variant="flat"
-                onPress={pickMediaToAdd}
-                isDisabled={isLoadingMediaFiles}
-                className="h-7 min-w-[unset] px-3 text-xs"
+      {!isEditing || headerEnd ? (
+        // Pinned to the top of the preview: exit & the file on the left, its actions on the right
+        <div className="absolute top-0 left-0 right-0 z-[1] flex justify-between items-center gap-2">
+          {/* The editors take the whole preview */}
+          <div
+            className={cn([
+              'flex items-center gap-1 min-w-0',
+              isEditing && 'invisible',
+            ])}
+          >
+            {/* A media of a batch is closed with the batch's exit instead */}
+            {media.length === 1 ? <ExitMedia /> : null}
+            <Code size="sm" className="w-fit rounded-xl px-4 text-xs truncate">
+              {singleFileNameDisplay?.length > 50
+                ? `${singleFileNameDisplay?.slice(0, 20)}...${singleFileNameDisplay?.slice(
+                    -10,
+                  )}`
+                : singleFileNameDisplay}
+            </Code>
+            {mediaFile?.pathRaw ? (
+              <Tooltip
+                content="Show in File Explorer"
+                aria-label="Show in File Explorer"
               >
-                <Icon name="addMedia" size={14} />
-                Add more
-              </Button>
-            </Tooltip>
-          ) : null}
+                <Button
+                  size="sm"
+                  variant="light"
+                  isIconOnly
+                  onPress={() => {
+                    if (mediaFile.pathRaw) {
+                      showItemInFileManager(mediaFile.pathRaw).catch(() => {
+                        toast.error('The file could not be shown.')
+                      })
+                    }
+                  }}
+                  className="h-7 w-7 min-w-7"
+                >
+                  <Icon name="fileExplorer" size={14} />
+                </Button>
+              </Tooltip>
+            ) : null}
+          </div>
+          <div className="flex items-center gap-3 flex-shrink-0">
+            {hasTransformPreview && !isProcessCompleted && !isEditing ? (
+              <Switch
+                size="xs"
+                isSelected={!showOriginal}
+                onValueChange={(isSelected) => setShowOriginal(!isSelected)}
+                aria-label="Show edits"
+              >
+                <span className="text-xs text-zinc-600 dark:text-zinc-400">
+                  Show edits
+                </span>
+              </Switch>
+            ) : null}
+            {/* Not when customizing a media of a batch, which has its own "Add more" card */}
+            {media.length === 1 && !isProcessCompleted && !isEditing ? (
+              <Tooltip content="Add more media" aria-label="Add more media">
+                <Button
+                  size="sm"
+                  variant="flat"
+                  onPress={pickMediaToAdd}
+                  isDisabled={isLoadingMediaFiles}
+                  className="h-7 min-w-[unset] px-3 text-xs"
+                >
+                  <Icon name="addMedia" size={14} />
+                  Add more
+                </Button>
+              </Tooltip>
+            ) : null}
+            {headerEnd}
+          </div>
         </div>
       ) : null}
 
@@ -121,7 +198,7 @@ function PreviewSingleMedia({ mediaIndex }: PreviewSingleMediaProps) {
         mediaFile?.type === 'image') ? (
         <div className="flex justify-center my-4">
           <Switch
-            size="sm"
+            size="xs"
             isSelected={compareOutput}
             onValueChange={(isSelected) => {
               setCompareOutput(isSelected)
@@ -144,7 +221,10 @@ function PreviewSingleMedia({ mediaIndex }: PreviewSingleMediaProps) {
           mediaFile?.type === 'image') ? (
           <MediaOutputCompareSlider mediaIndex={mediaIndex} />
         ) : (
-          <MediaThumbnail mediaIndex={mediaIndex} />
+          <MediaThumbnail
+            mediaIndex={mediaIndex}
+            showOriginal={hasTransformPreview && showOriginal}
+          />
         )
       ) : null}
 

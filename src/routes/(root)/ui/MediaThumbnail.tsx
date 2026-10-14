@@ -41,9 +41,11 @@ function pickRandomTimestamp(durationMs: number): string {
 
 type MediaThumbnailProps = {
   mediaIndex: number
+  /** Shows the media without its transforms (crop, rotation, flip), e.g. to compare */
+  showOriginal?: boolean
 }
 
-function MediaThumbnail({ mediaIndex }: MediaThumbnailProps) {
+function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
   if (mediaIndex < 0) return
 
   const {
@@ -275,8 +277,9 @@ function MediaThumbnail({ mediaIndex }: MediaThumbnailProps) {
     !isProcessCompleted
 
   // Rendered result of the crop/rotate/flip, so the preview reflects the applied transforms
-  const transformedThumbnailPreview =
-    mediaFile?.type === 'image' && shouldTransformImage
+  const transformedThumbnailPreview = showOriginal
+    ? undefined
+    : mediaFile?.type === 'image' && shouldTransformImage
       ? mediaFile.config.transformImageConfig?.previewUrl
       : mediaFile?.type === 'video' && shouldTransformVideo
         ? mediaFile.config.transformVideoConfig?.previewUrl
@@ -285,6 +288,7 @@ function MediaThumbnail({ mediaIndex }: MediaThumbnailProps) {
   // Animated gifs preview the transforms live with css (like videos) instead of the still snapshot
   const gifTransformPreview = useMemo(
     () =>
+      !showOriginal &&
       mediaFile?.type === 'image' &&
       mediaFile.extension === 'gif' &&
       shouldTransformImage &&
@@ -297,7 +301,7 @@ function MediaThumbnail({ mediaIndex }: MediaThumbnailProps) {
             mediaFile.dimensions.height,
           )
         : null,
-    [mediaFile, shouldTransformImage, isProcessCompleted],
+    [mediaFile, shouldTransformImage, isProcessCompleted, showOriginal],
   )
 
   const thumbnailPath =
@@ -306,7 +310,10 @@ function MediaThumbnail({ mediaIndex }: MediaThumbnailProps) {
 
   // The compressed output already has the transforms applied
   const videoTransformHistory =
-    mediaFile?.type === 'video' && shouldTransformVideo && !isProcessCompleted
+    mediaFile?.type === 'video' &&
+    shouldTransformVideo &&
+    !isProcessCompleted &&
+    !showOriginal
       ? mediaFile.config.transformVideoConfig?.transformHistory
       : null
 

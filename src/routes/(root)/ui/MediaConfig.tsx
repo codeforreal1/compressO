@@ -11,6 +11,7 @@ import { cn } from '@/utils/tailwind'
 import CompressionActions from './CompressionActions'
 import CompressionProgress from './CompressionProgress'
 import CustomizeMediaOnBatchActions from './CustomizeMediaOnBatchActions'
+import ExitMedia from './ExitMedia'
 import OutputSettings from './output-settings/-index'
 import PreviewBatchMedia from './PreviewBatchMedia'
 import PreviewSingleVideo from './PreviewSingleMedia'
@@ -24,6 +25,7 @@ function MediaConfig() {
       activeTab,
       media,
       isCompressing,
+      isLoadingMediaFiles,
       selectedMediaIndexForCustomization,
     },
   } = useSnapshot(appProxy)
@@ -63,6 +65,18 @@ function MediaConfig() {
                 <Tab key="videos" value="videos" title="Videos" />
                 <Tab key="images" value="images" title="Images" />
               </Tabs>
+            </motion.div>
+          ) : null}
+          {/* A single media has its exit in the preview's header */}
+          {media.length > 1 &&
+          selectedMediaIndexForCustomization === -1 &&
+          !isCompressing &&
+          !isLoadingMediaFiles ? (
+            <motion.div
+              className="absolute left-4 top-[-16px] z-[1] rounded-full bg-white1 dark:bg-black1"
+              {...zoomInTransition}
+            >
+              <ExitMedia />
             </motion.div>
           ) : null}
           <AnimatePresence>
