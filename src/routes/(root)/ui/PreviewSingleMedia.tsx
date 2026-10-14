@@ -16,6 +16,7 @@ import { showItemInFileManager } from '@/tauri/commands/fs'
 import { isAudioExtension } from '@/types/compression'
 import { Ripple } from '@/ui/Patterns/Ripple'
 import { slideUpTransition, zoomInTransition } from '@/utils/animation'
+import { isOverlayOpen, isTextEntryElement } from '@/utils/keyboard'
 import { formatDuration } from '@/utils/string'
 import { cn } from '@/utils/tailwind'
 import ExitMedia from './ExitMedia'
@@ -111,6 +112,41 @@ function PreviewSingleMedia({
     isVideoTransformEditMode || isImageTransformEditMode
   const isMediaTrimEditMode = isVideoTrimEditMode
   const isEditing = !!(isMediaTransformEditMode || isMediaTrimEditMode)
+
+  // Escape saves the crop & trim editors, like their Save buttons (the edits are kept as they are
+  // made), back to the preview
+  useEffect(() => {
+    if (!isEditing) return
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        e.key !== 'Escape' ||
+        e.repeat ||
+        e.defaultPrevented ||
+        e.metaKey ||
+        e.ctrlKey ||
+        e.altKey ||
+        e.shiftKey ||
+        isTextEntryElement(e.target as HTMLElement | null) ||
+        isOverlayOpen()
+      ) {
+        return
+      }
+      const targetMedia = appProxy.state.media[mediaIndex]
+      if (!targetMedia) return
+      e.preventDefault()
+      if (targetMedia.type === 'video') {
+        targetMedia.config.isVideoTransformEditMode = false
+        targetMedia.config.isVideoTrimEditMode = false
+      } else {
+        targetMedia.config.isImageTransformEditMode = false
+      }
+    }
+    // Capture phase, before the Escape of a media customized in a batch (its Apply)
+    window.addEventListener('keydown', handleKeyDown, true)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown, true)
+    }
+  }, [isEditing, mediaIndex])
 
   return !isCompressing ? (
     <motion.div

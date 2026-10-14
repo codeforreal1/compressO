@@ -119,7 +119,20 @@ function CustomizeMediaOnBatchActions() {
         return
       }
       const { state } = snapshot(appProxy)
-      if (state.showMediaInfo || state.selectedMediaIndexForCustomization < 0) {
+      // Escape saves an open crop or trim editor instead (see `PreviewSingleMedia`)
+      const isEditing = state.media.some(
+        (mediaFile) =>
+          (mediaFile.type === 'video' &&
+            (mediaFile.config.isVideoTransformEditMode ||
+              mediaFile.config.isVideoTrimEditMode)) ||
+          (mediaFile.type === 'image' &&
+            mediaFile.config.isImageTransformEditMode),
+      )
+      if (
+        isEditing ||
+        state.showMediaInfo ||
+        state.selectedMediaIndexForCustomization < 0
+      ) {
         return
       }
       e.preventDefault()

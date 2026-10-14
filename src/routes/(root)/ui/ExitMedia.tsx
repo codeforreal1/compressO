@@ -81,7 +81,17 @@ function ExitMedia({ className }: ExitMediaProps) {
         return
       }
       const { state } = snapshot(appProxy)
+      // Escape saves an open crop or trim editor instead (see `PreviewSingleMedia`)
+      const isEditing = state.media.some(
+        (mediaFile) =>
+          (mediaFile.type === 'video' &&
+            (mediaFile.config.isVideoTransformEditMode ||
+              mediaFile.config.isVideoTrimEditMode)) ||
+          (mediaFile.type === 'image' &&
+            mediaFile.config.isImageTransformEditMode),
+      )
       if (
+        isEditing ||
         !state.media.length ||
         state.isLoadingMediaFiles ||
         state.isCompressing ||
