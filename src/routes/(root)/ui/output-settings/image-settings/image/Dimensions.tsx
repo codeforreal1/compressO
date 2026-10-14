@@ -71,8 +71,9 @@ function Dimensions({ mediaIndex }: DimensionsProps) {
                   targetImage.config.transformImageConfig?.transforms
                 if (transforms?.crop) {
                   setDimensions({
-                    width: transforms.crop.width,
-                    height: transforms.crop.height,
+                    // The crop is in fractional pixels
+                    width: Math.round(transforms.crop.width),
+                    height: Math.round(transforms.crop.height),
                   })
                 }
               }
@@ -109,8 +110,8 @@ function Dimensions({ mediaIndex }: DimensionsProps) {
             targetImage.config.transformImageConfig?.transforms?.crop
           if (shouldTransformImage && transformCrop) {
             const _dimensions: [number, number] = [
-              transformCrop?.width ?? 0,
-              transformCrop?.height ?? 0,
+              Math.round(transformCrop?.width ?? 0),
+              Math.round(transformCrop?.height ?? 0),
             ]
             setDimensions({
               width: _dimensions[0],
@@ -176,7 +177,12 @@ function Dimensions({ mediaIndex }: DimensionsProps) {
   const transformCrop = config?.shouldTransformImage
     ? config.transformImageConfig?.transforms?.crop
     : null
-  const baseDimensions = transformCrop ?? imageOriginalDimensions
+  const baseDimensions = transformCrop
+    ? {
+        width: Math.round(transformCrop.width),
+        height: Math.round(transformCrop.height),
+      }
+    : imageOriginalDimensions
 
   // Follows dimensions set outside the inputs (e.g. by a preset); none means the original size
   const customWidth = imageCustomDimensions?.[0]
