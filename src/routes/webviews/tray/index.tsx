@@ -320,7 +320,7 @@ function DropZone({
       )}
     >
       <Icon name="dropzone" size={50} className="text-primary" />
-      <p className="text-[13px] text-center px-4 my-[-5px]">
+      <p className="text-[13px] text-center px-8 my-[-5px]">
         {isDragging
           ? 'Release to add the media'
           : isAutoCompressing
