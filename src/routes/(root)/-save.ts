@@ -19,14 +19,19 @@ type Media = (Video & { type: 'video' }) | (Image & { type: 'image' })
  * Saves every compressed output that isn't saved yet into the directory returned by
  * `getBaseDirectory` (skipped when it returns `null`).
  *
- * Dropped folders keep their structure & names (`Vacation/Day1` -> `<base>/Vacation/Day1`); only
- * files get the prefix. Existing files & folders are never replaced; numbered names like
+ * Saved to another folder (a fixed one, or one chosen with Save Media), dropped folders keep their
+ * structure & names (`Vacation/Day1` -> `<base>/Vacation/Day1`); next to their originals
+ * (`keepFolderStructure` off), each file is saved in its original's own folder. Only files get the
+ * prefix. Existing files & folders are never replaced; numbered names like
  * `clip (1).mp4` or `Vacation (1)` are used instead. Each file is saved independently, so one failure doesn't
  * stop the rest; failed files stay unsaved for the Save button.
  */
 async function saveCompressedMedia(
   getBaseDirectory: (media: Media) => string | null,
-  { isAutomatic = false }: { isAutomatic?: boolean } = {},
+  {
+    isAutomatic = false,
+    keepFolderStructure = true,
+  }: { isAutomatic?: boolean; keepFolderStructure?: boolean } = {},
 ) {
   const prefix = settingsStore.outputFilePrefix
   // Resolved once per save so all of a dropped folder's files go into the same top folder
@@ -53,7 +58,7 @@ async function saveCompressedMedia(
     try {
       let destinationDirectory = baseDirectory
       let location = baseDirectory
-      if (mediaFile.relativeDir) {
+      if (keepFolderStructure && mediaFile.relativeDir) {
         const [topFolder, ...subFolders] = mediaFile.relativeDir.split('/')
         const topFolderKey = `${baseDirectory}\n${topFolder}`
         let destinationTopFolder = destinationTopFolders.get(topFolderKey)
@@ -204,14 +209,15 @@ export async function autoSaveCompressedMedia() {
       if (saveLocation === 'fixedFolder') {
         return saveFolder
       }
-      // Same folder: where the file (or its dropped folder) is, e.g. `/a/Vacation/Day1/clip.mp4`
-      // with `Vacation/Day1` -> `/a`
-      const depth = mediaFile.relativeDir
-        ? mediaFile.relativeDir.split('/').length
-        : 0
-      return getParentDirectory(mediaFile.pathRaw, depth + 1)
+      // Same folder: right next to the original, in its own folder (also for a dropped folder's
+      // files), e.g. `/a/Vacation/Day1/clip.mp4` -> `/a/Vacation/Day1`
+      return getParentDirectory(mediaFile.pathRaw, 1)
     },
-    { isAutomatic: true },
+    {
+      isAutomatic: true,
+      // No new folders next to the originals; only a fixed folder mirrors dropped folders
+      keepFolderStructure: saveLocation === 'fixedFolder',
+    },
   )
 
   if (largerCount > 0) {
@@ -272,7 +278,8 @@ export type QueueOutput = {
 
 /**
  * Saves an output of the menu bar's queue automatically, like `autoSaveCompressedMedia`: to the save
- * location of the Output settings, with the file name prefix, mirroring dropped folders. Media of
+ * location of the Output settings, with the file name prefix (next to the original, or in the fixed
+ * folder, mirroring dropped folders). Media of
  * a drop share their top folder through `topFolders` (by `groupKey`). Returns where it was saved,
  * or why it was not.
  */
@@ -301,17 +308,16 @@ export async function saveQueueOutput(
     return { reason: 'larger' }
   }
 
-  // Same folder: where the file (or its dropped folder) is, e.g. `/a/Vacation/Day1/clip.mp4` with
-  // `Vacation/Day1` -> `/a`
-  const depth = output.relativeDir ? output.relativeDir.split('/').length : 0
-  const baseDirectory =
-    saveLocation === 'fixedFolder'
-      ? saveFolder!
-      : getParentDirectory(output.sourcePath, depth + 1)
+  // Same folder: right next to the original, in its own folder, e.g. `/a/Vacation/Day1/clip.mp4`
+  // -> `/a/Vacation/Day1`; a fixed folder mirrors dropped folders
+  const isFixedFolder = saveLocation === 'fixedFolder'
+  const baseDirectory = isFixedFolder
+    ? saveFolder!
+    : getParentDirectory(output.sourcePath, 1)
 
   try {
     let destinationDirectory = baseDirectory
-    if (output.relativeDir) {
+    if (isFixedFolder && output.relativeDir) {
       const [topFolder, ...subFolders] = output.relativeDir.split('/')
       // Existing folders are never merged into; a numbered name is used instead (once per drop)
       const topFolderKey = `${groupKey}\n${baseDirectory}\n${topFolder}`

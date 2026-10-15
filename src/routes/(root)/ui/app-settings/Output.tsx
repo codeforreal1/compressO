@@ -51,7 +51,7 @@ const SAVE_LOCATION_OPTIONS: {
     key: 'sameFolder',
     label: 'Same folder as original',
     description:
-      'Save automatically next to the original file, or next to the dropped folder.',
+      'Save automatically next to the original file, in the same folder.',
   },
 ]
 
