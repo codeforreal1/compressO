@@ -318,8 +318,8 @@ function DropZone({
           : 'border-black/15 dark:border-white/15 text-zinc-500 dark:text-zinc-400',
       )}
     >
-      <Icon name="dragAndDrop" size={36} />
-      <p className="text-[13px] text-center px-4 my-[-5px]">
+      <Icon name="dropzone" size={45} />
+      <p className="text-[13px] text-center px-4 my-[-5px] mt-2">
         {isDragging
           ? 'Release to add the media'
           : isAutoCompressing

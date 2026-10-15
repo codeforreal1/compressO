@@ -13,6 +13,7 @@ import Cross from '@/assets/icons/cross.svg?react'
 import CurvedArrow from '@/assets/icons/curved-arrow.svg?react'
 import Download from '@/assets/icons/download.svg?react'
 import DragAndDrop from '@/assets/icons/drag-and-drop.svg?react'
+import Dropzone from '@/assets/icons/dropzone.svg?react'
 import Error from '@/assets/icons/error.svg?react'
 import Expand from '@/assets/icons/expand.svg?react'
 import FileExplorer from '@/assets/icons/file-explorer.svg?react'
@@ -98,6 +99,7 @@ const registry = asRegistry({
   pin: Pin,
   pinFilled: PinFilled,
   plus: Plus,
+  dropzone: Dropzone,
 })
 
 export default registry

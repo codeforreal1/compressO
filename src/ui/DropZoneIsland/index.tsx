@@ -405,11 +405,7 @@ function DropZoneIsland() {
                   className="p-3"
                 >
                   <div className="flex items-center gap-2 pb-2">
-                    <Icon
-                      name="dragAndDrop"
-                      size={16}
-                      className="text-primary"
-                    />
+                    <Icon name="dropzone" size={16} className="text-primary" />
                     <div className="min-w-0">
                       <p className="text-[11px] text-white/60 truncate">
                         {getSummary(items, isPaused)}
@@ -502,11 +498,7 @@ function DropZoneIsland() {
                     aria-label="Show the drop zone"
                     className="flex items-center gap-2 h-full"
                   >
-                    <Icon
-                      name="dragAndDrop"
-                      size={16}
-                      className="text-primary"
-                    />
+                    <Icon name="dropzone" size={16} className="text-primary" />
                     <span>
                       {pendingCount
                         ? getSummary(items, isPaused)
