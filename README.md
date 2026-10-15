@@ -1,6 +1,6 @@
 <div align="center">
   <div align="center">
-   <img width="150" height="150" src="public/app-icon.png" alt="Logo" />
+   <img width="150" height="150" src="public/app-icon-dark.png" alt="Logo" />
   </div>
 	<h1 align="center">CompressO</h1>
 	<p align="center">

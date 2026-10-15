@@ -282,14 +282,14 @@ function TrayWindow() {
           }
         >
           <MainWindowProgress status={status} />
-          <Icon name="openApp" size={20} className="relative" />
+          <Icon name="compresso" size={18} className="relative" />
           <span className="relative">Open App</span>
         </Button>
         <Button
           size="sm"
           variant="bordered"
           radius="md"
-          className="gap-1 px-2 text-[10px] font-normal border-1 text-red-400"
+          className="gap-1 px-2 text-[10px] font-normal border-1"
           onPress={handleQuitApp}
           fullWidth
         >

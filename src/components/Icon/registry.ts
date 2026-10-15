@@ -8,6 +8,7 @@ import Caret from '@/assets/icons/caret.svg?react'
 import Chevron from '@/assets/icons/chevron.svg?react'
 import Clock from '@/assets/icons/clock.svg?react'
 import Compare from '@/assets/icons/compare.svg?react'
+import Compresso from '@/assets/icons/compresso.svg?react'
 import Copy from '@/assets/icons/copy.svg?react'
 import Cross from '@/assets/icons/cross.svg?react'
 import CurvedArrow from '@/assets/icons/curved-arrow.svg?react'
@@ -16,6 +17,7 @@ import DragAndDrop from '@/assets/icons/drag-and-drop.svg?react'
 import Dropzone from '@/assets/icons/dropzone.svg?react'
 import Error from '@/assets/icons/error.svg?react'
 import Expand from '@/assets/icons/expand.svg?react'
+import ExternalLink from '@/assets/icons/external-link.svg?react'
 import FileExplorer from '@/assets/icons/file-explorer.svg?react'
 import FlipHorizontal from '@/assets/icons/flip-horizontal.svg?react'
 import FlipVertical from '@/assets/icons/flip-vertical.svg?react'
@@ -25,7 +27,6 @@ import Info from '@/assets/icons/info.svg?react'
 import LowResHeart from '@/assets/icons/low-res-heart.svg?react'
 import Moon from '@/assets/icons/moon.svg?react'
 import Music from '@/assets/icons/music.svg?react'
-import OpenApp from '@/assets/icons/open-app.svg?react'
 import Pause from '@/assets/icons/pause.svg?react'
 import Pencil from '@/assets/icons/pencil.svg?react'
 import Pin from '@/assets/icons/pin.svg?react'
@@ -94,12 +95,13 @@ const registry = asRegistry({
   caret: Caret,
   compare: Compare,
   music: Music,
-  openApp: OpenApp,
+  externalLink: ExternalLink,
   power: Power,
   pin: Pin,
   pinFilled: PinFilled,
   plus: Plus,
   dropzone: Dropzone,
+  compresso: Compresso,
 })
 
 export default registry

@@ -103,7 +103,6 @@ const VideoSpeed = ({ mediaIndex }: VideoSpeedProps) => {
           <motion.div {...slideDownTransition}>
             <Slider
               label=" "
-              size="lg"
               step={0.01}
               minValue={0.25}
               maxValue={4}
@@ -118,7 +117,7 @@ const VideoSpeed = ({ mediaIndex }: VideoSpeedProps) => {
                 }
               }}
               isDisabled={!shouldEnableCustomSpeed || shouldDisableInput}
-              className="w-full"
+              className="w-full mb-8"
               classNames={{
                 label: 'text-gray-600 dark:text-gray-400 text-sm',
                 mark: '!text-xs mt-2',
