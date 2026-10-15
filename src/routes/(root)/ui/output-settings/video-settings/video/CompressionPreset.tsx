@@ -75,7 +75,7 @@ function CompressionPreset({ mediaIndex }: CompressionPresetProps) {
       <AnimatePresence mode="wait">
         {!isLossless ? (
           <motion.div {...slideDownTransition} className="pt-2">
-            <div className="mt-2">
+            <div className="mt-[-10px]">
               <CompressionQuality mediaIndex={mediaIndex} />
             </div>
           </motion.div>

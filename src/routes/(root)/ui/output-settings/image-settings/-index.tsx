@@ -79,7 +79,7 @@ function ImageSettings({ mediaIndex }: ImageSettingsProps) {
               ).includes(convertToExtension as ImageExtensionType) ? (
                 <div>
                   <SvgScaleFactor mediaIndex={mediaIndex} />
-                  <Divider className="my-3 !mt-6" />
+                  <Divider className="my-3 !mt-8" />
                 </div>
               ) : null}
 

@@ -73,7 +73,6 @@ const SvgScaleFactor = ({ mediaIndex }: SvgScaleFactorProps) => {
   return (
     <Slider
       label="Scale Factor"
-      size="lg"
       step={1}
       minValue={1}
       maxValue={8}
