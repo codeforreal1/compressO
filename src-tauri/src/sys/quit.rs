@@ -140,7 +140,8 @@ pub fn install_macos_quit_confirmation(app_handle: &AppHandle) {
             std::mem::transmute(implementation),
             c"Q@:@".as_ptr(),
         );
-        if !is_added {
+        // `BOOL` is a `bool` on Apple Silicon but an `i8` on Intel Macs, so compared with `NO`
+        if is_added == objc::runtime::NO {
             log::error!(
                 "Quit confirmation unavailable: applicationShouldTerminate: already exists"
             );
