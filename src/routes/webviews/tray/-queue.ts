@@ -4,7 +4,11 @@ import cloneDeep from 'lodash/cloneDeep'
 import { useEffect } from 'react'
 
 import { useDropQueue, useDropQueuePaused } from '@/hooks/useDropQueue'
-import { getMediaItemConfig, MediaFile } from '@/routes/(root)/-compression'
+import {
+  getMediaItemConfig,
+  getOutputDuration,
+  MediaFile,
+} from '@/routes/(root)/-compression'
 import {
   applyImagePresetToConfig,
   applyVideoPresetToConfig,
@@ -144,18 +148,6 @@ async function loadQueueMedia(item: DropQueueItem): Promise<MediaFile> {
       { isBatchConfig: false },
     ),
   }
-}
-
-/** Duration of a video's output in milliseconds, for its progress */
-function getOutputDuration(media: MediaFile) {
-  if (media.type !== 'video') return 0
-  let duration = (media.videoDuration ?? 0) * 1000
-  if (media.config.shouldEnableCustomSpeed && media.config.customSpeed) {
-    duration /= media.config.customSpeed
-  }
-  // A GIF is converted from an intermediate video, so it is encoded twice
-  if (media.config.convertToExtension === 'gif') duration *= 2
-  return duration
 }
 
 /** Compresses & saves a queued media, reporting its progress to the queue */

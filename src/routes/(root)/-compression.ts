@@ -32,6 +32,31 @@ export type MediaFile =
   | (Image & { type: 'image' })
 
 /**
+ * How long a video's output is, in milliseconds, which its progress is measured against (ffmpeg
+ * reports how much of the output is written): only the trimmed parts, faster or slower with a
+ * custom speed (as sent in `getMediaItemConfig`, clamped like the backend). A GIF is converted from
+ * an intermediate video, so it is encoded twice. Used by the main window & the menu bar's queue.
+ */
+export function getOutputDuration(media: MediaFile) {
+  if (media.type !== 'video') return 0
+  const trimConfig = media.config?.trimConfig ?? []
+  let duration =
+    (media.config?.shouldTrimVideo && trimConfig.length
+      ? trimConfig.reduce(
+          (total, part) =>
+            total + (part.end >= part.start ? part.end - part.start : 0),
+          0,
+        )
+      : (media.videoDuration ?? 0)) * 1000
+  const speed = media.config?.customSpeed
+  if (media.config?.shouldEnableCustomSpeed && speed && speed !== 1) {
+    duration /= Math.min(Math.max(speed, 0.25), 4)
+  }
+  if (media.config?.convertToExtension === 'gif') duration *= 2
+  return duration
+}
+
+/**
  * What the backend compresses a media with (`compress_media_batch`), from its settings. Used by the
  * main window & the menu bar's queue.
  * - `batchVideoLongerSide` / `batchImageLongerSide`: the batch's resolution, for media without

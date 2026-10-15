@@ -11,6 +11,7 @@ import {
 } from '@/types/compression'
 import { formatBytes, getOutputFileName } from '@/utils/fs'
 import { convertDurationToMilliseconds } from '@/utils/string'
+import { getOutputDuration, MediaFile } from '../-compression'
 import { appProxy } from '../-state'
 
 async function updateDockProgress() {
@@ -74,28 +75,10 @@ function CompressionProgress() {
                     payload.mediaProgress.mediaType === 'video' &&
                     media[targetMediaIndex].type === 'video'
                   ) {
-                    const trimConfig =
-                      media[targetMediaIndex]?.config?.trimConfig ?? []
-
-                    const targetVideoDuration =
-                      media[targetMediaIndex].videoDuration ?? 0
-
-                    let videoDurationInMilliseconds =
-                      (media[targetMediaIndex]?.config?.shouldTrimVideo &&
-                      trimConfig
-                        ? (trimConfig.reduce((a, c) => {
-                            a += c.end >= c.start ? c.end - c.start : 0
-                            return a
-                          }, 0) ?? targetVideoDuration)
-                        : targetVideoDuration) * 1000
-
-                    if (
-                      media[targetMediaIndex]?.config?.convertToExtension ===
-                      'gif'
-                    ) {
-                      // For a gif, we need to double the total video duration as we need to first convert the original video to video settings and then convert that video to gif
-                      videoDurationInMilliseconds *= 2
-                    }
+                    // Only the trimmed parts, at the custom speed (see `getOutputDuration`)
+                    const videoDurationInMilliseconds = getOutputDuration(
+                      media[targetMediaIndex] as MediaFile,
+                    )
 
                     const currentDurationInMilliseconds =
                       convertDurationToMilliseconds(
