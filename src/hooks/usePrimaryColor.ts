@@ -8,7 +8,7 @@ export type PrimaryColorProxy = {
   setColor: (newColor: string) => void
 }
 
-export const DEFAULT_PRIMARY_COLOR = '127 70 226' // rgb based
+export const DEFAULT_PRIMARY_COLOR = '255 132 0' // rgb based
 
 let persistedColor: string | null = localStorage.getItem(constants.primaryColor)
 
