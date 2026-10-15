@@ -1,10 +1,11 @@
 #![allow(unexpected_cfgs)]
 
-//! Watches the clipboard: files copied anywhere (e.g. in Finder) are added to the media dropped on
-//! the menu bar, as if they were dropped there. Optional & off by default (Settings -> Drop Zone ->
+//! Watches the clipboard: files copied anywhere (e.g. in Finder) & copied images (e.g. in a browser)
+//! are added to the media dropped on the menu bar, as if they were dropped there. Optional & off by default (Settings -> Drop Zone ->
 //! Watch clipboard, or the switch in the menu bar popover), only while the menu bar icon is shown.
 
 use std::sync::atomic::{AtomicBool, AtomicIsize, Ordering};
+use std::sync::Mutex;
 use std::time::Duration;
 
 use clipboard_rs::{Clipboard, ClipboardContext};
@@ -50,6 +51,49 @@ pub fn ignore_current_change() {
     HANDLED_CHANGE_COUNT.store(pasteboard_change_count(), Ordering::SeqCst);
 }
 
+/// The copied image last saved as a file, with the pasteboard change count it was copied at, so the
+/// same copy is saved once (e.g. watched, then pasted too)
+static LAST_SAVED_IMAGE: Mutex<Option<(isize, String)>> = Mutex::new(None);
+
+/// The media on the clipboard as paths: copied files (e.g. in Finder), or a copied image that is not
+/// a file (e.g. in a browser), saved as one. Empty for anything else (e.g. text).
+pub fn read_clipboard_media(app_handle: &AppHandle) -> Vec<String> {
+    let Ok(ctx) = ClipboardContext::new() else {
+        return Vec::new();
+    };
+    if let Ok(files) = ctx.get_files() {
+        if !files.is_empty() {
+            return files
+                .into_iter()
+                .map(|file| {
+                    tauri::Url::parse(&file)
+                        .ok()
+                        .and_then(|url| url.to_file_path().ok())
+                        .map(|path| path.to_string_lossy().to_string())
+                        .unwrap_or(file)
+                })
+                .collect();
+        }
+    }
+
+    let change_count = pasteboard_change_count();
+    let Ok(mut last_saved) = LAST_SAVED_IMAGE.lock() else {
+        return Vec::new();
+    };
+    if let Some((count, path)) = last_saved.as_ref() {
+        if *count == change_count && std::path::Path::new(path).exists() {
+            return vec![path.clone()];
+        }
+    }
+    match crate::tauri_commands::fs::save_clipboard_image(app_handle, &ctx) {
+        Ok(Some(path)) => {
+            *last_saved = Some((change_count, path.clone()));
+            vec![path]
+        }
+        _ => Vec::new(),
+    }
+}
+
 /// Starts the background watcher, which does nothing while disabled
 pub fn init(app_handle: &AppHandle) {
     let app_handle = app_handle.clone();
@@ -68,24 +112,12 @@ pub fn init(app_handle: &AppHandle) {
         if HANDLED_CHANGE_COUNT.swap(change_count, Ordering::SeqCst) == change_count {
             continue;
         }
-        // Only copied files: text, images copied from apps, etc. are not media files
-        let Ok(files) = ClipboardContext::new().and_then(|ctx| ctx.get_files()) else {
-            continue;
-        };
-        if files.is_empty() {
+        // Copied files & images only: text etc. is not media
+        let paths = read_clipboard_media(&app_handle);
+        if paths.is_empty() {
             continue;
         }
-        let paths = files
-            .into_iter()
-            .map(|file| {
-                tauri::Url::parse(&file)
-                    .ok()
-                    .and_then(|url| url.to_file_path().ok())
-                    .map(|path| path.to_string_lossy().to_string())
-                    .unwrap_or(file)
-            })
-            .collect::<Vec<_>>();
-        // Refused while compressing etc.; unsupported files are skipped
+        // Unsupported files are skipped
         let _ = crate::tauri_commands::tray::add_dropped_files(app_handle.clone(), paths);
     });
 }

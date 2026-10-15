@@ -174,6 +174,17 @@ pub fn add_dropped_files(app_handle: AppHandle, paths: Vec<String>) -> Result<us
     Ok(unsupported.len())
 }
 
+/// Adds what is on the clipboard (pasted in the popover): copied files, or a copied image (e.g. in a
+/// browser). Returns how many files were skipped as unsupported, or an error with nothing to add.
+#[tauri::command]
+pub fn paste_dropped_files(app_handle: AppHandle) -> Result<usize, String> {
+    let paths = crate::macos::clipboard_watch::read_clipboard_media(&app_handle);
+    if paths.is_empty() {
+        return Err("No files or images found in clipboard".to_string());
+    }
+    add_dropped_files(app_handle, paths)
+}
+
 #[tauri::command]
 pub fn remove_dropped_file(app_handle: AppHandle, path: String) {
     update_dropped_files(&app_handle, |files| files.retain(|file| *file != path));

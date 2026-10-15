@@ -26,6 +26,7 @@ import {
   DROPPED_FILES_EVENT,
   focusMainWindow,
   getDroppedFiles,
+  pasteDroppedFiles,
   quitApp,
   removeDroppedFile,
   setSupportedDropExtensions,
@@ -83,6 +84,29 @@ function useFileDrop(isEnabled: boolean) {
   }, [isEnabled])
 
   return isDragging
+}
+
+/**
+ * Pasting (⌘V) in the popover adds the copied media, like dropping it: for those who do not watch
+ * the clipboard (Settings -> Drop Zone)
+ */
+function usePasteFiles() {
+  useEffect(() => {
+    const handlePaste = async () => {
+      try {
+        const skippedCount = await pasteDroppedFiles()
+        if (skippedCount > 0) {
+          toast.error('Unsupported files were skipped.', {
+            classNames: { toast: 'scale-[0.75]' },
+          })
+        }
+      } catch {
+        // Nothing to add, e.g. copied text
+      }
+    }
+    window.addEventListener('paste', handlePaste)
+    return () => window.removeEventListener('paste', handlePaste)
+  }, [])
 }
 
 /** Files dropped on the menu bar (popover or icon), opened in the main window with "Open App" */
@@ -160,6 +184,7 @@ function TrayWindow() {
   // The drop zone is separate from the main window, so media can always be dropped: queued, or
   // stored until the main window is free
   const isDragging = useFileDrop(true)
+  usePasteFiles()
   const droppedFiles = useDroppedFiles()
   const isMainWindowBusy =
     status?.state === 'compressing' || !!status?.hasUnsavedOutput
@@ -298,13 +323,15 @@ function DropZone({
         {isDragging
           ? 'Release to add the media'
           : isAutoCompressing
-            ? 'Drop media here to compress'
-            : 'Drop media here to store'}
+            ? 'Drop or paste media here to compress'
+            : 'Drop or paste media here to store'}
       </p>
       <p className="text-[11px] text-center px-4 opacity-70">
         Videos, images, or folders...
       </p>
-      <div className="mt-1">
+      {/* Settings -> Drop Zone, here too while nothing is dropped */}
+      <div className="mt-1 flex flex-col items-start gap-1.5">
+        <AutoCompressSwitch />
         <ClipboardWatchSwitch />
       </div>
     </div>
@@ -494,6 +521,32 @@ function DroppedFiles({
         <ClipboardWatchSwitch />
       </div>
     </div>
+  )
+}
+
+/** Switches compressing the dropped media automatically (Settings -> Drop Zone) */
+function AutoCompressSwitch() {
+  const { autoCompress, saveLocation, saveFolder } = useSnapshot(settingsStore)
+  // Only with a save location, as nothing can ask where to save
+  const canAutoCompress = isAutoCompressAvailable({ saveLocation, saveFolder })
+
+  return (
+    <Switch
+      size="xs"
+      isSelected={autoCompress && canAutoCompress}
+      isDisabled={!canAutoCompress}
+      onValueChange={(isSelected) => {
+        settingsStore.autoCompress = isSelected
+      }}
+      title={
+        canAutoCompress
+          ? undefined
+          : 'Choose a save location in Settings, under Output, to compress automatically.'
+      }
+      classNames={{ label: 'text-[11px] text-zinc-500 dark:text-zinc-400' }}
+    >
+      Compress automatically
+    </Switch>
   )
 }
 

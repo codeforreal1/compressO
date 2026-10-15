@@ -67,6 +67,15 @@ export const DROPPED_FILES_EVENT = 'tray-dropped-files'
  * Collects files & folders dropped on the menu bar; they are opened in the main window with
  * `focusMainWindow`. Refused while compressing or while compressed media is unsaved.
  */
+/**
+ * Adds what is on the clipboard, pasted in the popover: copied files, or a copied image (e.g. in a
+ * browser). Resolves to the number of unsupported files that were skipped; rejects with nothing to
+ * add (e.g. copied text).
+ */
+export function pasteDroppedFiles() {
+  return core.invoke<number>('paste_dropped_files')
+}
+
 export function addDroppedFiles(paths: string[]) {
   // Resolves to the number of unsupported files that were skipped
   return core.invoke<number>('add_dropped_files', { paths })

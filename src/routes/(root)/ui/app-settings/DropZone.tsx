@@ -109,7 +109,7 @@ function DropZone() {
       <SettingsSection title="Clipboard">
         <SettingsRow
           title="Watch clipboard"
-          description="Add media files you copy to the drop zone in the menu bar."
+          description="Add media you copy, such as files or images from a browser, to the drop zone in the menu bar."
         >
           <Switch
             aria-label="Watch clipboard"

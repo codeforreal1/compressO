@@ -60,7 +60,7 @@ use tauri_commands::drop_queue::{
 use tauri_commands::tray::{
     close_tray_popover, focus_main_window, is_tray_popover_visible, open_tray_popover, quit_app,
     add_dropped_files, clear_dropped_files, get_dropped_files, is_clipboard_watch_enabled,
-    remove_dropped_file, resize_tray_popover, set_clipboard_watch_enabled,
+    paste_dropped_files, remove_dropped_file, resize_tray_popover, set_clipboard_watch_enabled,
     set_supported_drop_extensions, set_tray_icon_enabled, set_tray_popover_pinned,
 };
 
@@ -447,6 +447,7 @@ async fn main() {
             set_tray_icon_enabled,
             #[cfg(target_os = "macos")]
             add_dropped_files,
+            paste_dropped_files,
             #[cfg(target_os = "macos")]
             remove_dropped_file,
             #[cfg(target_os = "macos")]

@@ -165,29 +165,39 @@ pub async fn read_files_from_clipboard(
     }
 
     // If no files found, try to get image from clipboard
-    let image_result = ctx.get_image();
-
-    if let Ok(img) = image_result {
-        let assets_dir = fs::ensure_assets_dir(&app_handle)?;
-
-        let filename = format!("{}.png", nanoid::nanoid!());
-        let image_path = assets_dir.join(&filename);
-
-        img.save_to_path(image_path.to_str().unwrap())
-            .map_err(|err| err.to_string())?;
-
-        let fs_scope = app_handle.fs_scope();
-        let asset_scope = app_handle.asset_protocol_scope();
-        let _ = fs_scope.allow_file(image_path.to_str().unwrap());
-        let _ = asset_scope.allow_file(image_path.to_str().unwrap());
-
+    if let Some(image_path) = save_clipboard_image(&app_handle, &ctx)? {
         return Ok(vec![CollectedFile {
-            path: image_path.to_str().unwrap().to_string(),
+            path: image_path,
             relative_dir: String::new(),
         }]);
     }
 
     Err("No files or images found in clipboard".to_string())
+}
+
+/// Saves a copied image that is not a file (e.g. an image copied in a browser) as a PNG in the app's
+/// assets, so it can be added like a file. Returns its path, or `None` without an image.
+pub fn save_clipboard_image(
+    app_handle: &AppHandle,
+    ctx: &ClipboardContext,
+) -> Result<Option<String>, String> {
+    let Ok(img) = ctx.get_image() else {
+        return Ok(None);
+    };
+    let assets_dir = fs::ensure_assets_dir(app_handle)?;
+
+    let filename = format!("{}.png", nanoid::nanoid!());
+    let image_path = assets_dir.join(&filename);
+    let image_path = image_path.to_str().ok_or("Invalid image path")?.to_string();
+
+    img.save_to_path(&image_path).map_err(|err| err.to_string())?;
+
+    let fs_scope = app_handle.fs_scope();
+    let asset_scope = app_handle.asset_protocol_scope();
+    let _ = fs_scope.allow_file(&image_path);
+    let _ = asset_scope.allow_file(&image_path);
+
+    Ok(Some(image_path))
 }
 
 #[tauri::command]
