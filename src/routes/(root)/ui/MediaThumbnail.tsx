@@ -26,6 +26,7 @@ import VideoTrimmerTimeline, {
 } from '@/ui/VideoTrimmerTimeline'
 import { formatDuration } from '@/utils/string'
 import { getTransformPreview, renderTransformPreview } from '@/utils/transform'
+import { constructVideoUrl } from '@/utils/video'
 import MediaTransformer from './MediaTransformer'
 import { appProxy } from '../-state'
 
@@ -403,6 +404,30 @@ function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
   const audioOutputSrc = isAudioOutput
     ? (savedOutputSrc ?? compressedFileSrc)
     : undefined
+  // Linux's webview cannot play media from asset links, so it is played through the app's local
+  // server, as videos are (see `constructVideoUrl`); elsewhere the asset link is played as it is
+  const [audioPlaybackSrc, setAudioPlaybackSrc] = useState<string>()
+  useEffect(() => {
+    if (!audioOutputSrc) {
+      setAudioPlaybackSrc(undefined)
+      return
+    }
+    let isCurrent = true
+    ;(async () => {
+      // Without the cache-busting `?v=`, which would be read as part of the file's path
+      const [assetSrc] = audioOutputSrc.split('?')
+      const serverSrc = await constructVideoUrl(assetSrc).catch(() => assetSrc)
+      if (!isCurrent) return
+      setAudioPlaybackSrc(
+        serverSrc === assetSrc
+          ? audioOutputSrc
+          : `${serverSrc}${serverSrc.includes('?') ? '&' : '?'}v=${Date.now()}`,
+      )
+    })()
+    return () => {
+      isCurrent = false
+    }
+  }, [audioOutputSrc])
 
   const toggleAudioPlayback = useCallback(() => {
     const audio = audioRef.current
@@ -537,8 +562,8 @@ function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
               <Icon name="music" size={200} className="text-primary" />
               <audio
                 ref={audioRef}
-                key={audioOutputSrc}
-                src={audioOutputSrc}
+                key={audioPlaybackSrc}
+                src={audioPlaybackSrc}
                 onPlay={() => setIsAudioPlaying(true)}
                 onPause={() => setIsAudioPlaying(false)}
                 onEnded={() => setIsAudioPlaying(false)}
