@@ -95,6 +95,12 @@ function PreviewSingleMedia({
   const [compareOutput, setCompareOutput] = useState(
     () => localStorage.getItem(constants.compareOutput) === 'true',
   )
+  // The original & the output side by side, for a video (in its video preview) or an image
+  const canCompare =
+    isProcessCompleted &&
+    !isAudioExtension(mediaFile?.compressedFile?.extension) &&
+    ((mediaFile?.type === 'video' && mediaFile?.previewMode === 'video') ||
+      mediaFile?.type === 'image')
 
   const compressedSizeDiff: number = useMemo(
     () =>
@@ -200,6 +206,26 @@ function PreviewSingleMedia({
             ) : null}
           </div>
           <div className="flex items-center gap-3 flex-shrink-0">
+            {/* The preview's switches, together at the top right: Compare after compression, Show
+                edits before */}
+            {canCompare && !isEditing ? (
+              <Switch
+                size="xs"
+                isSelected={compareOutput}
+                onValueChange={(isSelected) => {
+                  setCompareOutput(isSelected)
+                  localStorage.setItem(
+                    constants.compareOutput,
+                    String(isSelected),
+                  )
+                }}
+                aria-label="Compare"
+              >
+                <span className="text-xs text-zinc-600 dark:text-zinc-400">
+                  Compare
+                </span>
+              </Switch>
+            ) : null}
             {hasTransformPreview && !isProcessCompleted && !isEditing ? (
               <Switch
                 size="xs"
@@ -235,33 +261,8 @@ function PreviewSingleMedia({
         </div>
       ) : null}
 
-      {isProcessCompleted &&
-      !isAudioExtension(mediaFile?.compressedFile?.extension) &&
-      ((mediaFile?.type === 'video' && mediaFile?.previewMode === 'video') ||
-        mediaFile?.type === 'image') ? (
-        <div className="flex justify-center my-4">
-          <Switch
-            size="xs"
-            isSelected={compareOutput}
-            onValueChange={(isSelected) => {
-              setCompareOutput(isSelected)
-              localStorage.setItem(constants.compareOutput, String(isSelected))
-            }}
-          >
-            <div className="flex justify-center items-center">
-              <span className="block mr-2 text-sm">Compare</span>
-              <Icon name="compare" />
-            </div>
-          </Switch>
-        </div>
-      ) : null}
-
       {mediaFile ? (
-        isProcessCompleted &&
-        compareOutput &&
-        !isAudioExtension(mediaFile?.compressedFile?.extension) &&
-        ((mediaFile?.type === 'video' && mediaFile?.previewMode === 'video') ||
-          mediaFile?.type === 'image') ? (
+        canCompare && compareOutput ? (
           <MediaOutputCompareSlider mediaIndex={mediaIndex} />
         ) : (
           <MediaThumbnail
