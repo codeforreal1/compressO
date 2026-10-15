@@ -17,7 +17,13 @@ export function useCommandKeyHeld(isEnabled = true) {
 
     const { isMacOS } = getPlatform()
     const handleKeyChange = (e: KeyboardEvent) => {
-      setIsHeld(e.ctrlKey || (!!isMacOS && e.metaKey))
+      // Releasing the key itself still reports it as held in Linux (WebKitGTK gives the state from
+      // before the event), so its keyup always counts as released
+      const isReleased = e.type === 'keyup'
+      const isCtrlHeld = e.ctrlKey && !(isReleased && e.key === 'Control')
+      const isCommandHeld =
+        !!isMacOS && e.metaKey && !(isReleased && e.key === 'Meta')
+      setIsHeld(isCtrlHeld || isCommandHeld)
     }
     // The keyup is missed when the window loses focus while the key is held
     const reset = () => setIsHeld(false)
