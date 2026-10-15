@@ -80,7 +80,10 @@ function PreviewSingleMedia({
         ? !!mediaFile.config.shouldTransformVideo &&
           !!mediaFile.config.transformVideoConfig?.transformHistory?.length
         : false
-  const [showOriginal, setShowOriginal] = useState(false)
+  // On by default; remembers the user's last choice, like Compare
+  const [showOriginal, setShowOriginal] = useState(
+    () => localStorage.getItem(constants.showEdits) === 'false',
+  )
   // Back to the edited preview when editing again
   useEffect(() => {
     if (isVideoTransformEditMode || isImageTransformEditMode) {
@@ -201,7 +204,10 @@ function PreviewSingleMedia({
               <Switch
                 size="xs"
                 isSelected={!showOriginal}
-                onValueChange={(isSelected) => setShowOriginal(!isSelected)}
+                onValueChange={(isSelected) => {
+                  setShowOriginal(!isSelected)
+                  localStorage.setItem(constants.showEdits, String(isSelected))
+                }}
                 aria-label="Show edits"
               >
                 <span className="text-xs text-zinc-600 dark:text-zinc-400">

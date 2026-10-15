@@ -1,6 +1,7 @@
 export const theme = 'theme'
 export const primaryColor = 'primaryColor'
 export const compareOutput = 'compareOutput'
+export const showEdits = 'showEdits'
 export const outputFilePrefix = 'outputFilePrefix'
 export const saveLocation = 'saveLocation'
 export const saveFolder = 'saveFolder'
