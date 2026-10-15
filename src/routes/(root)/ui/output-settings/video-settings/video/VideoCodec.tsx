@@ -46,9 +46,10 @@ export const VIDEO_CODECS: readonly VideoCodecOption[] = [
     compatible_containers: ['webm', 'mkv'] as VideoExtension[],
   },
   {
+    // Kept as is for saved presets; compressed with SVT-AV1 when ffmpeg has it (see `ffmpeg.rs`)
     value: 'libaom-av1',
     name: 'AV1',
-    description: 'Best compression, very slow',
+    description: 'Best compression, slower',
     compatible_containers: ['mp4', 'mkv', 'webm'] as VideoExtension[],
   },
   {

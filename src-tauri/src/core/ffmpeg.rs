@@ -62,6 +62,30 @@ fn output_container(extension: &str) -> &str {
     }
 }
 
+/// The encoders of the bundled ffmpeg (`ffmpeg -encoders`), read once
+static FFMPEG_ENCODERS: tokio::sync::OnceCell<String> = tokio::sync::OnceCell::const_new();
+
+/// Whether the bundled ffmpeg has an encoder (builds differ, e.g. not all have SVT-AV1)
+async fn has_encoder(app: &AppHandle, name: &str) -> bool {
+    let encoders = FFMPEG_ENCODERS
+        .get_or_init(|| async {
+            let Ok(command) = app.shell().sidecar("compresso_ffmpeg") else {
+                return String::new();
+            };
+            command
+                .args(["-hide_banner", "-encoders"])
+                .output()
+                .await
+                .map(|output| String::from_utf8_lossy(&output.stdout).to_string())
+                .unwrap_or_default()
+        })
+        .await;
+    // Lines like ` V....D libsvtav1            SVT-AV1(...)`
+    encoders
+        .lines()
+        .any(|line| line.split_whitespace().nth(1) == Some(name))
+}
+
 impl FFMPEG {
     pub fn new(app: &tauri::AppHandle) -> Result<Self, String> {
         let assets_dir = ensure_assets_dir(app)?;
@@ -306,10 +330,29 @@ impl FFMPEG {
                 }
             }
         };
+        // AV1 (chosen, or kept from an AV1 source): SVT-AV1 when this ffmpeg build has it, as it is
+        // many times faster than libaom-av1 for a similar quality
+        let output_codec = if output_codec.contains("av1") {
+            if has_encoder(&self.app, "libsvtav1").await {
+                "libsvtav1".to_string()
+            } else {
+                "libaom-av1".to_string()
+            }
+        } else {
+            output_codec
+        };
         if is_audio_target {
             cmd_args.push("-vn");
         } else {
             cmd_args.extend_from_slice(&["-c:v:0", output_codec.as_str()]);
+
+            // AV1 encoders are very slow at their defaults (minutes for seconds of video); these are
+            // tens of times faster for about the same size & quality
+            match output_codec.as_str() {
+                "libsvtav1" => cmd_args.extend_from_slice(&["-preset", "6"]),
+                "libaom-av1" => cmd_args.extend_from_slice(&["-cpu-used", "6", "-row-mt", "1"]),
+                _ => {}
+            }
 
             // ffmpeg tags HEVC as `hev1`, which macOS (Finder thumbnails, Quick Look, QuickTime)
             // does not play; `hvc1` plays everywhere. Only MP4/MOV (incl. M4V) use the tag.
