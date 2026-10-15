@@ -9,6 +9,17 @@ use tauri_plugin_dialog::{DialogExt, MessageDialogButtons, MessageDialogKind};
 
 use crate::tauri_commands::compression_status::{has_unsaved_output, is_compressing};
 
+/// Whether media of the drop zone's queue (macOS) is waiting or being compressed
+fn is_drop_queue_active(app_handle: &AppHandle) -> bool {
+    #[cfg(target_os = "macos")]
+    return crate::tauri_commands::drop_queue::is_queue_active(app_handle);
+    #[cfg(not(target_os = "macos"))]
+    {
+        let _ = app_handle;
+        false
+    }
+}
+
 /// Set once quitting was confirmed, so the quit that follows isn't asked about again
 static IS_QUIT_CONFIRMED: AtomicBool = AtomicBool::new(false);
 /// Only one confirmation is shown at a time (e.g. ⌘Q pressed twice)
@@ -21,6 +32,8 @@ pub enum QuitReason {
     Compressing,
     /// Quitting discards compressed outputs that are not saved yet
     UnsavedOutput,
+    /// Quitting stops compressing the drop zone's queue
+    DropQueue,
 }
 
 /// Why quitting needs a confirmation first, if it does
@@ -31,6 +44,8 @@ pub fn quit_reason(app_handle: &AppHandle) -> Option<QuitReason> {
         Some(QuitReason::Compressing)
     } else if has_unsaved_output(app_handle) {
         Some(QuitReason::UnsavedOutput)
+    } else if is_drop_queue_active(app_handle) {
+        Some(QuitReason::DropQueue)
     } else {
         None
     }
@@ -56,6 +71,11 @@ pub fn confirm_quit(
             "Media not saved",
             "Your compressed media is not saved yet. Quitting now will discard it.",
             "Go Back",
+        ),
+        QuitReason::DropQueue => (
+            "Compression in progress",
+            "Media in the drop zone is still being compressed. Quitting now will stop it.",
+            "Continue Compressing",
         ),
     };
 

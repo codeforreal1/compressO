@@ -9,6 +9,8 @@ export type CompressionStatus = {
   fileName: string | null
   /** Compressed outputs that are not saved yet (quitting asks for confirmation) */
   hasUnsavedOutput: boolean
+  /** The batch is paused (the media being compressed finishes, the next waits) */
+  isPaused?: boolean
 }
 
 /** Sent to the tray window whenever the main window's compression status changes */

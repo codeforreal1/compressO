@@ -6,20 +6,105 @@ use crate::core::domain::{
 use crate::core::ffmpeg::FFMPEG;
 use crate::core::image::ImageCompressor;
 use crate::utils::event::EventListenerGuard;
-use tauri::{Emitter, Listener, Manager};
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Arc, Mutex};
+use tauri::{Emitter, Listener};
+
+/// Batches paused by their id: the media being compressed finishes, the next waits
+static PAUSED_BATCHES: Mutex<Vec<String>> = Mutex::new(Vec::new());
+
+fn is_batch_paused(batch_id: &str) -> bool {
+    PAUSED_BATCHES
+        .lock()
+        .map(|batches| batches.iter().any(|id| id == batch_id))
+        .unwrap_or(false)
+}
+
+fn set_batch_paused_state(batch_id: &str, paused: bool) {
+    if let Ok(mut batches) = PAUSED_BATCHES.lock() {
+        batches.retain(|id| id != batch_id);
+        if paused {
+            batches.push(batch_id.to_string());
+        }
+    }
+}
+
+/// Pauses a batch after the media being compressed, or resumes it
+#[tauri::command]
+pub fn set_batch_paused(batch_id: String, paused: bool) {
+    set_batch_paused_state(&batch_id, paused);
+}
 
 #[tauri::command]
 pub async fn compress_media_batch(
     app: tauri::AppHandle,
+    // The compressions belong to the window that started them (e.g. the menu bar's)
+    window: tauri::WebviewWindow,
     batch_id: String,
     media: Vec<MediaItemConfig>,
 ) -> Result<MediaBatchCompressionResult, String> {
-    let total_count = media.len();
-
     let mut results: std::collections::HashMap<String, MediaCompressionResult> =
         std::collections::HashMap::new();
 
+    // Cancelled between two media (or while paused), when no process would see it
+    let is_cancelled = Arc::new(AtomicBool::new(false));
+    let _cancel_listener = {
+        let is_cancelled = is_cancelled.clone();
+        let batch_id = batch_id.clone();
+        // `listen_any`: the main window sends it to itself
+        let event_id = app.listen_any(
+            CustomEvents::CancelInProgressCompression.as_ref(),
+            move |evt| {
+                let is_this_batch = serde_json::from_str::<serde_json::Value>(evt.payload())
+                    .ok()
+                    .and_then(|payload| payload.get("ids").cloned())
+                    .and_then(|ids| ids.as_array().cloned())
+                    .is_some_and(|ids| ids.iter().any(|id| id.as_str() == Some(&batch_id)));
+                if is_this_batch {
+                    is_cancelled.store(true, Ordering::SeqCst);
+                }
+            },
+        );
+        EventListenerGuard::for_app(app.clone(), event_id)
+    };
+
+    let result = compress_media_items(
+        &app,
+        &window,
+        &batch_id,
+        &media,
+        &mut results,
+        &is_cancelled,
+    )
+    .await;
+    // A pause left on (e.g. cancelled while paused) is not kept
+    set_batch_paused_state(&batch_id, false);
+    result?;
+
+    Ok(MediaBatchCompressionResult { results })
+}
+
+async fn compress_media_items(
+    app: &tauri::AppHandle,
+    window: &tauri::WebviewWindow,
+    batch_id: &String,
+    media: &[MediaItemConfig],
+    results: &mut std::collections::HashMap<String, MediaCompressionResult>,
+    is_cancelled: &AtomicBool,
+) -> Result<(), String> {
+    let app = app.clone();
+    let batch_id = batch_id.clone();
+    let total_count = media.len();
+
     for (index, media_item) in media.iter().enumerate() {
+        // Paused: the previous media finished, the next waits until resumed
+        while is_batch_paused(&batch_id) && !is_cancelled.load(Ordering::SeqCst) {
+            tokio::time::sleep(std::time::Duration::from_millis(250)).await;
+        }
+        if is_cancelled.load(Ordering::SeqCst) {
+            return Err(String::from("CANCELLED"));
+        }
+
         let app_clone = app.clone();
         let batch_id_clone = batch_id.clone();
 
@@ -28,9 +113,10 @@ pub async fn compress_media_batch(
             let video_id_clone_for_listener = video_id.clone();
 
             // Removed again once this media is done (see `EventListenerGuard`)
-            let _progress_listener = app_clone.get_webview_window("main").map(|window| {
-                let listener_window = window.clone();
-                let event_id = listener_window.listen(
+            // Progress of the whole app (from any window)
+            let _progress_listener = {
+                let window = app_clone.clone();
+                let event_id = app_clone.listen_any(
                     CustomEvents::VideoCompressionProgress.as_ref(),
                     move |evt| {
                         if let Ok(progress) =
@@ -51,8 +137,8 @@ pub async fn compress_media_batch(
                         }
                     },
                 );
-                EventListenerGuard::new(listener_window, event_id)
-            });
+                EventListenerGuard::for_app(app_clone.clone(), event_id)
+            };
 
             let video_id = &video_config.video_id;
             let video_path = &video_config.video_path;
@@ -73,7 +159,8 @@ pub async fn compress_media_batch(
             let speed = video_config.speed;
 
             let mut ffmpeg_instance = FFMPEG::new(&app)
-                .map_err(|e| format!("Failed to create ffmpeg instance: {}", e))?;
+                .map_err(|e| format!("Failed to create ffmpeg instance: {}", e))?
+                .with_owner_window(window.label());
 
             match ffmpeg_instance
                 .compress_video(
@@ -108,7 +195,9 @@ pub async fn compress_media_batch(
                     let batch_id_clone = batch_id.clone();
 
                     tokio::spawn(async move {
-                        if let Some(window) = app_clone.get_webview_window("main") {
+                        {
+                            // To the whole app (any window can be compressing)
+                            let window = app_clone.clone();
                             let individual_result = BatchMediaIndividualCompressionResult {
                                 batch_id: batch_id_clone,
                                 result: MediaCompressionResult::Video(result),
@@ -133,7 +222,9 @@ pub async fn compress_media_batch(
 
             // Image compression doesn't have any progress % tracking, so we immediately send the current index of the image to let the front-end know where the index cursor is.
             // NOTE: this event must be sync and not be within tokio::spawn(...) due to the fact that image compression can be so fast, this event might deliver later and mess up the batch compression index cursor.
-            if let Some(window) = app_clone.get_webview_window("main") {
+            {
+                // To the whole app (any window can be compressing)
+                let window = app_clone.clone();
                 let image_compression_progress =
                     MediaCompressionProgress::Image(ImageCompressionProgress {
                         batch_id: batch_id_clone.to_owned(),
@@ -164,7 +255,8 @@ pub async fn compress_media_batch(
             let transform_history = image_config.transform_history.as_ref();
 
             let mut image_compressor = ImageCompressor::new(&app)
-                .map_err(|e| format!("Failed to create image compressor instance: {}", e))?;
+                .map_err(|e| format!("Failed to create image compressor instance: {}", e))?
+                .with_owner_window(window.label());
 
             match image_compressor
                 .compress_image(
@@ -191,7 +283,9 @@ pub async fn compress_media_batch(
 
                     // NOTE: this event must be sync and not be within tokio::spawn(...) due to the fact that image compression can be so fast, this event might deliver later and mess up the batch compression index cursor.
                     let batch_id_clone = batch_id.clone();
-                    if let Some(window) = app.get_webview_window("main") {
+                    {
+                        // To the whole app (any window can be compressing)
+                        let window = app.clone();
                         let individual_result = BatchMediaIndividualCompressionResult {
                             batch_id: batch_id_clone,
                             result: MediaCompressionResult::Image(result),
@@ -212,5 +306,5 @@ pub async fn compress_media_batch(
         }
     }
 
-    Ok(MediaBatchCompressionResult { results })
+    Ok(())
 }

@@ -28,6 +28,7 @@ function PreviewBatchMedia() {
       isCompressing,
       isProcessCompleted,
       currentMediaIndex,
+      isBatchPaused,
       totalSelectedMediaCount,
       isLoadingMediaFiles,
       isBatchCompressionCancelled,
@@ -454,6 +455,27 @@ function PreviewBatchMedia() {
                           <div className="absolute inset-0 bg-black/70 z-10 rounded-lg"></div>
                         </>
                       ) : null}
+                      {/* Media not compressed yet: waits for its turn, or for the batch to resume */}
+                      <AnimatePresence>
+                        {isCompressing &&
+                        originalIndex > currentMediaIndex &&
+                        !mediaFile.isProcessCompleted ? (
+                          <motion.div
+                            key={isBatchPaused ? 'paused' : 'waiting'}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.15 }}
+                            className="absolute bottom-2 left-2 z-20 flex items-center gap-1 rounded-full bg-black/60 px-2 py-0.5 text-[11px] text-white"
+                          >
+                            <Icon
+                              name={isBatchPaused ? 'pause' : 'clock'}
+                              size={12}
+                            />
+                            {isBatchPaused ? 'Paused' : 'Waiting'}
+                          </motion.div>
+                        ) : null}
+                      </AnimatePresence>
                     </div>
                     <section className="px-3 py-2 mt-1">
                       <p className={cn(['font-medium text-sm truncate block'])}>

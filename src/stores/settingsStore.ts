@@ -1,6 +1,7 @@
 import { proxy, subscribe } from 'valtio'
 
 import * as constants from '@/constants'
+import { STANDARD_PRESET_ID } from '@/types/preset'
 
 export const DEFAULT_OUTPUT_FILE_PREFIX = 'compressO-'
 
@@ -54,35 +55,66 @@ export type SettingsState = {
   tintedWindow: boolean
   /** Opacity (%) of the app background over the tinted window's material (both themes) */
   tintOpacity: number
+  /**
+   * Compress the media dropped on the menu bar (or copied, with `watchClipboard`) right away, one
+   * by one, instead of keeping it for the main window (off by default). Needs a save location.
+   */
+  autoCompress: boolean
+  /** Presets of the media compressed by the drop zone (the Standard presets by default) */
+  dropZoneVideoPresetId: string
+  dropZoneImagePresetId: string
 }
-
-const storedSaveLocation = localStorage.getItem(constants.saveLocation)
 
 // Replaced by `saveLargerOutputs`, which defaults to on
 localStorage.removeItem('skipLargerOutputs')
 
-export const settingsStore = proxy<SettingsState>({
-  outputFilePrefix:
-    localStorage.getItem(constants.outputFilePrefix) ??
-    DEFAULT_OUTPUT_FILE_PREFIX,
-  saveLocation:
-    storedSaveLocation && storedSaveLocation in saveLocations
-      ? (storedSaveLocation as SaveLocation)
-      : saveLocations.ask,
-  saveFolder: localStorage.getItem(constants.saveFolder),
-  // Only an explicit opt-out turns it off
-  saveLargerOutputs:
-    localStorage.getItem(constants.saveLargerOutputs) !== 'false',
-  copyOutputToClipboard:
-    localStorage.getItem(constants.copyOutputToClipboard) === 'true',
-  copyBatchOutputToClipboard:
-    localStorage.getItem(constants.copyBatchOutputToClipboard) !== 'false',
-  showMenuBarIcon: localStorage.getItem(constants.showMenuBarIcon) !== 'false',
-  watchClipboard: localStorage.getItem(constants.watchClipboard) === 'true',
-  playCompletionSound:
-    localStorage.getItem(constants.playCompletionSound) === 'true',
-  tintedWindow: localStorage.getItem(constants.tintedWindow) === 'true',
-  tintOpacity: readTintOpacity(constants.tintOpacity, DEFAULT_TINT_OPACITY),
+/** Reads the settings from the storage, shared by all windows */
+function readSettings(): SettingsState {
+  const storedSaveLocation = localStorage.getItem(constants.saveLocation)
+  return {
+    outputFilePrefix:
+      localStorage.getItem(constants.outputFilePrefix) ??
+      DEFAULT_OUTPUT_FILE_PREFIX,
+    saveLocation:
+      storedSaveLocation && storedSaveLocation in saveLocations
+        ? (storedSaveLocation as SaveLocation)
+        : saveLocations.ask,
+    saveFolder: localStorage.getItem(constants.saveFolder),
+    // Only an explicit opt-out turns it off
+    saveLargerOutputs:
+      localStorage.getItem(constants.saveLargerOutputs) !== 'false',
+    copyOutputToClipboard:
+      localStorage.getItem(constants.copyOutputToClipboard) === 'true',
+    copyBatchOutputToClipboard:
+      localStorage.getItem(constants.copyBatchOutputToClipboard) !== 'false',
+    showMenuBarIcon:
+      localStorage.getItem(constants.showMenuBarIcon) !== 'false',
+    watchClipboard: localStorage.getItem(constants.watchClipboard) === 'true',
+    playCompletionSound:
+      localStorage.getItem(constants.playCompletionSound) === 'true',
+    tintedWindow: localStorage.getItem(constants.tintedWindow) === 'true',
+    tintOpacity: readTintOpacity(constants.tintOpacity, DEFAULT_TINT_OPACITY),
+    autoCompress: localStorage.getItem(constants.autoCompress) === 'true',
+    dropZoneVideoPresetId:
+      localStorage.getItem(constants.dropZoneVideoPresetId) ??
+      STANDARD_PRESET_ID,
+    dropZoneImagePresetId:
+      localStorage.getItem(constants.dropZoneImagePresetId) ??
+      STANDARD_PRESET_ID,
+  }
+}
+
+export const settingsStore = proxy<SettingsState>(readSettings())
+
+// Changed in another window (e.g. the main window's settings, read by the menu bar's)
+window.addEventListener('storage', (evt) => {
+  if (evt.storageArea !== localStorage) return
+  const settings = readSettings()
+  for (const key of Object.keys(settings) as (keyof SettingsState)[]) {
+    if (settingsStore[key] !== settings[key]) {
+      ;(settingsStore as Record<string, unknown>)[key] = settings[key]
+    }
+  }
 })
 
 subscribe(settingsStore, () => {
@@ -120,6 +152,18 @@ subscribe(settingsStore, () => {
     String(settingsStore.tintedWindow),
   )
   localStorage.setItem(constants.tintOpacity, String(settingsStore.tintOpacity))
+  localStorage.setItem(
+    constants.autoCompress,
+    String(settingsStore.autoCompress),
+  )
+  localStorage.setItem(
+    constants.dropZoneVideoPresetId,
+    settingsStore.dropZoneVideoPresetId,
+  )
+  localStorage.setItem(
+    constants.dropZoneImagePresetId,
+    settingsStore.dropZoneImagePresetId,
+  )
   if (settingsStore.saveFolder) {
     localStorage.setItem(constants.saveFolder, settingsStore.saveFolder)
   } else {

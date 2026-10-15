@@ -26,6 +26,9 @@ pub struct CompressionStatus {
     pub file_name: Option<String>,
     /// Compressed outputs that are not saved yet (lost when quitting)
     pub has_unsaved_output: bool,
+    /// The batch is paused (the media being compressed finishes, the next waits)
+    #[serde(default)]
+    pub is_paused: bool,
 }
 
 pub struct CompressionStatusState(pub Mutex<CompressionStatus>);
@@ -55,6 +58,9 @@ pub fn update_compression_status(app_handle: &AppHandle, status: CompressionStat
         }
     }
     let _ = app_handle.emit_to(TRAY_WINDOW_LABEL, COMPRESSION_STATUS_EVENT, status);
+    // Files stored in the menu bar's drop zone, waiting for the main window to be free
+    #[cfg(target_os = "macos")]
+    crate::tauri_commands::tray::deliver_dropped_files_if_free(app_handle);
 }
 
 #[tauri::command]

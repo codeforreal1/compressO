@@ -38,7 +38,7 @@ use tauri_commands::{
         compress_images_batch, convert_svg_to_png, get_exif_info, get_image_basic_info,
         get_image_color_info, get_image_dimensions,
     },
-    media::compress_media_batch,
+    media::{compress_media_batch, set_batch_paused},
     sound::play_completion_sound,
     updater::{check_update, download_and_install_update},
     window::set_window_tint,
@@ -49,6 +49,12 @@ use tauri_commands::server::{construct_video_url, get_server_url};
 
 #[cfg(target_os = "linux")]
 use tauri_commands::file_manager::DbusState;
+
+#[cfg(target_os = "macos")]
+use tauri_commands::drop_queue::{
+    cancel_drop_queue, clear_finished_drop_queue, is_drop_queue_paused, set_drop_queue_paused, get_drop_queue, remove_drop_queue_item, retry_drop_queue_item,
+    set_auto_compress_enabled, update_drop_queue_item,
+};
 
 #[cfg(target_os = "macos")]
 use tauri_commands::tray::{
@@ -389,6 +395,7 @@ async fn main() {
             compress_videos_batch,
             compress_images_batch,
             compress_media_batch,
+            set_batch_paused,
             extract_subtitle,
             generate_video_thumbnail,
             get_video_basic_info,
@@ -454,6 +461,24 @@ async fn main() {
             set_supported_drop_extensions,
             #[cfg(target_os = "macos")]
             set_tray_popover_pinned,
+            #[cfg(target_os = "macos")]
+            set_auto_compress_enabled,
+            #[cfg(target_os = "macos")]
+            get_drop_queue,
+            #[cfg(target_os = "macos")]
+            update_drop_queue_item,
+            #[cfg(target_os = "macos")]
+            retry_drop_queue_item,
+            #[cfg(target_os = "macos")]
+            remove_drop_queue_item,
+            #[cfg(target_os = "macos")]
+            clear_finished_drop_queue,
+            #[cfg(target_os = "macos")]
+            cancel_drop_queue,
+            #[cfg(target_os = "macos")]
+            set_drop_queue_paused,
+            #[cfg(target_os = "macos")]
+            is_drop_queue_paused,
             set_compression_status,
             get_compression_status
         ])

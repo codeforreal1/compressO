@@ -14,4 +14,7 @@ pub mod window;
 pub mod server;
 
 #[cfg(target_os = "macos")]
+pub mod drop_queue;
+
+#[cfg(target_os = "macos")]
 pub mod tray;

@@ -1,3 +1,4 @@
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Mutex;
 use tauri::{webview::PageLoadEvent, AppHandle, Emitter, Manager, Url, WebviewWindowBuilder};
 
@@ -144,12 +145,22 @@ pub fn set_supported_drop_extensions(app_handle: AppHandle, extensions: Vec<Stri
 }
 
 /// Adds dropped files (each once), skipping unsupported ones. Returns how many were skipped.
-/// Refused while they cannot be opened (e.g. while compressing).
+/// With "Compress automatically", they are added to the queue (see `drop_queue`); otherwise they
+/// are kept for the main window, and refused while they cannot be opened (e.g. while compressing).
 #[tauri::command]
 pub fn add_dropped_files(app_handle: AppHandle, paths: Vec<String>) -> Result<usize, String> {
-    if !crate::can_open_files_in_main_window(&app_handle) {
-        return Err("Media cannot be added right now.".to_string());
+    if crate::tauri_commands::drop_queue::is_auto_compress_enabled() {
+        let (supported, unsupported): (Vec<_>, Vec<_>) = paths
+            .into_iter()
+            .partition(|path| is_supported_drop(&app_handle, path));
+        let app = app_handle.clone();
+        crate::tauri_commands::drop_queue::add_to_queue(&app_handle, supported, move |path| {
+            is_supported_drop(&app, path)
+        });
+        return Ok(unsupported.len());
     }
+    // Otherwise stored for the main window, also while it is busy: "Open App" delivers them once
+    // it is free (see `focus_main_window`)
     let (supported, unsupported): (Vec<_>, Vec<_>) = paths
         .into_iter()
         .partition(|path| is_supported_drop(&app_handle, path));
@@ -181,17 +192,45 @@ pub fn get_dropped_files(app_handle: AppHandle) -> Vec<String> {
 /// Shows the main window, with the files dropped on the menu bar (if any & if they can be opened)
 #[tauri::command]
 pub fn focus_main_window(app_handle: AppHandle) -> Result<(), String> {
-    let files = dropped_files(&app_handle);
-    if !files.is_empty() && crate::can_open_files_in_main_window(&app_handle) {
-        let urls = files
-            .iter()
-            .filter_map(|path| Url::from_file_path(path).ok())
-            .collect::<Vec<_>>();
-        // Delivered to the main window once it is ready (see `frontend-ready`)
-        crate::handle_open_with_app(&app_handle, urls)?;
-        update_dropped_files(&app_handle, |files| files.clear());
+    if !dropped_files(&app_handle).is_empty() {
+        if crate::can_open_files_in_main_window(&app_handle) {
+            deliver_dropped_files(&app_handle)?;
+        } else {
+            // Busy (compressing, or with unsaved outputs): delivered once it is free
+            DELIVER_WHEN_FREE.store(true, Ordering::SeqCst);
+        }
     }
     focus_or_create_main_window(&app_handle)
+}
+
+/// "Open App" was used while the main window was busy: the stored files are delivered once it is
+/// free (see `deliver_dropped_files_if_free`)
+static DELIVER_WHEN_FREE: AtomicBool = AtomicBool::new(false);
+
+/// Opens the stored files in the main window & clears them
+fn deliver_dropped_files(app_handle: &AppHandle) -> Result<(), String> {
+    let urls = dropped_files(app_handle)
+        .iter()
+        .filter_map(|path| Url::from_file_path(path).ok())
+        .collect::<Vec<_>>();
+    if urls.is_empty() {
+        return Ok(());
+    }
+    // Delivered to the main window once it is ready (see `frontend-ready`)
+    crate::handle_open_with_app(app_handle, urls)?;
+    update_dropped_files(app_handle, |files| files.clear());
+    Ok(())
+}
+
+/// Delivers the stored files asked for with "Open App" while the main window was busy, once it is
+/// free; called when its status changes
+pub fn deliver_dropped_files_if_free(app_handle: &AppHandle) {
+    if DELIVER_WHEN_FREE.load(Ordering::SeqCst)
+        && crate::can_open_files_in_main_window(app_handle)
+    {
+        DELIVER_WHEN_FREE.store(false, Ordering::SeqCst);
+        let _ = deliver_dropped_files(app_handle);
+    }
 }
 
 #[tauri::command]

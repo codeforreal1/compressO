@@ -4,6 +4,7 @@ import ColorPicker from '@/components/ColorPicker'
 import Slider from '@/components/Slider'
 import Switch from '@/components/Switch'
 import { ThemeSwitcher } from '@/components/ThemeSwitcher'
+import { useDropQueue } from '@/hooks/useDropQueue'
 import { usePrimaryColor } from '@/hooks/usePrimaryColor'
 import { isWindowTintSupported } from '@/hooks/useWindowTint'
 import { settingsStore, TINT_OPACITY_RANGE } from '@/stores/settingsStore'
@@ -17,6 +18,12 @@ function General() {
   const { color, setColor } = usePrimaryColor()
   const { tintedWindow, tintOpacity, showMenuBarIcon, playCompletionSound } =
     useSnapshot(settingsStore)
+  // The drop zone's queue is compressed by the menu bar, so its icon stays until the queue is done
+  // (or stopped)
+  const isDropQueueActive = useDropQueue().some(
+    (item) => item.status === 'waiting' || item.status === 'compressing',
+  )
+  const isMenuBarIconLocked = showMenuBarIcon && isDropQueueActive
 
   return (
     <>
@@ -94,11 +101,16 @@ function General() {
         <SettingsSection title="Menu bar">
           <SettingsRow
             title="Show menu bar icon"
-            description="Show the CompressO icon, the compression progress and the drop zone in the menu bar."
+            description={
+              isMenuBarIconLocked
+                ? 'This can be turned off once the media in the drop zone is compressed or stopped.'
+                : 'Show the CompressO icon, the compression progress and the drop zone in the menu bar.'
+            }
           >
             <Switch
               aria-label="Show menu bar icon"
               isSelected={showMenuBarIcon}
+              isDisabled={isMenuBarIconLocked}
               onValueChange={(isSelected) => {
                 settingsStore.showMenuBarIcon = isSelected
               }}

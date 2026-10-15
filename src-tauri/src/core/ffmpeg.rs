@@ -18,12 +18,13 @@ use std::{
     process::Command,
     sync::Arc,
 };
-use tauri::{AppHandle, Emitter, Listener, Manager};
+use tauri::{AppHandle, Emitter, Listener};
 use tauri_plugin_shell::ShellExt;
 
 pub struct FFMPEG {
     app: AppHandle,
     assets_dir: PathBuf,
+    owner_window: String,
 }
 
 const EXTENSIONS: [&str; 10] = [
@@ -67,7 +68,14 @@ impl FFMPEG {
         Ok(Self {
             app: app.to_owned(),
             assets_dir,
+            owner_window: String::from("main"),
         })
+    }
+
+    /// Window the processes belong to (the main window by default), see `MediaProcessExecutorBuilder`
+    pub fn with_owner_window(mut self, label: &str) -> Self {
+        self.owner_window = label.to_string();
+        self
     }
 
     pub fn get_asset_dir(&self) -> String {
@@ -110,7 +118,7 @@ impl FFMPEG {
         let container = output_container(convert_to_extension);
 
         let audio_streams = {
-            let mut ffprobe = FFPROBE::new(&self.app)?;
+            let mut ffprobe = FFPROBE::new(&self.app)?.with_owner_window(&self.owner_window);
             ffprobe.get_audio_streams(video_path).await?
         };
         let has_audio_stream = !audio_streams.is_empty();
@@ -138,7 +146,7 @@ impl FFMPEG {
             if let Some(subs_config) = subtitles_config {
                 let preserve = subs_config.preserve_existing_subtitles.unwrap_or(false);
                 if preserve {
-                    let mut ffprobe = FFPROBE::new(&self.app)?;
+                    let mut ffprobe = FFPROBE::new(&self.app)?.with_owner_window(&self.owner_window);
                     let streams = ffprobe.get_subtitle_streams(video_path).await?;
                     let count = streams.len();
                     (count, streams)
@@ -271,7 +279,7 @@ impl FFMPEG {
             } else {
                 if preset_name.is_none() {
                     let source_streams = {
-                        let mut ffprobe = FFPROBE::new(&self.app)?;
+                        let mut ffprobe = FFPROBE::new(&self.app)?.with_owner_window(&self.owner_window);
                         ffprobe.get_video_streams(video_path).await?
                     };
 
@@ -884,7 +892,9 @@ impl FFMPEG {
                             batch_id: batch_id_for_progress.clone(),
                             current_duration: duration.to_string(),
                         };
-                        if let Some(window) = app_clone.get_webview_window("main") {
+                        {
+                            // To the whole app (any window can be compressing)
+                            let window = app_clone.clone();
                             window
                                 .emit(
                                     CustomEvents::VideoCompressionProgress.as_ref(),
@@ -898,6 +908,7 @@ impl FFMPEG {
         });
 
         let executor = MediaProcessExecutorBuilder::new(self.app.clone())
+            .owner_window(&self.owner_window)
             .command(ffmpeg_cmd)
             .with_cancel_support(
                 vec![video_id.to_string(), batch_id.clone()],
@@ -966,9 +977,10 @@ impl FFMPEG {
             let video_id_clone = video_id.clone();
 
             // Removed again once this media is done (see `EventListenerGuard`)
-            let _progress_listener = app_clone.get_webview_window("main").map(|window| {
-                let listener_window = window.clone();
-                let event_id = listener_window.listen(
+            // Progress of the whole app (from any window)
+            let _progress_listener = {
+                let window = app_clone.clone();
+                let event_id = app_clone.listen_any(
                     CustomEvents::VideoCompressionProgress.as_ref(),
                     move |evt| {
                         if let Ok(progress) =
@@ -989,10 +1001,10 @@ impl FFMPEG {
                         }
                     },
                 );
-                EventListenerGuard::new(listener_window, event_id)
-            });
+                EventListenerGuard::for_app(app_clone.clone(), event_id)
+            };
 
-            let mut ffmpeg_instance = match FFMPEG::new(&self.app) {
+            let mut ffmpeg_instance = match FFMPEG::new(&self.app).map(|f| f.with_owner_window(&self.owner_window)) {
                 Ok(f) => f,
                 Err(e) => return Err(format!("Failed to create ffmpeg instance: {}", e)),
             };
@@ -1044,7 +1056,9 @@ impl FFMPEG {
                     results.insert(video_id, result.clone());
 
                     tokio::spawn(async move {
-                        if let Some(window) = app_clone2.get_webview_window("main") {
+                        {
+                            // To the whole app (any window can be compressing)
+                            let window = app_clone2.clone();
                             let individual_compression_result: BatchVideoIndividualCompressionResult =
                                 BatchVideoIndividualCompressionResult {
                                     batch_id: batch_id_clone2,
@@ -1109,6 +1123,7 @@ impl FFMPEG {
         ]);
 
         let executor = MediaProcessExecutorBuilder::new(self.app.clone())
+            .owner_window(&self.owner_window)
             .command(ffmpeg_cmd)
             .build()?;
 
@@ -1145,7 +1160,7 @@ impl FFMPEG {
             }
         }
 
-        let mut ffprobe = FFPROBE::new(&self.app)?;
+        let mut ffprobe = FFPROBE::new(&self.app)?.with_owner_window(&self.owner_window);
         let subtitle_streams = ffprobe.get_subtitle_streams(video_path).await?;
 
         let target_stream = match subtitle_streams.iter().find(|s| s.index == stream_index) {
@@ -1191,6 +1206,7 @@ impl FFMPEG {
             .arg("-y");
 
         let executor = MediaProcessExecutorBuilder::new(self.app.clone())
+            .owner_window(&self.owner_window)
             .command(ffmpeg_cmd)
             .build()?;
 
@@ -1231,7 +1247,7 @@ impl FFMPEG {
             .to_string();
 
         let video_duration_seconds = {
-            let mut ffprobe = FFPROBE::new(&self.app)?;
+            let mut ffprobe = FFPROBE::new(&self.app)?.with_owner_window(&self.owner_window);
             let video_info = ffprobe.get_video_basic_info(video_path).await?;
             video_info.duration.unwrap_or(0.0)
         };
@@ -1276,7 +1292,7 @@ impl FFMPEG {
 
         let gifski_args_refs: Vec<&str> = gifski_args.iter().map(|s| s.as_str()).collect();
 
-        let image_compressor = ImageCompressor::new(&self.app)?;
+        let image_compressor = ImageCompressor::new(&self.app)?.with_owner_window(&self.owner_window);
         let mut gifski_cmd = image_compressor
             .get_gifski_command()
             .map_err(|e| format!("Gifski command error: {}", e))?;
@@ -1318,7 +1334,9 @@ impl FFMPEG {
                                 batch_id: String::new(),
                                 current_duration: combined_duration,
                             };
-                            if let Some(window) = app_clone.get_webview_window("main") {
+                            {
+                                // To the whole app (any window can be compressing)
+                                let window = app_clone.clone();
                                 window
                                     .emit(
                                         CustomEvents::VideoCompressionProgress.as_ref(),
@@ -1333,6 +1351,7 @@ impl FFMPEG {
         });
 
         let executor = MediaProcessExecutorBuilder::new(self.app.clone())
+            .owner_window(&self.owner_window)
             .commands(vec![ffmpeg_cmd, gifski_cmd])
             .with_piped()
             .with_cancel_support(vec![video_id.to_string()], Some(cancel_callback))

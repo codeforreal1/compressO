@@ -38,6 +38,7 @@ function getCompressionStatus(): CompressionStatus {
       mediaCount,
       fileName,
       hasUnsavedOutput: false,
+      isPaused: !!appProxy.state.isBatchPaused,
     }
   }
   if (

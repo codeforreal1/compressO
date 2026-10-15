@@ -255,3 +255,82 @@ export async function autoCopyCompressedMediaToClipboard() {
     toast.error('The output could not be copied to the clipboard.')
   }
 }
+
+/** An output of the menu bar's queue, saved on its own (see `saveQueueOutput`) */
+export type QueueOutput = {
+  /** The original media */
+  sourcePath: string
+  /** Folder relative to the dropped folder (e.g. `Vacation/Day1`), mirrored when saving */
+  relativeDir: string
+  originalSize: number
+  /** The compressed output (in the app's cache) */
+  outputPath: string
+  outputSize: number
+  /** Name to save it under, without the prefix */
+  outputFileName: string
+}
+
+/**
+ * Saves an output of the menu bar's queue automatically, like `autoSaveCompressedMedia`: to the save
+ * location of the Output settings, with the file name prefix, mirroring dropped folders. Media of
+ * a drop share their top folder through `topFolders` (by `groupKey`). Returns where it was saved,
+ * or why it was not.
+ */
+export async function saveQueueOutput(
+  output: QueueOutput,
+  {
+    groupKey,
+    topFolders,
+  }: { groupKey: string; topFolders: Map<string, string> },
+): Promise<
+  { savedPath: string } | { reason: 'no-save-location' | 'larger' | 'failed' }
+> {
+  const { saveLocation, saveFolder, saveLargerOutputs, outputFilePrefix } =
+    settingsStore
+  if (
+    saveLocation === 'ask' ||
+    (saveLocation === 'fixedFolder' && !saveFolder)
+  ) {
+    return { reason: 'no-save-location' }
+  }
+  if (
+    !saveLargerOutputs &&
+    output.originalSize > 0 &&
+    output.outputSize > output.originalSize
+  ) {
+    return { reason: 'larger' }
+  }
+
+  // Same folder: where the file (or its dropped folder) is, e.g. `/a/Vacation/Day1/clip.mp4` with
+  // `Vacation/Day1` -> `/a`
+  const depth = output.relativeDir ? output.relativeDir.split('/').length : 0
+  const baseDirectory =
+    saveLocation === 'fixedFolder'
+      ? saveFolder!
+      : getParentDirectory(output.sourcePath, depth + 1)
+
+  try {
+    let destinationDirectory = baseDirectory
+    if (output.relativeDir) {
+      const [topFolder, ...subFolders] = output.relativeDir.split('/')
+      // Existing folders are never merged into; a numbered name is used instead (once per drop)
+      const topFolderKey = `${groupKey}\n${baseDirectory}\n${topFolder}`
+      let destinationTopFolder = topFolders.get(topFolderKey)
+      if (!destinationTopFolder) {
+        destinationTopFolder = await getAvailablePath(
+          `${baseDirectory}/${topFolder}`,
+          true,
+        )
+        topFolders.set(topFolderKey, destinationTopFolder)
+      }
+      destinationDirectory = [destinationTopFolder, ...subFolders].join('/')
+    }
+    const savedPath = await moveFile(
+      output.outputPath,
+      `${destinationDirectory}/${outputFilePrefix}${output.outputFileName}`,
+    )
+    return { savedPath }
+  } catch {
+    return { reason: 'failed' }
+  }
+}

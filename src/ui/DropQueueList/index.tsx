@@ -1,0 +1,341 @@
+import type React from 'react'
+import { useEffect, useRef, useState } from 'react'
+
+import Button from '@/components/Button'
+import Icon from '@/components/Icon'
+import Progress from '@/components/Progress'
+import Tooltip from '@/components/Tooltip'
+import { useDropQueuePaused } from '@/hooks/useDropQueue'
+import {
+  cancelDropQueue,
+  clearFinishedDropQueue,
+  type DropQueueItem,
+  removeDropQueueItem,
+  retryDropQueueItem,
+  setDropQueuePaused,
+} from '@/tauri/commands/dropQueue'
+import { showItemInFileManager } from '@/tauri/commands/fs'
+import { formatBytes } from '@/utils/fs'
+import { cn } from '@/utils/tailwind'
+
+/** Name of a file from its path */
+function getName(path: string) {
+  return path.split(/[\\/]/).filter(Boolean).pop() ?? path
+}
+
+/** What the queue is doing, e.g. "Compressing 2 of 5" */
+export function getSummary(items: readonly DropQueueItem[], isPaused = false) {
+  const pendingCount = items.filter(
+    (item) => item.status === 'waiting' || item.status === 'compressing',
+  ).length
+  if (!pendingCount) {
+    const failedCount = items.filter((item) => item.status === 'failed').length
+    const cancelledCount = items.filter(
+      (item) => item.status === 'cancelled',
+    ).length
+    if (cancelledCount) {
+      return failedCount
+        ? `${cancelledCount} cancelled, ${failedCount} could not be compressed`
+        : `${cancelledCount} cancelled`
+    }
+    return failedCount
+      ? `${failedCount} could not be compressed`
+      : 'Compression complete'
+  }
+  const finishedCount = items.length - pendingCount
+  const position = finishedCount + 1
+  const isCompressing = items.some((item) => item.status === 'compressing')
+  if (isPaused) {
+    return isCompressing
+      ? `Pausing after ${position} of ${items.length}`
+      : `Paused, ${pendingCount} waiting`
+  }
+  return isCompressing
+    ? `Compressing ${position} of ${items.length}`
+    : `${pendingCount} waiting`
+}
+
+function QueueItem({
+  item,
+  isCompact,
+  style,
+}: {
+  item: DropQueueItem
+  isCompact: boolean
+  /** Position in the virtual list */
+  style: React.CSSProperties
+}) {
+  const name = getName(item.path)
+  const iconButtonClassName = isCompact ? 'min-w-4 w-4 h-4' : 'min-w-6 w-6 h-6'
+
+  return (
+    <li
+      style={style}
+      className={cn(
+        'group absolute left-0 right-0 flex items-center gap-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5',
+        isCompact ? 'pl-1.5 py-1' : 'px-2 py-1.5',
+      )}
+    >
+      <div className="flex-1 min-w-0">
+        <p
+          className={cn('truncate', isCompact ? 'text-xs' : 'text-sm')}
+          title={item.path}
+        >
+          {name}
+        </p>
+        {item.status === 'compressing' ? (
+          <Progress
+            aria-label={`Compressing ${name}`}
+            size="sm"
+            value={item.progress}
+            classNames={{ base: 'mt-1', track: 'h-1', indicator: 'h-1' }}
+          />
+        ) : (
+          <p
+            className={cn(
+              'truncate text-zinc-500 dark:text-zinc-400',
+              isCompact ? 'text-[10px]' : 'text-xs',
+              item.status === 'failed' && 'text-danger',
+            )}
+            title={item.message ?? undefined}
+          >
+            {item.status === 'waiting'
+              ? 'Waiting'
+              : item.status === 'cancelled'
+                ? 'Cancelled'
+                : item.status === 'failed'
+                  ? (item.message ?? 'The media could not be compressed.')
+                  : item.originalSize != null && item.outputSize != null
+                    ? `${formatBytes(item.originalSize)} to ${formatBytes(item.outputSize)}${item.message ? `. ${item.message}` : ''}`
+                    : (item.message ?? 'Done')}
+          </p>
+        )}
+      </div>
+      {item.status === 'compressing' ? (
+        <span
+          className={cn(
+            'tabular-nums text-zinc-500 dark:text-zinc-400',
+            isCompact ? 'text-[10px]' : 'text-xs',
+          )}
+        >
+          {Math.round(item.progress)}%
+        </span>
+      ) : null}
+      {item.status === 'done' && item.savedPath ? (
+        <Tooltip
+          content="Show in File Explorer"
+          aria-label="Show in File Explorer"
+        >
+          <Button
+            isIconOnly
+            size="sm"
+            variant="light"
+            radius="full"
+            aria-label={`Show ${name} in File Explorer`}
+            className={cn(iconButtonClassName, 'text-success')}
+            onPress={() => {
+              showItemInFileManager(item.savedPath!).catch(() => {})
+            }}
+          >
+            <Icon name="fileExplorer" size={14} />
+          </Button>
+        </Tooltip>
+      ) : null}
+      {item.status === 'failed' || item.status === 'cancelled' ? (
+        <Tooltip content="Try again" aria-label="Try again">
+          <Button
+            isIconOnly
+            size="sm"
+            variant="light"
+            radius="full"
+            aria-label={`Try ${name} again`}
+            className={cn(
+              iconButtonClassName,
+              'text-zinc-500 dark:text-zinc-400',
+            )}
+            onPress={() => {
+              retryDropQueueItem(item.id).catch(() => {})
+            }}
+          >
+            <Icon name="redo" size={14} />
+          </Button>
+        </Tooltip>
+      ) : null}
+      {item.status !== 'compressing' ? (
+        <Button
+          isIconOnly
+          size="sm"
+          variant="light"
+          radius="full"
+          aria-label={`Remove ${name}`}
+          className={cn(
+            iconButtonClassName,
+            'text-zinc-500 dark:text-zinc-400',
+          )}
+          onPress={() => {
+            removeDropQueueItem(item.id).catch(() => {})
+          }}
+        >
+          <Icon name="cross" size={14} />
+        </Button>
+      ) : null}
+    </li>
+  )
+}
+
+/** Height of a row (fixed, so only the rows in view are rendered) */
+const ROW_HEIGHT = { compact: 40, regular: 48 } as const
+/** Rows rendered above & below the visible ones, so scrolling shows no gaps */
+const OVERSCAN_ROWS = 4
+
+/** The rows of the queue; only those in view are rendered (there can be hundreds of media) */
+function VirtualQueue({
+  items,
+  isCompact,
+}: {
+  items: readonly DropQueueItem[]
+  isCompact: boolean
+}) {
+  const rowHeight = isCompact ? ROW_HEIGHT.compact : ROW_HEIGHT.regular
+  const viewportRef = useRef<HTMLDivElement>(null)
+  const frameRef = useRef<number | null>(null)
+  const [scrollTop, setScrollTop] = useState(0)
+  const [viewportHeight, setViewportHeight] = useState(0)
+
+  // The list fills the space it is given, so its height is measured
+  useEffect(() => {
+    const viewport = viewportRef.current
+    if (!viewport) return
+    const observer = new ResizeObserver(() => {
+      setViewportHeight(viewport.clientHeight)
+    })
+    observer.observe(viewport)
+    return () => {
+      observer.disconnect()
+      if (frameRef.current != null) cancelAnimationFrame(frameRef.current)
+    }
+  }, [])
+
+  const firstIndex = Math.max(
+    0,
+    Math.floor(scrollTop / rowHeight) - OVERSCAN_ROWS,
+  )
+  const lastIndex = Math.min(
+    items.length - 1,
+    Math.ceil((scrollTop + viewportHeight) / rowHeight) + OVERSCAN_ROWS,
+  )
+
+  return (
+    <div
+      ref={viewportRef}
+      className={cn(
+        'flex-1 min-h-0 overflow-y-auto',
+        isCompact ? 'px-1.5' : 'px-1',
+      )}
+      onScroll={(evt) => {
+        const target = evt.currentTarget
+        // Once per frame
+        if (frameRef.current != null) return
+        frameRef.current = requestAnimationFrame(() => {
+          frameRef.current = null
+          setScrollTop(target.scrollTop)
+        })
+      }}
+    >
+      <ul className="relative" style={{ height: items.length * rowHeight }}>
+        {items.slice(firstIndex, lastIndex + 1).map((item, index) => (
+          <QueueItem
+            key={item.id}
+            item={item}
+            isCompact={isCompact}
+            style={{ top: (firstIndex + index) * rowHeight, height: rowHeight }}
+          />
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+type DropQueueListProps = {
+  items: readonly DropQueueItem[]
+  /** The menu bar's smaller layout */
+  isCompact?: boolean
+  className?: string
+}
+
+/**
+ * The drop zone's queue: the media compressed automatically, with its status. The same in the menu
+ * bar & the main window.
+ */
+function DropQueueList({
+  items,
+  isCompact = false,
+  className,
+}: DropQueueListProps) {
+  // Media is waiting or being compressed
+  const isActive = items.some(
+    (item) => item.status === 'waiting' || item.status === 'compressing',
+  )
+
+  const isPaused = useDropQueuePaused()
+
+  return (
+    <div className={cn('flex flex-col min-h-0', className)}>
+      <div
+        className={cn(
+          'flex items-center justify-between gap-2 pb-1',
+          isCompact ? 'pl-3 pr-1 pt-2' : 'px-2 pt-1',
+        )}
+      >
+        <p className={cn(isCompact ? 'text-xs' : 'text-sm')}>
+          {getSummary(items, isPaused)}
+        </p>
+        <div className="flex items-center">
+          {isActive ? (
+            <Button
+              isIconOnly
+              size="sm"
+              variant="light"
+              radius="md"
+              className="h-6 min-w-0 px-2 text-[11px] font-normal"
+              aria-label={isPaused ? 'Resume' : 'Pause'}
+              title={isPaused ? 'Resume' : 'Pause after the current file'}
+              onPress={() => {
+                setDropQueuePaused(!isPaused).catch(() => {})
+              }}
+            >
+              <Icon name={isPaused ? 'play' : 'pause'} size={14} />
+            </Button>
+          ) : null}
+          {/* Stop first (while compressing), then clear what is finished */}
+          <Button
+            isIconOnly
+            size="sm"
+            variant="light"
+            radius="md"
+            className={cn(
+              'h-6 min-w-0 px-2 text-[11px] font-normal',
+              isActive && 'text-danger',
+            )}
+            aria-label={isActive ? 'Stop' : 'Clear'}
+            title={
+              isActive
+                ? 'Stop compressing and cancel the waiting media'
+                : 'Clear the finished media'
+            }
+            onPress={() => {
+              ;(isActive ? cancelDropQueue() : clearFinishedDropQueue()).catch(
+                () => {},
+              )
+            }}
+          >
+            <Icon name={isActive ? 'stop' : 'cross'} size={18} />
+          </Button>
+        </div>
+      </div>
+      <VirtualQueue items={items} isCompact={isCompact} />
+    </div>
+  )
+}
+
+export default DropQueueList

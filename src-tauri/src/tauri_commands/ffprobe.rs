@@ -6,9 +6,10 @@ use crate::core::{
 #[tauri::command]
 pub async fn get_video_basic_info(
     app: tauri::AppHandle,
+    window: tauri::WebviewWindow,
     video_path: &str,
 ) -> Result<VideoInfo, String> {
-    let mut ffprobe = ffprobe::FFPROBE::new(&app)?;
+    let mut ffprobe = ffprobe::FFPROBE::new(&app)?.with_owner_window(window.label());
     ffprobe.get_video_basic_info(video_path).await
 }
 
@@ -33,9 +34,10 @@ pub async fn get_video_streams(
 #[tauri::command]
 pub async fn get_audio_streams(
     app: tauri::AppHandle,
+    window: tauri::WebviewWindow,
     video_path: &str,
 ) -> Result<Vec<AudioStream>, String> {
-    let mut ffprobe = ffprobe::FFPROBE::new(&app)?;
+    let mut ffprobe = ffprobe::FFPROBE::new(&app)?.with_owner_window(window.label());
     ffprobe.get_audio_streams(video_path).await
 }
 

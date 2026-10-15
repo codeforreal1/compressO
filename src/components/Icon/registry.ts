@@ -6,6 +6,7 @@ import AudioMuted from '@/assets/icons/audio-muted.svg?react'
 import Back from '@/assets/icons/back.svg?react'
 import Caret from '@/assets/icons/caret.svg?react'
 import Chevron from '@/assets/icons/chevron.svg?react'
+import Clock from '@/assets/icons/clock.svg?react'
 import Compare from '@/assets/icons/compare.svg?react'
 import Copy from '@/assets/icons/copy.svg?react'
 import Cross from '@/assets/icons/cross.svg?react'
@@ -36,6 +37,7 @@ import Redo from '@/assets/icons/redo.svg?react'
 import RotateLeft from '@/assets/icons/rotate-left.svg?react'
 import Setting from '@/assets/icons/setting.svg?react'
 import Star from '@/assets/icons/star.svg?react'
+import Stop from '@/assets/icons/stop.svg?react'
 import Sun from '@/assets/icons/sun.svg?react'
 import Tick from '@/assets/icons/tick.svg?react'
 import Trash from '@/assets/icons/trash.svg?react'
@@ -56,6 +58,7 @@ const registry = asRegistry({
   sun: Sun,
   video: Video,
   star: Star,
+  stop: Stop,
   copy: Copy,
   cross: Cross,
   curvedArrow: CurvedArrow,
@@ -85,6 +88,7 @@ const registry = asRegistry({
   audio: Audio,
   download: Download,
   chevron: Chevron,
+  clock: Clock,
   addMedia: AddMedia,
   caret: Caret,
   compare: Compare,

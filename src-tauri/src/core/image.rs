@@ -25,7 +25,7 @@ use std::path::Path;
 use std::path::PathBuf;
 use std::process::Command;
 use std::sync::Arc;
-use tauri::{AppHandle, Emitter, Listener, Manager};
+use tauri::{AppHandle, Emitter, Listener};
 use tauri_plugin_shell::ShellExt;
 
 pub const EXTENSIONS: [&str; 7] = ["png", "jpg", "jpeg", "webp", "gif", "svg", "avif"];
@@ -36,6 +36,7 @@ pub const INPUT_ONLY_EXTENSIONS: [&str; 3] = ["bmp", "tiff", "tif"];
 pub struct ImageCompressor {
     app: AppHandle,
     assets_dir: PathBuf,
+    owner_window: String,
 }
 
 impl ImageCompressor {
@@ -45,7 +46,14 @@ impl ImageCompressor {
         Ok(Self {
             app: app.to_owned(),
             assets_dir,
+            owner_window: String::from("main"),
         })
+    }
+
+    /// Window the processes belong to (the main window by default), see `MediaProcessExecutorBuilder`
+    pub fn with_owner_window(mut self, label: &str) -> Self {
+        self.owner_window = label.to_string();
+        self
     }
 
     pub fn get_asset_dir(&self) -> String {
@@ -479,9 +487,10 @@ impl ImageCompressor {
             let image_id_clone = image_id.clone();
 
             // Removed again once this media is done (see `EventListenerGuard`)
-            let _progress_listener = app_clone.get_webview_window("main").map(|window| {
-                let listener_window = window.clone();
-                let event_id = listener_window.listen(
+            // Progress of the whole app (from any window)
+            let _progress_listener = {
+                let window = app_clone.clone();
+                let event_id = app_clone.listen_any(
                     CustomEvents::ImageCompressionProgress.as_ref(),
                     move |evt| {
                         if let Ok(progress) =
@@ -502,8 +511,8 @@ impl ImageCompressor {
                         }
                     },
                 );
-                EventListenerGuard::new(listener_window, event_id)
-            });
+                EventListenerGuard::for_app(app_clone.clone(), event_id)
+            };
 
             let input_path = &image_config.image_path;
             let quality = image_config.quality;
@@ -539,7 +548,9 @@ impl ImageCompressor {
                     let batch_id_clone2 = batch_id.to_string();
 
                     tokio::spawn(async move {
-                        if let Some(window) = app_clone2.get_webview_window("main") {
+                        {
+                            // To the whole app (any window can be compressing)
+                            let window = app_clone2.clone();
                             let individual_result = ImageBatchIndividualCompressionResult {
                                 batch_id: batch_id_clone2,
                                 result,
@@ -650,6 +661,7 @@ impl ImageCompressor {
         });
 
         let executor = MediaProcessExecutorBuilder::new(self.app.clone())
+            .owner_window(&self.owner_window)
             .command(pngquant_cmd)
             .with_cancel_support(
                 vec![image_id.to_string(), batch_id.to_string()],
@@ -701,6 +713,7 @@ impl ImageCompressor {
         });
 
         let executor = MediaProcessExecutorBuilder::new(self.app.clone())
+            .owner_window(&self.owner_window)
             .command(jpegoptim_cmd)
             .with_cancel_support(
                 vec![image_id.to_string(), batch_id.to_string()],
@@ -795,11 +808,12 @@ impl ImageCompressor {
         let without_alpha = vec!["-i", input_path, "-frames:v", "1", "-y", output_path];
 
         for cmd_args in [with_alpha, without_alpha] {
-            let ffmpeg = FFMPEG::new(&self.app)?;
+            let ffmpeg = FFMPEG::new(&self.app)?.with_owner_window(&self.owner_window);
             let mut ffmpeg_cmd = ffmpeg.get_ffmpeg_command()?;
             ffmpeg_cmd.args(&cmd_args);
 
             let executor = MediaProcessExecutorBuilder::new(self.app.clone())
+            .owner_window(&self.owner_window)
                 .command(ffmpeg_cmd)
                 .build()?;
 
@@ -857,6 +871,7 @@ impl ImageCompressor {
         });
 
         let executor = MediaProcessExecutorBuilder::new(self.app.clone())
+            .owner_window(&self.owner_window)
             .command(gifski_cmd)
             .with_cancel_support(
                 vec![image_id.to_string(), batch_id.to_string()],
@@ -1104,7 +1119,7 @@ impl ImageCompressor {
 
         log::info!("[ffmpeg-image] conversion command: {:?}", cmd_args);
 
-        let ffmpeg = FFMPEG::new(&self.app)?;
+        let ffmpeg = FFMPEG::new(&self.app)?.with_owner_window(&self.owner_window);
         let mut ffmpeg_cmd = ffmpeg.get_ffmpeg_command()?;
 
         ffmpeg_cmd.args(&cmd_args);
@@ -1112,6 +1127,7 @@ impl ImageCompressor {
         let conversion_id = format!("img_convert_{}", nanoid!());
 
         let executor = MediaProcessExecutorBuilder::new(self.app.clone())
+            .owner_window(&self.owner_window)
             .command(ffmpeg_cmd)
             .with_cancel_support(vec![conversion_id], None)
             .build()?;
@@ -1250,12 +1266,13 @@ impl ImageCompressor {
 
         log::info!("[image-transform] FFmpeg command: {:?}", cmd_args);
 
-        let ffmpeg = FFMPEG::new(&self.app)?;
+        let ffmpeg = FFMPEG::new(&self.app)?.with_owner_window(&self.owner_window);
         let mut ffmpeg_cmd = ffmpeg.get_ffmpeg_command()?;
 
         ffmpeg_cmd.args(&cmd_args);
 
         let executor = MediaProcessExecutorBuilder::new(self.app.clone())
+            .owner_window(&self.owner_window)
             .command(ffmpeg_cmd)
             .build()?;
 

@@ -50,6 +50,7 @@ function PreviewSingleMedia({
       isCompressing,
       showMediaInfo,
       isLoadingMediaFiles,
+      isWaitingForDropZone,
     },
   } = useSnapshot(appProxy)
   const mediaFile = media.length > 0 ? media[mediaIndex] : null
@@ -439,7 +440,9 @@ function PreviewSingleMedia({
         />
         <div className="flex flex-col justify-center absolute top-1/2 left-1/2  translate-x-[-50%] translate-y-[-50%] z-[11] text-white1">
           <p className=" text-sm mt-10 text-center animate-pulse">
-            Processing...
+            {isWaitingForDropZone
+              ? 'Waiting for the drop zone...'
+              : 'Processing...'}
           </p>
           <p
             className={`text-2xl text-center font-bold my-2 opacity-${

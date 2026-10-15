@@ -1,4 +1,5 @@
-import { proxy, subscribe } from 'valtio'
+import isEqual from 'lodash/isEqual'
+import { proxy, snapshot, subscribe } from 'valtio'
 
 import * as constants from '@/constants'
 import {
@@ -68,6 +69,18 @@ function readPresets(): PresetsState {
 }
 
 export const presetsStore = proxy<PresetsState>(readPresets())
+
+// Changed in another window (e.g. saved in the main window, used by the menu bar's)
+window.addEventListener('storage', (evt) => {
+  if (evt.storageArea !== localStorage || evt.key !== constants.presets) return
+  const { presets, defaultPresetIds } = readPresets()
+  if (!isEqual(presets, snapshot(presetsStore).presets)) {
+    presetsStore.presets = presets
+  }
+  if (!isEqual(defaultPresetIds, snapshot(presetsStore).defaultPresetIds)) {
+    presetsStore.defaultPresetIds = defaultPresetIds
+  }
+})
 
 subscribe(presetsStore, () => {
   const stored: StoredPresets = {

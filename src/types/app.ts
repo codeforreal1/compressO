@@ -244,6 +244,10 @@ export type App = {
   totalSelectedMediaCount: number
   /** Media is being added to an existing selection (see `addMedia`) */
   isAppendingMedia: boolean
+  /** The compression waits for the drop zone to finish the media it is compressing (macOS) */
+  isWaitingForDropZone?: boolean
+  /** A batch is paused: the media being compressed finishes, the next waits until resumed */
+  isBatchPaused?: boolean
   currentMediaIndex: number
   isCompressing: boolean
   totalProgress: number

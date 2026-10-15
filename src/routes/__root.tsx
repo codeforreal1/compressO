@@ -6,13 +6,16 @@ import { useEffect } from 'react'
 import { subscribeKey } from 'valtio/utils'
 
 import { Toaster } from '@/components/Toast'
+import { useAutoCompressSync } from '@/hooks/useAutoCompressSync'
 import { useClipboardWatchSync } from '@/hooks/useClipboardWatchSync'
 import { useWindowTint } from '@/hooks/useWindowTint'
 import { settingsStore } from '@/stores/settingsStore'
 import { checkForUpdates, setupUpdateListeners } from '@/stores/updateStore'
 import { setTrayIconEnabled, TRAY_WINDOW_LABEL } from '@/tauri/commands/tray'
 import Titlebar from '@/tauri/components/Titlebar'
+import DropZoneIsland from '@/ui/DropZoneIsland'
 import { getPlatform } from '@/utils/fs'
+import { useDropQueueRunner } from './webviews/tray/-queue'
 import UIProvider from '../providers/UIProvider'
 
 export const Route = createRootRoute({
@@ -33,6 +36,7 @@ function RootComponent() {
 function MainRoot() {
   useWindowTint()
   useClipboardWatchSync({ applyOnMount: true })
+  useAutoCompressSync()
 
   useEffect(() => {
     // Also tells the backend to show the window, which starts hidden to avoid a blank flash
@@ -56,6 +60,8 @@ function MainRoot() {
       <UIProvider className={isMacOS ? 'pt-4' : ''}>
         {isMacOS ? <Titlebar /> : null}
         <Outlet />
+        {/* The drop zone of the menu bar (macOS), while it has media */}
+        {isMacOS ? <DropZoneIsland /> : null}
       </UIProvider>
       <Toaster />
       {isDev ? <TanStackRouterDevtools position="bottom-right" /> : null}
@@ -65,6 +71,9 @@ function MainRoot() {
 
 function TrayRoot() {
   useClipboardWatchSync({ applyOnMount: false })
+  useAutoCompressSync()
+  // The menu bar's window compresses the drop zone's queue
+  useDropQueueRunner()
   useEffect(() => {
     // The popover's native material follows the system appearance, so its content does too
     const root = document.documentElement

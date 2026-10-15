@@ -44,12 +44,14 @@ pub struct MediaProcessExecutorBuilder {
     stdout_callback: Option<StdoutCallback>,
     stderr_callback: Option<StderrCallback>,
     piped: bool,
+    owner_window: Option<String>,
 }
 
 impl MediaProcessExecutorBuilder {
     pub fn new(app: AppHandle) -> Self {
         Self {
             app,
+            owner_window: Some(String::from("main")),
             commands: Vec::new(),
             cancel_ids: Vec::new(),
             cancel_callback: None,
@@ -90,6 +92,12 @@ impl MediaProcessExecutorBuilder {
         self
     }
 
+    /// Window the processes belong to (the main window by default): they are stopped when it closes
+    pub fn owner_window(mut self, label: &str) -> Self {
+        self.owner_window = Some(label.to_string());
+        self
+    }
+
     pub fn with_piped(mut self) -> Self {
         self.piped = true;
         self
@@ -115,6 +123,7 @@ impl MediaProcessExecutorBuilder {
             stdout_callback: self.stdout_callback,
             stderr_callback: self.stderr_callback,
             piped: self.piped,
+            owner_window: self.owner_window,
         })
     }
 }
@@ -127,6 +136,7 @@ pub struct MediaProcessExecutor {
     stdout_callback: Option<StdoutCallback>,
     stderr_callback: Option<StderrCallback>,
     piped: bool,
+    owner_window: Option<String>,
 }
 
 impl MediaProcessExecutor {
@@ -163,7 +173,6 @@ impl MediaProcessExecutor {
         capture_stdout: bool,
     ) -> Result<(Option<String>, u8), String> {
         let mut processes: Vec<Arc<SharedChild>> = Vec::new();
-        let mut event_ids: Vec<tauri::EventId> = Vec::new();
         let should_cancel = Arc::new(Mutex::new(false));
         let captured_stdout = Arc::new(Mutex::new(None));
 
@@ -174,28 +183,34 @@ impl MediaProcessExecutor {
             processes.push(cp.clone());
         }
 
-        let window = self
-            .app
-            .get_webview_window("main")
-            .ok_or("Could not attach to main window")?;
-
-        let destroy_id = window.listen(TauriEvents::Destroyed.get_str("key").unwrap(), {
-            let processes = processes.clone();
-            move |_| {
-                log::info!("[tauri] window destroyed, killing processes");
-                for proc in &processes {
-                    proc.kill().ok();
+        // Removed on every return, including cancellations
+        let mut _listener_guards: Vec<EventListenerGuard<_>> = Vec::new();
+        // The processes belong to the window that started them, and are stopped when it is closed.
+        // Without it (e.g. closed already), they still run, and are stopped when the app quits.
+        let owner_window = self
+            .owner_window
+            .as_deref()
+            .and_then(|label| self.app.get_webview_window(label));
+        if let Some(window) = &owner_window {
+            let destroy_id = window.listen(TauriEvents::Destroyed.get_str("key").unwrap(), {
+                let processes = processes.clone();
+                move |_| {
+                    log::info!("[tauri] window destroyed, killing processes");
+                    for proc in &processes {
+                        proc.kill().ok();
+                    }
                 }
-            }
-        });
-        event_ids.push(destroy_id);
+            });
+            _listener_guards.push(EventListenerGuard::new(window.clone(), destroy_id));
+        }
 
         if !self.cancel_ids.is_empty() {
             let cancel_ids = self.cancel_ids.clone();
             let processes_clone = processes.clone();
             let should_cancel_clone = should_cancel.clone();
 
-            let cancel_id = window.listen(
+            // Cancelled from any window, by the ids (`listen_any`: the main window sends it to itself)
+            let cancel_id = self.app.listen_any(
                 CustomEvents::CancelInProgressCompression.as_ref(),
                 move |evt| {
                     let payload_str = evt.payload();
@@ -218,13 +233,8 @@ impl MediaProcessExecutor {
                     }
                 },
             );
-            event_ids.push(cancel_id);
+            _listener_guards.push(EventListenerGuard::for_app(self.app.clone(), cancel_id));
         }
-        // Removed on every return, including cancellations
-        let _listener_guards: Vec<EventListenerGuard<_>> = event_ids
-            .drain(..)
-            .map(|event_id| EventListenerGuard::new(window.clone(), event_id))
-            .collect();
 
         for (idx, proc) in processes.iter().enumerate() {
             let proc_clone = proc.clone();
@@ -382,7 +392,6 @@ impl MediaProcessExecutor {
         _capture_stdout: bool,
     ) -> Result<(Option<String>, u8), String> {
         let mut processes: Vec<Arc<SharedChild>> = Vec::new();
-        let mut event_ids: Vec<tauri::EventId> = Vec::new();
         let should_cancel = Arc::new(Mutex::new(false));
         let processes_shared = Arc::new(Mutex::new(Vec::<Arc<SharedChild>>::new()));
 
@@ -446,29 +455,35 @@ impl MediaProcessExecutor {
         *processes_shared.lock().unwrap() = processes.clone();
         let process_count = processes_shared.lock().unwrap().len();
 
-        let window = self
-            .app
-            .get_webview_window("main")
-            .ok_or("Could not attach to main window")?;
-
-        let destroy_id = window.listen(TauriEvents::Destroyed.get_str("key").unwrap(), {
-            let processes_shared = processes_shared.clone();
-            move |_| {
-                log::info!("[media_process] window destroyed, killing piped processes");
-                let processes = processes_shared.lock().unwrap();
-                for process in processes.iter() {
-                    process.kill().ok();
+        // Removed on every return, including cancellations
+        let mut _listener_guards: Vec<EventListenerGuard<_>> = Vec::new();
+        // The processes belong to the window that started them, and are stopped when it is closed.
+        // Without it (e.g. closed already), they still run, and are stopped when the app quits.
+        let owner_window = self
+            .owner_window
+            .as_deref()
+            .and_then(|label| self.app.get_webview_window(label));
+        if let Some(window) = &owner_window {
+            let destroy_id = window.listen(TauriEvents::Destroyed.get_str("key").unwrap(), {
+                let processes_shared = processes_shared.clone();
+                move |_| {
+                    log::info!("[media_process] window destroyed, killing piped processes");
+                    let processes = processes_shared.lock().unwrap();
+                    for process in processes.iter() {
+                        process.kill().ok();
+                    }
                 }
-            }
-        });
-        event_ids.push(destroy_id);
+            });
+            _listener_guards.push(EventListenerGuard::new(window.clone(), destroy_id));
+        }
 
         if !self.cancel_ids.is_empty() {
             let cancel_ids = self.cancel_ids.clone();
             let should_cancel_clone = should_cancel.clone();
             let processes_shared_clone = processes_shared.clone();
 
-            let cancel_id = window.listen(
+            // Cancelled from any window, by the ids (`listen_any`: the main window sends it to itself)
+            let cancel_id = self.app.listen_any(
                 CustomEvents::CancelInProgressCompression.as_ref(),
                 move |evt| {
                     let payload_str = evt.payload();
@@ -492,13 +507,8 @@ impl MediaProcessExecutor {
                     }
                 },
             );
-            event_ids.push(cancel_id);
+            _listener_guards.push(EventListenerGuard::for_app(self.app.clone(), cancel_id));
         }
-        // Removed on every return, including cancellations
-        let _listener_guards: Vec<EventListenerGuard<_>> = event_ids
-            .drain(..)
-            .map(|event_id| EventListenerGuard::new(window.clone(), event_id))
-            .collect();
 
         for (idx, proc) in processes.iter().enumerate() {
             let proc_clone = proc.clone();
