@@ -57,7 +57,7 @@ function SaveMedia() {
         isLoading={isSaving}
         isDisabled={isSaving || isSaved}
         fullWidth
-        variant="light"
+        variant="solid"
       >
         {isSaving ? 'Saving...' : isSaved ? 'Saved' : `Save Media`}
         {!isSaving ? (
