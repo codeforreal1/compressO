@@ -7,6 +7,7 @@ import { useSnapshot } from 'valtio'
 
 import Button from '@/components/Button'
 import Icon from '@/components/Icon'
+import ScrollShadow from '@/components/ScrollShadow'
 import Switch from '@/components/Switch'
 import { toast } from '@/components/Toast'
 import { isAutoCompressAvailable } from '@/hooks/useAutoCompressSync'
@@ -447,7 +448,12 @@ function DroppedFiles({
           <Icon name="cross" size={14} />
         </Button>
       </div>
-      <ul className="flex-1 min-h-0 overflow-y-auto px-1.5">
+      <ScrollShadow
+        as="ul"
+        size={24}
+        hideScrollBar
+        className="flex-1 min-h-0 overflow-y-auto px-1.5"
+      >
         {files.map((path) => (
           <li
             key={path}
@@ -471,7 +477,7 @@ function DroppedFiles({
             </Button>
           </li>
         ))}
-      </ul>
+      </ScrollShadow>
       <p
         className={cn(
           'px-3 py-2 text-[11px] text-center',

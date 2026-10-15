@@ -493,11 +493,12 @@ function DropZoneIsland() {
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0, transition: { duration: 0.08 } }}
                   transition={PILL_CONTENT_TRANSITION}
-                  className="group flex items-center gap-2 h-8 px-3 text-[11px] whitespace-nowrap"
+                  // Anywhere on the pill (its padding too) expands it; the button is for the keyboard
+                  onClick={() => setIsExpanded(true)}
+                  className="group flex items-center gap-2 h-8 px-3 text-[11px] whitespace-nowrap cursor-pointer"
                 >
                   <button
                     type="button"
-                    onClick={() => setIsExpanded(true)}
                     aria-label="Show the drop zone"
                     className="flex items-center gap-2 h-full"
                   >
@@ -513,11 +514,8 @@ function DropZoneIsland() {
                     </span>
                   </button>
                   {pendingCount ? (
-                    <button
-                      type="button"
-                      onClick={() => setIsExpanded(true)}
+                    <span
                       aria-hidden
-                      tabIndex={-1}
                       className="w-10 h-1 rounded-full bg-white/20 overflow-hidden"
                     >
                       <motion.span
@@ -525,7 +523,7 @@ function DropZoneIsland() {
                         animate={{ width: `${Math.max(4, progress)}%` }}
                         transition={{ duration: 0.4 }}
                       />
-                    </button>
+                    </span>
                   ) : (
                     // One fixed slot: the tick & the clear button crossfade on hover, so nothing
                     // moves
@@ -535,7 +533,9 @@ function DropZoneIsland() {
                       </span>
                       <button
                         type="button"
-                        onClick={() => {
+                        onClick={(evt) => {
+                          // Clears without expanding the pill
+                          evt.stopPropagation()
                           clearFinishedDropQueue().catch(() => {})
                         }}
                         aria-label="Clear the finished media"

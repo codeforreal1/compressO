@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import Button from '@/components/Button'
 import Icon from '@/components/Icon'
 import Progress from '@/components/Progress'
+import ScrollShadow from '@/components/ScrollShadow'
 import Tooltip from '@/components/Tooltip'
 import { useDropQueuePaused } from '@/hooks/useDropQueue'
 import {
@@ -226,8 +227,11 @@ function VirtualQueue({
   )
 
   return (
-    <div
+    // Fades the rows at the edges that can be scrolled to, like the main window's settings
+    <ScrollShadow
       ref={viewportRef}
+      size={24}
+      hideScrollBar
       className={cn(
         'flex-1 min-h-0 overflow-y-auto',
         isCompact ? 'px-1.5' : 'px-1',
@@ -252,7 +256,7 @@ function VirtualQueue({
           />
         ))}
       </ul>
-    </div>
+    </ScrollShadow>
   )
 }
 
@@ -284,7 +288,7 @@ function DropQueueList({
       <div
         className={cn(
           'flex items-center justify-between gap-2 pb-1',
-          isCompact ? 'pl-3 pr-1 pt-2' : 'px-2 pt-1',
+          isCompact ? 'pl-3 pr-2 pt-2' : 'px-2 pt-1',
         )}
       >
         <p className={cn(isCompact ? 'text-xs' : 'text-sm')}>
@@ -297,7 +301,7 @@ function DropQueueList({
               size="sm"
               variant="light"
               radius="md"
-              className="h-6 min-w-0 px-2 text-[11px] font-normal"
+              className="min-w-6 w-6 h-6"
               aria-label={isPaused ? 'Resume' : 'Pause'}
               title={isPaused ? 'Resume' : 'Pause after the current file'}
               onPress={() => {
@@ -313,10 +317,7 @@ function DropQueueList({
             size="sm"
             variant="light"
             radius="md"
-            className={cn(
-              'h-6 min-w-0 px-2 text-[11px] font-normal',
-              isActive && 'text-danger',
-            )}
+            className={cn('min-w-6 w-6 h-6', isActive && 'text-danger')}
             aria-label={isActive ? 'Stop' : 'Clear'}
             title={
               isActive
