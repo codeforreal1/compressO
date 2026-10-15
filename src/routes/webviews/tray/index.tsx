@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react'
 import { useSnapshot } from 'valtio'
 
 import Button from '@/components/Button'
+import DisabledReason from '@/components/DisabledReason'
 import Icon from '@/components/Icon'
 import ScrollShadow from '@/components/ScrollShadow'
 import Switch from '@/components/Switch'
@@ -531,22 +532,25 @@ function AutoCompressSwitch() {
   const canAutoCompress = isAutoCompressAvailable({ saveLocation, saveFolder })
 
   return (
-    <Switch
-      size="xs"
-      isSelected={autoCompress && canAutoCompress}
-      isDisabled={!canAutoCompress}
-      onValueChange={(isSelected) => {
-        settingsStore.autoCompress = isSelected
-      }}
-      title={
-        canAutoCompress
-          ? undefined
-          : 'Choose a save location in Settings, under Output, to compress automatically.'
-      }
-      classNames={{ label: 'text-[11px] text-zinc-500 dark:text-zinc-400' }}
-    >
-      Compress automatically
-    </Switch>
+    <div className="flex items-center gap-1.5">
+      <Switch
+        size="xs"
+        isSelected={autoCompress && canAutoCompress}
+        isDisabled={!canAutoCompress}
+        onValueChange={(isSelected) => {
+          settingsStore.autoCompress = isSelected
+        }}
+        classNames={{ label: 'text-[11px] text-zinc-500 dark:text-zinc-400' }}
+      >
+        Compress automatically
+      </Switch>
+      <DisabledReason
+        reason={
+          !canAutoCompress &&
+          'Choose a save location in Settings, under Output, so the compressed media can be saved without asking.'
+        }
+      />
+    </div>
   )
 }
 

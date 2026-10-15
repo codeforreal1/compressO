@@ -56,7 +56,7 @@ const SETTINGS_GROUPS: { label: string; pages: SettingsPage[] }[] = [
             {
               id: 'dropZone',
               label: 'Drop Zone',
-              icon: 'dragAndDrop' as const,
+              icon: 'dropzone' as const,
               Component: DropZone,
             },
           ]

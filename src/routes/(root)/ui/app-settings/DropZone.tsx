@@ -2,6 +2,7 @@
 import { SelectItem } from '@heroui/react'
 import { useSnapshot } from 'valtio'
 
+import DisabledReason from '@/components/DisabledReason'
 import Select from '@/components/Select'
 import Switch from '@/components/Switch'
 import { isAutoCompressAvailable } from '@/hooks/useAutoCompressSync'
@@ -72,20 +73,27 @@ function DropZone() {
       <SettingsSection title="Compression">
         <SettingsRow
           title="Compress automatically"
-          description={
-            canAutoCompress
-              ? 'Compress media as soon as it is added to the drop zone, one at a time, and save it to the save location of Output.'
-              : 'Choose a save location in Output, other than Ask every time, to compress automatically.'
-          }
+          description="Compress media as soon as it is added to the drop zone, one at a time, and save it to the save location of Output."
         >
-          <Switch
-            aria-label="Compress automatically"
-            isSelected={autoCompress && canAutoCompress}
-            isDisabled={!showMenuBarIcon || !canAutoCompress}
-            onValueChange={(isSelected) => {
-              settingsStore.autoCompress = isSelected
-            }}
-          />
+          <div className="flex items-center gap-2">
+            <DisabledReason
+              reason={
+                !showMenuBarIcon
+                  ? 'The drop zone is in the menu bar. Turn on Show menu bar icon in General first.'
+                  : !canAutoCompress
+                    ? 'Choose a save location in Output, other than Ask every time, so the compressed media can be saved without asking.'
+                    : null
+              }
+            />
+            <Switch
+              aria-label="Compress automatically"
+              isSelected={autoCompress && canAutoCompress}
+              isDisabled={!showMenuBarIcon || !canAutoCompress}
+              onValueChange={(isSelected) => {
+                settingsStore.autoCompress = isSelected
+              }}
+            />
+          </div>
         </SettingsRow>
         {autoCompress && canAutoCompress ? (
           <>
@@ -111,14 +119,22 @@ function DropZone() {
           title="Watch clipboard"
           description="Add media you copy, such as files or images from a browser, to the drop zone in the menu bar."
         >
-          <Switch
-            aria-label="Watch clipboard"
-            isSelected={watchClipboard}
-            isDisabled={!showMenuBarIcon}
-            onValueChange={(isSelected) => {
-              settingsStore.watchClipboard = isSelected
-            }}
-          />
+          <div className="flex items-center gap-2">
+            <DisabledReason
+              reason={
+                !showMenuBarIcon &&
+                'The drop zone is in the menu bar. Turn on Show menu bar icon in General first.'
+              }
+            />
+            <Switch
+              aria-label="Watch clipboard"
+              isSelected={watchClipboard}
+              isDisabled={!showMenuBarIcon}
+              onValueChange={(isSelected) => {
+                settingsStore.watchClipboard = isSelected
+              }}
+            />
+          </div>
         </SettingsRow>
       </SettingsSection>
     </>

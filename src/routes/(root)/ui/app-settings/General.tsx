@@ -1,6 +1,7 @@
 import { useSnapshot } from 'valtio'
 
 import ColorPicker from '@/components/ColorPicker'
+import DisabledReason from '@/components/DisabledReason'
 import Slider from '@/components/Slider'
 import Switch from '@/components/Switch'
 import { ThemeSwitcher } from '@/components/ThemeSwitcher'
@@ -101,20 +102,24 @@ function General() {
         <SettingsSection title="Menu bar">
           <SettingsRow
             title="Show menu bar icon"
-            description={
-              isMenuBarIconLocked
-                ? 'This can be turned off once the media in the drop zone is compressed or stopped.'
-                : 'Show the CompressO icon, the compression progress and the drop zone in the menu bar.'
-            }
+            description="Show the CompressO icon, the compression progress and the drop zone in the menu bar."
           >
-            <Switch
-              aria-label="Show menu bar icon"
-              isSelected={showMenuBarIcon}
-              isDisabled={isMenuBarIconLocked}
-              onValueChange={(isSelected) => {
-                settingsStore.showMenuBarIcon = isSelected
-              }}
-            />
+            <div className="flex items-center gap-2">
+              <DisabledReason
+                reason={
+                  isMenuBarIconLocked &&
+                  'Media in the drop zone is being compressed. This can be turned off once it is done or stopped.'
+                }
+              />
+              <Switch
+                aria-label="Show menu bar icon"
+                isSelected={showMenuBarIcon}
+                isDisabled={isMenuBarIconLocked}
+                onValueChange={(isSelected) => {
+                  settingsStore.showMenuBarIcon = isSelected
+                }}
+              />
+            </div>
           </SettingsRow>
         </SettingsSection>
       ) : null}

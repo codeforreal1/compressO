@@ -6,6 +6,7 @@ import { useSnapshot } from 'valtio'
 
 import AnimatedLabel from '@/components/AnimatedLabel'
 import Button from '@/components/Button'
+import DisabledReason from '@/components/DisabledReason'
 import Icon from '@/components/Icon'
 import Select from '@/components/Select'
 import Switch from '@/components/Switch'
@@ -215,31 +216,35 @@ function Output() {
       <SettingsSection title="Storage">
         <SettingsRow
           title="Clear cache"
-          description={
-            canClearCache
-              ? 'Free up space by deleting temporary files. Your saved files are not affected.'
-              : 'Close the media you are working on first.'
-          }
+          description="Free up space by deleting temporary files. Your saved files are not affected."
         >
-          <Button
-            isDisabled={!canClearCache}
-            size="sm"
-            color="danger"
-            variant={confirmClearCache ? 'solid' : 'flat'}
-            onPress={() => {
-              if (!confirmClearCache) {
-                setConfirmClearCache(true)
-              } else {
-                deleteCache()
+          <div className="flex items-center gap-2">
+            <DisabledReason
+              reason={
+                !canClearCache &&
+                'Close the media you are working on first, as it uses the cache.'
               }
-            }}
-            isLoading={isCacheDeleting}
-          >
-            <Icon name="trash" />
-            <AnimatedLabel>
-              {confirmClearCache ? 'Clear now' : 'Clear cache'}
-            </AnimatedLabel>
-          </Button>
+            />
+            <Button
+              isDisabled={!canClearCache}
+              size="sm"
+              color="danger"
+              variant={confirmClearCache ? 'solid' : 'flat'}
+              onPress={() => {
+                if (!confirmClearCache) {
+                  setConfirmClearCache(true)
+                } else {
+                  deleteCache()
+                }
+              }}
+              isLoading={isCacheDeleting}
+            >
+              <Icon name="trash" />
+              <AnimatedLabel>
+                {confirmClearCache ? 'Clear now' : 'Clear cache'}
+              </AnimatedLabel>
+            </Button>
+          </div>
         </SettingsRow>
       </SettingsSection>
     </>
