@@ -261,6 +261,7 @@ async fn main() {
                 use std::time::Duration;
 
                 let (tx, rx) = mpsc::channel();
+                let server_app_handle = app.handle().clone();
 
                 thread::spawn(move || {
                     let rt = match tokio::runtime::Runtime::new() {
@@ -272,7 +273,7 @@ async fn main() {
                     };
 
                     rt.block_on(async {
-                        match server::start_server().await {
+                        match server::start_server(server_app_handle).await {
                             Ok(state) => {
                                 let shutdown_tx = state.shutdown_tx.clone();
                                 let _ = tx.send(Ok(state));

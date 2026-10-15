@@ -40,10 +40,10 @@ export async function constructVideoUrl(filePath: string): Promise<string> {
     try {
       return await invoke<string>('construct_video_url', { filePath })
     } catch (error) {
+      // Links are only made by the backend, with the server's secret
       // biome-ignore lint/suspicious/noConsole: <>
       console.error('Failed to generate video URL:', error)
-      const encodedPath = encodeURIComponent(filePath)
-      return `${serverUrl}/video?path=${encodedPath}`
+      return filePath
     }
   }
 

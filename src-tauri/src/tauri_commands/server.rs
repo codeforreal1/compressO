@@ -33,7 +33,7 @@ pub fn construct_video_url(
     let encoded_path = urlencoding::encode(actual_path);
 
     Ok(format!(
-        "http://127.0.0.1:{}/video?path={}",
-        state.port, encoded_path
+        "http://127.0.0.1:{}/video?token={}&path={}",
+        state.port, state.token, encoded_path
     ))
 }
