@@ -459,6 +459,7 @@ async fn main() {
             set_tray_icon_enabled,
             #[cfg(target_os = "macos")]
             add_dropped_files,
+            #[cfg(target_os = "macos")]
             paste_dropped_files,
             #[cfg(target_os = "macos")]
             remove_dropped_file,
