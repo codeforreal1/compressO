@@ -2,6 +2,7 @@ import cloneDeep from 'lodash/cloneDeep'
 import React from 'react'
 import { useSnapshot } from 'valtio'
 
+import AnimatedLabel from '@/components/AnimatedLabel'
 import Button from '@/components/Button'
 import Icon from '@/components/Icon'
 import TextInput from '@/components/TextInput'
@@ -161,7 +162,8 @@ function PresetCard({ preset, isFirst, isLast, isDefault }: PresetCardProps) {
             size="sm"
             color="danger"
             variant={confirmDelete ? 'solid' : 'light'}
-            isIconOnly={!confirmDelete}
+            // The same size as the icon buttons beside it, growing smoothly into "Delete"
+            className="min-w-8 px-2 gap-0"
             onPress={() => {
               if (confirmDelete) {
                 deletePresetAndUnlinkMedia(preset.id)
@@ -173,7 +175,9 @@ function PresetCard({ preset, isFirst, isLast, isDefault }: PresetCardProps) {
             aria-label="Delete preset"
           >
             <Icon name="trash" />
-            {confirmDelete ? 'Delete' : null}
+            <AnimatedLabel textClassName="pl-1.5">
+              {confirmDelete ? 'Delete' : ''}
+            </AnimatedLabel>
           </Button>
         </div>
       </div>

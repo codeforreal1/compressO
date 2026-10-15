@@ -1,8 +1,8 @@
 import { emitTo } from '@tauri-apps/api/event'
-import { AnimatePresence, motion } from 'framer-motion'
 import React from 'react'
 import { snapshot, useSnapshot } from 'valtio'
 
+import AnimatedLabel from '@/components/AnimatedLabel'
 import Button from '@/components/Button'
 import ShortcutHint from '@/components/ShortcutHint'
 import { toast } from '@/components/Toast'
@@ -98,15 +98,13 @@ function CancelCompression() {
       isDisabled={isCancelling}
       fullWidth
     >
-      <AnimatePresence mode="wait">
-        <motion.div layout="preserve-aspect">
-          {confirmCancellation && !isCancelling
-            ? 'Confirm Cancel'
-            : isCancelling
-              ? 'Cancelling...'
-              : 'Cancel'}
-        </motion.div>
-      </AnimatePresence>
+      <AnimatedLabel>
+        {confirmCancellation && !isCancelling
+          ? 'Confirm Cancel'
+          : isCancelling
+            ? 'Cancelling...'
+            : 'Cancel'}
+      </AnimatedLabel>
       <ShortcutHint isVisible={isCommandKeyHeld && !isCancelling} />
     </Button>
   ) : null

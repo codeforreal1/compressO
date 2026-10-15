@@ -1,10 +1,10 @@
 // The item must be HeroUI's own (not a wrapper) so the Select can build its collection
 import { SelectItem } from '@heroui/react'
 import { open } from '@tauri-apps/plugin-dialog'
-import { AnimatePresence, motion } from 'framer-motion'
 import React from 'react'
 import { useSnapshot } from 'valtio'
 
+import AnimatedLabel from '@/components/AnimatedLabel'
 import Button from '@/components/Button'
 import Icon from '@/components/Icon'
 import Select from '@/components/Select'
@@ -236,18 +236,9 @@ function Output() {
             isLoading={isCacheDeleting}
           >
             <Icon name="trash" />
-            <AnimatePresence initial={false} mode="wait">
-              <motion.span
-                key={confirmClearCache ? 'confirm' : 'clear'}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.15 }}
-                className="inline-block whitespace-nowrap"
-              >
-                {confirmClearCache ? 'Clear now' : 'Clear cache'}
-              </motion.span>
-            </AnimatePresence>
+            <AnimatedLabel>
+              {confirmClearCache ? 'Clear now' : 'Clear cache'}
+            </AnimatedLabel>
           </Button>
         </SettingsRow>
       </SettingsSection>
