@@ -128,9 +128,43 @@ pub fn set_tray_progress(app_handle: &AppHandle, progress: f64) -> Result<(), St
     let title = if progress <= 0.0 {
         String::new()
     } else {
-        format!("{}%", progress.round())
+        use_monospaced_digits(&tray);
+        // Always 3 digits wide (padded with figure spaces, as wide as a digit), so the icon does
+        // not resize & move the popover while it counts
+        format!("{:\u{2007}>3}%", progress.round() as u32)
     };
     tray.set_title(Some(title)).map_err(|err| err.to_string())
+}
+
+/// The menu bar's font, with digits of one width (the menu bar's own font has narrower & wider
+/// digits, so the title would change width as the progress changes)
+fn use_monospaced_digits(tray: &TrayIcon) {
+    let _ = tray.with_inner_tray_icon(|inner| {
+        let Some(status_item) = inner.ns_status_item() else {
+            return;
+        };
+        unsafe {
+            let button: *mut objc2::runtime::AnyObject = objc2::msg_send![&*status_item, button];
+            if button.is_null() {
+                return;
+            }
+            let menu_bar_font: *mut objc2::runtime::AnyObject =
+                objc2::msg_send![objc2::class!(NSFont), menuBarFontOfSize: 0.0f64];
+            let size: f64 = if menu_bar_font.is_null() {
+                13.0
+            } else {
+                objc2::msg_send![menu_bar_font, pointSize]
+            };
+            let font: *mut objc2::runtime::AnyObject = objc2::msg_send![
+                objc2::class!(NSFont),
+                monospacedDigitSystemFontOfSize: size,
+                weight: 0.0f64
+            ];
+            if !font.is_null() {
+                let _: () = objc2::msg_send![button, setFont: font];
+            }
+        }
+    });
 }
 
 fn create_tray_window(app_handle: &AppHandle) -> Result<WebviewWindow, String> {
