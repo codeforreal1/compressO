@@ -404,8 +404,8 @@ function DropZoneIsland() {
                   transition={{ duration: 0.2 }}
                   className="p-3"
                 >
-                  <div className="flex items-center gap-2 pb-2">
-                    <Icon name="dropzone" size={16} className="text-primary" />
+                  <div className="flex items-center gap-1 pb-2">
+                    <Icon name="dropzone" size={20} className="text-primary" />
                     <div className="min-w-0">
                       <p className="text-[11px] text-white/60 truncate">
                         {getSummary(items, isPaused)}
@@ -491,14 +491,14 @@ function DropZoneIsland() {
                   transition={PILL_CONTENT_TRANSITION}
                   // Anywhere on the pill (its padding too) expands it; the button is for the keyboard
                   onClick={() => setIsExpanded(true)}
-                  className="group flex items-center gap-2 h-8 px-3 text-[11px] whitespace-nowrap cursor-pointer"
+                  className="group flex items-center gap-1 h-8 px-3 text-[11px] whitespace-nowrap cursor-pointer"
                 >
                   <button
                     type="button"
                     aria-label="Show the drop zone"
                     className="flex items-center gap-2 h-full"
                   >
-                    <Icon name="dropzone" size={16} className="text-primary" />
+                    <Icon name="dropzone" size={18} className="text-primary" />
                     <span>
                       {pendingCount
                         ? getSummary(items, isPaused)
