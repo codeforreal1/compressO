@@ -6,6 +6,7 @@ use crate::core::domain::{
     VideoTrimSegment,
 };
 use crate::core::ffprobe::FFPROBE;
+use crate::core::hardware_encoder;
 use crate::core::image::ImageCompressor;
 use crate::core::media_process::{CancelCallback, MediaProcessExecutorBuilder};
 use crate::sys::fs::{ensure_assets_dir, get_file_metadata};
@@ -18,7 +19,7 @@ use std::{
     process::Command,
     sync::Arc,
 };
-use tauri::{AppHandle, Emitter, Listener};
+use tauri::{AppHandle, Emitter, Listener, Manager};
 use tauri_plugin_shell::ShellExt;
 
 pub struct FFMPEG {
@@ -875,8 +876,22 @@ impl FFMPEG {
 
         log::info!("[ffmpeg] final command{:?}", cmd_args);
 
-        let mut ffmpeg_cmd = self.get_ffmpeg_command()?;
-        ffmpeg_cmd.args(cmd_args);
+        // On the graphics card first when it can encode the codec (not GIFs, audio or lossless), then
+        // on the CPU if that fails, so a video is never lost to the graphics card (see
+        // `hardware_encoder`)
+        let cpu_args: Vec<String> = cmd_args.iter().map(|arg| arg.to_string()).collect();
+        let hardware_encoder = if preset_name.is_some() && !is_gif_target && !is_audio_target {
+            hardware_encoder::encoder_for(&self.app, &output_codec).await
+        } else {
+            None
+        };
+        let mut attempts: Vec<(Option<&'static str>, Vec<String>)> = Vec::new();
+        if let Some(encoder) = &hardware_encoder {
+            let hardware_args = hardware_encoder::to_hardware_args(&cpu_args, encoder);
+            log::info!("[ffmpeg] on the graphics card ({}): {:?}", encoder.name, hardware_args);
+            attempts.push((Some(encoder.name), hardware_args));
+        }
+        attempts.push((None, cpu_args));
 
         let output_file_clone = output_file.clone();
         let cancel_callback: CancelCallback = Arc::new(move || {
@@ -914,20 +929,40 @@ impl FFMPEG {
             }
         });
 
-        let executor = MediaProcessExecutorBuilder::new(self.app.clone())
-            .owner_window(&self.owner_window)
-            .command(ffmpeg_cmd)
-            .with_cancel_support(
-                vec![video_id.to_string(), batch_id.clone()],
-                Some(cancel_callback),
-            )
-            .with_stdout_callback(stdout_callback)
-            .build()?;
+        let attempt_count = attempts.len();
+        for (attempt, (hardware_encoder_name, args)) in attempts.into_iter().enumerate() {
+            let is_last_attempt = attempt + 1 == attempt_count;
 
-        let result = executor.spawn_and_wait().await?;
+            let mut ffmpeg_cmd = self.get_ffmpeg_command()?;
+            ffmpeg_cmd.args(args);
 
-        if !result.success() {
-            return Err("Video compression failed".to_string());
+            let executor = MediaProcessExecutorBuilder::new(self.app.clone())
+                .owner_window(&self.owner_window)
+                .command(ffmpeg_cmd)
+                .with_cancel_support(
+                    vec![video_id.to_string(), batch_id.clone()],
+                    Some(cancel_callback.clone()),
+                )
+                .with_stdout_callback(stdout_callback.clone())
+                .build()?;
+
+            let error = match executor.spawn_and_wait().await {
+                Ok(result) if result.success() => break,
+                // Cancelled by the user: not tried again
+                Err(error) if error == "CANCELLED" => return Err(error),
+                Ok(_) => "Video compression failed".to_string(),
+                Err(error) => error,
+            };
+            // The window compressing it was closed (its processes are stopped with it)
+            let is_owner_closed = self.app.get_webview_window(&self.owner_window).is_none();
+            if is_last_attempt || is_owner_closed {
+                return Err(error);
+            }
+            log::warn!(
+                "[ffmpeg] compressing on the graphics card ({}) failed ({}), compressing on the CPU instead",
+                hardware_encoder_name.unwrap_or_default(),
+                error
+            );
         }
 
         if convert_to_extension == "gif" {

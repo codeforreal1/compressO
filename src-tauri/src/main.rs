@@ -38,6 +38,7 @@ use tauri_commands::{
         compress_images_batch, convert_svg_to_png, get_exif_info, get_image_basic_info,
         get_image_color_info, get_image_dimensions,
     },
+    hardware_encoder::{get_hardware_encoders, set_hardware_encoding_enabled},
     media::{compress_media_batch, set_batch_paused},
     sound::play_completion_sound,
     updater::{check_update, download_and_install_update},
@@ -233,6 +234,15 @@ async fn main() {
             app.manage(FrontendReady::new());
             app.manage(CompressionStatusState(Mutex::new(Default::default())));
 
+            // Finds the graphics card's video encoders in the background, so the first compression
+            // does not wait for it
+            {
+                let app_handle = app.handle().clone();
+                tauri::async_runtime::spawn(async move {
+                    core::hardware_encoder::available_encoders(&app_handle).await;
+                });
+            }
+
             #[cfg(target_os = "macos")]
             quit::install_macos_quit_confirmation(app.handle());
 
@@ -396,6 +406,8 @@ async fn main() {
             compress_images_batch,
             compress_media_batch,
             set_batch_paused,
+            set_hardware_encoding_enabled,
+            get_hardware_encoders,
             extract_subtitle,
             generate_video_thumbnail,
             get_video_basic_info,

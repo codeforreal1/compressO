@@ -63,6 +63,12 @@ export type SettingsState = {
   /** Presets of the media compressed by the drop zone (the Standard presets by default) */
   dropZoneVideoPresetId: string
   dropZoneImagePresetId: string
+  /**
+   * Compress videos with hardware acceleration (the graphics card) when it can (off by default):
+   * faster, with slightly larger files. Falls back to the CPU when it does not work (see
+   * `hardware_encoder.rs`).
+   */
+  useHardwareAcceleration: boolean
 }
 
 // Replaced by `saveLargerOutputs`, which defaults to on
@@ -101,6 +107,8 @@ function readSettings(): SettingsState {
     dropZoneImagePresetId:
       localStorage.getItem(constants.dropZoneImagePresetId) ??
       STANDARD_PRESET_ID,
+    useHardwareAcceleration:
+      localStorage.getItem(constants.useHardwareAcceleration) === 'true',
   }
 }
 
@@ -163,6 +171,10 @@ subscribe(settingsStore, () => {
   localStorage.setItem(
     constants.dropZoneImagePresetId,
     settingsStore.dropZoneImagePresetId,
+  )
+  localStorage.setItem(
+    constants.useHardwareAcceleration,
+    String(settingsStore.useHardwareAcceleration),
   )
   if (settingsStore.saveFolder) {
     localStorage.setItem(constants.saveFolder, settingsStore.saveFolder)

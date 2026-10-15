@@ -286,7 +286,7 @@ function PreviewSingleMedia({
               </p>
             </div>
             {!(compressedSizeDiff <= 0) ? (
-              <p className="block text-5xl text-center text-green-500">
+              <p className="block text-5xl text-center text-primary">
                 {compressedSizeDiff.toFixed(2)?.endsWith('.00')
                   ? compressedSizeDiff.toFixed(2)?.slice(0, -3)
                   : compressedSizeDiff.toFixed(2)}

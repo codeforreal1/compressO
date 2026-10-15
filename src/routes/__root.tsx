@@ -8,6 +8,7 @@ import { subscribeKey } from 'valtio/utils'
 import { Toaster } from '@/components/Toast'
 import { useAutoCompressSync } from '@/hooks/useAutoCompressSync'
 import { useClipboardWatchSync } from '@/hooks/useClipboardWatchSync'
+import { useHardwareEncodingSync } from '@/hooks/useHardwareEncoding'
 import { useWindowTint } from '@/hooks/useWindowTint'
 import { settingsStore } from '@/stores/settingsStore'
 import { checkForUpdates, setupUpdateListeners } from '@/stores/updateStore'
@@ -37,6 +38,7 @@ function MainRoot() {
   useWindowTint()
   useClipboardWatchSync({ applyOnMount: true })
   useAutoCompressSync()
+  useHardwareEncodingSync()
 
   useEffect(() => {
     // Also tells the backend to show the window, which starts hidden to avoid a blank flash
@@ -72,6 +74,7 @@ function MainRoot() {
 function TrayRoot() {
   useClipboardWatchSync({ applyOnMount: false })
   useAutoCompressSync()
+  useHardwareEncodingSync()
   // The menu bar's window compresses the drop zone's queue
   useDropQueueRunner()
   useEffect(() => {

@@ -37,7 +37,6 @@ tauri-plugin-log = "2.0.0"
 tauri-plugin-window-state = "2.0.0"
 tauri-plugin-os = "2.0.0"
 tauri-plugin-updater = "2.0.0"
-wgpu = "23.0.1"
 clipboard-rs = "0.3.2"
 oxipng = { version = "9", features = ["parallel", "zopfli", "filetime"], default-features = false }
 webp = "0.3"

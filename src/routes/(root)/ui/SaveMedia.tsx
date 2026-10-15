@@ -52,19 +52,16 @@ function SaveMedia() {
     <div className="flex items-center">
       <Button
         className="flex justify-center items-center"
-        color="success"
+        color="primary"
         onPress={handleCompressedMediaSave}
         isLoading={isSaving}
         isDisabled={isSaving || isSaved}
         fullWidth
-        variant="solid"
+        variant="light"
       >
         {isSaving ? 'Saving...' : isSaved ? 'Saved' : `Save Media`}
         {!isSaving ? (
-          <Icon
-            name={isSaved ? 'tick' : 'download'}
-            className="text-green-800"
-          />
+          <Icon name={isSaved ? 'tick' : 'download'} className="text-primary" />
         ) : null}
       </Button>
       {isSaved ? (
@@ -75,7 +72,7 @@ function SaveMedia() {
           >
             <Button
               isIconOnly
-              className="ml-2 text-green-500"
+              className="ml-2 text-primary"
               onPress={openInFileManager}
             >
               <Icon name="fileExplorer" />
@@ -92,7 +89,7 @@ function SaveMedia() {
         >
           <Button
             isIconOnly
-            className="ml-2 text-green-500"
+            className="ml-2 text-primary"
             onPress={copyToClipboard}
           >
             <Icon name="copy" size={28} />

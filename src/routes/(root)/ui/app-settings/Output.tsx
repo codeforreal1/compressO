@@ -12,6 +12,7 @@ import Select from '@/components/Select'
 import Switch from '@/components/Switch'
 import TextInput from '@/components/TextInput'
 import { toast } from '@/components/Toast'
+import { useHardwareEncoders } from '@/hooks/useHardwareEncoding'
 import {
   type SaveLocation,
   sanitizeFileNamePart,
@@ -72,7 +73,12 @@ function Output() {
     saveLargerOutputs,
     copyOutputToClipboard,
     copyBatchOutputToClipboard,
+    useHardwareAcceleration,
   } = useSnapshot(settingsStore)
+  // `null` while hardware acceleration is being checked (when the app starts)
+  const hardwareEncoders = useHardwareEncoders()
+  const hasHardwareAcceleration =
+    hardwareEncoders == null || hardwareEncoders.length > 0
   const selectedSaveLocation = SAVE_LOCATION_OPTIONS.find(
     (option) => option.key === saveLocation,
   )
@@ -211,6 +217,30 @@ function Output() {
             />
           </SettingsRow>
         ) : null}
+      </SettingsSection>
+
+      <SettingsSection title="Performance">
+        <SettingsRow
+          title="Use hardware acceleration"
+          description="Compress videos faster with hardware acceleration (Files can be slightly larger)"
+        >
+          <div className="flex items-center gap-2">
+            <DisabledReason
+              reason={
+                !hasHardwareAcceleration &&
+                'Hardware acceleration is not available on this computer.'
+              }
+            />
+            <Switch
+              aria-label="Use hardware acceleration"
+              isSelected={useHardwareAcceleration && hasHardwareAcceleration}
+              isDisabled={!hasHardwareAcceleration}
+              onValueChange={(isSelected) => {
+                settingsStore.useHardwareAcceleration = isSelected
+              }}
+            />
+          </div>
+        </SettingsRow>
       </SettingsSection>
 
       <SettingsSection title="Storage">

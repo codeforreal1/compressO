@@ -282,10 +282,10 @@ function PreviewBatchMedia() {
                   layout
                   variants={zoomInStaggerAnimation.item}
                   className={cn([
-                    'relative rounded-xl border-2 overflow-hidden',
+                    'relative rounded-xl border-1 overflow-hidden',
                     currentMediaIndex > originalIndex ||
                     mediaFile.isProcessCompleted
-                      ? 'border-green-400'
+                      ? 'border-primary'
                       : 'border-zinc-200 dark:border-zinc-900',
                   ])}
                 >
@@ -346,7 +346,7 @@ function PreviewBatchMedia() {
                                 <Icon
                                   name="copy"
                                   size={28}
-                                  className="text-green-400"
+                                  className="text-primary"
                                 />
                               </Button>
                             </Tooltip>
@@ -369,7 +369,7 @@ function PreviewBatchMedia() {
                                   <Icon
                                     name="compare"
                                     size={20}
-                                    className="text-green-400"
+                                    className="text-primary"
                                   />
                                 </Button>
                               </Tooltip>
@@ -397,7 +397,7 @@ function PreviewBatchMedia() {
                                 <Icon
                                   name="fileExplorer"
                                   size={20}
-                                  className="text-green-400"
+                                  className="text-primary"
                                 />
                               </Button>
                             </Tooltip>
@@ -513,7 +513,7 @@ function PreviewBatchMedia() {
                                   orientation="vertical"
                                   className="h-5"
                                 />
-                                <p className="block text-center text-[16px] text-green-500">
+                                <p className="block text-center text-[16px] text-primary">
                                   {compressedSizeDiff
                                     .toFixed(2)
                                     ?.endsWith('.00')
@@ -620,7 +620,7 @@ function PreviewBatchMedia() {
                   <p className=" text-gray-600 dark:text-gray-400">
                     Size Saved
                   </p>
-                  <p className="font-black text-lg text-green-600 dark:text-green-400">
+                  <p className="font-black text-lg text-primary">
                     {formatBytes(getDisplayStats.sizeSaved ?? 0) || '...'}
                     {getDisplayStats.percentageSaved
                       ? `(${(getDisplayStats.percentageSaved ?? 0).toFixed(0)}%)`
@@ -690,7 +690,7 @@ function PreviewBatchMedia() {
                       className={cn(
                         'font-black text-lg',
                         (getDisplayStats.sizeSaved ?? 0) > 0
-                          ? 'text-green-600 dark:text-green-400'
+                          ? 'text-primary'
                           : '',
                       )}
                     >
