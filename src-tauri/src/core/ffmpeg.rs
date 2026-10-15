@@ -309,6 +309,13 @@ impl FFMPEG {
             cmd_args.push("-vn");
         } else {
             cmd_args.extend_from_slice(&["-c:v:0", output_codec.as_str()]);
+
+            // ffmpeg tags HEVC as `hev1`, which macOS (Finder thumbnails, Quick Look, QuickTime)
+            // does not play; `hvc1` plays everywhere. Only MP4/MOV (incl. M4V) use the tag.
+            let is_hevc = output_codec.contains("265") || output_codec.contains("hevc");
+            if is_hevc && matches!(container, "mp4" | "mov") {
+                cmd_args.extend_from_slice(&["-tag:v:0", "hvc1"]);
+            }
         }
 
         // Compression settings (`preset_name` is unset for lossless): constant quality via CRF, and
