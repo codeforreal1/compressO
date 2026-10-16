@@ -141,14 +141,36 @@ jobs:
     needs: [prepare, build]
     runs-on: ubuntu-22.04
     steps:
+      - uses: actions/checkout@v5
+      - name: Generate and attach SHA256 checksums
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ needs.prepare.outputs.tag }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/release-assets"
+          gh release download "$RELEASE_TAG" --dir "$RUNNER_TEMP/release-assets" --skip-existing
+          cd "$RUNNER_TEMP/release-assets"
+          find . -maxdepth 1 -type f ! -name SHA256SUMS -printf '%f\0' | sort -z | xargs -0 -r sha256sum > SHA256SUMS
+          test -s SHA256SUMS
+          gh release upload "$RELEASE_TAG" SHA256SUMS --clobber
       - name: Publish completed release
         uses: actions/github-script@v7
         env:
           RELEASE_ID: ${{ needs.prepare.outputs.release_id }}
         with:
           script: |
+            const release_id = Number(process.env.RELEASE_ID);
+            const assets = await github.paginate(github.rest.repos.listReleaseAssets, {
+              ...context.repo,
+              release_id,
+              per_page: 100,
+            });
+            const releaseNotes = require('./scripts/release-notes.cjs');
             await github.rest.repos.updateRelease({
               ...context.repo,
-              release_id: Number(process.env.RELEASE_ID),
+              release_id,
+              body: releaseNotes(assets),
               draft: false,
             });
