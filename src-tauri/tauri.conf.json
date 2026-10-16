@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "CompressO",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "identifier": "com.compresso.app",
   "build": {
     "beforeBuildCommand": "pnpm vite:build",
