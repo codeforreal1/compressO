@@ -141,49 +141,44 @@ async fn compress_media_items(
             };
 
             let video_id = &video_config.video_id;
-            let video_path = &video_config.video_path;
-            let convert_to_extension = &video_config.convert_to_extension;
-            let preset_name = video_config.preset_name.as_deref();
-            let batch_id_for_compression = Some(batch_id.as_str());
-            let audio_config = &video_config.audio_config;
-            let quality = video_config.quality;
-            let dimensions = video_config.dimensions;
-            let fps = video_config.fps.as_deref();
-            let video_codec = video_config.video_codec.as_deref();
-            let transform_history = video_config.transform_history.as_ref().map(|v| v.as_ref());
-            let metadata_config = video_config.metadata_config.as_ref();
-            let thumbnail_path = video_config.custom_thumbnail_path.as_deref();
-            let trim_segments = video_config.trim_segments.as_ref();
-            let subtitles_config = video_config.subtitles_config.as_ref();
-            let strip_metadata = video_config.strip_metadata;
-            let speed = video_config.speed;
 
-            let mut ffmpeg_instance = FFMPEG::new(&app)
-                .map_err(|e| format!("Failed to create ffmpeg instance: {}", e))?
-                .with_owner_window(window.label());
+            // In its own task, so a panic while compressing this video only fails this video,
+            // instead of ending the batch (and losing the media already compressed)
+            let config = video_config.clone();
+            let task_app = app.clone();
+            let owner_window = window.label().to_string();
+            let task_batch_id = batch_id.clone();
+            let compression = tokio::spawn(async move {
+                // Failing to prepare ffmpeg also only fails this video
+                let mut ffmpeg_instance = FFMPEG::new(&task_app)
+                    .map_err(|e| format!("Failed to create ffmpeg instance: {}", e))?
+                    .with_owner_window(&owner_window);
+                ffmpeg_instance
+                    .compress_video(
+                        &config.video_path,
+                        &config.convert_to_extension,
+                        config.preset_name.as_deref(),
+                        &config.video_id,
+                        Some(task_batch_id.as_str()),
+                        &config.audio_config,
+                        config.quality,
+                        config.dimensions,
+                        config.fps.as_deref(),
+                        config.video_codec.as_deref(),
+                        config.transform_history.as_ref().map(|v| v.as_ref()),
+                        config.strip_metadata,
+                        config.metadata_config.as_ref(),
+                        config.custom_thumbnail_path.as_deref(),
+                        config.trim_segments.as_ref(),
+                        config.subtitles_config.as_ref(),
+                        config.speed,
+                    )
+                    .await
+            })
+            .await
+            .unwrap_or_else(|e| Err(format!("Compression stopped unexpectedly: {}", e)));
 
-            match ffmpeg_instance
-                .compress_video(
-                    video_path,
-                    convert_to_extension,
-                    preset_name,
-                    video_id,
-                    batch_id_for_compression,
-                    audio_config,
-                    quality,
-                    dimensions,
-                    fps,
-                    video_codec,
-                    transform_history,
-                    strip_metadata,
-                    metadata_config,
-                    thumbnail_path,
-                    trim_segments,
-                    subtitles_config,
-                    speed,
-                )
-                .await
-            {
+            match compression {
                 Ok(result) => {
                     let media_id = result.video_id.clone();
                     results.insert(
@@ -244,36 +239,36 @@ async fn compress_media_items(
             }
 
             let image_id = &image_config.image_id;
-            let image_path = &image_config.image_path;
-            let convert_to_extension = image_config.convert_to_extension.as_str();
-            let svg_scale_factor = image_config.svg_scale_factor;
-            let quality = image_config.quality;
-            let strip_metadata = image_config.strip_metadata;
-            let is_lossless = image_config.is_lossless;
-            let svg_config = image_config.svg_config.clone();
-            let dimensions = image_config.dimensions;
-            let transform_history = image_config.transform_history.as_ref();
 
-            let mut image_compressor = ImageCompressor::new(&app)
-                .map_err(|e| format!("Failed to create image compressor instance: {}", e))?
-                .with_owner_window(window.label());
+            // In its own task, like videos (see above)
+            let config = image_config.clone();
+            let task_app = app.clone();
+            let owner_window = window.label().to_string();
+            let task_batch_id = batch_id.clone();
+            let compression = tokio::spawn(async move {
+                let mut image_compressor = ImageCompressor::new(&task_app)
+                    .map_err(|e| format!("Failed to create image compressor instance: {}", e))?
+                    .with_owner_window(&owner_window);
+                image_compressor
+                    .compress_image(
+                        &config.image_path,
+                        config.convert_to_extension.as_str(),
+                        config.svg_scale_factor,
+                        config.is_lossless,
+                        config.quality,
+                        &config.image_id,
+                        Some(task_batch_id.as_str()),
+                        config.strip_metadata,
+                        config.svg_config.clone(),
+                        config.dimensions,
+                        config.transform_history.as_ref(),
+                    )
+                    .await
+            })
+            .await
+            .unwrap_or_else(|e| Err(format!("Compression stopped unexpectedly: {}", e)));
 
-            match image_compressor
-                .compress_image(
-                    image_path,
-                    convert_to_extension,
-                    svg_scale_factor,
-                    is_lossless,
-                    quality,
-                    image_id,
-                    Some(batch_id.as_str()),
-                    strip_metadata,
-                    svg_config,
-                    dimensions,
-                    transform_history,
-                )
-                .await
-            {
+            match compression {
                 Ok(result) => {
                     let media_id = result.image_id.clone();
                     results.insert(
