@@ -20,8 +20,9 @@ type Media = (Video & { type: 'video' }) | (Image & { type: 'image' })
  * `getBaseDirectory` (skipped when it returns `null`).
  *
  * Saved to another folder (a fixed one, or one chosen with Save Media), dropped folders keep their
- * structure & names (`Vacation/Day1` -> `<base>/Vacation/Day1`); next to their originals
- * (`keepFolderStructure` off), each file is saved in its original's own folder. Only files get the
+ * structure & names (`Vacation/Day1` -> `<base>/Vacation/Day1`), unless "Preserve folder
+ * structure" is off (Settings -> Output); with `keepFolderStructure` off (also next to their
+ * originals), each file is saved straight into its base directory. Only files get the
  * prefix. Existing files & folders are never replaced; numbered names like
  * `clip (1).mp4` or `Vacation (1)` are used instead. Each file is saved independently, so one failure doesn't
  * stop the rest; failed files stay unsaved for the Save button.
@@ -134,7 +135,9 @@ export async function saveCompressedMediaWithPrompt() {
       title: 'Choose directory to save the compressed media.',
     })
     if (typeof directory === 'string') {
-      await saveCompressedMedia(() => directory)
+      await saveCompressedMedia(() => directory, {
+        keepFolderStructure: settingsStore.preserveFolderStructure,
+      })
     }
     return
   }
@@ -215,8 +218,10 @@ export async function autoSaveCompressedMedia() {
     },
     {
       isAutomatic: true,
-      // No new folders next to the originals; only a fixed folder mirrors dropped folders
-      keepFolderStructure: saveLocation === 'fixedFolder',
+      // No new folders next to the originals; only a fixed folder mirrors dropped folders (when
+      // "Preserve folder structure" is on)
+      keepFolderStructure:
+        saveLocation === 'fixedFolder' && settingsStore.preserveFolderStructure,
     },
   )
 
@@ -309,7 +314,8 @@ export async function saveQueueOutput(
   }
 
   // Same folder: right next to the original, in its own folder, e.g. `/a/Vacation/Day1/clip.mp4`
-  // -> `/a/Vacation/Day1`; a fixed folder mirrors dropped folders
+  // -> `/a/Vacation/Day1`; a fixed folder mirrors dropped folders (when "Preserve folder structure"
+  // is on, otherwise every file goes straight into it)
   const isFixedFolder = saveLocation === 'fixedFolder'
   const baseDirectory = isFixedFolder
     ? saveFolder!
@@ -317,7 +323,11 @@ export async function saveQueueOutput(
 
   try {
     let destinationDirectory = baseDirectory
-    if (isFixedFolder && output.relativeDir) {
+    if (
+      isFixedFolder &&
+      settingsStore.preserveFolderStructure &&
+      output.relativeDir
+    ) {
       const [topFolder, ...subFolders] = output.relativeDir.split('/')
       // Existing folders are never merged into; a numbered name is used instead (once per drop)
       const topFolderKey = `${groupKey}\n${baseDirectory}\n${topFolder}`

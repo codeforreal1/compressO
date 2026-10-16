@@ -71,6 +71,7 @@ function Output() {
     saveLocation,
     saveFolder,
     saveLargerOutputs,
+    preserveFolderStructure,
     copyOutputToClipboard,
     copyBatchOutputToClipboard,
     useHardwareAcceleration,
@@ -154,6 +155,22 @@ function Output() {
             >
               Change
             </Button>
+          </SettingsRow>
+        ) : null}
+        {/* Next to the originals, each file is always saved in its original's folder */}
+        {saveLocation !== 'sameFolder' ? (
+          <SettingsRow
+            isNested
+            title="Preserve folder structure"
+            description="Save the files of a dropped folder in the same folders. When off, all files are saved in one folder, and files with the same name are numbered."
+          >
+            <Switch
+              aria-label="Preserve folder structure"
+              isSelected={preserveFolderStructure}
+              onValueChange={(isSelected) => {
+                settingsStore.preserveFolderStructure = isSelected
+              }}
+            />
           </SettingsRow>
         ) : null}
         {saveLocation !== 'ask' ? (

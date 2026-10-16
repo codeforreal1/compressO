@@ -34,6 +34,12 @@ export type SettingsState = {
   /** Folder used when `saveLocation` is `fixedFolder` */
   saveFolder: string | null
   /**
+   * Save the files of a dropped folder in the same folders inside the save location (on by
+   * default). When off, every file goes straight into it, clashing names being numbered. Not used
+   * with `sameFolder`, where each file is saved next to its original.
+   */
+  preserveFolderStructure: boolean
+  /**
    * Auto-save outputs even when they are larger than their original (on by default). When off,
    * such outputs are left for the Save button.
    */
@@ -93,6 +99,9 @@ function readSettings(): SettingsState {
         : saveLocations.ask,
     saveFolder: localStorage.getItem(constants.saveFolder),
     // Only an explicit opt-out turns it off
+    preserveFolderStructure:
+      localStorage.getItem(constants.preserveFolderStructure) !== 'false',
+    // Only an explicit opt-out turns it off
     saveLargerOutputs:
       localStorage.getItem(constants.saveLargerOutputs) !== 'false',
     copyOutputToClipboard:
@@ -139,6 +148,10 @@ subscribe(settingsStore, () => {
     settingsStore.outputFilePrefix,
   )
   localStorage.setItem(constants.saveLocation, settingsStore.saveLocation)
+  localStorage.setItem(
+    constants.preserveFolderStructure,
+    String(settingsStore.preserveFolderStructure),
+  )
   localStorage.setItem(
     constants.saveLargerOutputs,
     String(settingsStore.saveLargerOutputs),
