@@ -8,6 +8,7 @@ use axum::{
 };
 use serde::Deserialize;
 use std::path::{Component, PathBuf};
+use std::sync::Mutex;
 use tauri::{AppHandle, Manager};
 use std::time::Duration;
 use tokio::io::{AsyncReadExt, AsyncSeekExt};
@@ -40,7 +41,14 @@ struct ServerContext {
     app_handle: AppHandle,
 }
 
-pub async fn start_server(app_handle: AppHandle) -> Result<ServerState, Box<dyn std::error::Error>> {
+/// The video server, started when the frontend asks for it: only with video previews on (Settings ->
+/// General), read when the app starts
+#[derive(Default)]
+pub struct VideoServer(pub Mutex<Option<ServerState>>);
+
+pub async fn start_server(
+    app_handle: AppHandle,
+) -> Result<ServerState, Box<dyn std::error::Error + Send + Sync>> {
     let (shutdown_tx, mut shutdown_rx) = broadcast::channel(1);
     let token = nanoid::nanoid!(32);
 

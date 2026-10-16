@@ -26,7 +26,7 @@ import VideoTrimmerTimeline, {
 } from '@/ui/VideoTrimmerTimeline'
 import { formatDuration } from '@/utils/string'
 import { getTransformPreview, renderTransformPreview } from '@/utils/transform'
-import { constructVideoUrl } from '@/utils/video'
+import { constructVideoUrl, isVideoPreviewAvailable } from '@/utils/video'
 import MediaTransformer from './MediaTransformer'
 import { appProxy } from '../-state'
 
@@ -560,29 +560,35 @@ function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
             // Audio extracted from a video has no picture: a music icon with the play button
             <div className="relative flex flex-col justify-center items-center gap-6 mx-auto w-full max-w-[740px] min-h-[420px] rounded-3xl border-1 border-zinc-200 dark:border-zinc-900">
               <Icon name="music" size={200} className="text-primary" />
-              <audio
-                ref={audioRef}
-                key={audioPlaybackSrc}
-                src={audioPlaybackSrc}
-                onPlay={() => setIsAudioPlaying(true)}
-                onPause={() => setIsAudioPlaying(false)}
-                onEnded={() => setIsAudioPlaying(false)}
-                className="hidden"
-              />
-              <Button
-                onPress={toggleAudioPlayback}
-                variant="bordered"
-                isIconOnly
-                radius="full"
-                aria-label={isAudioPlaying ? 'Pause audio' : 'Play audio'}
-                className="absolute bottom-4 left-1/2 -translate-x-1/2"
-              >
-                <Icon
-                  name={isAudioPlaying ? 'pause' : 'play'}
-                  size={20}
-                  className="text-white drop-shadow-lg"
-                />
-              </Button>
+              {/* Played like videos, so not where they cannot be played (Linux, with video
+              previews off) */}
+              {isVideoPreviewAvailable ? (
+                <>
+                  <audio
+                    ref={audioRef}
+                    key={audioPlaybackSrc}
+                    src={audioPlaybackSrc}
+                    onPlay={() => setIsAudioPlaying(true)}
+                    onPause={() => setIsAudioPlaying(false)}
+                    onEnded={() => setIsAudioPlaying(false)}
+                    className="hidden"
+                  />
+                  <Button
+                    onPress={toggleAudioPlayback}
+                    variant="bordered"
+                    isIconOnly
+                    radius="full"
+                    aria-label={isAudioPlaying ? 'Pause audio' : 'Play audio'}
+                    className="absolute bottom-4 left-1/2 -translate-x-1/2"
+                  >
+                    <Icon
+                      name={isAudioPlaying ? 'pause' : 'play'}
+                      size={20}
+                      className="text-white drop-shadow-lg"
+                    />
+                  </Button>
+                </>
+              ) : null}
             </div>
           ) : (
             <div className="relative w-fit mx-auto">
@@ -632,11 +638,18 @@ function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
                       </PopoverTrigger>
                       <PopoverContent>
                         <div className="py-2 px-1 max-w-[250px]">
-                          <p>
-                            This video is unable to play by this app because it
-                            contains advanced codec/configurations. Such videos
-                            require dedicated media players like VLC.
-                          </p>
+                          {isVideoPreviewAvailable ? (
+                            <p>
+                              This video is unable to play by this app because
+                              it contains advanced codec/configurations. Such
+                              videos require dedicated media players like VLC.
+                            </p>
+                          ) : (
+                            <p>
+                              Video previews are turned off. They can be turned
+                              on in Settings, under General.
+                            </p>
+                          )}
                           {!isProcessCompleted ? (
                             <>
                               <br />

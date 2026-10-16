@@ -1,15 +1,45 @@
-use crate::core::server::ServerState;
+use tauri::{AppHandle, State};
 
+use crate::core::server::{self, ServerState, VideoServer};
+
+/// The running server's state, if it was started
+fn running_server(server: &VideoServer) -> Option<ServerState> {
+    server.0.lock().ok().and_then(|state| state.clone())
+}
+
+/// Starts the video server, if it is not running yet, and returns its URL. Only called with video
+/// previews on (Settings -> General), when the app starts.
 #[tauri::command]
-pub fn get_server_url(state: tauri::State<ServerState>) -> Result<String, String> {
-    Ok(format!("http://127.0.0.1:{}", state.port))
+pub async fn start_video_server(
+    app: AppHandle,
+    server: State<'_, VideoServer>,
+) -> Result<String, String> {
+    if let Some(state) = running_server(&server) {
+        return Ok(format!("http://127.0.0.1:{}", state.port));
+    }
+
+    let started = server::start_server(app)
+        .await
+        .map_err(|e| format!("Failed to start the video server: {}", e))?;
+
+    let mut state = server.0.lock().map_err(|e| e.to_string())?;
+    // Started meanwhile by another call: that one is kept
+    if let Some(existing) = state.as_ref() {
+        server::shutdown_server(&started);
+        return Ok(format!("http://127.0.0.1:{}", existing.port));
+    }
+    let url = format!("http://127.0.0.1:{}", started.port);
+    *state = Some(started);
+    Ok(url)
 }
 
 #[tauri::command]
 pub fn construct_video_url(
-    state: tauri::State<ServerState>,
+    server: State<VideoServer>,
     file_path: String,
 ) -> Result<String, String> {
+    let state = running_server(&server).ok_or("The video server is not running")?;
+
     let decoded_path: String = match urlencoding::decode(&file_path) {
         Ok(path) => path.into_owned(),
         Err(e) => {

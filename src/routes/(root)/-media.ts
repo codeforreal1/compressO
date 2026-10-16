@@ -20,6 +20,7 @@ import {
 } from '@/types/compression'
 import { CollectedFile } from '@/types/fs'
 import { formatBytes } from '@/utils/fs'
+import { isVideoPreviewAvailable } from '@/utils/video'
 import {
   applyDefaultPresetsToBatchConfig,
   getInitialImageConfig,
@@ -147,7 +148,8 @@ export async function addMedia(selection: MediaSelection | MediaSelection[]) {
           size: formatBytes(fileMetadata?.size ?? 0),
           extension: fileMetadata?.extension?.toLowerCase?.(),
           config: cloneDeep(videoConfigInitialState),
-          previewMode: 'video',
+          // A thumbnail instead where videos cannot be played (Linux, with video previews off)
+          previewMode: isVideoPreviewAvailable ? 'video' : 'image',
         }
 
         // input-only formats stay "Same as input" since they aren't in the extension list

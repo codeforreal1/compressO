@@ -69,6 +69,12 @@ export type SettingsState = {
    * `hardware_encoder.rs`).
    */
   useHardwareAcceleration: boolean
+  /**
+   * Play videos in the app (Linux only, off by default: they are played through a local server,
+   * which does not work well on every system). Applied when the app starts (see
+   * `isVideoPreviewAvailable`).
+   */
+  enableVideoPreviews: boolean
 }
 
 // Replaced by `saveLargerOutputs`, which defaults to on
@@ -109,6 +115,8 @@ function readSettings(): SettingsState {
       STANDARD_PRESET_ID,
     useHardwareAcceleration:
       localStorage.getItem(constants.useHardwareAcceleration) === 'true',
+    enableVideoPreviews:
+      localStorage.getItem(constants.enableVideoPreviews) === 'true',
   }
 }
 
@@ -175,6 +183,10 @@ subscribe(settingsStore, () => {
   localStorage.setItem(
     constants.useHardwareAcceleration,
     String(settingsStore.useHardwareAcceleration),
+  )
+  localStorage.setItem(
+    constants.enableVideoPreviews,
+    String(settingsStore.enableVideoPreviews),
   )
   if (settingsStore.saveFolder) {
     localStorage.setItem(constants.saveFolder, settingsStore.saveFolder)

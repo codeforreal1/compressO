@@ -19,6 +19,7 @@ use tauri_plugin_fs::FsExt;
 use tauri_plugin_log::{Target as LogTarget, TargetKind as LogTargetKind};
 
 use tauri_commands::{
+    app::restart_app,
     compression_status::{
         get_compression_status, has_unsaved_output, is_compressing, set_compression_status,
         update_compression_status, CompressionStatusState,
@@ -46,7 +47,7 @@ use tauri_commands::{
 };
 
 #[cfg(target_os = "linux")]
-use tauri_commands::server::{construct_video_url, get_server_url};
+use tauri_commands::server::{construct_video_url, start_video_server};
 
 #[cfg(target_os = "linux")]
 use tauri_commands::file_manager::DbusState;
@@ -254,61 +255,9 @@ async fn main() {
                 dbus::blocking::SyncConnection::new_session().ok(),
             )));
 
+            // Started by the frontend, only with video previews on (see `start_video_server`)
             #[cfg(target_os = "linux")]
-            {
-                use std::sync::mpsc;
-                use std::thread;
-                use std::time::Duration;
-
-                let (tx, rx) = mpsc::channel();
-                let server_app_handle = app.handle().clone();
-
-                thread::spawn(move || {
-                    let rt = match tokio::runtime::Runtime::new() {
-                        Ok(rt) => rt,
-                        Err(e) => {
-                            let _ = tx.send(Err(format!("Failed to create runtime: {}", e)));
-                            return;
-                        }
-                    };
-
-                    rt.block_on(async {
-                        match server::start_server(server_app_handle).await {
-                            Ok(state) => {
-                                let shutdown_tx = state.shutdown_tx.clone();
-                                let _ = tx.send(Ok(state));
-
-                                let mut shutdown_rx = shutdown_tx.subscribe();
-                                let _ = shutdown_rx.recv().await;
-                                log::info!("Server thread shutting down");
-                            }
-                            Err(e) => {
-                                log::error!("Failed to start video server: {:?}", e);
-                                let _ = tx.send(Err(format!("Server error: {}", e)));
-                            }
-                        }
-                    });
-                });
-
-                // Wait for the server to start with a timeout
-                let server_state = match rx.recv_timeout(Duration::from_secs(5)) {
-                    Ok(Ok(state)) => state,
-                    Ok(Err(e)) => {
-                        log::error!("Video server startup failed: {}", e);
-                        return Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, e)));
-                    }
-                    Err(_) => {
-                        return Err(Box::new(std::io::Error::new(
-                            std::io::ErrorKind::TimedOut,
-                            "Video server startup timed out after 5 seconds",
-                        )));
-                    }
-                };
-
-                log::info!("Video server started on port {}", server_state.port);
-
-                app.manage(server_state.clone());
-            }
+            app.manage(server::VideoServer::default());
             file_system::setup_app_data_dir(app)?;
             file_system::ensure_assets_dir(&app.app_handle())?;
 
@@ -440,8 +389,9 @@ async fn main() {
             get_exif_info,
             set_window_tint,
             play_completion_sound,
+            restart_app,
             #[cfg(target_os = "linux")]
-            get_server_url,
+            start_video_server,
             #[cfg(target_os = "linux")]
             construct_video_url,
             #[cfg(target_os = "macos")]
@@ -597,10 +547,13 @@ async fn main() {
                 // Handle server shutdown on app exit (Linux only)
                 #[cfg(target_os = "linux")]
                 if matches!(event, tauri::RunEvent::Exit) {
-                    if let Some(server_state) = app_handle.try_state::<core::server::ServerState>()
-                    {
+                    let video_server = app_handle.try_state::<server::VideoServer>();
+                    let running = video_server
+                        .as_ref()
+                        .and_then(|video_server| video_server.0.lock().ok()?.clone());
+                    if let Some(server_state) = running {
                         log::info!("App exiting, shutting down video server");
-                        core::server::shutdown_server(&server_state);
+                        server::shutdown_server(&server_state);
                     }
                 }
             },

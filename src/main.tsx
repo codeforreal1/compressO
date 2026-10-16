@@ -4,7 +4,6 @@ import ReactDOM from 'react-dom/client'
 import './global.css'
 
 import { routeTree } from './routeTree.gen'
-import { getPlatform } from './utils/fs'
 import { getServerUrl } from './utils/video'
 
 const router = createRouter({
@@ -23,15 +22,8 @@ if (typeof window !== 'undefined') {
   window.__appVersion = __appVersion
   window.__envMode = __envMode
 
-  const platform = getPlatform()
-  if (platform.isLinux) {
-    ;(async () => {
-      try {
-        const serverUrl = await getServerUrl()
-        window.__serverUrl = serverUrl ?? null
-      } catch {}
-    })()
-  }
+  // Starts Linux's video server, with video previews on (see `isVideoPreviewAvailable`)
+  getServerUrl().catch(() => {})
 }
 
 const storedColor = localStorage.getItem('primaryColor')

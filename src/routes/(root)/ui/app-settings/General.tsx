@@ -1,5 +1,6 @@
 import { useSnapshot } from 'valtio'
 
+import Button from '@/components/Button'
 import ColorPicker from '@/components/ColorPicker'
 import DisabledReason from '@/components/DisabledReason'
 import Slider from '@/components/Slider'
@@ -9,16 +10,27 @@ import { useDropQueue } from '@/hooks/useDropQueue'
 import { usePrimaryColor } from '@/hooks/usePrimaryColor'
 import { isWindowTintSupported } from '@/hooks/useWindowTint'
 import { settingsStore, TINT_OPACITY_RANGE } from '@/stores/settingsStore'
+import { restartApp } from '@/tauri/commands/app'
 import { playCompletionSound as playSound } from '@/tauri/commands/sound'
 import { getPlatform } from '@/utils/fs'
+import { cn } from '@/utils/tailwind'
+import { isVideoPreviewAvailable } from '@/utils/video'
 import { SettingsRow, SettingsSection } from './SettingsLayout'
 
-const { isMacOS } = getPlatform()
+const { isMacOS, isLinux } = getPlatform()
 
 function General() {
   const { color, setColor } = usePrimaryColor()
-  const { tintedWindow, tintOpacity, showMenuBarIcon, playCompletionSound } =
-    useSnapshot(settingsStore)
+  const {
+    tintedWindow,
+    tintOpacity,
+    showMenuBarIcon,
+    playCompletionSound,
+    enableVideoPreviews,
+  } = useSnapshot(settingsStore)
+  // Read when the app starts, so a change applies after a restart
+  const needsRestart =
+    isLinux && enableVideoPreviews !== isVideoPreviewAvailable
   // The drop zone's queue is compressed by the menu bar, so its icon stays until the queue is done
   // (or stopped)
   const isDropQueueActive = useDropQueue().some(
@@ -82,6 +94,40 @@ function General() {
           </SettingsRow>
         ) : null}
       </SettingsSection>
+      {isLinux ? (
+        <SettingsSection title="Preview">
+          <SettingsRow
+            title="Video previews"
+            description="Play videos inside the app. Videos do not play well on some Linux systems, so a still image is shown instead by default. Changes apply after a restart."
+          >
+            <div className="flex items-center gap-2">
+              {/* Its space is always kept & it fades in, so the switch does not move */}
+              <Button
+                size="sm"
+                onPress={() => {
+                  restartApp().catch(() => {})
+                }}
+                isDisabled={!needsRestart}
+                aria-hidden={!needsRestart}
+                tabIndex={needsRestart ? undefined : -1}
+                className={cn(
+                  'transition-opacity duration-200 data-[disabled=true]:opacity-0',
+                  !needsRestart && 'pointer-events-none',
+                )}
+              >
+                Restart
+              </Button>
+              <Switch
+                aria-label="Video previews"
+                isSelected={enableVideoPreviews}
+                onValueChange={(isSelected) => {
+                  settingsStore.enableVideoPreviews = isSelected
+                }}
+              />
+            </div>
+          </SettingsRow>
+        </SettingsSection>
+      ) : null}
       <SettingsSection title="Sound">
         <SettingsRow
           title="Completion sound"

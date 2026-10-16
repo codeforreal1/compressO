@@ -1,12 +1,21 @@
 import { invoke } from '@tauri-apps/api/core'
 
+import * as constants from '@/constants'
 import { MediaTransformHistory } from '@/types/compression'
 import { getPlatform } from './fs'
 
-export async function getServerUrl(): Promise<string | null> {
-  const platform = getPlatform()
+/**
+ * Whether videos (and extracted audio) are played in the app. Always on macOS & Windows. On Linux
+ * they are played through a local server, only started with video previews on (Settings ->
+ * General); the setting is read once, when the app starts, so a change applies after a restart.
+ */
+export const isVideoPreviewAvailable =
+  !getPlatform().isLinux ||
+  localStorage.getItem(constants.enableVideoPreviews) === 'true'
 
-  if (!platform.isLinux) {
+/** Starts Linux's video server (with video previews on) and returns its URL */
+export async function getServerUrl(): Promise<string | null> {
+  if (!getPlatform().isLinux || !isVideoPreviewAvailable) {
     return null
   }
 
@@ -15,25 +24,21 @@ export async function getServerUrl(): Promise<string | null> {
   }
 
   try {
-    const serverUrl = await invoke<string>('get_server_url')
+    const serverUrl = await invoke<string>('start_video_server')
     window.__serverUrl = serverUrl
     return serverUrl
   } catch (error) {
     // biome-ignore lint/suspicious/noConsole: <>
-    console.error('Failed to get video server URL:', error)
+    console.error('Failed to start the video server:', error)
     return null
   }
 }
 
 export async function constructVideoUrl(filePath: string): Promise<string> {
-  const platform = getPlatform()
-
-  if (platform.isLinux) {
+  if (getPlatform().isLinux) {
     const serverUrl = await getServerUrl()
 
     if (!serverUrl) {
-      // biome-ignore lint/suspicious/noConsole: <>
-      console.warn('Video server not available, file may not play on Linux')
       return filePath
     }
 
