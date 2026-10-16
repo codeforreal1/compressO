@@ -85,6 +85,34 @@ Production Build:
 pnpm tauri:build
 ```
 
+### GitHub releases
+
+The `Release desktop app` workflow builds Linux x64 (`.deb`, `.AppImage`),
+Windows x64 (NSIS `.exe`), and macOS Intel and Apple Silicon (`.dmg`) installers.
+It publishes the release only after all four builds succeed. If a build fails,
+the release stays as a draft so you can fix the problem and rerun the workflow.
+The GitHub Pages workflow continues to deploy the website separately.
+
+Set the same version in `package.json` and `src-tauri/tauri.conf.json`, then push
+an annotated tag matching that version:
+
+```bash
+git tag -a v3.0.0 -m "Release v3.0.0"
+git push origin v3.0.0
+```
+
+Alternatively, run `Release desktop app` from the Actions tab on the desired
+branch. It creates a `v<version>` tag at the selected commit. Bump the version
+before creating another release; published versions cannot be overwritten.
+
+No repository secrets are required for unsigned installers. To generate signed
+updater artifacts and `latest.json`, configure `TAURI_SIGNING_PRIVATE_KEY` and,
+if needed, `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` in repository Actions secrets.
+The private key must match the updater public key in `tauri.conf.json`. These
+secrets sign app updates; they do not provide Apple or Windows code signing.
+For a fork, change the updater endpoint in `tauri.conf.json` to your repository
+before distributing builds with automatic updates.
+
 ### Screenshots
 <details>
 <summary>
