@@ -47,6 +47,7 @@ vtracer = "0.6.5"
 resvg = "0.44.0"
 exiftool-rs = "0.4.4"
 rodio = { version = "0.20", default-features = false, features = ["wav"] }
+tauri-plugin-autostart = "2"
 
 [target.'cfg(target_os = "linux")'.dependencies]
 dbus = "0.9"

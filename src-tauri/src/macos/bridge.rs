@@ -31,6 +31,9 @@ pub mod ffi {
         fn setTrayPopoverPinned(pinned: bool);
         fn isTrayPopoverVisible() -> bool;
         fn resizeTrayPopover(width: f64, height: f64, animate: bool, blurOverlayOnResize: bool);
+
+        // login item (see `login_item.swift`)
+        fn loginItemStatus(plistPath: String) -> i32;
     }
 }
 

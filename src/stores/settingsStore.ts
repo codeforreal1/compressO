@@ -86,6 +86,11 @@ export type SettingsState = {
   preventSleepWhileCompressing: boolean
   /** With `preventSleepWhileCompressing`, also keep the screen on (off by default) */
   keepScreenOnWhileCompressing: boolean
+  /**
+   * Opened at login, only show the menu bar icon, not the main window (macOS, with the menu bar
+   * icon; on by default). Whether the app opens at login is the system's setting, not kept here.
+   */
+  openInMenuBarOnly: boolean
 }
 
 // Replaced by `saveLargerOutputs`, which defaults to on
@@ -139,6 +144,8 @@ function readSettings(): SettingsState {
       localStorage.getItem(constants.preventSleepWhileCompressing) !== 'false',
     keepScreenOnWhileCompressing:
       localStorage.getItem(constants.keepScreenOnWhileCompressing) === 'true',
+    openInMenuBarOnly:
+      localStorage.getItem(constants.openInMenuBarOnly) !== 'false',
   }
 }
 
@@ -225,6 +232,10 @@ subscribe(settingsStore, () => {
   localStorage.setItem(
     constants.keepScreenOnWhileCompressing,
     String(settingsStore.keepScreenOnWhileCompressing),
+  )
+  localStorage.setItem(
+    constants.openInMenuBarOnly,
+    String(settingsStore.openInMenuBarOnly),
   )
   if (settingsStore.saveFolder) {
     localStorage.setItem(constants.saveFolder, settingsStore.saveFolder)

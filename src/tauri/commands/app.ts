@@ -21,3 +21,37 @@ export function setKeepAwakeSettings(
     keepDisplayOn,
   })
 }
+
+export type OpenAtLoginState = {
+  isEnabled: boolean
+  /**
+   * Kept but switched off in the system's settings, which the app cannot switch on again (macOS:
+   * System Settings > General > Login Items > Allow in the Background)
+   */
+  needsApproval: boolean
+}
+
+/**
+ * Whether the system opens the app at login (Settings -> General), read from the system each time
+ * so it is right when changed outside the app
+ */
+export function getOpenAtLogin() {
+  return core.invoke<OpenAtLoginState>('get_open_at_login')
+}
+
+/** Opens the system's login items (macOS), where a login item switched off there is allowed again */
+export function openLoginItemsSettings() {
+  return core.invoke<void>('open_login_items_settings')
+}
+
+export function setOpenAtLogin(enabled: boolean) {
+  return core.invoke<void>('set_open_at_login', { enabled })
+}
+
+/**
+ * Whether the system opened the app at login: true once, for the first main window only (a main
+ * window opened later is always shown)
+ */
+export function takeOpenedAtLogin() {
+  return core.invoke<boolean>('take_opened_at_login')
+}

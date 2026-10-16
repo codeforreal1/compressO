@@ -13,6 +13,7 @@ import { useKeepAwakeSync } from '@/hooks/useKeepAwakeSync'
 import { useWindowTint } from '@/hooks/useWindowTint'
 import { settingsStore } from '@/stores/settingsStore'
 import { checkForUpdates, setupUpdateListeners } from '@/stores/updateStore'
+import { takeOpenedAtLogin } from '@/tauri/commands/app'
 import { setTrayIconEnabled, TRAY_WINDOW_LABEL } from '@/tauri/commands/tray'
 import Titlebar from '@/tauri/components/Titlebar'
 import DropZoneIsland from '@/ui/DropZoneIsland'
@@ -43,8 +44,19 @@ function MainRoot() {
   useKeepAwakeSync()
 
   useEffect(() => {
-    // Also tells the backend to show the window, which starts hidden to avoid a blank flash
-    event.emit('frontend-ready')
+    // Also tells the backend to show the window, which starts hidden to avoid a blank flash;
+    // opened at login, it stays hidden with "Open in the menu bar only" (macOS, with the menu bar
+    // icon), as the app works from the menu bar
+    takeOpenedAtLogin()
+      .catch(() => false)
+      .then((isOpenedAtLogin) => {
+        const isMenuBarOnly =
+          isMacOS &&
+          isOpenedAtLogin &&
+          settingsStore.openInMenuBarOnly &&
+          settingsStore.showMenuBarIcon
+        event.emit('frontend-ready', { show: !isMenuBarOnly })
+      })
     setupUpdateListeners()
     checkForUpdates()
   }, [])

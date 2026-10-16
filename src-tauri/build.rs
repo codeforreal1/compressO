@@ -45,6 +45,8 @@ fn build_swift_library() {
         &xcode_path
     );
     println!("cargo:rustc-link-search=/usr/lib/swift");
+    // `SMAppService` (login item status, see `login_item.swift`)
+    println!("cargo:rustc-link-lib=framework=ServiceManagement");
     println!("cargo:rustc-link-arg=-Wl,-rpath,/usr/lib/swift");
     println!(
         "cargo:rustc-link-arg=-Wl,-rpath,{}/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx",

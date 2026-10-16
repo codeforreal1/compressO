@@ -44,7 +44,7 @@ function InfoTooltip({ content, className }: InfoTooltipProps) {
             aria-label={shownContent}
             className="flex items-center justify-center text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 outline-none"
           >
-            <Icon name="info" size={20} className="text-warning-300" />
+            <Icon name="info" size={18} className="text-warning-300" />
           </span>
         </Tooltip>
       ) : null}

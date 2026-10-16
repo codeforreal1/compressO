@@ -1,3 +1,4 @@
+import React from 'react'
 import { useSnapshot } from 'valtio'
 
 import Button from '@/components/Button'
@@ -6,11 +7,18 @@ import InfoTooltip from '@/components/InfoTooltip'
 import Slider from '@/components/Slider'
 import Switch from '@/components/Switch'
 import { ThemeSwitcher } from '@/components/ThemeSwitcher'
+import { toast } from '@/components/Toast'
 import { useDropQueue } from '@/hooks/useDropQueue'
 import { usePrimaryColor } from '@/hooks/usePrimaryColor'
 import { isWindowTintSupported } from '@/hooks/useWindowTint'
 import { settingsStore, TINT_OPACITY_RANGE } from '@/stores/settingsStore'
-import { restartApp } from '@/tauri/commands/app'
+import {
+  getOpenAtLogin,
+  type OpenAtLoginState,
+  openLoginItemsSettings,
+  restartApp,
+  setOpenAtLogin,
+} from '@/tauri/commands/app'
 import { playCompletionSound as playSound } from '@/tauri/commands/sound'
 import { getPlatform } from '@/utils/fs'
 import { cn } from '@/utils/tailwind'
@@ -18,6 +26,97 @@ import { isVideoPreviewAvailable } from '@/utils/video'
 import { SettingsRow, SettingsSection } from './SettingsLayout'
 
 const { isMacOS, isLinux } = getPlatform()
+
+/** Opening the app at login, which the system keeps (also changed in its login items) */
+function StartupSection() {
+  const { openInMenuBarOnly, showMenuBarIcon } = useSnapshot(settingsStore)
+  // `null` until read from the system
+  const [state, setState] = React.useState<OpenAtLoginState | null>(null)
+  const isOpenAtLogin = !!state?.isEnabled
+
+  const readState = React.useCallback(() => {
+    getOpenAtLogin()
+      .then(setState)
+      .catch(() => setState({ isEnabled: false, needsApproval: false }))
+  }, [])
+
+  // Read again when coming back to the app, e.g. after changing it in the system's settings
+  React.useEffect(() => {
+    readState()
+    window.addEventListener('focus', readState)
+    return () => window.removeEventListener('focus', readState)
+  }, [readState])
+
+  const handleOpenAtLoginChange = async (isSelected: boolean) => {
+    setState((current) => ({
+      isEnabled: isSelected,
+      needsApproval: current?.needsApproval ?? false,
+    }))
+    try {
+      await setOpenAtLogin(isSelected)
+    } catch {
+      toast.error('The setting could not be changed.')
+    }
+    // As the system has it (e.g. still switched off in its settings)
+    readState()
+  }
+
+  return (
+    <SettingsSection title="Startup">
+      <SettingsRow
+        title="Open at login"
+        description="Open CompressO automatically when you log in to your computer."
+      >
+        <Switch
+          aria-label="Open at login"
+          isSelected={isOpenAtLogin}
+          isDisabled={state == null}
+          onValueChange={handleOpenAtLoginChange}
+        />
+      </SettingsRow>
+      {state?.needsApproval ? (
+        <SettingsRow
+          isNested
+          title="Turned off in System Settings"
+          description="CompressO is not allowed to open at login. Allow it in System Settings, under General and Login Items."
+        >
+          <Button
+            size="sm"
+            onPress={() => {
+              openLoginItemsSettings().catch(() => {})
+            }}
+          >
+            Open Login Items
+          </Button>
+        </SettingsRow>
+      ) : null}
+      {isMacOS && isOpenAtLogin ? (
+        <SettingsRow
+          isNested
+          title="Open in the menu bar only"
+          description="Do not show the main window when opened at login. Media can still be compressed from the menu bar."
+        >
+          <div className="flex items-center gap-2">
+            <InfoTooltip
+              content={
+                !showMenuBarIcon &&
+                'Turn on Show menu bar icon to use this, as the app is opened from there.'
+              }
+            />
+            <Switch
+              aria-label="Open in the menu bar only"
+              isSelected={openInMenuBarOnly && showMenuBarIcon}
+              isDisabled={!showMenuBarIcon}
+              onValueChange={(isSelected) => {
+                settingsStore.openInMenuBarOnly = isSelected
+              }}
+            />
+          </div>
+        </SettingsRow>
+      ) : null}
+    </SettingsSection>
+  )
+}
 
 function General() {
   const { color, setColor } = usePrimaryColor()
@@ -155,22 +254,8 @@ function General() {
           </SettingsRow>
         </SettingsSection>
       ) : null}
-      <SettingsSection title="Sound">
-        <SettingsRow
-          title="Completion sound"
-          description="Play a sound when a compression completes."
-        >
-          <Switch
-            aria-label="Completion sound"
-            isSelected={playCompletionSound}
-            onValueChange={(isSelected) => {
-              settingsStore.playCompletionSound = isSelected
-              // A preview of the sound that will play
-              if (isSelected) playSound().catch(() => {})
-            }}
-          />
-        </SettingsRow>
-      </SettingsSection>
+
+      <StartupSection />
       <SettingsSection title="Sleep">
         <SettingsRow
           title="Prevent sleep while compressing"
@@ -199,6 +284,22 @@ function General() {
             />
           </SettingsRow>
         ) : null}
+      </SettingsSection>
+      <SettingsSection title="Sound">
+        <SettingsRow
+          title="Completion sound"
+          description="Play a sound when a compression completes."
+        >
+          <Switch
+            aria-label="Completion sound"
+            isSelected={playCompletionSound}
+            onValueChange={(isSelected) => {
+              settingsStore.playCompletionSound = isSelected
+              // A preview of the sound that will play
+              if (isSelected) playSound().catch(() => {})
+            }}
+          />
+        </SettingsRow>
       </SettingsSection>
     </>
   )

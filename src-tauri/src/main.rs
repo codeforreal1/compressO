@@ -19,7 +19,10 @@ use tauri_plugin_fs::FsExt;
 use tauri_plugin_log::{Target as LogTarget, TargetKind as LogTargetKind};
 
 use tauri_commands::{
-    app::{restart_app, set_keep_awake_settings},
+    app::{
+        get_open_at_login, open_login_items_settings, restart_app, set_keep_awake_settings,
+        set_open_at_login, take_opened_at_login, OPENED_AT_LOGIN_ARG,
+    },
     compression_status::{
         get_compression_status, has_unsaved_output, is_compressing, set_compression_status,
         update_compression_status, CompressionStatusState,
@@ -214,6 +217,11 @@ async fn main() {
                 .targets(LOG_TARGETS)
                 .build(),
         )
+        // Opens the app at login when turned on (Settings -> General), telling it so
+        .plugin(tauri_plugin_autostart::init(
+            tauri_plugin_autostart::MacosLauncher::LaunchAgent,
+            Some(vec![OPENED_AT_LOGIN_ARG]),
+        ))
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
@@ -269,18 +277,31 @@ async fn main() {
             // has painted, which flashed a blank background on launch
             let fallback_app_handle = app.handle().clone();
             tauri::async_runtime::spawn(async move {
-                // Fallback in case the frontend never signals readiness (e.g. a load error)
+                // Fallback in case the frontend never signals readiness (e.g. a load error); not
+                // once it did, as it may have chosen to stay hidden (opened at login)
                 tokio::time::sleep(std::time::Duration::from_secs(3)).await;
-                show_main_window(&fallback_app_handle);
+                let is_frontend_ready = fallback_app_handle
+                    .try_state::<FrontendReady>()
+                    .is_some_and(|ready_state| ready_state.is_ready());
+                if !is_frontend_ready {
+                    show_main_window(&fallback_app_handle);
+                }
             });
 
             let app_handle = app.handle().clone();
             // Every main window sends it (it can be closed & recreated while the app keeps running
             // in the menu bar), so files opened in the meantime are delivered to the new one
-            app.listen("frontend-ready", move |_| {
+            app.listen("frontend-ready", move |evt| {
                 log::info!("Frontend is ready, checking for pending files");
 
-                show_main_window(&app_handle);
+                // Left hidden when opened at login to the menu bar only (Settings -> General)
+                let should_show = serde_json::from_str::<serde_json::Value>(evt.payload())
+                    .ok()
+                    .and_then(|payload| payload.get("show")?.as_bool())
+                    .unwrap_or(true);
+                if should_show {
+                    show_main_window(&app_handle);
+                }
 
                 if let Some(ready_state) = app_handle.try_state::<FrontendReady>() {
                     ready_state.set_ready();
@@ -391,6 +412,10 @@ async fn main() {
             play_completion_sound,
             restart_app,
             set_keep_awake_settings,
+            take_opened_at_login,
+            get_open_at_login,
+            set_open_at_login,
+            open_login_items_settings,
             #[cfg(target_os = "linux")]
             start_video_server,
             #[cfg(target_os = "linux")]
