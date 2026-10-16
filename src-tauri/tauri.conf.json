@@ -120,6 +120,9 @@
     },
     "resources": { "../LICENSES/": "" },
     "linux": {
+      "appimage": {
+        "bundleMediaFramework": true
+      },
       "deb": {
         "depends": [],
         "desktopTemplate": "compressO.desktop.template"

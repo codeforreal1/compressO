@@ -61,6 +61,10 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev \
             libxdo-dev libssl-dev libasound2-dev libdbus-1-dev patchelf
+          # Bundled in the AppImage (`bundleMediaFramework`), which plays videos with its own
+          # GStreamer: without them it has no plugins and its webview crashes on a video
+          sudo apt-get install -y gstreamer1.0-plugins-base gstreamer1.0-plugins-good \
+            gstreamer1.0-plugins-bad gstreamer1.0-libav
 
       # The Swift code is built with `swift build --build-system native` (Swift 6.2 / Xcode 26 or newer)
       - name: Use the newest Xcode
