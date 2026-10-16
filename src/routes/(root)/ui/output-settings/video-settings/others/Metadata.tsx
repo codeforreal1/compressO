@@ -6,16 +6,25 @@ import { useSnapshot } from 'valtio'
 import Card from '@/components/Card'
 import DatePicker from '@/components/DatePicker'
 import Divider from '@/components/Divider'
+import InfoTooltip from '@/components/InfoTooltip'
 import Switch from '@/components/Switch'
 import TextArea from '@/components/TextArea'
 import TextInput from '@/components/TextInput'
 import type { MediaMetadataConfig } from '@/types/app'
 import { slideDownTransition } from '@/utils/animation'
+import { getOutputVideoContainer } from '@/utils/video'
 import {
   appProxy,
   normalizeBatchMediaConfig,
   videoMetadataConfigInitialState,
 } from '../../../../-state'
+
+/** Output formats that cannot keep all the metadata (MP4, MKV and WebM keep every field) */
+const METADATA_FORMAT_LIMITATIONS: Record<string, string | undefined> = {
+  mov: 'MOV files cannot keep the description or synopsis.',
+  avi: 'AVI files cannot keep the description, synopsis or creation date.',
+  ts: 'TS files can only keep the title. Other details are not saved.',
+}
 
 type MetadataProps = {
   mediaIndex: number
@@ -144,19 +153,33 @@ function Metadata({ mediaIndex }: MetadataProps) {
     isLoadingMediaFiles ||
     convertToExtension === 'gif'
 
+  // Unknown for "Same as input" on a batch
+  const formatLimitation =
+    METADATA_FORMAT_LIMITATIONS[
+      getOutputVideoContainer(convertToExtension, video?.extension)
+    ]
+
   return (
     <>
-      <Switch
-        isSelected={shouldStripMetadata}
-        onValueChange={handleStripMetadataToggle}
-        isDisabled={shouldDisableInput}
-      >
-        <div className="flex justify-center items-center">
-          <span className="text-gray-600 dark:text-gray-400 block mr-2 text-sm">
-            Strip Metadata
-          </span>
-        </div>
-      </Switch>
+      {/* Beside the switch, not in its label, so clicking the icon does not toggle it */}
+      <div className="flex items-center">
+        <Switch
+          isSelected={shouldStripMetadata}
+          onValueChange={handleStripMetadataToggle}
+          isDisabled={shouldDisableInput}
+        >
+          <div className="flex justify-center items-center">
+            <span className="text-gray-600 dark:text-gray-400 block mr-2 text-sm">
+              Strip Metadata
+            </span>
+          </div>
+        </Switch>
+        <InfoTooltip
+          content={
+            !shouldStripMetadata && !shouldDisableInput && formatLimitation
+          }
+        />
+      </div>
       <AnimatePresence mode="wait">
         {!shouldStripMetadata ? (
           <Card className="px-2 my-2 pb-4 shadow-none border-1 dark:border-none">
