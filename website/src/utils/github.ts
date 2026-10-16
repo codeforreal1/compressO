@@ -7,23 +7,25 @@ export interface GitHubRelease {
   }>;
 }
 
-const REPO_OWNER = "codeforreal1";
+const REPO_OWNER = "rajibdpi";
 const REPO_NAME = "compressO";
 
 /**
  * Fetch the latest release from GitHub
  * This runs at build time, so there's no runtime API call from the client
  */
-export async function getLatestRelease(): Promise<GitHubRelease> {
+export async function getLatestRelease(): Promise<GitHubRelease | null> {
   const response = await fetch(
     `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases/latest`
   );
+
+  if (response.status === 404) return null;
 
   if (!response.ok) {
     if (import.meta.env.PROD) {
       throw new Error("Failed to fetch latest release from GitHub.");
     }
-    return {} as any
+    return null;
   }
 
   return response.json();
@@ -57,28 +59,33 @@ export interface DownloadAssets {
 /**
  * Get all download URLs for the current version
  */
-export function getDownloadAssets(version: string): DownloadAssets {
-  const baseUrl = `https://github.com/${REPO_OWNER}/${REPO_NAME}/releases/download/${version}`;
+export function getDownloadAssets(
+  release: GitHubRelease | null,
+): DownloadAssets {
+  const releasesUrl = `https://github.com/${REPO_OWNER}/${REPO_NAME}/releases`;
+  const assetUrl = (pattern: RegExp): string =>
+    release?.assets.find((asset) => pattern.test(asset.name))
+      ?.browser_download_url ?? releasesUrl;
 
   return {
-    version,
+    version: release?.tag_name ?? 'Coming soon',
     mac: {
-      aarch64: `${baseUrl}/CompressO_${version}_aarch64.dmg`,
-      x64: `${baseUrl}/CompressO_${version}_x64.dmg`,
+      aarch64: assetUrl(/_aarch64\.dmg$/),
+      x64: assetUrl(/_x64\.dmg$/),
     },
     linux: {
-      appImage: `${baseUrl}/CompressO_${version}_amd64.AppImage`,
-      deb: `${baseUrl}/CompressO_${version}_amd64.deb`,
+      appImage: assetUrl(/_amd64\.AppImage$/),
+      deb: assetUrl(/_amd64\.deb$/),
     },
     windows: {
-      x64: `${baseUrl}/CompressO_${version}_x64.exe`,
+      x64: assetUrl(/_x64-setup\.exe$/),
     },
   };
 }
 
 export async function fetchGitHubStars(): Promise<number | undefined> {
   const response = await fetch(
-    "https://api.github.com/repos/codeforreal1/compressO",
+    `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}`,
   );
 
   if (!response.ok) {
