@@ -7,3 +7,17 @@ import { core } from '@tauri-apps/api'
 export function restartApp() {
   return core.invoke<void>('restart_app')
 }
+
+/**
+ * Whether the computer (and the screen) is kept awake while compressing (Settings -> General),
+ * for the compressions started from now on
+ */
+export function setKeepAwakeSettings(
+  preventSleep: boolean,
+  keepDisplayOn: boolean,
+) {
+  return core.invoke<void>('set_keep_awake_settings', {
+    preventSleep,
+    keepDisplayOn,
+  })
+}

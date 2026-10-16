@@ -57,11 +57,15 @@ urlencoding = "2.1"
 tokio-util = "0.7"
 
 [target.'cfg(target_os = "macos")'.dependencies]
+core-foundation = "0.10"
 objc = "0.2"
 cocoa = "0.25"
 swift-bridge = "0.1"
 objc2 = "0.6"
 objc2-app-kit = "0.3"
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.59", features = ["Win32_Foundation", "Win32_System_Power", "Win32_System_SystemServices", "Win32_System_Threading"] }
 
 [target.'cfg(any(target_os = "macos", windows))'.dependencies]
 window-vibrancy = "0.6"

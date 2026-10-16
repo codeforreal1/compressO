@@ -14,3 +14,10 @@ pub fn restart_app(app: AppHandle) {
         None => app.request_restart(),
     }
 }
+
+/// "Prevent sleep while compressing" & "Keep the screen on" (Settings -> General), for the
+/// compressions started from now on
+#[tauri::command]
+pub fn set_keep_awake_settings(prevent_sleep: bool, keep_display_on: bool) {
+    crate::sys::keep_awake::set_settings(prevent_sleep, keep_display_on);
+}

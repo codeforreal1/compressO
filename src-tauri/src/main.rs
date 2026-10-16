@@ -19,7 +19,7 @@ use tauri_plugin_fs::FsExt;
 use tauri_plugin_log::{Target as LogTarget, TargetKind as LogTargetKind};
 
 use tauri_commands::{
-    app::restart_app,
+    app::{restart_app, set_keep_awake_settings},
     compression_status::{
         get_compression_status, has_unsaved_output, is_compressing, set_compression_status,
         update_compression_status, CompressionStatusState,
@@ -390,6 +390,7 @@ async fn main() {
             set_window_tint,
             play_completion_sound,
             restart_app,
+            set_keep_awake_settings,
             #[cfg(target_os = "linux")]
             start_video_server,
             #[cfg(target_os = "linux")]

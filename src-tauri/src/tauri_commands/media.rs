@@ -46,6 +46,10 @@ pub async fn compress_media_batch(
     let mut results: std::collections::HashMap<String, MediaCompressionResult> =
         std::collections::HashMap::new();
 
+    // The computer stays awake until the batch is done (or fails, or is cancelled), see
+    // `keep_awake` (Settings -> General)
+    let _keep_awake = crate::sys::keep_awake::KeepAwake::acquire();
+
     // Cancelled between two media (or while paused), when no process would see it
     let is_cancelled = Arc::new(AtomicBool::new(false));
     let _cancel_listener = {

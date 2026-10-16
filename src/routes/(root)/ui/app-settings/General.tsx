@@ -27,6 +27,8 @@ function General() {
     showMenuBarIcon,
     playCompletionSound,
     enableVideoPreviews,
+    preventSleepWhileCompressing,
+    keepScreenOnWhileCompressing,
   } = useSnapshot(settingsStore)
   // Read when the app starts, so a change applies after a restart
   const needsRestart =
@@ -94,6 +96,31 @@ function General() {
           </SettingsRow>
         ) : null}
       </SettingsSection>
+      {isMacOS ? (
+        <SettingsSection title="Menu bar">
+          <SettingsRow
+            title="Show menu bar icon"
+            description="Show the CompressO icon, the compression progress and the drop zone in the menu bar."
+          >
+            <div className="flex items-center gap-2">
+              <InfoTooltip
+                content={
+                  isMenuBarIconLocked &&
+                  'Media in the drop zone is being compressed. This can be turned off once it is done or stopped.'
+                }
+              />
+              <Switch
+                aria-label="Show menu bar icon"
+                isSelected={showMenuBarIcon}
+                isDisabled={isMenuBarIconLocked}
+                onValueChange={(isSelected) => {
+                  settingsStore.showMenuBarIcon = isSelected
+                }}
+              />
+            </div>
+          </SettingsRow>
+        </SettingsSection>
+      ) : null}
       {isLinux ? (
         <SettingsSection title="Preview">
           <SettingsRow
@@ -144,31 +171,35 @@ function General() {
           />
         </SettingsRow>
       </SettingsSection>
-      {isMacOS ? (
-        <SettingsSection title="Menu bar">
+      <SettingsSection title="Sleep">
+        <SettingsRow
+          title="Prevent sleep while compressing"
+          description="Keep the computer awake until the compression is done. The screen can still turn off. Closing the lid still puts it to sleep."
+        >
+          <Switch
+            aria-label="Prevent sleep while compressing"
+            isSelected={preventSleepWhileCompressing}
+            onValueChange={(isSelected) => {
+              settingsStore.preventSleepWhileCompressing = isSelected
+            }}
+          />
+        </SettingsRow>
+        {preventSleepWhileCompressing ? (
           <SettingsRow
-            title="Show menu bar icon"
-            description="Show the CompressO icon, the compression progress and the drop zone in the menu bar."
+            isNested
+            title="Keep the screen on"
+            description="Also keep the screen from turning off while compressing."
           >
-            <div className="flex items-center gap-2">
-              <InfoTooltip
-                content={
-                  isMenuBarIconLocked &&
-                  'Media in the drop zone is being compressed. This can be turned off once it is done or stopped.'
-                }
-              />
-              <Switch
-                aria-label="Show menu bar icon"
-                isSelected={showMenuBarIcon}
-                isDisabled={isMenuBarIconLocked}
-                onValueChange={(isSelected) => {
-                  settingsStore.showMenuBarIcon = isSelected
-                }}
-              />
-            </div>
+            <Switch
+              aria-label="Keep the screen on"
+              isSelected={keepScreenOnWhileCompressing}
+              onValueChange={(isSelected) => {
+                settingsStore.keepScreenOnWhileCompressing = isSelected
+              }}
+            />
           </SettingsRow>
-        </SettingsSection>
-      ) : null}
+        ) : null}
+      </SettingsSection>
     </>
   )
 }

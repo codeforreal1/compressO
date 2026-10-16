@@ -881,6 +881,7 @@ dependencies = [
  "axum",
  "clipboard-rs",
  "cocoa",
+ "core-foundation 0.10.1",
  "crossbeam-channel",
  "dbus",
  "exiftool-rs",
@@ -921,6 +922,7 @@ dependencies = [
  "vtracer",
  "webp",
  "window-vibrancy",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]

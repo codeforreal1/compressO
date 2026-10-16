@@ -82,6 +82,10 @@ export type SettingsState = {
    * `isVideoPreviewAvailable`).
    */
   enableVideoPreviews: boolean
+  /** Keep the computer awake while compressing (on by default); the screen can still turn off */
+  preventSleepWhileCompressing: boolean
+  /** With `preventSleepWhileCompressing`, also keep the screen on (off by default) */
+  keepScreenOnWhileCompressing: boolean
 }
 
 // Replaced by `saveLargerOutputs`, which defaults to on
@@ -130,6 +134,11 @@ function readSettings(): SettingsState {
       localStorage.getItem(constants.useHardwareAcceleration) === 'true',
     enableVideoPreviews:
       localStorage.getItem(constants.enableVideoPreviews) === 'true',
+    // Only an explicit opt-out turns it off
+    preventSleepWhileCompressing:
+      localStorage.getItem(constants.preventSleepWhileCompressing) !== 'false',
+    keepScreenOnWhileCompressing:
+      localStorage.getItem(constants.keepScreenOnWhileCompressing) === 'true',
   }
 }
 
@@ -208,6 +217,14 @@ subscribe(settingsStore, () => {
   localStorage.setItem(
     constants.enableVideoPreviews,
     String(settingsStore.enableVideoPreviews),
+  )
+  localStorage.setItem(
+    constants.preventSleepWhileCompressing,
+    String(settingsStore.preventSleepWhileCompressing),
+  )
+  localStorage.setItem(
+    constants.keepScreenOnWhileCompressing,
+    String(settingsStore.keepScreenOnWhileCompressing),
   )
   if (settingsStore.saveFolder) {
     localStorage.setItem(constants.saveFolder, settingsStore.saveFolder)
