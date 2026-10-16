@@ -72,7 +72,7 @@ jobs:
           const commit = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
           fs.appendFileSync(process.env.GITHUB_OUTPUT, `tag=${tag}\ncommit=${commit}\n`);
           NODE
-      - name: Create or reuse draft release
+      - name: Create or reuse public release
         id: release
         uses: actions/github-script@v7
         env:
@@ -83,8 +83,12 @@ jobs:
             const params = { ...context.repo, tag: process.env.RELEASE_TAG };
             try {
               const { data } = await github.rest.repos.getReleaseByTag(params);
-              if (!data.draft) {
-                throw new Error('This version is already published; bump the app version');
+              if (data.draft) {
+                await github.rest.repos.updateRelease({
+                  ...context.repo,
+                  release_id: data.id,
+                  draft: false,
+                });
               }
               return data.id;
             } catch (error) {
@@ -96,7 +100,7 @@ jobs:
               target_commitish: process.env.RELEASE_COMMIT,
               name: `CompressO ${params.tag}`,
               body: 'Download the installer for your operating system from the assets below.',
-              draft: true,
+              draft: false,
               prerelease: params.tag.includes('-'),
             });
             return data.id;
@@ -168,13 +172,13 @@ jobs:
         with:
           releaseId: ${{ needs.prepare.outputs.release_id }}
           tagName: ${{ needs.prepare.outputs.tag }}
-          releaseDraft: true
+          releaseDraft: false
           tauriScript: pnpm exec tauri
           args: --target ${{ matrix.target }} --bundles ${{ matrix.bundles }} --config src-tauri/tauri.release.conf.json
           uploadUpdaterJson: ${{ steps.updater.outputs.signed == 'true' }}
           updaterJsonPreferNsis: true
 
-  publish:
+  finalize:
     needs: [prepare, build]
     runs-on: ubuntu-22.04
     steps:
@@ -194,7 +198,7 @@ jobs:
           find . -maxdepth 1 -type f ! -name SHA256SUMS -printf '%f\0' | sort -z | xargs -0 -r sha256sum > SHA256SUMS
           test -s SHA256SUMS
           gh release upload "$RELEASE_TAG" SHA256SUMS --clobber
-      - name: Publish completed release
+      - name: Update release download notes
         uses: actions/github-script@v7
         env:
           RELEASE_ID: ${{ needs.prepare.outputs.release_id }}

@@ -89,8 +89,10 @@ pnpm tauri:build
 
 The `Release desktop app` workflow builds Linux x64 (`.deb`, `.AppImage`),
 Windows x64 (NSIS `.exe`), and macOS Intel and Apple Silicon (`.dmg`) installers.
-It publishes the release only after all four builds succeed. If a build fails,
-the release stays as a draft so you can fix the problem and rerun the workflow.
+It publishes the release immediately and attaches installers as each platform
+build finishes. If a build fails, the release stays public with the assets
+already uploaded; rerun the failed jobs to finish uploading the installers.
+Checksums and the download table are added once all four builds succeed.
 The GitHub Pages workflow continues to deploy the website separately.
 
 Set the same version in `package.json` and `src-tauri/tauri.conf.json`, then push
