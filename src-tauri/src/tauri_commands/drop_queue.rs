@@ -63,6 +63,11 @@ pub struct DropQueueItem {
     pub relative_dir: String,
     /// Media added together (e.g. the files of a dropped folder) share it
     pub group_id: String,
+    /// The run of compressions it belongs to, which the menu bar's progress is measured over:
+    /// media added (or tried again) while the queue is compressing joins its batch, media added
+    /// once it is done starts a new one, from 0%
+    #[serde(skip)]
+    pub batch_id: String,
     pub status: DropQueueItemStatus,
     /// The media is compressed in this order (the lowest first), while the queue keeps the order
     /// it was added in: media tried again is compressed after the media already waiting, but stays
@@ -115,16 +120,25 @@ fn update_queue(app_handle: &AppHandle, update: impl FnOnce(&mut Vec<DropQueueIt
     };
     show_queue_progress(app_handle, &items);
     // Nothing left to resume (e.g. cleared), so media added next is compressed
-    let is_active = items.iter().any(|item| {
-        matches!(
-            item.status,
-            DropQueueItemStatus::Waiting | DropQueueItemStatus::Compressing
-        )
-    });
-    if !is_active {
+    if !items.iter().any(is_active) {
         set_paused(app_handle, false);
     }
     let _ = app_handle.emit(DROP_QUEUE_EVENT, items);
+}
+
+fn is_active(item: &DropQueueItem) -> bool {
+    matches!(
+        item.status,
+        DropQueueItemStatus::Waiting | DropQueueItemStatus::Compressing
+    )
+}
+
+/// The batch the queue is compressing, if it is (see `DropQueueItem::batch_id`)
+fn active_batch_id(items: &[DropQueueItem]) -> Option<String> {
+    items
+        .iter()
+        .find(|item| is_active(item))
+        .map(|item| item.batch_id.clone())
 }
 
 /// Shows the progress of the queue on the menu bar icon (unless the main window is compressing,
@@ -133,14 +147,13 @@ fn show_queue_progress(app_handle: &AppHandle, items: &[DropQueueItem]) {
     if crate::tauri_commands::compression_status::is_compressing(app_handle) {
         return;
     }
-    let is_active = items.iter().any(|item| {
-        matches!(
-            item.status,
-            DropQueueItemStatus::Waiting | DropQueueItemStatus::Compressing
-        )
-    });
-    let progress = if is_active {
-        let total: f64 = items
+    // Only the media of the batch being compressed, not that of the batches done before it
+    let progress = if let Some(batch_id) = active_batch_id(items) {
+        let batch_items: Vec<&DropQueueItem> = items
+            .iter()
+            .filter(|item| item.batch_id == batch_id)
+            .collect();
+        let total: f64 = batch_items
             .iter()
             .map(|item| match item.status {
                 DropQueueItemStatus::Done
@@ -151,7 +164,7 @@ fn show_queue_progress(app_handle: &AppHandle, items: &[DropQueueItem]) {
             })
             .sum();
         // At least a little, so the progress shows from the start
-        (total / items.len() as f64).max(1.0)
+        (total / batch_items.len() as f64).max(1.0)
     } else {
         0.0
     };
@@ -172,6 +185,7 @@ pub fn add_to_queue(app_handle: &AppHandle, paths: Vec<String>, is_supported: im
     // The tray webview compresses the queue
     crate::macos::tray_popover::ensure_tray_window(app_handle);
     update_queue(app_handle, |items| {
+        let batch_id = active_batch_id(items).unwrap_or_else(|| nanoid!());
         for file in files {
             if !is_supported(&file.path) {
                 continue;
@@ -191,6 +205,7 @@ pub fn add_to_queue(app_handle: &AppHandle, paths: Vec<String>, is_supported: im
                 path: file.path,
                 relative_dir: file.relative_dir,
                 group_id: group_id.clone(),
+                batch_id: batch_id.clone(),
                 status: DropQueueItemStatus::Waiting,
                 queue_order: next_queue_order(),
                 progress: 0.0,
@@ -257,9 +272,11 @@ pub fn update_drop_queue_item(app_handle: AppHandle, id: String, update: DropQue
 #[tauri::command]
 pub fn retry_drop_queue_item(app_handle: AppHandle, id: String) {
     update_queue(&app_handle, |items| {
+        let batch_id = active_batch_id(items).unwrap_or_else(|| nanoid!());
         let Some(item) = items.iter_mut().find(|item| item.id == id) else {
             return;
         };
+        item.batch_id = batch_id;
         item.status = DropQueueItemStatus::Waiting;
         item.queue_order = next_queue_order();
         item.progress = 0.0;
