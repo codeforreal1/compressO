@@ -17,6 +17,7 @@ import {
   inputOnlyExtensions,
   isAudioExtension,
   type PortableTransform,
+  VIDEO_CODECS,
 } from '@/types/compression'
 import {
   type ImagePreset,
@@ -50,7 +51,6 @@ import {
   videoConfigInitialState,
 } from './-state'
 import { AUDIO_CODECS } from './ui/output-settings/video-settings/audio/AudioCodec'
-import { VIDEO_CODECS } from './ui/output-settings/video-settings/video/VideoCodec'
 
 /** Video preset settings that only apply to a video with audio */
 const audioPresetFields: VideoPresetField[] = [

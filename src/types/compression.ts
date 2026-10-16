@@ -46,6 +46,66 @@ export type VideoExtension = keyof typeof extensions.video
 export type ImageExtension = keyof typeof extensions.image
 export type AudioExtension = keyof typeof extensions.audio
 
+export type VideoCodecOption = {
+  value: string
+  name: string
+  description: string
+  compatible_containers: VideoExtension[]
+}
+
+/** Video codecs that can be chosen, with the output containers that can hold them */
+export const VIDEO_CODECS: readonly VideoCodecOption[] = [
+  {
+    value: 'libx264',
+    name: 'H.264 (AVC)',
+    description: 'Most compatible, good quality',
+    compatible_containers: [
+      'mp4',
+      'mov',
+      'mkv',
+      'avi',
+      'ts',
+    ] as VideoExtension[],
+  },
+  {
+    value: 'libx265',
+    name: 'H.265 (HEVC)',
+    description: 'Better compression, newer standard',
+    compatible_containers: ['mp4', 'mov', 'mkv', 'ts'] as VideoExtension[],
+  },
+  {
+    value: 'libvpx-vp9',
+    name: 'VP9',
+    description: 'Open-source, great for web',
+    compatible_containers: ['webm', 'mkv'] as VideoExtension[],
+  },
+  {
+    // Kept as is for saved presets; compressed with SVT-AV1 when ffmpeg has it (see `ffmpeg.rs`)
+    value: 'libaom-av1',
+    name: 'AV1',
+    description: 'Best compression, slower',
+    compatible_containers: ['mp4', 'mkv', 'webm'] as VideoExtension[],
+  },
+  {
+    value: 'mpeg4',
+    name: 'MPEG-4',
+    description: 'Legacy codec, wide support',
+    compatible_containers: ['mp4', 'mov', 'mkv', 'avi'] as VideoExtension[],
+  },
+]
+
+/**
+ * Whether a video codec (a `VIDEO_CODECS` value) can be written in an output container (see
+ * `getOutputVideoContainer`); unknown codecs are left to ffmpeg
+ */
+export function isVideoCodecCompatible(codec: string, container: string) {
+  const option = VIDEO_CODECS.find((c) => c.value === codec)
+  return (
+    !option ||
+    option.compatible_containers.includes(container as VideoExtension)
+  )
+}
+
 /**
  * Resolutions as the size of the longer side (the width of a landscape media, the height of a
  * portrait one; 16:9 sizes, e.g. 1080p is 1920x1080 or 1080x1920). Used by the resolution buttons,

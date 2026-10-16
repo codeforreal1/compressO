@@ -1,64 +1,17 @@
 import { SelectItem, SelectSection } from '@heroui/react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import { useSnapshot } from 'valtio'
 
 import Icon from '@/components/Icon'
+import InfoTooltip from '@/components/InfoTooltip'
 import Select from '@/components/Select'
 import Switch from '@/components/Switch'
 import Tooltip from '@/components/Tooltip'
-import { extensions } from '@/types/compression'
+import { isVideoCodecCompatible, VIDEO_CODECS } from '@/types/compression'
 import { slideDownTransition } from '@/utils/animation'
+import { getOutputVideoContainer } from '@/utils/video'
 import { appProxy, normalizeBatchMediaConfig } from '../../../../-state'
-
-type VideoExtension = keyof typeof extensions.video
-
-type VideoCodecOption = {
-  value: string
-  name: string
-  description: string
-  compatible_containers: VideoExtension[]
-}
-
-export const VIDEO_CODECS: readonly VideoCodecOption[] = [
-  {
-    value: 'libx264',
-    name: 'H.264 (AVC)',
-    description: 'Most compatible, good quality',
-    compatible_containers: [
-      'mp4',
-      'mov',
-      'mkv',
-      'avi',
-      'ts',
-    ] as VideoExtension[],
-  },
-  {
-    value: 'libx265',
-    name: 'H.265 (HEVC)',
-    description: 'Better compression, newer standard',
-    compatible_containers: ['mp4', 'mov', 'mkv', 'ts'] as VideoExtension[],
-  },
-  {
-    value: 'libvpx-vp9',
-    name: 'VP9',
-    description: 'Open-source, great for web',
-    compatible_containers: ['webm', 'mkv'] as VideoExtension[],
-  },
-  {
-    // Kept as is for saved presets; compressed with SVT-AV1 when ffmpeg has it (see `ffmpeg.rs`)
-    value: 'libaom-av1',
-    name: 'AV1',
-    description: 'Best compression, slower',
-    compatible_containers: ['mp4', 'mkv', 'webm'] as VideoExtension[],
-  },
-  {
-    value: 'mpeg4',
-    name: 'MPEG-4',
-    description: 'Legacy codec, wide support',
-    compatible_containers: ['mp4', 'mov', 'mkv', 'avi'] as VideoExtension[],
-  },
-]
 
 type VideoCodecProps = {
   mediaIndex: number
@@ -82,39 +35,45 @@ function VideoCodec({ mediaIndex }: VideoCodecProps) {
   const { shouldEnableCustomVideoCodec, customVideoCodec, convertToExtension } =
     config ?? commonConfigForBatchCompression.videoConfig ?? {}
 
-  const currentExtension = convertToExtension
-    ? convertToExtension === '-'
-      ? videoExtension
-      : convertToExtension
-    : '-'
+  // The output container of each video the codec applies to: one for a single video, one per video
+  // for a batch (they differ with "Same as input")
+  const outputContainers = useMemo(
+    () =>
+      mediaIndex >= 0
+        ? [getOutputVideoContainer(convertToExtension, videoExtension)]
+        : media
+            .filter((mediaFile) => mediaFile.type === 'video')
+            .map((mediaFile) =>
+              getOutputVideoContainer(convertToExtension, mediaFile.extension),
+            ),
+    [mediaIndex, convertToExtension, videoExtension, media],
+  )
 
-  // Reset codec if it's not compatible with the current extension
+  // Reset the codec if no video's container can hold it
   useEffect(() => {
-    if (shouldEnableCustomVideoCodec && customVideoCodec) {
-      const currentCodec = VIDEO_CODECS.find(
-        (c) => c.value === customVideoCodec,
+    if (
+      shouldEnableCustomVideoCodec &&
+      customVideoCodec &&
+      !outputContainers.some((container) =>
+        isVideoCodecCompatible(customVideoCodec, container),
       )
+    ) {
       if (
-        currentCodec &&
-        !currentCodec.compatible_containers.includes(currentExtension as any)
+        mediaIndex >= 0 &&
+        appProxy.state.media[mediaIndex].type === 'video' &&
+        appProxy.state.media[mediaIndex]?.config
       ) {
-        // Codec is incompatible with current extension, reset it
-        if (
-          mediaIndex >= 0 &&
-          appProxy.state.media[mediaIndex].type === 'video' &&
-          appProxy.state.media[mediaIndex]?.config
-        ) {
-          appProxy.state.media[mediaIndex].config.customVideoCodec = undefined
-        } else {
-          if (appProxy.state.media.length > 1) {
-            appProxy.state.commonConfigForBatchCompression.videoConfig.customVideoCodec =
-              undefined
-          }
+        appProxy.state.media[mediaIndex].config.customVideoCodec = undefined
+      } else {
+        if (appProxy.state.media.length > 1) {
+          appProxy.state.commonConfigForBatchCompression.videoConfig.customVideoCodec =
+            undefined
+          normalizeBatchMediaConfig()
         }
       }
     }
   }, [
-    currentExtension,
+    outputContainers,
     shouldEnableCustomVideoCodec,
     customVideoCodec,
     mediaIndex,
@@ -167,21 +126,59 @@ function VideoCodec({ mediaIndex }: VideoCodecProps) {
 
   const initialCodecValue = customVideoCodec ?? '-'
 
-  const compatibleCodecs = VIDEO_CODECS.filter((codec) =>
-    codec.compatible_containers.includes(currentExtension as any),
+  const isBatch = mediaIndex < 0
+
+  // With how many videos each codec can be used. A single video lists the codecs its container can
+  // hold; a batch lists every codec, those no video can use being disabled.
+  const codecOptions = VIDEO_CODECS.map((codec) => ({
+    ...codec,
+    videoCount: outputContainers.filter((container) =>
+      isVideoCodecCompatible(codec.value, container),
+    ).length,
+  })).filter((codec) => isBatch || codec.videoCount > 0)
+  const compatibleCodecs = codecOptions.filter((codec) => codec.videoCount > 0)
+
+  // In a batch, the videos whose container cannot hold the chosen codec keep their default codec
+  const selectedCodec = compatibleCodecs.find(
+    (codec) => codec.value === customVideoCodec,
   )
+  const skippedVideoCount = selectedCodec
+    ? outputContainers.length - selectedCodec.videoCount
+    : 0
+  const skippedContainers = selectedCodec
+    ? [
+        ...new Set(
+          outputContainers.filter(
+            (container) =>
+              !isVideoCodecCompatible(selectedCodec.value, container),
+          ),
+        ),
+      ].map((container) => container.toUpperCase())
+    : []
+  const codecNote =
+    shouldEnableCustomVideoCodec && selectedCodec && skippedVideoCount > 0
+      ? `${selectedCodec.name} cannot be used in ${formatList(skippedContainers)} files, so ${
+          skippedVideoCount === 1
+            ? '1 video keeps its default codec'
+            : `${skippedVideoCount} videos keep their default codec`
+        }.`
+      : null
 
   return (
     <>
-      <Switch
-        isSelected={shouldEnableCustomVideoCodec}
-        onValueChange={handleSwitchToggle}
-        isDisabled={shouldDisableInput}
-      >
-        <p className="text-gray-600 dark:text-gray-400 text-sm mr-2 w-full">
-          Codec
-        </p>
-      </Switch>
+      {/* Beside the switch, not in its label, so clicking the icon does not toggle it */}
+      <div className="flex items-center">
+        <Switch
+          isSelected={shouldEnableCustomVideoCodec}
+          onValueChange={handleSwitchToggle}
+          isDisabled={shouldDisableInput}
+        >
+          <p className="text-gray-600 dark:text-gray-400 text-sm mr-2 w-full">
+            Codec
+          </p>
+        </Switch>
+        <InfoTooltip content={!shouldDisableInput && codecNote} />
+      </div>
       <AnimatePresence mode="wait">
         {shouldEnableCustomVideoCodec ? (
           <motion.div {...slideDownTransition}>
@@ -199,6 +196,9 @@ function VideoCodec({ mediaIndex }: VideoCodecProps) {
                 }
               }}
               selectionMode="single"
+              disabledKeys={codecOptions
+                .filter((codec) => codec.videoCount === 0)
+                .map((codec) => codec.value)}
               isDisabled={!shouldEnableCustomVideoCodec || shouldDisableInput}
               classNames={{
                 label: '!text-gray-600 dark:!text-gray-400 text-xs',
@@ -226,20 +226,45 @@ function VideoCodec({ mediaIndex }: VideoCodecProps) {
                 </div>
               </SelectItem>
               <SelectSection>
-                {compatibleCodecs?.map((codec) => (
-                  <SelectItem
-                    key={codec.value}
-                    textValue={codec.name}
-                    className="flex justify-center items-center"
-                  >
-                    <div className="flex flex-col">
-                      <span className="text-sm">{codec.name}</span>
-                      <span className="text-xs text-gray-500">
-                        {codec.description}
-                      </span>
-                    </div>
-                  </SelectItem>
-                ))}
+                {codecOptions.map((codec) => {
+                  const videoCountText = `${codec.videoCount} of ${outputContainers.length} ${outputContainers.length === 1 ? 'video' : 'videos'}`
+                  const isPartial =
+                    isBatch && codec.videoCount < outputContainers.length
+                  return (
+                    <SelectItem
+                      key={codec.value}
+                      textValue={codec.name}
+                      className="flex justify-center items-center"
+                      endContent={
+                        isPartial && codec.videoCount > 0 ? (
+                          <Tooltip
+                            content={`Only ${videoCountText} can use ${codec.name}. The others keep their default codec.`}
+                            aria-label={`Only ${videoCountText} can use ${codec.name}`}
+                            className="max-w-64"
+                          >
+                            <Icon
+                              name="info"
+                              className="inline-block ml-1 text-warning-400"
+                              size={15}
+                            />
+                          </Tooltip>
+                        ) : null
+                      }
+                    >
+                      <div className="flex flex-col">
+                        <span className="text-sm">{codec.name}</span>
+                        <span className="text-xs text-gray-500">
+                          {codec.description}
+                        </span>
+                        {isPartial ? (
+                          <span className="text-xs text-warning-500">
+                            {videoCountText}
+                          </span>
+                        ) : null}
+                      </div>
+                    </SelectItem>
+                  )
+                })}
               </SelectSection>
             </Select>
           </motion.div>
@@ -247,6 +272,13 @@ function VideoCodec({ mediaIndex }: VideoCodecProps) {
       </AnimatePresence>
     </>
   )
+}
+
+/** "MP4", "MP4 and TS", "MP4, TS and AVI" */
+function formatList(items: string[]) {
+  return items.length > 1
+    ? `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}`
+    : (items[0] ?? '')
 }
 
 export default VideoCodec

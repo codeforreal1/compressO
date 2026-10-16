@@ -5,11 +5,13 @@ import { proxy } from 'valtio'
 import {
   getBatchResolutionLongerSide,
   isAudioExtension,
+  isVideoCodecCompatible,
   type MediaTransformHistory,
 } from '@/types/compression'
 import { applyPortableTransform } from '@/utils/transform'
 import {
   getLongerSideDimensions,
+  getOutputVideoContainer,
   getTransformedDimensions,
 } from '@/utils/video'
 import {
@@ -174,6 +176,21 @@ export function normalizeBatchMediaConfig() {
         const config = cloneDeep(videoConfig)
         // Only the batch's config holds the batch transform
         delete config.batchTransform
+        // The batch's codec is used where the video's output container can hold it (e.g. not VP9
+        // in a TS file, with "Same as input"); the others keep their default codec
+        if (
+          config.shouldEnableCustomVideoCodec &&
+          config.customVideoCodec &&
+          !isVideoCodecCompatible(
+            config.customVideoCodec,
+            getOutputVideoContainer(
+              config.convertToExtension,
+              mediaFile.extension,
+            ),
+          )
+        ) {
+          config.customVideoCodec = undefined
+        }
         if (!isAudioExtension(config.convertToExtension)) {
           applyPortableTransform(
             config,
