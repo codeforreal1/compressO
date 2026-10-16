@@ -6,8 +6,8 @@ import { useSnapshot } from 'valtio'
 
 import AnimatedLabel from '@/components/AnimatedLabel'
 import Button from '@/components/Button'
-import DisabledReason from '@/components/DisabledReason'
 import Icon from '@/components/Icon'
+import InfoTooltip from '@/components/InfoTooltip'
 import Select from '@/components/Select'
 import Switch from '@/components/Switch'
 import TextInput from '@/components/TextInput'
@@ -225,8 +225,8 @@ function Output() {
           description="Compress videos faster with hardware acceleration (Files can be slightly larger)"
         >
           <div className="flex items-center gap-2">
-            <DisabledReason
-              reason={
+            <InfoTooltip
+              content={
                 !hasHardwareAcceleration &&
                 'Hardware acceleration is not available on this computer.'
               }
@@ -249,8 +249,8 @@ function Output() {
           description="Free up space by deleting temporary files. Your saved files are not affected."
         >
           <div className="flex items-center gap-2">
-            <DisabledReason
-              reason={
+            <InfoTooltip
+              content={
                 !canClearCache &&
                 'Close the media you are working on first, as it uses the cache.'
               }

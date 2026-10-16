@@ -2,7 +2,7 @@
 import { SelectItem } from '@heroui/react'
 import { useSnapshot } from 'valtio'
 
-import DisabledReason from '@/components/DisabledReason'
+import InfoTooltip from '@/components/InfoTooltip'
 import Select from '@/components/Select'
 import Switch from '@/components/Switch'
 import { isAutoCompressAvailable } from '@/hooks/useAutoCompressSync'
@@ -76,8 +76,8 @@ function DropZone() {
           description="Compress media as soon as it is added to the drop zone, one at a time, and save it to the save location of Output."
         >
           <div className="flex items-center gap-2">
-            <DisabledReason
-              reason={
+            <InfoTooltip
+              content={
                 !showMenuBarIcon
                   ? 'The drop zone is in the menu bar. Turn on Show menu bar icon in General first.'
                   : !canAutoCompress
@@ -120,8 +120,8 @@ function DropZone() {
           description="Add media you copy, such as files or images from a browser, to the drop zone in the menu bar."
         >
           <div className="flex items-center gap-2">
-            <DisabledReason
-              reason={
+            <InfoTooltip
+              content={
                 !showMenuBarIcon &&
                 'The drop zone is in the menu bar. Turn on Show menu bar icon in General first.'
               }

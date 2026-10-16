@@ -2,7 +2,7 @@ import { useSnapshot } from 'valtio'
 
 import Button from '@/components/Button'
 import ColorPicker from '@/components/ColorPicker'
-import DisabledReason from '@/components/DisabledReason'
+import InfoTooltip from '@/components/InfoTooltip'
 import Slider from '@/components/Slider'
 import Switch from '@/components/Switch'
 import { ThemeSwitcher } from '@/components/ThemeSwitcher'
@@ -151,8 +151,8 @@ function General() {
             description="Show the CompressO icon, the compression progress and the drop zone in the menu bar."
           >
             <div className="flex items-center gap-2">
-              <DisabledReason
-                reason={
+              <InfoTooltip
+                content={
                   isMenuBarIconLocked &&
                   'Media in the drop zone is being compressed. This can be turned off once it is done or stopped.'
                 }

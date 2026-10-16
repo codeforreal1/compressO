@@ -6,8 +6,8 @@ import { useEffect, useState } from 'react'
 import { useSnapshot } from 'valtio'
 
 import Button from '@/components/Button'
-import DisabledReason from '@/components/DisabledReason'
 import Icon from '@/components/Icon'
+import InfoTooltip from '@/components/InfoTooltip'
 import ScrollShadow from '@/components/ScrollShadow'
 import Switch from '@/components/Switch'
 import { toast } from '@/components/Toast'
@@ -544,8 +544,8 @@ function AutoCompressSwitch() {
       >
         Compress automatically
       </Switch>
-      <DisabledReason
-        reason={
+      <InfoTooltip
+        content={
           !canAutoCompress &&
           'Choose a save location in Settings, under Output, so the compressed media can be saved without asking.'
         }
