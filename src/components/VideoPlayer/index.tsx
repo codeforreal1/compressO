@@ -349,8 +349,10 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
         }, 1000)
       } else {
         clearInterval(playPauseButtonRefIntervalId.current!)
+        // Cleared rather than set to `visible`, which would show it even inside a hidden parent
+        // (e.g. covered by the full media info with the tinted window, see `global.css`)
         if (playPauseButtonRef.current) {
-          playPauseButtonRef.current.style.visibility = 'visible'
+          playPauseButtonRef.current.style.visibility = ''
         }
       }
       return () => {
