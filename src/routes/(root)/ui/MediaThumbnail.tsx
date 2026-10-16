@@ -440,6 +440,23 @@ function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
   }, [])
   usePlayPauseOnSpace(!!audioOutputSrc, toggleAudioPlayback)
 
+  // An audio file plays like a video, over its cover art (or a music icon), as it has no picture
+  const isAudioFile = mediaFile?.type === 'video' && !!mediaFile.isAudioFile
+  const audioFileBackdrop = isAudioFile ? (
+    <div className="absolute inset-0 flex items-center justify-center overflow-hidden rounded-3xl border-1 border-zinc-200 dark:border-zinc-900">
+      {videoThumbnailPath ? (
+        <Image
+          alt="cover art"
+          src={videoThumbnailPath}
+          className="h-full w-full object-contain"
+          removeWrapper
+        />
+      ) : (
+        <Icon name="music" size={160} className="text-primary" />
+      )}
+    </div>
+  ) : null
+
   const imageToRenderSrc = isProcessCompleted
     ? mediaFile?.type === 'video' &&
       mediaFile?.previewMode === 'image' &&
@@ -463,7 +480,9 @@ function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5 }}
+              className="relative"
             >
+              {audioFileBackdrop}
               <VideoPlayer
                 ref={playerRef}
                 url={
@@ -486,7 +505,7 @@ function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
                 autoFocus
                 containerClassName="w-full h-full"
                 contextMenu={
-                  !isProcessCompleted ? (
+                  !isProcessCompleted && !isAudioFile ? (
                     <div className="min-w-[120px] p-0">
                       <button
                         className="flex items-center gap-1 w-full px-2 py-2 text-xs text-left hover:bg-default-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -503,9 +522,10 @@ function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
                   width: '100%',
                   minWidth: '50vw',
                   maxHeight: '60vh',
-                  aspectRatio:
-                    (mediaFile?.dimensions?.width ?? 1) /
-                    (mediaFile?.dimensions?.height ?? 1),
+                  aspectRatio: isAudioFile
+                    ? 16 / 9
+                    : (mediaFile?.dimensions?.width ?? 1) /
+                      (mediaFile?.dimensions?.height ?? 1),
                 }}
                 config={{
                   file: {
@@ -513,12 +533,20 @@ function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
                       crossOrigin: 'anonymous',
                     },
                     tracks: [],
+                    // Played as audio, whatever the format (e.g. FLAC, Opus)
+                    forceAudio: isAudioFile,
                   },
                 }}
+                // Like the audio player after a compression
+                isPlayPauseControlAtBottom={isAudioFile}
                 disableClosedCaptions
                 onError={(error: any) => {
                   if (error.name !== 'AbortError') {
-                    toast.warning('Switching to image thumbnail...')
+                    toast.warning(
+                      isAudioFile
+                        ? 'This audio cannot be played here, but it can still be compressed.'
+                        : 'Switching to image thumbnail...',
+                    )
                     if (appProxy.state.media[mediaIndex].type === 'video') {
                       appProxy.state.media[mediaIndex].previewMode = 'image'
                     }
@@ -589,6 +617,11 @@ function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
                   </Button>
                 </>
               ) : null}
+            </div>
+          ) : isAudioFile ? (
+            // An audio file that is not played here (Linux, with video previews off)
+            <div className="relative mx-auto w-full max-w-[740px] aspect-video">
+              {audioFileBackdrop}
             </div>
           ) : (
             <div className="relative w-fit mx-auto">

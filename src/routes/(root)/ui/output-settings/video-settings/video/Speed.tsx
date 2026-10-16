@@ -6,6 +6,7 @@ import Slider from '@/components/Slider'
 import Switch from '@/components/Switch'
 import { appProxy, normalizeBatchMediaConfig } from '@/routes/(root)/-state'
 import { slideDownTransition } from '@/utils/animation'
+import { useBatchVideoConfigKey } from '../-batchConfig'
 
 type VideoSpeedProps = {
   mediaIndex: number
@@ -24,13 +25,14 @@ const VideoSpeed = ({ mediaIndex }: VideoSpeedProps) => {
       isLoadingMediaFiles,
     },
   } = useSnapshot(appProxy)
+  const batchConfigKey = useBatchVideoConfigKey()
   const video =
     media.length > 0 && mediaIndex >= 0 && media[mediaIndex].type === 'video'
       ? media[mediaIndex]
       : null
   const { config } = video ?? {}
   const { shouldEnableCustomSpeed, customSpeed } =
-    config ?? commonConfigForBatchCompression.videoConfig ?? {}
+    config ?? commonConfigForBatchCompression[batchConfigKey] ?? {}
 
   const handleSwitchToggle = useCallback(() => {
     if (
@@ -51,13 +53,15 @@ const VideoSpeed = ({ mediaIndex }: VideoSpeedProps) => {
       }
     } else {
       if (appProxy.state.media.length > 1) {
-        appProxy.state.commonConfigForBatchCompression.videoConfig.shouldEnableCustomSpeed =
-          !appProxy.state.commonConfigForBatchCompression.videoConfig
+        appProxy.state.commonConfigForBatchCompression[
+          batchConfigKey
+        ].shouldEnableCustomSpeed =
+          !appProxy.state.commonConfigForBatchCompression[batchConfigKey]
             .shouldEnableCustomSpeed
         normalizeBatchMediaConfig()
       }
     }
-  }, [mediaIndex])
+  }, [mediaIndex, batchConfigKey])
 
   const handleValueChange = useCallback(
     (value: number) => {
@@ -70,13 +74,14 @@ const VideoSpeed = ({ mediaIndex }: VideoSpeedProps) => {
         appProxy.state.media[mediaIndex].isConfigDirty = true
       } else {
         if (appProxy.state.media.length > 1) {
-          appProxy.state.commonConfigForBatchCompression.videoConfig.customSpeed =
-            +value
+          appProxy.state.commonConfigForBatchCompression[
+            batchConfigKey
+          ].customSpeed = +value
           normalizeBatchMediaConfig()
         }
       }
     },
-    [mediaIndex],
+    [mediaIndex, batchConfigKey],
   )
 
   const shouldDisableInput =

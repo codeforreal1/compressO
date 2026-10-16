@@ -6,6 +6,7 @@ import Switch from '@/components/Switch'
 import { slideDownTransition } from '@/utils/animation'
 import CompressionQuality from './CompressionQuality'
 import { appProxy, normalizeBatchMediaConfig } from '../../../../-state'
+import { useBatchVideoConfigKey } from '../-batchConfig'
 
 type CompressionPresetProps = {
   mediaIndex: number
@@ -21,13 +22,14 @@ function CompressionPreset({ mediaIndex }: CompressionPresetProps) {
       isLoadingMediaFiles,
     },
   } = useSnapshot(appProxy)
+  const batchConfigKey = useBatchVideoConfigKey()
   const video =
     media.length > 0 && mediaIndex >= 0 && media[mediaIndex].type === 'video'
       ? media[mediaIndex]
       : null
   const { config } = video ?? {}
   const { shouldDisableCompression } =
-    config ?? commonConfigForBatchCompression.videoConfig ?? {}
+    config ?? commonConfigForBatchCompression[batchConfigKey] ?? {}
 
   const handleSwitchToggle = useCallback(() => {
     if (
@@ -40,12 +42,13 @@ function CompressionPreset({ mediaIndex }: CompressionPresetProps) {
       appProxy.state.media[mediaIndex].isConfigDirty = true
     } else {
       if (appProxy.state.media.length > 1) {
-        appProxy.state.commonConfigForBatchCompression.videoConfig.shouldDisableCompression =
-          !shouldDisableCompression
+        appProxy.state.commonConfigForBatchCompression[
+          batchConfigKey
+        ].shouldDisableCompression = !shouldDisableCompression
         normalizeBatchMediaConfig()
       }
     }
-  }, [mediaIndex, shouldDisableCompression])
+  }, [mediaIndex, shouldDisableCompression, batchConfigKey])
 
   const shouldDisableInput =
     media.length === 0 ||

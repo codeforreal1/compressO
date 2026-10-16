@@ -3,6 +3,7 @@ import cloneDeep from 'lodash/cloneDeep'
 import { proxy } from 'valtio'
 
 import {
+  getAudioFileOutputExtension,
   getBatchResolutionLongerSide,
   isAudioExtension,
   isVideoCodecCompatible,
@@ -67,6 +68,12 @@ export const videoConfigInitialState: VideoConfig = {
   customSpeed: undefined,
 }
 
+/** Settings of an audio file, before its own (or the batch's) are applied */
+export const audioFileConfigInitialState: VideoConfig = {
+  ...videoConfigInitialState,
+  subtitlesConfig: null,
+}
+
 export const svgSettingInitialState = {
   filterSpeckle: 4,
   colorPrecision: 6,
@@ -104,6 +111,7 @@ const appInitialState: App = {
   commonConfigForBatchCompression: {
     videoConfig: videoConfigInitialState,
     imageConfig: imageConfigInitialState,
+    audioFileConfig: audioFileConfigInitialState,
   },
 }
 
@@ -163,7 +171,7 @@ export const appProxy: AppProxy = proxy({
  */
 export function normalizeBatchMediaConfig() {
   if (appProxy.state.media.length > 1) {
-    const { videoConfig, imageConfig } =
+    const { videoConfig, imageConfig, audioFileConfig } =
       appProxy.state.commonConfigForBatchCompression
     const videoLongerSide = getBatchResolutionLongerSide(
       videoConfig.batchResolution,
@@ -172,7 +180,12 @@ export function normalizeBatchMediaConfig() {
     for (const index in appProxy.state.media) {
       const mediaFile = appProxy.state.media[index]
       if (mediaFile?.isConfigDirty) continue
-      if (mediaFile.type === 'video') {
+      if (mediaFile.type === 'video' && mediaFile.isAudioFile) {
+        mediaFile.config = getAudioFileBatchConfig(
+          audioFileConfig,
+          mediaFile.extension,
+        )
+      } else if (mediaFile.type === 'video') {
         const config = cloneDeep(videoConfig)
         // Only the batch's config holds the batch transform
         delete config.batchTransform
@@ -239,6 +252,21 @@ export function normalizeBatchMediaConfig() {
       }
     }
   }
+}
+
+/**
+ * The batch's audio settings as an audio file's own: always written as audio, in its own format
+ * when the batch keeps "Same as input"
+ */
+export function getAudioFileBatchConfig(
+  audioFileConfig: VideoConfig,
+  sourceExtension: string | null | undefined,
+): VideoConfig {
+  const config = cloneDeep(audioFileConfig)
+  if (!isAudioExtension(config.convertToExtension)) {
+    config.convertToExtension = getAudioFileOutputExtension(sourceExtension)
+  }
+  return config
 }
 
 /** Size of a media after its transforms (rotations & crop) */

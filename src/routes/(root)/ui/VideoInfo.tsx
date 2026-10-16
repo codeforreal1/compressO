@@ -200,9 +200,16 @@ function VideoInfo({ mediaIndex, onClose }: VideoInfoProps) {
             tab: 'h-6',
           }}
         >
-          {Object.values(TABS).map((t) => (
-            <Tab key={t.id} value={t.id} title={t.title} />
-          ))}
+          {Object.values(TABS)
+            // An audio file has no picture or subtitles (chapters, e.g. of audiobooks, are kept)
+            .filter(
+              (t) =>
+                !video.isAudioFile ||
+                (t.id !== 'video' && t.id !== 'subtitles'),
+            )
+            .map((t) => (
+              <Tab key={t.id} value={t.id} title={t.title} />
+            ))}
         </Tabs>
       </div>
 

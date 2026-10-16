@@ -196,6 +196,7 @@ function TrayWindow() {
     setSupportedDropExtensions([
       ...inputExtensions.video,
       ...inputExtensions.image,
+      ...inputExtensions.audio,
     ]).catch(() => {})
   }, [])
 

@@ -5,6 +5,10 @@ import { useSnapshot } from 'valtio'
 import Tabs from '@/components/Tabs'
 import { getAudioStreams } from '@/tauri/commands/ffprobe'
 import { isAudioExtension } from '@/types/compression'
+import {
+  type BatchVideoConfigKey,
+  BatchVideoConfigKeyContext,
+} from './-batchConfig'
 import AudioBitrate from './audio/AudioBitrate'
 import AudioChannels from './audio/AudioChannels'
 import AudioCodec from './audio/AudioCodec'
@@ -14,6 +18,7 @@ import Others from './others/-index'
 import VideoOnlySection from './VideoOnlySection'
 import BatchResolution from './video/BatchResolution'
 import CompressionPreset from './video/CompressionPreset'
+import CompressionQuality from './video/CompressionQuality'
 import CustomThumbnail from './video/CustomThumbnail'
 import VideoDimensions from './video/Dimensions'
 import VideoExtension from './video/Extension'
@@ -27,6 +32,8 @@ import PresetSelector from '../PresetSelector'
 
 type VideoSettingsProps = {
   mediaIndex: number // if mediaIndex < 0, we'll only show settings that applies to all videos
+  /** With `mediaIndex` < 0: the batch settings edited, its videos' or its audio files' */
+  batchConfigKey?: BatchVideoConfigKey
 }
 
 const TABS = {
@@ -44,7 +51,16 @@ const TABS = {
   },
 } as const
 
-function VideoSettings({ mediaIndex }: VideoSettingsProps) {
+/** Tabs of an audio file (or a batch's audio files): no video settings */
+const AUDIO_FILE_TABS = {
+  audio: TABS.audio,
+  others: TABS.others,
+} as const
+
+function VideoSettings({
+  mediaIndex,
+  batchConfigKey = 'videoConfig',
+}: VideoSettingsProps) {
   const {
     state: { media, commonConfigForBatchCompression },
   } = useSnapshot(appProxy)
@@ -52,14 +68,24 @@ function VideoSettings({ mediaIndex }: VideoSettingsProps) {
     media.length && mediaIndex >= 0 && media[mediaIndex].type === 'video'
       ? media[mediaIndex]
       : null
+  const isAudioFileSettings =
+    mediaIndex >= 0
+      ? !!video?.isAudioFile
+      : batchConfigKey === 'audioFileConfig'
+  const settingsConfig =
+    video?.config ?? commonConfigForBatchCompression[batchConfigKey]
   const { dimensions, pathRaw: videoPathRaw, videoInfoRaw } = video ?? {}
   // Extracting audio: only the trim, speed & audio settings apply
-  const isAudioOutput = isAudioExtension(
-    (video?.config ?? commonConfigForBatchCompression.videoConfig)
-      ?.convertToExtension,
-  )
+  const isAudioOutput = isAudioExtension(settingsConfig?.convertToExtension)
 
-  const [tab, setTab] = useState<keyof typeof TABS>('video')
+  const [tab, setTab] = useState<keyof typeof TABS>(
+    isAudioFileSettings ? 'audio' : 'video',
+  )
+  const tabs = isAudioFileSettings ? AUDIO_FILE_TABS : TABS
+  // Audio files have no Video tab (e.g. when the same settings switch to an audio file)
+  useEffect(() => {
+    if (isAudioFileSettings && tab === 'video') setTab('audio')
+  }, [isAudioFileSettings, tab])
 
   useEffect(() => {
     tab === 'audio' &&
@@ -85,9 +111,13 @@ function VideoSettings({ mediaIndex }: VideoSettingsProps) {
   const hasNoAudio = videoInfoRaw?.audioStreams?.length === 0
 
   return (
-    <>
+    <BatchVideoConfigKeyContext.Provider value={batchConfigKey}>
       <section>
-        <PresetSelector mediaType="video" mediaIndex={mediaIndex} />
+        {/* Audio files have presets of their own */}
+        <PresetSelector
+          mediaType={isAudioFileSettings ? 'audio' : 'video'}
+          mediaIndex={mediaIndex}
+        />
         <Tabs
           aria-label="Compression Settings"
           size="sm"
@@ -100,7 +130,7 @@ function VideoSettings({ mediaIndex }: VideoSettingsProps) {
             tabContent: 'text-[11px]',
           }}
         >
-          {Object.values(TABS).map((t) => (
+          {Object.values(tabs).map((t) => (
             <Tab key={t.id} value={t.id} title={t.title} />
           ))}
         </Tabs>
@@ -150,7 +180,37 @@ function VideoSettings({ mediaIndex }: VideoSettingsProps) {
               </>
             </div>
           ) : null}
-          {tab === 'audio' ? (
+          {tab === 'audio' && isAudioFileSettings ? (
+            <div>
+              <CompressionQuality
+                mediaIndex={mediaIndex}
+                isDisabled={!!settingsConfig?.shouldEnableCustomBitrate}
+              />
+              <Divider className="mb-3" />
+              {mediaIndex >= 0 && video?.videoDuration ? (
+                <>
+                  <TrimVideo mediaIndex={mediaIndex} />
+                  <Divider className="my-3" />
+                </>
+              ) : null}
+              <VideoSpeed mediaIndex={mediaIndex} />
+              <Divider className="my-3" />
+              <div className="mb-4">
+                <AudioVolume mediaIndex={mediaIndex} />
+                <Divider className="mt-8" />
+              </div>
+              <AudioCodec mediaIndex={mediaIndex} />
+              <Divider className="my-3" />
+              <AudioChannels mediaIndex={mediaIndex} />
+              <Divider className="my-3" />
+              <AudioBitrate mediaIndex={mediaIndex} />
+              <Divider className="my-3" />
+              <div className="mt-4">
+                <VideoExtension mediaIndex={mediaIndex} />
+              </div>
+            </div>
+          ) : null}
+          {tab === 'audio' && !isAudioFileSettings ? (
             <div className="relative">
               {hasNoAudio ? (
                 <p className="text-sm text-center mb-4 text-zinc-600 dark:text-zinc-400 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
@@ -191,12 +251,13 @@ function VideoSettings({ mediaIndex }: VideoSettingsProps) {
               <Others
                 mediaIndex={mediaIndex}
                 disableSubtitles={isAudioOutput}
+                hideSubtitles={isAudioFileSettings}
               />
             </>
           ) : null}
         </div>
       </section>
-    </>
+    </BatchVideoConfigKeyContext.Provider>
   )
 }
 

@@ -8,6 +8,7 @@ import Slider from '@/components/Slider'
 import Switch from '@/components/Switch'
 import { slideDownTransition } from '@/utils/animation'
 import { appProxy, normalizeBatchMediaConfig } from '../../../../-state'
+import { useBatchVideoConfigKey } from '../-batchConfig'
 
 const FPS_LIST = [24, 25, 30, 50, 60] as const
 const DEFAULT_FPS = 30
@@ -26,13 +27,14 @@ function FPS({ mediaIndex }: VideoFPSProps) {
       isLoadingMediaFiles,
     },
   } = useSnapshot(appProxy)
+  const batchConfigKey = useBatchVideoConfigKey()
   const video =
     media.length > 0 && mediaIndex >= 0 && media[mediaIndex].type === 'video'
       ? media[mediaIndex]
       : null
   const { config, fps: videoFps } = video ?? {}
   const { shouldEnableCustomFPS, customFPS, convertToExtension } =
-    config ?? commonConfigForBatchCompression.videoConfig ?? {}
+    config ?? commonConfigForBatchCompression[batchConfigKey] ?? {}
 
   const handleSwitchToggle = useCallback(() => {
     if (
@@ -50,13 +52,15 @@ function FPS({ mediaIndex }: VideoFPSProps) {
       }
     } else {
       if (appProxy.state.media.length > 1) {
-        appProxy.state.commonConfigForBatchCompression.videoConfig.shouldEnableCustomFPS =
-          !appProxy.state.commonConfigForBatchCompression.videoConfig
+        appProxy.state.commonConfigForBatchCompression[
+          batchConfigKey
+        ].shouldEnableCustomFPS =
+          !appProxy.state.commonConfigForBatchCompression[batchConfigKey]
             .shouldEnableCustomFPS
         normalizeBatchMediaConfig()
       }
     }
-  }, [mediaIndex])
+  }, [mediaIndex, batchConfigKey])
 
   const handleValueChange = useCallback(
     (value: number) => {
@@ -69,13 +73,14 @@ function FPS({ mediaIndex }: VideoFPSProps) {
         appProxy.state.media[mediaIndex].isConfigDirty = true
       } else {
         if (appProxy.state.media.length > 1) {
-          appProxy.state.commonConfigForBatchCompression.videoConfig.customFPS =
-            +value
+          appProxy.state.commonConfigForBatchCompression[
+            batchConfigKey
+          ].customFPS = +value
           normalizeBatchMediaConfig()
         }
       }
     },
-    [mediaIndex],
+    [mediaIndex, batchConfigKey],
   )
 
   const isGifTarget = convertToExtension === 'gif'

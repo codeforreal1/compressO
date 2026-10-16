@@ -8,6 +8,7 @@ import { AudioStream } from '@/types/compression'
 import { slideDownTransition } from '@/utils/animation'
 import { cn } from '@/utils/tailwind'
 import { appProxy, normalizeBatchMediaConfig } from '../../../../-state'
+import { useBatchVideoConfigKey } from '../-batchConfig'
 
 type AudioTracksProps = {
   mediaIndex: number
@@ -41,6 +42,7 @@ function AudioTracks({ mediaIndex }: AudioTracksProps) {
       isLoadingMediaFiles,
     },
   } = useSnapshot(appProxy)
+  const batchConfigKey = useBatchVideoConfigKey()
   const video =
     media.length > 0 && mediaIndex >= 0 && media[mediaIndex].type === 'video'
       ? media[mediaIndex]
@@ -51,7 +53,7 @@ function AudioTracks({ mediaIndex }: AudioTracksProps) {
     selectedAudioTracks,
     audioConfig,
     convertToExtension,
-  } = config ?? commonConfigForBatchCompression.videoConfig ?? {}
+  } = config ?? commonConfigForBatchCompression[batchConfigKey] ?? {}
 
   const audioStreams = videoInfoRaw?.audioStreams ?? []
 
@@ -71,8 +73,9 @@ function AudioTracks({ mediaIndex }: AudioTracksProps) {
           allTrackIndices
       } else {
         if (appProxy.state.media.length > 1) {
-          appProxy.state.commonConfigForBatchCompression.videoConfig.selectedAudioTracks =
-            allTrackIndices
+          appProxy.state.commonConfigForBatchCompression[
+            batchConfigKey
+          ].selectedAudioTracks = allTrackIndices
           normalizeBatchMediaConfig()
         }
       }
@@ -82,6 +85,7 @@ function AudioTracks({ mediaIndex }: AudioTracksProps) {
     mediaIndex,
     audioStreams,
     selectedAudioTracks,
+    batchConfigKey,
   ])
 
   const handleSwitchToggle = useCallback(() => {
@@ -102,19 +106,27 @@ function AudioTracks({ mediaIndex }: AudioTracksProps) {
       }
     } else {
       if (appProxy.state.media.length > 1) {
-        appProxy.state.commonConfigForBatchCompression.videoConfig.shouldEnableAudioTrackSelection =
-          !shouldEnableAudioTrackSelection
+        appProxy.state.commonConfigForBatchCompression[
+          batchConfigKey
+        ].shouldEnableAudioTrackSelection = !shouldEnableAudioTrackSelection
         if (!shouldEnableAudioTrackSelection) {
-          appProxy.state.commonConfigForBatchCompression.videoConfig.selectedAudioTracks =
-            audioStreams.map((_, index) => index)
+          appProxy.state.commonConfigForBatchCompression[
+            batchConfigKey
+          ].selectedAudioTracks = audioStreams.map((_, index) => index)
         } else {
-          appProxy.state.commonConfigForBatchCompression.videoConfig.selectedAudioTracks =
-            []
+          appProxy.state.commonConfigForBatchCompression[
+            batchConfigKey
+          ].selectedAudioTracks = []
         }
         normalizeBatchMediaConfig()
       }
     }
-  }, [mediaIndex, shouldEnableAudioTrackSelection, audioStreams])
+  }, [
+    mediaIndex,
+    shouldEnableAudioTrackSelection,
+    audioStreams,
+    batchConfigKey,
+  ])
 
   const handleTrackToggle = useCallback(
     (trackIndex: number) => {
@@ -139,13 +151,14 @@ function AudioTracks({ mediaIndex }: AudioTracksProps) {
         appProxy.state.media[mediaIndex].isConfigDirty = true
       } else {
         if (appProxy.state.media.length > 1) {
-          appProxy.state.commonConfigForBatchCompression.videoConfig.selectedAudioTracks =
-            newSelected
+          appProxy.state.commonConfigForBatchCompression[
+            batchConfigKey
+          ].selectedAudioTracks = newSelected
           normalizeBatchMediaConfig()
         }
       }
     },
-    [mediaIndex, selectedAudioTracks],
+    [mediaIndex, selectedAudioTracks, batchConfigKey],
   )
 
   const hasNoAudio = audioStreams.length === 0

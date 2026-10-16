@@ -3,12 +3,15 @@ import { TimelineAction } from '@xzdarcy/timeline-engine'
 import { getDropQueue } from '@/tauri/commands/dropQueue'
 import { Image, MediaMetadataConfig, Video } from '@/types/app'
 import {
+  getAudioFileOutputExtension,
   ImageCompressionConfig,
+  isAudioExtension,
   MediaItem,
   MediaTransformHistory,
   VideoCompressionConfig,
   VideoTrimSegment,
 } from '@/types/compression'
+import { getAudioBitrateForQuality } from '@/utils/audio'
 import {
   getLongerSideDimensions,
   getTransformedDimensions,
@@ -72,6 +75,9 @@ export function getMediaItemConfig(
     batchImageLongerSide: number | null
   },
 ): MediaItem {
+  if (v.type === 'video' && v.isAudioFile) {
+    v = getAudioFileForCompression(v)
+  }
   return {
     videoConfig:
       v.type === 'video'
@@ -236,5 +242,39 @@ export function getMediaItemConfig(
               : null,
           } satisfies ImageCompressionConfig)
         : undefined,
+  }
+}
+
+/**
+ * An audio file as it is compressed: written in an audio format, without the settings of videos,
+ * at the bitrate of its Quality (unless a bitrate is chosen)
+ */
+function getAudioFileForCompression(
+  audioFile: MediaFile & { type: 'video' },
+): MediaFile & { type: 'video' } {
+  const { config } = audioFile
+  return {
+    ...audioFile,
+    dimensions: undefined,
+    config: {
+      ...config,
+      convertToExtension: isAudioExtension(config.convertToExtension)
+        ? config.convertToExtension
+        : getAudioFileOutputExtension(audioFile.extension),
+      shouldDisableCompression: false,
+      shouldEnableCustomDimensions: false,
+      shouldEnableCustomFPS: false,
+      shouldEnableCustomVideoCodec: false,
+      shouldTransformVideo: false,
+      shouldEnableCustomThumbnail: false,
+      subtitlesConfig: null,
+      audioConfig: {
+        ...config.audioConfig,
+        bitrate:
+          config.shouldEnableCustomBitrate && config.audioConfig?.bitrate
+            ? config.audioConfig.bitrate
+            : getAudioBitrateForQuality(config.quality),
+      },
+    },
   }
 }

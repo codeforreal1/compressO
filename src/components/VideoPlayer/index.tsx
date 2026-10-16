@@ -50,6 +50,11 @@ export interface VideoPlayerProps extends BaseReactPlayerProps {
   onSpaceKeydownForPlayPause?: () => void
   onArrowKeySeek?: (arrowKey: 'left' | 'right') => void
   disablePlayPauseControlAtCenter?: boolean
+  /**
+   * The play button at the bottom center, always shown (e.g. for audio, like its player after a
+   * compression), instead of in the center, hidden while playing
+   */
+  isPlayPauseControlAtBottom?: boolean
   autoPlay?: boolean
   disablePlayPauseViaContainerClick?: boolean
   /** Previews these transforms (crop/rotate/flip) on the playing video */
@@ -77,6 +82,7 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
       contextMenu,
       onSpaceKeydownForPlayPause,
       disablePlayPauseControlAtCenter,
+      isPlayPauseControlAtBottom,
       autoPlay,
       disablePlayPauseViaContainerClick,
       onArrowKeySeek,
@@ -338,7 +344,11 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
     }, [disableClosedCaptions, toggleClosedCaptions])
 
     useEffect(() => {
-      if (isPlaying && playPauseButtonRef.current) {
+      if (
+        isPlaying &&
+        playPauseButtonRef.current &&
+        !isPlayPauseControlAtBottom
+      ) {
         if (playPauseButtonRefIntervalId.current) {
           clearInterval(playPauseButtonRefIntervalId.current)
         }
@@ -358,7 +368,7 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
       return () => {
         clearInterval(playPauseButtonRefIntervalId.current!)
       }
-    }, [isPlaying])
+    }, [isPlaying, isPlayPauseControlAtBottom])
 
     useEffect(() => {
       // On platforms like Linux, native Webview does not support accessing local asset like video. We have to serve the video asset via a local server from the backend.
@@ -509,19 +519,37 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
             </div>
           </div>
           {!disablePlayPauseControlAtCenter ? (
-            <Button
-              ref={playPauseButtonRef}
-              onPress={togglePlayPause}
-              isIconOnly
-              radius="full"
-              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2  bg-black/30 cursor-pointer"
-            >
-              <Icon
-                name={isPlaying ? 'pause' : 'play'}
-                size={28}
-                className="text-white drop-shadow-lg"
-              />
-            </Button>
+            isPlayPauseControlAtBottom ? (
+              <Button
+                ref={playPauseButtonRef}
+                onPress={togglePlayPause}
+                variant="bordered"
+                isIconOnly
+                radius="full"
+                aria-label={isPlaying ? 'Pause' : 'Play'}
+                className="absolute bottom-4 left-1/2 -translate-x-1/2 cursor-pointer"
+              >
+                <Icon
+                  name={isPlaying ? 'pause' : 'play'}
+                  size={20}
+                  className="text-white drop-shadow-lg"
+                />
+              </Button>
+            ) : (
+              <Button
+                ref={playPauseButtonRef}
+                onPress={togglePlayPause}
+                isIconOnly
+                radius="full"
+                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2  bg-black/30 cursor-pointer"
+              >
+                <Icon
+                  name={isPlaying ? 'pause' : 'play'}
+                  size={28}
+                  className="text-white drop-shadow-lg"
+                />
+              </Button>
+            )
           ) : null}
         </div>
         {contextMenuOpen && contextMenuPosition && contextMenu ? (

@@ -11,6 +11,10 @@ import Switch from '@/components/Switch'
 import TextArea from '@/components/TextArea'
 import TextInput from '@/components/TextInput'
 import type { MediaMetadataConfig } from '@/types/app'
+import {
+  getAudioFileOutputExtension,
+  isAudioExtension,
+} from '@/types/compression'
 import { slideDownTransition } from '@/utils/animation'
 import { getOutputVideoContainer } from '@/utils/video'
 import {
@@ -18,6 +22,21 @@ import {
   normalizeBatchMediaConfig,
   videoMetadataConfigInitialState,
 } from '../../../../-state'
+import { useBatchVideoConfigKey } from '../-batchConfig'
+
+/**
+ * Fields audio formats cannot keep (MP3 and M4A keep every field), not shown for audio outputs:
+ * FLAC, OGG & Opus have no description of their own (it is merged into the comment)
+ */
+const AUDIO_FORMAT_UNSUPPORTED_FIELDS: Record<
+  string,
+  ('description' | 'synopsis' | 'creationTime')[] | undefined
+> = {
+  wav: ['description', 'synopsis', 'creationTime'],
+  flac: ['description'],
+  ogg: ['description'],
+  opus: ['description'],
+}
 
 /** Output formats that cannot keep all the metadata (MP4, MKV and WebM keep every field) */
 const METADATA_FORMAT_LIMITATIONS: Record<string, string | undefined> = {
@@ -40,13 +59,14 @@ function Metadata({ mediaIndex }: MetadataProps) {
       isLoadingMediaFiles,
     },
   } = useSnapshot(appProxy)
+  const batchConfigKey = useBatchVideoConfigKey()
   const video =
     media.length > 0 && mediaIndex >= 0 && media[mediaIndex].type === 'video'
       ? media[mediaIndex]
       : null
   const { config } = video ?? {}
   const { shouldStripMetadata, metadataConfig, convertToExtension } =
-    config ?? commonConfigForBatchCompression.videoConfig ?? {}
+    config ?? commonConfigForBatchCompression[batchConfigKey] ?? {}
 
   const updateMetadataField = useCallback(
     (
@@ -80,21 +100,22 @@ function Metadata({ mediaIndex }: MetadataProps) {
       } else {
         if (appProxy.state.media.length > 1) {
           if (
-            !appProxy.state?.commonConfigForBatchCompression?.videoConfig
+            !appProxy.state?.commonConfigForBatchCompression?.[batchConfigKey]
               ?.metadataConfig
           ) {
-            appProxy.state.commonConfigForBatchCompression.videoConfig.metadataConfig =
-              cloneDeep(videoMetadataConfigInitialState)
+            appProxy.state.commonConfigForBatchCompression[
+              batchConfigKey
+            ].metadataConfig = cloneDeep(videoMetadataConfigInitialState)
           }
-          ;(appProxy.state.commonConfigForBatchCompression.videoConfig
+          ;(appProxy.state.commonConfigForBatchCompression[batchConfigKey]
             .metadataConfig![field] as any) = value
 
           if (
             field === 'creationTimeRaw' &&
-            appProxy.state.commonConfigForBatchCompression?.videoConfig
+            appProxy.state.commonConfigForBatchCompression?.[batchConfigKey]
               ?.metadataConfig
           ) {
-            appProxy.state.commonConfigForBatchCompression.videoConfig
+            appProxy.state.commonConfigForBatchCompression[batchConfigKey]
               .metadataConfig!['creationTime'] = (value as any)
               ?.toDate?.('')
               ?.toISOString()
@@ -104,7 +125,7 @@ function Metadata({ mediaIndex }: MetadataProps) {
         }
       }
     },
-    [mediaIndex],
+    [mediaIndex, batchConfigKey],
   )
 
   const handleStripMetadataToggle = useCallback(() => {
@@ -126,25 +147,29 @@ function Metadata({ mediaIndex }: MetadataProps) {
       }
     } else {
       if (appProxy.state.media.length > 1) {
-        appProxy.state.commonConfigForBatchCompression.videoConfig.shouldStripMetadata =
-          !appProxy.state.commonConfigForBatchCompression.videoConfig
+        appProxy.state.commonConfigForBatchCompression[
+          batchConfigKey
+        ].shouldStripMetadata =
+          !appProxy.state.commonConfigForBatchCompression[batchConfigKey]
             .shouldStripMetadata
 
         if (
-          appProxy.state.commonConfigForBatchCompression.videoConfig
+          appProxy.state.commonConfigForBatchCompression[batchConfigKey]
             .shouldStripMetadata
         ) {
-          appProxy.state.commonConfigForBatchCompression.videoConfig.metadataConfig =
-            null
+          appProxy.state.commonConfigForBatchCompression[
+            batchConfigKey
+          ].metadataConfig = null
         } else {
-          appProxy.state.commonConfigForBatchCompression.videoConfig.metadataConfig =
-            cloneDeep(videoMetadataConfigInitialState)
+          appProxy.state.commonConfigForBatchCompression[
+            batchConfigKey
+          ].metadataConfig = cloneDeep(videoMetadataConfigInitialState)
         }
 
         normalizeBatchMediaConfig()
       }
     }
-  }, [mediaIndex])
+  }, [mediaIndex, batchConfigKey])
 
   const shouldDisableInput =
     media.length === 0 ||
@@ -152,6 +177,21 @@ function Metadata({ mediaIndex }: MetadataProps) {
     isProcessCompleted ||
     isLoadingMediaFiles ||
     convertToExtension === 'gif'
+
+  const isAudioFileSettings =
+    mediaIndex >= 0
+      ? !!video?.isAudioFile
+      : batchConfigKey === 'audioFileConfig'
+  // The audio format written (an audio file's own with "Same as input"; unknown for a batch's)
+  const audioOutputExtension = isAudioExtension(convertToExtension)
+    ? convertToExtension
+    : video?.isAudioFile
+      ? getAudioFileOutputExtension(video.extension)
+      : null
+  const unsupportedFields =
+    (audioOutputExtension &&
+      AUDIO_FORMAT_UNSUPPORTED_FIELDS[audioOutputExtension]) ||
+    []
 
   // Unknown for "Same as input" on a batch
   const formatLimitation =
@@ -196,7 +236,9 @@ function Metadata({ mediaIndex }: MetadataProps) {
                 <TextInput
                   type="text"
                   label="Title"
-                  placeholder="Enter video title"
+                  placeholder={
+                    isAudioFileSettings ? 'Enter title' : 'Enter video title'
+                  }
                   value={metadataConfig?.title ?? ''}
                   isDisabled={shouldDisableInput}
                   onValueChange={(value) => updateMetadataField('title', value)}
@@ -254,34 +296,38 @@ function Metadata({ mediaIndex }: MetadataProps) {
                 />
                 <Divider className="mb-6" />
               </div>
-              <div className="!mt-[-10px]">
-                <TextArea
-                  type="text"
-                  label="Description"
-                  placeholder="Enter description"
-                  value={metadataConfig?.description ?? ''}
-                  isDisabled={shouldDisableInput}
-                  onValueChange={(value) =>
-                    updateMetadataField('description', value)
-                  }
-                  className="mb-3"
-                />
-                <Divider className="mb-6" />
-              </div>
-              <div className="!mt-[-10px]">
-                <TextArea
-                  type="text"
-                  label="Synopsis"
-                  placeholder="Enter synopsis"
-                  value={metadataConfig?.synopsis ?? ''}
-                  isDisabled={shouldDisableInput}
-                  onValueChange={(value) =>
-                    updateMetadataField('synopsis', value)
-                  }
-                  className="mb-3"
-                />
-                <Divider className="mb-6" />
-              </div>
+              {!unsupportedFields.includes('description') ? (
+                <div className="!mt-[-10px]">
+                  <TextArea
+                    type="text"
+                    label="Description"
+                    placeholder="Enter description"
+                    value={metadataConfig?.description ?? ''}
+                    isDisabled={shouldDisableInput}
+                    onValueChange={(value) =>
+                      updateMetadataField('description', value)
+                    }
+                    className="mb-3"
+                  />
+                  <Divider className="mb-6" />
+                </div>
+              ) : null}
+              {!unsupportedFields.includes('synopsis') ? (
+                <div className="!mt-[-10px]">
+                  <TextArea
+                    type="text"
+                    label="Synopsis"
+                    placeholder="Enter synopsis"
+                    value={metadataConfig?.synopsis ?? ''}
+                    isDisabled={shouldDisableInput}
+                    onValueChange={(value) =>
+                      updateMetadataField('synopsis', value)
+                    }
+                    className="mb-3"
+                  />
+                  <Divider className="mb-6" />
+                </div>
+              ) : null}
               <div className="!mt-[-10px]">
                 <TextArea
                   type="text"
@@ -311,48 +357,50 @@ function Metadata({ mediaIndex }: MetadataProps) {
                 <Divider className="mb-6" />
               </div>
 
-              <div>
-                <div className="flex items-center mt-[-10px]">
-                  <Switch
-                    isSelected={Boolean(
-                      metadataConfig?.shouldEnableCreationTime,
-                    )}
-                    onValueChange={(isSelected) => {
-                      updateMetadataField(
-                        'shouldEnableCreationTime',
-                        isSelected,
-                      )
-                    }}
-                    className="flex justify-center items-center"
-                    isDisabled={shouldDisableInput}
-                    size="sm"
-                  >
-                    <div className="flex justify-center items-center">
-                      <span className="text-black1 dark:text-white1 block mr-2 text-xs opacity-90">
-                        Creation Time
-                      </span>
-                    </div>
-                  </Switch>
+              {!unsupportedFields.includes('creationTime') ? (
+                <div>
+                  <div className="flex items-center mt-[-10px]">
+                    <Switch
+                      isSelected={Boolean(
+                        metadataConfig?.shouldEnableCreationTime,
+                      )}
+                      onValueChange={(isSelected) => {
+                        updateMetadataField(
+                          'shouldEnableCreationTime',
+                          isSelected,
+                        )
+                      }}
+                      className="flex justify-center items-center"
+                      isDisabled={shouldDisableInput}
+                      size="sm"
+                    >
+                      <div className="flex justify-center items-center">
+                        <span className="text-black1 dark:text-white1 block mr-2 text-xs opacity-90">
+                          Creation Time
+                        </span>
+                      </div>
+                    </Switch>
+                  </div>
+                  {metadataConfig?.shouldEnableCreationTime &&
+                  metadataConfig?.creationTimeRaw ? (
+                    <DatePicker
+                      hideTimeZone
+                      showMonthAndYearPickers
+                      label=""
+                      placeholder="Enter creation time"
+                      isDisabled={
+                        shouldDisableInput ||
+                        !metadataConfig?.shouldEnableCreationTime
+                      }
+                      onChange={(value) => {
+                        updateMetadataField('creationTimeRaw', value as any)
+                      }}
+                      value={metadataConfig?.creationTimeRaw as any}
+                      className="mt-2"
+                    />
+                  ) : null}
                 </div>
-                {metadataConfig?.shouldEnableCreationTime &&
-                metadataConfig?.creationTimeRaw ? (
-                  <DatePicker
-                    hideTimeZone
-                    showMonthAndYearPickers
-                    label=""
-                    placeholder="Enter creation time"
-                    isDisabled={
-                      shouldDisableInput ||
-                      !metadataConfig?.shouldEnableCreationTime
-                    }
-                    onChange={(value) => {
-                      updateMetadataField('creationTimeRaw', value as any)
-                    }}
-                    value={metadataConfig?.creationTimeRaw as any}
-                    className="mt-2"
-                  />
-                ) : null}
-              </div>
+              ) : null}
             </motion.div>
           </Card>
         ) : null}

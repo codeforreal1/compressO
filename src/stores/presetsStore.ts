@@ -26,7 +26,9 @@ function isValidPreset(preset: unknown): preset is Preset {
     typeof value.id === 'string' &&
     value.id !== STANDARD_PRESET_ID &&
     typeof value.name === 'string' &&
-    (value.mediaType === 'video' || value.mediaType === 'image') &&
+    (value.mediaType === 'video' ||
+      value.mediaType === 'image' ||
+      value.mediaType === 'audio') &&
     typeof value.settings === 'object' &&
     value.settings != null
   )
@@ -36,7 +38,11 @@ function isValidPreset(preset: unknown): preset is Preset {
 function readPresets(): PresetsState {
   const fallback: PresetsState = {
     presets: [],
-    defaultPresetIds: { video: STANDARD_PRESET_ID, image: STANDARD_PRESET_ID },
+    defaultPresetIds: {
+      video: STANDARD_PRESET_ID,
+      image: STANDARD_PRESET_ID,
+      audio: STANDARD_PRESET_ID,
+    },
   }
   try {
     const stored = JSON.parse(
@@ -61,6 +67,7 @@ function readPresets(): PresetsState {
       defaultPresetIds: {
         video: getDefaultPresetId('video'),
         image: getDefaultPresetId('image'),
+        audio: getDefaultPresetId('audio'),
       },
     }
   } catch {

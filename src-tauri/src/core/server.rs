@@ -262,6 +262,11 @@ fn mime_type_from_path(path: &PathBuf) -> &'static str {
             "flac" => "audio/flac",
             "m4a" => "audio/mp4",
             "aac" => "audio/aac",
+            "aiff" | "aif" => "audio/aiff",
+            "m4b" => "audio/mp4",
+            "oga" => "audio/ogg",
+            "mp2" => "audio/mpeg",
+            "wma" => "audio/x-ms-wma",
             _ => "application/octet-stream",
         })
         .unwrap_or("application/octet-stream")

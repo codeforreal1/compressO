@@ -7,6 +7,7 @@ import {
   batchResolutions,
 } from '@/types/compression'
 import { appProxy, normalizeBatchMediaConfig } from '../../../../-state'
+import { useBatchVideoConfigKey } from '../-batchConfig'
 
 const RESOLUTION_LABELS: Record<keyof typeof batchResolutions, string> = {
   original: 'Original',
@@ -32,8 +33,10 @@ function BatchResolution() {
       commonConfigForBatchCompression,
     },
   } = useSnapshot(appProxy)
+  const batchConfigKey = useBatchVideoConfigKey()
   const batchResolution =
-    commonConfigForBatchCompression.videoConfig.batchResolution ?? 'original'
+    commonConfigForBatchCompression[batchConfigKey].batchResolution ??
+    'original'
   // A size that is not listed (from a preset, e.g. `1700px`) is shown as an extra option
   const resolutions: BatchResolutionKey[] = [
     ...(Object.keys(batchResolutions) as BatchResolutionKey[]),
@@ -51,8 +54,9 @@ function BatchResolution() {
         onSelectionChange={(keys) => {
           const [key] = [...keys]
           if (!key) return
-          appProxy.state.commonConfigForBatchCompression.videoConfig.batchResolution =
-            key as BatchResolutionKey
+          appProxy.state.commonConfigForBatchCompression[
+            batchConfigKey
+          ].batchResolution = key as BatchResolutionKey
           normalizeBatchMediaConfig()
         }}
         isDisabled={isCompressing || isProcessCompleted || isLoadingMediaFiles}

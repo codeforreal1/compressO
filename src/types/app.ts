@@ -113,6 +113,11 @@ export type VideoConfig = {
 
 export type Video = {
   id: string | null
+  /**
+   * An audio file (MP3, WAV, ...): compressed like a video without a picture, with only the
+   * settings that apply to audio (format, quality, trim, speed, audio, metadata)
+   */
+  isAudioFile?: boolean
   pathRaw?: string | null
   path?: string | null
   /** Folder relative to the dropped folder (e.g. `Vacation/Day1`), mirrored when batch saving */
@@ -236,8 +241,10 @@ export type Image = {
   }
 }
 
+export type MediaTab = 'all' | 'videos' | 'images' | 'audio'
+
 export type App = {
-  activeTab: 'all' | 'videos' | 'images'
+  activeTab: MediaTab
   batchId?: string
   media: ((Video & { type: 'video' }) | (Image & { type: 'image' }))[]
   isLoadingMediaFiles: boolean
@@ -260,6 +267,8 @@ export type App = {
   commonConfigForBatchCompression: {
     videoConfig: VideoConfig
     imageConfig: ImageConfig
+    /** Settings of the batch's audio files (see `Video.isAudioFile`), apart from its videos' */
+    audioFileConfig: VideoConfig
   }
   showMediaInfo?: boolean
 }

@@ -8,6 +8,7 @@ import { toast } from '@/components/Toast'
 import { getAudioStreams } from '@/tauri/commands/ffprobe'
 import { extensions, isAudioExtension } from '@/types/compression'
 import { appProxy, normalizeBatchMediaConfig } from '../../../../-state'
+import { useBatchVideoConfigKey } from '../-batchConfig'
 
 const videoExtensions = Object.keys(extensions?.video)
 const audioExtensions = Object.keys(extensions?.audio)
@@ -26,13 +27,19 @@ function Extension({ mediaIndex }: VideoExtensionProps) {
       isLoadingMediaFiles,
     },
   } = useSnapshot(appProxy)
+  const batchConfigKey = useBatchVideoConfigKey()
   const video =
     media.length > 0 && mediaIndex >= 0 && media[mediaIndex].type === 'video'
       ? media[mediaIndex]
       : null
   const { config, pathRaw: videoPathRaw } = video ?? {}
   const { convertToExtension } =
-    config ?? commonConfigForBatchCompression.videoConfig ?? {}
+    config ?? commonConfigForBatchCompression[batchConfigKey] ?? {}
+  // An audio file (or the audio files of a batch) is only written in audio formats
+  const isAudioFileSettings =
+    mediaIndex >= 0
+      ? !!video?.isAudioFile
+      : batchConfigKey === 'audioFileConfig'
 
   // Audio can only be extracted from a video that has audio, so find out up front (the same probe &
   // cache as the Audio tab)
@@ -77,14 +84,15 @@ function Extension({ mediaIndex }: VideoExtensionProps) {
           appProxy.state.media[mediaIndex].isConfigDirty = true
         } else {
           if (appProxy.state.media.length > 1) {
-            appProxy.state.commonConfigForBatchCompression.videoConfig.convertToExtension =
-              value
+            appProxy.state.commonConfigForBatchCompression[
+              batchConfigKey
+            ].convertToExtension = value
             normalizeBatchMediaConfig()
           }
         }
       }
     },
-    [mediaIndex],
+    [mediaIndex, batchConfigKey],
   )
 
   const shouldDisableInput =
@@ -122,21 +130,26 @@ function Extension({ mediaIndex }: VideoExtensionProps) {
         Same as input
       </SelectItem>
       <SelectSection>
-        {videoExtensions?.map((ext) => (
-          <SelectItem
-            key={ext}
-            textValue={ext}
-            className="flex justify-center items-center"
-          >
-            {ext}
-          </SelectItem>
-        ))}
+        {(isAudioFileSettings ? audioExtensions : videoExtensions).map(
+          (ext) => (
+            <SelectItem
+              key={ext}
+              textValue={ext}
+              className="flex justify-center items-center"
+            >
+              {ext}
+            </SelectItem>
+          ),
+        )}
       </SelectSection>
       <SelectSection
         title={hasNoAudio ? 'Extract audio (No audio found)' : 'Extract audio'}
-        classNames={{ heading: hasNoAudio ? 'text-danger' : '' }}
+        classNames={{
+          heading: hasNoAudio ? 'text-danger' : '',
+          base: isAudioFileSettings ? 'hidden' : '',
+        }}
       >
-        {audioExtensions?.map((ext) => (
+        {(isAudioFileSettings ? [] : audioExtensions).map((ext) => (
           <SelectItem
             key={ext}
             textValue={ext}

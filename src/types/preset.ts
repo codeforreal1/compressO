@@ -73,6 +73,37 @@ export type ImagePresetSettings = Pick<ImageConfig, ImagePresetField> & {
 /** Any setting of an image preset, including the resolution */
 export type ImagePresetKey = keyof ImagePresetSettings
 
+/**
+ * Settings of an audio file that a preset holds (see `Video.isAudioFile`): the format, quality,
+ * speed & audio settings of a video preset, without those of the picture. Trim & metadata values
+ * are per file.
+ */
+export const audioFilePresetFields = [
+  'convertToExtension',
+  'quality',
+  'shouldEnableCustomSpeed',
+  'customSpeed',
+  'shouldStripMetadata',
+  'shouldEnableCustomAudioCodec',
+  'shouldEnableCustomChannel',
+  'shouldEnableCustomBitrate',
+  'audioConfig',
+] as const satisfies readonly (keyof VideoConfig)[]
+
+export type AudioPresetField = (typeof audioFilePresetFields)[number]
+
+export type AudioPresetSettings = Omit<
+  Pick<VideoConfig, AudioPresetField>,
+  'audioConfig'
+> & {
+  audioConfig: Pick<
+    AudioConfig,
+    'volume' | 'audioCodec' | 'audioChannelConfig' | 'bitrate'
+  >
+}
+
+export type AudioPresetKey = keyof AudioPresetSettings
+
 export type VideoPreset = {
   id: string
   name: string
@@ -87,9 +118,37 @@ export type ImagePreset = {
   settings: ImagePresetSettings
 }
 
-export type Preset = VideoPreset | ImagePreset
+export type AudioPreset = {
+  id: string
+  name: string
+  mediaType: 'audio'
+  settings: AudioPresetSettings
+}
+
+export type Preset = VideoPreset | ImagePreset | AudioPreset
 
 export type PresetMediaType = Preset['mediaType']
 
 /** The built-in preset of each media type: the default settings, which cannot be changed */
 export const STANDARD_PRESET_ID = 'standard'
+
+/** How the media of each preset type is named in the interface */
+export const PRESET_MEDIA_LABELS: Record<
+  PresetMediaType,
+  {
+    /** e.g. "Video", in titles */
+    title: string
+    /** e.g. "videos" */
+    plural: string
+    /** e.g. "a video" */
+    withArticle: string
+  }
+> = {
+  video: { title: 'Video', plural: 'videos', withArticle: 'a video' },
+  image: { title: 'Image', plural: 'images', withArticle: 'an image' },
+  audio: {
+    title: 'Audio',
+    plural: 'audio files',
+    withArticle: 'an audio file',
+  },
+}

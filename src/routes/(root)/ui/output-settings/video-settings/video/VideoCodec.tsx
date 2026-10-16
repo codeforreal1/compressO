@@ -12,6 +12,7 @@ import { isVideoCodecCompatible, VIDEO_CODECS } from '@/types/compression'
 import { slideDownTransition } from '@/utils/animation'
 import { getOutputVideoContainer } from '@/utils/video'
 import { appProxy, normalizeBatchMediaConfig } from '../../../../-state'
+import { useBatchVideoConfigKey } from '../-batchConfig'
 
 type VideoCodecProps = {
   mediaIndex: number
@@ -27,13 +28,14 @@ function VideoCodec({ mediaIndex }: VideoCodecProps) {
       isLoadingMediaFiles,
     },
   } = useSnapshot(appProxy)
+  const batchConfigKey = useBatchVideoConfigKey()
   const video =
     media.length > 0 && mediaIndex >= 0 && media[mediaIndex].type === 'video'
       ? media[mediaIndex]
       : null
   const { config, extension: videoExtension } = video ?? {}
   const { shouldEnableCustomVideoCodec, customVideoCodec, convertToExtension } =
-    config ?? commonConfigForBatchCompression.videoConfig ?? {}
+    config ?? commonConfigForBatchCompression[batchConfigKey] ?? {}
 
   // The output container of each video the codec applies to: one for a single video, one per video
   // for a batch (they differ with "Same as input")
@@ -66,8 +68,9 @@ function VideoCodec({ mediaIndex }: VideoCodecProps) {
         appProxy.state.media[mediaIndex].config.customVideoCodec = undefined
       } else {
         if (appProxy.state.media.length > 1) {
-          appProxy.state.commonConfigForBatchCompression.videoConfig.customVideoCodec =
-            undefined
+          appProxy.state.commonConfigForBatchCompression[
+            batchConfigKey
+          ].customVideoCodec = undefined
           normalizeBatchMediaConfig()
         }
       }
@@ -77,6 +80,7 @@ function VideoCodec({ mediaIndex }: VideoCodecProps) {
     shouldEnableCustomVideoCodec,
     customVideoCodec,
     mediaIndex,
+    batchConfigKey,
   ])
 
   const handleSwitchToggle = useCallback(() => {
@@ -90,12 +94,13 @@ function VideoCodec({ mediaIndex }: VideoCodecProps) {
       appProxy.state.media[mediaIndex].isConfigDirty = true
     } else {
       if (appProxy.state.media.length > 1) {
-        appProxy.state.commonConfigForBatchCompression.videoConfig.shouldEnableCustomVideoCodec =
-          !shouldEnableCustomVideoCodec
+        appProxy.state.commonConfigForBatchCompression[
+          batchConfigKey
+        ].shouldEnableCustomVideoCodec = !shouldEnableCustomVideoCodec
         normalizeBatchMediaConfig()
       }
     }
-  }, [mediaIndex, shouldEnableCustomVideoCodec])
+  }, [mediaIndex, shouldEnableCustomVideoCodec, batchConfigKey])
 
   const handleValueChange = useCallback(
     (value: string) => {
@@ -108,13 +113,14 @@ function VideoCodec({ mediaIndex }: VideoCodecProps) {
         appProxy.state.media[mediaIndex].isConfigDirty = true
       } else {
         if (appProxy.state.media.length > 1) {
-          appProxy.state.commonConfigForBatchCompression.videoConfig.customVideoCodec =
-            value
+          appProxy.state.commonConfigForBatchCompression[
+            batchConfigKey
+          ].customVideoCodec = value
           normalizeBatchMediaConfig()
         }
       }
     },
-    [mediaIndex],
+    [mediaIndex, batchConfigKey],
   )
 
   const shouldDisableInput =

@@ -9,7 +9,7 @@ import Modal, {
 } from '@/components/Modal'
 import TextInput from '@/components/TextInput'
 import { presetsStore } from '@/stores/presetsStore'
-import { PresetMediaType } from '@/types/preset'
+import { PRESET_MEDIA_LABELS, PresetMediaType } from '@/types/preset'
 
 type SavePresetModalProps = {
   isOpen: boolean
@@ -46,17 +46,23 @@ function SavePresetModal({
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="sm">
+    <Modal isOpen={isOpen} onClose={onClose} size="xs">
       {/* Normal weight throughout, like the settings dialog (only section headings are bold) */}
       <ModalContent className="rounded-2xl settings-dialog">
         <ModalHeader className="pb-1">
-          Save {mediaType === 'video' ? 'Video' : 'Image'} Preset
+          Save {PRESET_MEDIA_LABELS[mediaType].title} Preset
         </ModalHeader>
         <ModalBody>
           <TextInput
             autoFocus
             label="Name"
-            placeholder={mediaType === 'video' ? 'e.g. Web 1080p' : 'e.g. Web'}
+            placeholder={
+              mediaType === 'video'
+                ? 'e.g. Web 1080p'
+                : mediaType === 'audio'
+                  ? 'e.g. Podcast'
+                  : 'e.g. Web'
+            }
             value={name}
             maxLength={40}
             onValueChange={setName}

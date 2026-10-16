@@ -8,7 +8,11 @@ import { snapshot, useSnapshot } from 'valtio'
 import { zoomInTransition } from '@/utils/animation'
 import { isOverlayOpen, isTextEntryElement } from '@/utils/keyboard'
 import PreviewSingleVideo from './PreviewSingleMedia'
-import { appProxy, normalizeBatchMediaConfig } from '../-state'
+import {
+  appProxy,
+  getAudioFileBatchConfig,
+  normalizeBatchMediaConfig,
+} from '../-state'
 
 function CustomizeMediaOnBatchActions() {
   const {
@@ -79,9 +83,14 @@ function CustomizeMediaOnBatchActions() {
         mediaSnapshot.thumbnailPath = core.convertFileSrc(
           mediaSnapshot.thumbnailPathRaw!,
         )
-        mediaSnapshot.config = cloneDeep(
-          appProxy.state.commonConfigForBatchCompression.videoConfig,
-        )
+        mediaSnapshot.config = mediaSnapshot.isAudioFile
+          ? getAudioFileBatchConfig(
+              appProxy.state.commonConfigForBatchCompression.audioFileConfig,
+              mediaSnapshot.extension,
+            )
+          : cloneDeep(
+              appProxy.state.commonConfigForBatchCompression.videoConfig,
+            )
         appProxy.state.media[selectedMediaIndexForCustomization].isConfigDirty =
           false
       } else if (mediaSnapshot?.type === 'image') {

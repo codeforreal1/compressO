@@ -9,14 +9,20 @@ import {
   normalizeBatchMediaConfig,
   videoConfigInitialState,
 } from '../../../../-state'
+import { useBatchVideoConfigKey } from '../-batchConfig'
 
 type CompressionQualityProps = {
   mediaIndex: number
+  /** E.g. for an audio file with a bitrate chosen, which then sets its size */
+  isDisabled?: boolean
 }
 
 const videoConfigInitialStateCloned = cloneDeep(videoConfigInitialState)
 
-function CompressionQuality({ mediaIndex }: CompressionQualityProps) {
+function CompressionQuality({
+  mediaIndex,
+  isDisabled,
+}: CompressionQualityProps) {
   const {
     state: {
       isCompressing,
@@ -26,13 +32,14 @@ function CompressionQuality({ mediaIndex }: CompressionQualityProps) {
       isLoadingMediaFiles,
     },
   } = useSnapshot(appProxy)
+  const batchConfigKey = useBatchVideoConfigKey()
   const video =
     media.length > 0 && mediaIndex >= 0 && media[mediaIndex].type == 'video'
       ? media[mediaIndex]
       : null
   const { config } = video ?? {}
   const { quality: compressionQuality } =
-    config ?? commonConfigForBatchCompression.videoConfig ?? {}
+    config ?? commonConfigForBatchCompression[batchConfigKey] ?? {}
 
   const setQualityGlobal = useCallback(
     (value: number) => {
@@ -45,13 +52,14 @@ function CompressionQuality({ mediaIndex }: CompressionQualityProps) {
         appProxy.state.media[mediaIndex].isConfigDirty = true
       } else {
         if (appProxy.state.media.length > 1) {
-          appProxy.state.commonConfigForBatchCompression.videoConfig.quality =
-            value
+          appProxy.state.commonConfigForBatchCompression[
+            batchConfigKey
+          ].quality = value
           normalizeBatchMediaConfig()
         }
       }
     },
-    [mediaIndex],
+    [mediaIndex, batchConfigKey],
   )
 
   const [quality, setQuality] = useSyncState<number>({
@@ -62,6 +70,7 @@ function CompressionQuality({ mediaIndex }: CompressionQualityProps) {
   })
 
   const shouldDisableInput =
+    isDisabled ||
     media.length === 0 ||
     isCompressing ||
     isProcessCompleted ||

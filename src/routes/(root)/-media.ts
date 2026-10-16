@@ -15,19 +15,23 @@ import { convertSvgToPng } from '@/tauri/commands/image'
 import { Image, Video } from '@/types/app'
 import {
   extensions,
+  getAudioFileOutputExtension,
   inputExtensions,
   inputOnlyExtensions,
+  isAudioFileExtension,
 } from '@/types/compression'
 import { CollectedFile } from '@/types/fs'
 import { formatBytes } from '@/utils/fs'
 import { isVideoPreviewAvailable } from '@/utils/video'
 import {
   applyDefaultPresetsToBatchConfig,
+  getInitialAudioFileConfig,
   getInitialImageConfig,
   getInitialVideoConfig,
 } from './-presets'
 import {
   appProxy,
+  audioFileConfigInitialState,
   imageConfigInitialState,
   normalizeBatchMediaConfig,
   videoConfigInitialState,
@@ -80,7 +84,8 @@ export async function addMedia(selection: MediaSelection | MediaSelection[]) {
     return (
       ext &&
       (inputExtensions.video.includes(ext) ||
-        inputExtensions.image.includes(ext))
+        inputExtensions.image.includes(ext) ||
+        inputExtensions.audio.includes(ext))
     )
   })
 
@@ -116,13 +121,16 @@ export async function addMedia(selection: MediaSelection | MediaSelection[]) {
     const { path, relativeDir } = mediaPaths[index]
     try {
       const fileMetadata = await getFileMetadata(path)
-      const mediaType = fileMetadata.mimeType.startsWith('video')
-        ? 'video'
-        : 'image'
+      // Audio by its extension, as the detected type is missing for some audio formats
+      const mediaType = isAudioFileExtension(path.split('.').pop())
+        ? 'audio'
+        : fileMetadata.mimeType.startsWith('video')
+          ? 'video'
+          : 'image'
 
       if (
         !fileMetadata ||
-        (typeof fileMetadata?.size === 'number' && mediaType === 'video'
+        (typeof fileMetadata?.size === 'number' && mediaType !== 'image'
           ? fileMetadata?.size <= 1000
           : fileMetadata?.size < 100)
       ) {
@@ -130,7 +138,46 @@ export async function addMedia(selection: MediaSelection | MediaSelection[]) {
         continue
       }
 
-      if (mediaType === 'video') {
+      if (mediaType === 'audio') {
+        const extension = fileMetadata?.extension?.toLowerCase?.()
+        const [audioInfo, coverArt] = await Promise.all([
+          getVideoBasicInfo(path),
+          // Its cover art, when it has one (a picture stored in the file)
+          generateVideoThumbnail(path, '00:00:00.00').catch(() => null),
+        ])
+
+        const audioState: Video & { type: 'video' } = {
+          type: 'video',
+          isAudioFile: true,
+          id: coverArt?.id ?? `${index}-${+new Date()}`,
+          pathRaw: path,
+          path: core.convertFileSrc(path),
+          relativeDir,
+          fileName: fileMetadata?.fileName,
+          mimeType: fileMetadata?.mimeType,
+          sizeInBytes: fileMetadata?.size,
+          size: formatBytes(fileMetadata?.size ?? 0),
+          extension,
+          // From the default audio preset (not the video one, made for videos): in its own
+          // format with "Same as input", or the closest one for formats that can only be read
+          config: getInitialAudioFileConfig(
+            {
+              ...cloneDeep(audioFileConfigInitialState),
+              convertToExtension: getAudioFileOutputExtension(extension),
+            },
+            { sourceExtension: extension },
+          ),
+          previewMode: isVideoPreviewAvailable ? 'video' : 'image',
+        }
+        if (audioInfo?.duration) {
+          audioState.videoDuration = audioInfo.duration
+        }
+        if (coverArt) {
+          audioState.thumbnailPathRaw = coverArt.filePath
+          audioState.thumbnailPath = core.convertFileSrc(coverArt.filePath)
+        }
+        appProxy.state.media.push(audioState)
+      } else if (mediaType === 'video') {
         const [videoInfo, videoThumbnail] = await Promise.all([
           getVideoBasicInfo(path),
           generateVideoThumbnail(path),
@@ -296,10 +343,11 @@ export async function pickMediaToAdd() {
     const filePath = await open({
       directory: false,
       multiple: true,
-      title: `Select images/videos to compress.`,
+      title: `Select images, videos or audio to compress.`,
       filters: [
         { name: 'video', extensions: inputExtensions.video },
         { name: 'image', extensions: inputExtensions.image },
+        { name: 'audio', extensions: inputExtensions.audio },
       ],
     })
     if (filePath == null) {

@@ -6,6 +6,7 @@ import { useSnapshot } from 'valtio'
 import Layout from '@/components/Layout'
 import Tabs from '@/components/Tabs'
 import Title from '@/components/Title'
+import type { MediaTab } from '@/types/app'
 import { zoomInTransition } from '@/utils/animation'
 import { cn } from '@/utils/tailwind'
 import CompressionActions from './CompressionActions'
@@ -53,7 +54,7 @@ function MediaConfig() {
                 size="sm"
                 selectedKey={activeTab}
                 onSelectionChange={(t) => {
-                  appProxy.state.activeTab = t as 'all' | 'videos' | 'images'
+                  appProxy.state.activeTab = t as MediaTab
                 }}
                 className="mb-4"
                 classNames={{
@@ -64,6 +65,7 @@ function MediaConfig() {
                 <Tab key="all" value="all" title="All" />
                 <Tab key="videos" value="videos" title="Videos" />
                 <Tab key="images" value="images" title="Images" />
+                <Tab key="audio" value="audio" title="Audio" />
               </Tabs>
             </motion.div>
           ) : null}

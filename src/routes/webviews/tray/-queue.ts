@@ -10,13 +10,16 @@ import {
   MediaFile,
 } from '@/routes/(root)/-compression'
 import {
+  applyAudioPresetToConfig,
   applyImagePresetToConfig,
   applyVideoPresetToConfig,
+  getAudioPreset,
   getImagePreset,
   getVideoPreset,
 } from '@/routes/(root)/-presets'
 import { saveQueueOutput } from '@/routes/(root)/-save'
 import {
+  audioFileConfigInitialState,
   imageConfigInitialState,
   videoConfigInitialState,
 } from '@/routes/(root)/-state'
@@ -43,7 +46,9 @@ import {
   type BatchMediaCompressionProgress,
   CustomEvents,
   extensions,
+  getAudioFileOutputExtension,
   inputOnlyExtensions,
+  isAudioFileExtension,
 } from '@/types/compression'
 import { STANDARD_PRESET_ID } from '@/types/preset'
 import { getOutputFileName } from '@/utils/fs'
@@ -88,6 +93,26 @@ async function loadQueueMedia(item: DropQueueItem): Promise<MediaFile> {
     mimeType: metadata.mimeType,
     sizeInBytes: metadata.size,
     extension,
+  }
+
+  // With the drop zone's audio preset (not the video one, made for videos)
+  if (isAudioFileExtension(extension)) {
+    const info = await getVideoBasicInfo(item.path).catch(() => null)
+    return {
+      ...base,
+      type: 'video',
+      isAudioFile: true,
+      videoDuration: info?.duration ?? null,
+      config: applyAudioPresetToConfig(
+        {
+          ...cloneDeep(audioFileConfigInitialState),
+          convertToExtension: getAudioFileOutputExtension(extension),
+        },
+        getAudioPreset(settingsStore.dropZoneAudioPresetId),
+        { sourceExtension: extension },
+        { isBatchConfig: false },
+      ),
+    }
   }
 
   if (metadata.mimeType.startsWith('video')) {

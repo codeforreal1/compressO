@@ -8,36 +8,43 @@ import Switch from '@/components/Switch'
 import { isAutoCompressAvailable } from '@/hooks/useAutoCompressSync'
 import { presetsStore } from '@/stores/presetsStore'
 import { settingsStore } from '@/stores/settingsStore'
-import type { Preset, PresetMediaType } from '@/types/preset'
+import {
+  PRESET_MEDIA_LABELS,
+  type Preset,
+  type PresetMediaType,
+} from '@/types/preset'
 import { SettingsRow, SettingsSection } from './SettingsLayout'
 import { getPreset, getPresets } from '../../-presets'
+
+/** Setting of the preset each type of media is compressed with by the drop zone */
+const DROP_ZONE_PRESET_SETTINGS = {
+  video: 'dropZoneVideoPresetId',
+  image: 'dropZoneImagePresetId',
+  audio: 'dropZoneAudioPresetId',
+} as const satisfies Record<PresetMediaType, keyof typeof settingsStore>
 
 /** Picks the preset of the media compressed by the drop zone */
 function DropZonePresetSelect({ mediaType }: { mediaType: PresetMediaType }) {
   const { presets } = useSnapshot(presetsStore)
-  const { dropZoneVideoPresetId, dropZoneImagePresetId } =
-    useSnapshot(settingsStore)
+  const settings = useSnapshot(settingsStore)
+  const settingKey = DROP_ZONE_PRESET_SETTINGS[mediaType]
   const options = getPresets(mediaType, presets as Preset[])
   // A deleted preset falls back to Standard
   const selectedPreset = getPreset(
     mediaType,
-    mediaType === 'video' ? dropZoneVideoPresetId : dropZoneImagePresetId,
+    settings[settingKey],
     presets as Preset[],
   )
 
   return (
     <Select
-      aria-label={mediaType === 'video' ? 'Video preset' : 'Image preset'}
+      aria-label={`${PRESET_MEDIA_LABELS[mediaType].title} preset`}
       selectedKeys={[selectedPreset.id]}
       disallowEmptySelection
       onSelectionChange={(keys) => {
         const [key] = [...keys]
         if (!key) return
-        if (mediaType === 'video') {
-          settingsStore.dropZoneVideoPresetId = String(key)
-        } else {
-          settingsStore.dropZoneImagePresetId = String(key)
-        }
+        settingsStore[settingKey] = String(key)
       }}
       className="w-[220px]"
       classNames={{ popoverContent: 'settings-dialog' }}
@@ -110,6 +117,13 @@ function DropZone() {
               description="Settings used for images."
             >
               <DropZonePresetSelect mediaType="image" />
+            </SettingsRow>
+            <SettingsRow
+              isNested
+              title="Audio preset"
+              description="Settings used for audio files."
+            >
+              <DropZonePresetSelect mediaType="audio" />
             </SettingsRow>
           </>
         ) : null}

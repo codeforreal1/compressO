@@ -15,6 +15,7 @@ import { slideDownTransition } from '@/utils/animation'
 import { cn } from '@/utils/tailwind'
 import { getOutputVideoContainer } from '@/utils/video'
 import { appProxy, normalizeBatchMediaConfig } from '../../../../-state'
+import { useBatchVideoConfigKey } from '../-batchConfig'
 
 type CustomThumbnailProps = {
   mediaIndex: number
@@ -32,6 +33,7 @@ function CustomThumbnail({ mediaIndex }: CustomThumbnailProps) {
       isLoadingMediaFiles,
     },
   } = useSnapshot(appProxy)
+  const batchConfigKey = useBatchVideoConfigKey()
 
   const video =
     media.length > 0 && mediaIndex >= 0 && media[mediaIndex].type === 'video'
@@ -42,7 +44,7 @@ function CustomThumbnail({ mediaIndex }: CustomThumbnailProps) {
     customThumbnailPath,
     shouldEnableCustomThumbnail,
     convertToExtension,
-  } = config ?? commonConfigForBatchCompression.videoConfig ?? {}
+  } = config ?? commonConfigForBatchCompression[batchConfigKey] ?? {}
   const outputContainer = getOutputVideoContainer(
     convertToExtension,
     video?.extension,
@@ -75,8 +77,9 @@ function CustomThumbnail({ mediaIndex }: CustomThumbnailProps) {
           appProxy.state.media[mediaIndex].isConfigDirty = true
         } else {
           if (appProxy.state.media.length > 1) {
-            appProxy.state.commonConfigForBatchCompression.videoConfig.customThumbnailPath =
-              filePath
+            appProxy.state.commonConfigForBatchCompression[
+              batchConfigKey
+            ].customThumbnailPath = filePath
             normalizeBatchMediaConfig()
           }
         }
@@ -84,7 +87,7 @@ function CustomThumbnail({ mediaIndex }: CustomThumbnailProps) {
     } catch (error: any) {
       toast.error(error?.message ?? 'Could not select thumbnail image.')
     }
-  }, [mediaIndex])
+  }, [mediaIndex, batchConfigKey])
 
   const handleClearThumbnail = useCallback(() => {
     if (
@@ -96,12 +99,13 @@ function CustomThumbnail({ mediaIndex }: CustomThumbnailProps) {
       appProxy.state.media[mediaIndex].isConfigDirty = true
     } else {
       if (appProxy.state.media.length > 1) {
-        appProxy.state.commonConfigForBatchCompression.videoConfig.customThumbnailPath =
-          null
+        appProxy.state.commonConfigForBatchCompression[
+          batchConfigKey
+        ].customThumbnailPath = null
         normalizeBatchMediaConfig()
       }
     }
-  }, [mediaIndex])
+  }, [mediaIndex, batchConfigKey])
 
   const handleToggleChange = useCallback(
     (isSelected: boolean) => {
@@ -115,13 +119,14 @@ function CustomThumbnail({ mediaIndex }: CustomThumbnailProps) {
         appProxy.state.media[mediaIndex].isConfigDirty = true
       } else {
         if (appProxy.state.media.length > 1) {
-          appProxy.state.commonConfigForBatchCompression.videoConfig.shouldEnableCustomThumbnail =
-            isSelected
+          appProxy.state.commonConfigForBatchCompression[
+            batchConfigKey
+          ].shouldEnableCustomThumbnail = isSelected
           normalizeBatchMediaConfig()
         }
       }
     },
-    [mediaIndex],
+    [mediaIndex, batchConfigKey],
   )
 
   const shouldDisableInput =

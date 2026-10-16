@@ -7,15 +7,21 @@ type OthersProps = {
   mediaIndex: number
   /** Audio outputs cannot hold subtitles */
   disableSubtitles?: boolean
+  /** Audio files never have subtitles, so only their metadata is shown */
+  hideSubtitles?: boolean
 }
 
-function Others({ mediaIndex, disableSubtitles }: OthersProps) {
+function Others({ mediaIndex, disableSubtitles, hideSubtitles }: OthersProps) {
   return (
     <div>
-      <VideoOnlySection isDisabled={disableSubtitles}>
-        <Subtitles mediaIndex={mediaIndex} />
-      </VideoOnlySection>
-      <Divider className="my-3" />
+      {!hideSubtitles ? (
+        <>
+          <VideoOnlySection isDisabled={disableSubtitles}>
+            <Subtitles mediaIndex={mediaIndex} />
+          </VideoOnlySection>
+          <Divider className="my-3" />
+        </>
+      ) : null}
       <Metadata mediaIndex={mediaIndex} />
     </div>
   )

@@ -22,6 +22,9 @@ import {
 import SavePresetModal from './SavePresetModal'
 import {
   applyPreset,
+  getAudioPreset,
+  getAudioPresetSettingsToSave,
+  getBatchConfigKey,
   getImageConfigResolution,
   getImagePreset,
   getImagePresetSettingsToSave,
@@ -31,7 +34,9 @@ import {
   getVideoPreset,
   getVideoPresetSettingsToSave,
   hasChangesOutsidePreset,
+  isAudioPresetModified,
   isImagePresetModified,
+  isMediaOfPresetType,
   isVideoPresetModified,
   revertToPreset,
 } from '../../-presets'
@@ -63,13 +68,11 @@ function PresetSelector({ mediaType, mediaIndex }: PresetSelectorProps) {
   const [isSaveModalOpen, setIsSaveModalOpen] = React.useState(false)
 
   const mediaFile =
-    mediaIndex >= 0 && media[mediaIndex]?.type === mediaType
+    mediaIndex >= 0 && isMediaOfPresetType(media[mediaIndex], mediaType)
       ? media[mediaIndex]
       : null
   const config = (mediaFile?.config ??
-    (mediaType === 'video'
-      ? commonConfigForBatchCompression.videoConfig
-      : commonConfigForBatchCompression.imageConfig)) as
+    commonConfigForBatchCompression[getBatchConfigKey(mediaType)]) as
     | VideoConfig
     | ImageConfig
   const sourceExtension = mediaFile?.extension ?? null
@@ -88,25 +91,27 @@ function PresetSelector({ mediaType, mediaIndex }: PresetSelectorProps) {
   )
   const isDefaultPreset = preset.id === STANDARD_PRESET_ID
   const isModified =
-    preset.mediaType === 'video'
-      ? isVideoPresetModified(
-          config as VideoConfig,
-          preset,
-          sourceExtension,
-          getVideoConfigResolution(config as VideoConfig, {
-            isBatchConfig: !mediaFile,
-            batchResolution,
-          }),
-        )
-      : isImagePresetModified(
-          config as ImageConfig,
-          preset,
-          sourceExtension,
-          getImageConfigResolution(config as ImageConfig, {
-            isBatchConfig: !mediaFile,
-            batchLongerSide,
-          }),
-        )
+    preset.mediaType === 'audio'
+      ? isAudioPresetModified(config as VideoConfig, preset, sourceExtension)
+      : preset.mediaType === 'video'
+        ? isVideoPresetModified(
+            config as VideoConfig,
+            preset,
+            sourceExtension,
+            getVideoConfigResolution(config as VideoConfig, {
+              isBatchConfig: !mediaFile,
+              batchResolution,
+            }),
+          )
+        : isImagePresetModified(
+            config as ImageConfig,
+            preset,
+            sourceExtension,
+            getImageConfigResolution(config as ImageConfig, {
+              isBatchConfig: !mediaFile,
+              batchLongerSide,
+            }),
+          )
   const shouldDisableInput =
     media.length === 0 ||
     isCompressing ||
@@ -123,11 +128,13 @@ function PresetSelector({ mediaType, mediaIndex }: PresetSelectorProps) {
     const targetMedia =
       mediaIndex >= 0 ? appProxy.state.media[mediaIndex] : null
     if (targetMedia) {
-      return targetMedia.type === mediaType ? targetMedia.config : null
+      return isMediaOfPresetType(targetMedia, mediaType)
+        ? targetMedia.config
+        : null
     }
-    return mediaType === 'video'
-      ? appProxy.state.commonConfigForBatchCompression.videoConfig
-      : appProxy.state.commonConfigForBatchCompression.imageConfig
+    return appProxy.state.commonConfigForBatchCompression[
+      getBatchConfigKey(mediaType)
+    ]
   }
 
   /** Points the media (or batch) to a preset whose settings now match its own */
@@ -143,31 +150,41 @@ function PresetSelector({ mediaType, mediaIndex }: PresetSelectorProps) {
     targetConfig: VideoConfig | ImageConfig,
     { id, name }: { id: string; name: string },
   ): Preset =>
-    mediaType === 'video'
+    mediaType === 'audio'
       ? {
           id,
           name,
           mediaType,
-          settings: getVideoPresetSettingsToSave(
+          settings: getAudioPresetSettingsToSave(
             targetConfig as VideoConfig,
-            getVideoPreset(targetConfig.presetId),
-            getVideoConfigResolution(targetConfig as VideoConfig, {
-              isBatchConfig: mediaIndex < 0,
-            }),
+            getAudioPreset(targetConfig.presetId),
           ),
         }
-      : {
-          id,
-          name,
-          mediaType,
-          settings: getImagePresetSettingsToSave(
-            targetConfig as ImageConfig,
-            getImagePreset(targetConfig.presetId),
-            getImageConfigResolution(targetConfig as ImageConfig, {
-              isBatchConfig: mediaIndex < 0,
-            }),
-          ),
-        }
+      : mediaType === 'video'
+        ? {
+            id,
+            name,
+            mediaType,
+            settings: getVideoPresetSettingsToSave(
+              targetConfig as VideoConfig,
+              getVideoPreset(targetConfig.presetId),
+              getVideoConfigResolution(targetConfig as VideoConfig, {
+                isBatchConfig: mediaIndex < 0,
+              }),
+            ),
+          }
+        : {
+            id,
+            name,
+            mediaType,
+            settings: getImagePresetSettingsToSave(
+              targetConfig as ImageConfig,
+              getImagePreset(targetConfig.presetId),
+              getImageConfigResolution(targetConfig as ImageConfig, {
+                isBatchConfig: mediaIndex < 0,
+              }),
+            ),
+          }
 
   const handleUpdatePreset = () => {
     const targetConfig = getTargetConfig()

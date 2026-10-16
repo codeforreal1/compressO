@@ -35,11 +35,14 @@ export const extensions = {
 export const inputOnlyExtensions = {
   video: ['m4v', 'mts', 'm2ts'],
   image: ['bmp', 'tiff', 'tif'],
+  audio: ['aac', 'm4b', 'aiff', 'aif', 'wma', 'oga', 'mp2'],
 } as const
 
 export const inputExtensions = {
   video: [...Object.keys(extensions.video), ...inputOnlyExtensions.video],
   image: [...Object.keys(extensions.image), ...inputOnlyExtensions.image],
+  // Audio files (compressed as videos without a picture, see `Video.isAudioFile`)
+  audio: [...Object.keys(extensions.audio), ...inputOnlyExtensions.audio],
 }
 
 export type VideoExtension = keyof typeof extensions.video
@@ -151,6 +154,37 @@ export function isAudioExtension(
   extension: string | null | undefined,
 ): extension is AudioExtension {
   return !!extension && extension in extensions.audio
+}
+
+/** Whether a file with this extension is opened as an audio file (see `inputExtensions.audio`) */
+export function isAudioFileExtension(extension: string | null | undefined) {
+  return (
+    !!extension &&
+    (inputExtensions.audio as string[]).includes(extension.toLowerCase())
+  )
+}
+
+/**
+ * Format an audio file is written in when its output format is "Same as input" (or a video format,
+ * in a batch): its own, or the closest one that can be written for formats that can only be read
+ */
+export function getAudioFileOutputExtension(
+  extension: string | null | undefined,
+): AudioExtension {
+  const source = extension?.toLowerCase()
+  if (isAudioExtension(source)) return source
+  switch (source) {
+    case 'aac':
+    case 'm4b':
+      return 'm4a'
+    case 'aiff':
+    case 'aif':
+      return 'wav'
+    case 'oga':
+      return 'ogg'
+    default:
+      return 'mp3'
+  }
 }
 
 export type VideoCompressionResult = {

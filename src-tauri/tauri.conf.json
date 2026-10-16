@@ -97,6 +97,46 @@
         "ext": ["tiff", "tif"],
         "mimeType": "image/tiff",
         "role": "Editor"
+      },
+      {
+        "ext": ["mp3"],
+        "mimeType": "audio/mpeg",
+        "role": "Editor"
+      },
+      {
+        "ext": ["m4a"],
+        "mimeType": "audio/mp4",
+        "role": "Editor"
+      },
+      {
+        "ext": ["wav"],
+        "mimeType": "audio/wav",
+        "role": "Editor"
+      },
+      {
+        "ext": ["flac"],
+        "mimeType": "audio/flac",
+        "role": "Editor"
+      },
+      {
+        "ext": ["ogg"],
+        "mimeType": "audio/ogg",
+        "role": "Editor"
+      },
+      {
+        "ext": ["opus"],
+        "mimeType": "audio/opus",
+        "role": "Editor"
+      },
+      {
+        "ext": ["aac"],
+        "mimeType": "audio/aac",
+        "role": "Editor"
+      },
+      {
+        "ext": ["aiff", "aif"],
+        "mimeType": "audio/aiff",
+        "role": "Editor"
       }
     ],
     "icon": [

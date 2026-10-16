@@ -16,6 +16,7 @@ import {
   setDefaultPreset,
 } from '@/stores/presetsStore'
 import {
+  PRESET_MEDIA_LABELS,
   type Preset,
   type PresetMediaType,
   STANDARD_PRESET_ID,
@@ -23,16 +24,20 @@ import {
 import { SettingsSection } from './SettingsLayout'
 import {
   deletePresetAndUnlinkMedia,
+  describeAudioPresetSettings,
   describeImagePresetSettings,
   describeVideoPresetSettings,
 } from '../../-presets'
 
 function describePreset(preset: Preset) {
-  return (
-    preset.mediaType === 'video'
-      ? describeVideoPresetSettings(preset.settings)
-      : describeImagePresetSettings(preset.settings)
-  ).join(' · ')
+  switch (preset.mediaType) {
+    case 'video':
+      return describeVideoPresetSettings(preset.settings).join(' · ')
+    case 'audio':
+      return describeAudioPresetSettings(preset.settings).join(' · ')
+    default:
+      return describeImagePresetSettings(preset.settings).join(' · ')
+  }
 }
 
 function duplicatePreset(id: string) {
@@ -55,7 +60,7 @@ type PresetCardProps = {
 }
 
 function PresetCard({ preset, isFirst, isLast, isDefault }: PresetCardProps) {
-  const mediaLabel = preset.mediaType === 'video' ? 'videos' : 'images'
+  const mediaLabel = PRESET_MEDIA_LABELS[preset.mediaType].plural
   const defaultTooltip = isDefault
     ? `Default for new ${mediaLabel}. Select to use the Standard preset instead.`
     : `Set as default for new ${mediaLabel}`
@@ -193,17 +198,15 @@ function PresetList({ mediaType }: { mediaType: PresetMediaType }) {
   const presetsOfType = presets.filter(
     (preset) => preset.mediaType === mediaType,
   ) as Preset[]
-  const mediaLabel = mediaType === 'video' ? 'video' : 'image'
+  const labels = PRESET_MEDIA_LABELS[mediaType]
 
   return (
-    <SettingsSection
-      title={mediaType === 'video' ? 'Video Presets' : 'Image Presets'}
-    >
+    <SettingsSection title={`${labels.title} Presets`}>
       {presetsOfType.length === 0 ? (
         <p className="text-sm text-zinc-500 dark:text-zinc-400 py-4 first:pt-1">
-          There are no {mediaLabel} presets yet. Adjust the settings of a{' '}
-          {mediaLabel} and select the plus button next to the Preset menu to
-          save them as a preset.
+          There are no {labels.title.toLowerCase()} presets yet. Adjust the
+          settings of {labels.withArticle} and select the plus button next to
+          the Preset menu to save them as a preset.
         </p>
       ) : (
         presetsOfType.map((preset, index) => (
@@ -225,6 +228,7 @@ function Presets() {
     <>
       <PresetList mediaType="video" />
       <PresetList mediaType="image" />
+      <PresetList mediaType="audio" />
     </>
   )
 }

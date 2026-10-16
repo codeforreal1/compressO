@@ -18,7 +18,7 @@ import {
 } from '@/tauri/commands/dropQueue'
 import { generateVideoThumbnail } from '@/tauri/commands/ffmpeg'
 import { deleteFile, showItemInFileManager } from '@/tauri/commands/fs'
-import { inputExtensions } from '@/types/compression'
+import { inputExtensions, isAudioFileExtension } from '@/types/compression'
 import { getSummary } from '@/ui/DropQueueList'
 import { formatBytes } from '@/utils/fs'
 import { isOverlayOpen, isTextEntryElement } from '@/utils/keyboard'
@@ -39,12 +39,17 @@ function getName(path: string) {
   return path.split(/[\\/]/).filter(Boolean).pop() ?? path
 }
 
-function isVideoPath(path: string) {
+/** Kind of a queued media, by its extension */
+function getMediaKind(path: string): 'video' | 'audio' | 'image' {
   const extension = path.split('.').pop()?.toLowerCase() ?? ''
-  return inputExtensions.video.includes(extension)
+  if (isAudioFileExtension(extension)) return 'audio'
+  return inputExtensions.video.includes(extension) ? 'video' : 'image'
 }
 
-/** Thumbnails of queued videos, generated once (images are shown as they are) */
+/**
+ * Thumbnails of queued videos (and the cover art of audio files), generated once (images are shown
+ * as they are)
+ */
 const videoThumbnails = new Map<
   string,
   Promise<{ path: string; src: string } | null>
@@ -66,17 +71,22 @@ function deleteUnusedThumbnails(items: readonly DropQueueItem[]) {
 }
 
 function useThumbnail(item: DropQueueItem) {
-  const isVideo = isVideoPath(item.path)
+  const kind = getMediaKind(item.path)
+  const hasGeneratedThumbnail = kind !== 'image'
   const [src, setSrc] = useState<string | null>(() =>
-    isVideo ? null : core.convertFileSrc(item.path),
+    hasGeneratedThumbnail ? null : core.convertFileSrc(item.path),
   )
 
   useEffect(() => {
-    if (!isVideo) return
+    if (!hasGeneratedThumbnail) return
     let isMounted = true
     let thumbnail = videoThumbnails.get(item.path)
     if (!thumbnail) {
-      thumbnail = generateVideoThumbnail(item.path)
+      // An audio file's cover art is its only picture, at the start
+      thumbnail = generateVideoThumbnail(
+        item.path,
+        kind === 'audio' ? '00:00:00.00' : undefined,
+      )
         .then((result) => ({
           path: result.filePath,
           src: core.convertFileSrc(result.filePath),
@@ -90,9 +100,9 @@ function useThumbnail(item: DropQueueItem) {
     return () => {
       isMounted = false
     }
-  }, [isVideo, item.path])
+  }, [hasGeneratedThumbnail, kind, item.path])
 
-  return { src, isVideo }
+  return { src, kind }
 }
 
 function IslandTile({
@@ -103,7 +113,7 @@ function IslandTile({
   /** Position in the virtual grid */
   style: React.CSSProperties
 }) {
-  const { src, isVideo } = useThumbnail(item)
+  const { src, kind } = useThumbnail(item)
   const name = getName(item.path)
   const reduction =
     item.originalSize && item.outputSize != null
@@ -140,7 +150,12 @@ function IslandTile({
         />
       ) : (
         <div className="w-full h-full flex items-center justify-center text-white/50">
-          <Icon name={isVideo ? 'video' : 'image'} size={22} />
+          <Icon
+            name={
+              kind === 'video' ? 'video' : kind === 'audio' ? 'music' : 'image'
+            }
+            size={22}
+          />
         </div>
       )}
 

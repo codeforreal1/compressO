@@ -3,6 +3,7 @@ import { snapshot, useSnapshot } from 'valtio'
 
 import Slider from '@/components/Slider'
 import { appProxy, normalizeBatchMediaConfig } from '../../../../-state'
+import { useBatchVideoConfigKey } from '../-batchConfig'
 
 type AudioVolumeProps = {
   mediaIndex: number
@@ -18,13 +19,14 @@ function AudioVolume({ mediaIndex }: AudioVolumeProps) {
       isLoadingMediaFiles,
     },
   } = useSnapshot(appProxy)
+  const batchConfigKey = useBatchVideoConfigKey()
   const video =
     media.length > 0 && mediaIndex >= 0 && media[mediaIndex].type === 'video'
       ? media[mediaIndex]
       : null
   const { config, videoInfoRaw } = video ?? {}
   const { audioConfig, convertToExtension } =
-    config ?? commonConfigForBatchCompression.videoConfig ?? {}
+    config ?? commonConfigForBatchCompression[batchConfigKey] ?? {}
 
   const [volume, setVolume] = React.useState<number>(audioConfig?.volume ?? 100)
   const debounceRef = React.useRef<NodeJS.Timeout>()
@@ -42,8 +44,9 @@ function AudioVolume({ mediaIndex }: AudioVolumeProps) {
         (mediaIndex >= 0 && appSnapshot.state.media[mediaIndex].type === 'video'
           ? appSnapshot.state.media[mediaIndex]?.config?.audioConfig?.volume
           : appSnapshot.state.media.length > 1
-            ? appSnapshot.state.commonConfigForBatchCompression?.videoConfig
-                ?.audioConfig?.volume
+            ? appSnapshot.state.commonConfigForBatchCompression?.[
+                batchConfigKey
+              ]?.audioConfig?.volume
             : undefined)
     ) {
       if (debounceRef.current) {
@@ -65,16 +68,18 @@ function AudioVolume({ mediaIndex }: AudioVolumeProps) {
         } else {
           if (appProxy.state.media.length > 1) {
             if (
-              !appProxy.state.commonConfigForBatchCompression.videoConfig
+              !appProxy.state.commonConfigForBatchCompression[batchConfigKey]
                 .audioConfig
             ) {
-              appProxy.state.commonConfigForBatchCompression.videoConfig.audioConfig =
-                {
-                  volume: 100,
-                }
+              appProxy.state.commonConfigForBatchCompression[
+                batchConfigKey
+              ].audioConfig = {
+                volume: 100,
+              }
             }
-            appProxy.state.commonConfigForBatchCompression.videoConfig.audioConfig.volume =
-              volume
+            appProxy.state.commonConfigForBatchCompression[
+              batchConfigKey
+            ].audioConfig.volume = volume
             normalizeBatchMediaConfig()
           }
         }
@@ -83,7 +88,7 @@ function AudioVolume({ mediaIndex }: AudioVolumeProps) {
     return () => {
       clearTimeout(debounceRef.current)
     }
-  }, [volume, mediaIndex])
+  }, [volume, mediaIndex, batchConfigKey])
 
   React.useEffect(() => {
     if (audioConfig?.volume !== volumeRef.current) {

@@ -10,6 +10,7 @@ import Tooltip from '@/components/Tooltip'
 import { extensions } from '@/types/compression'
 import { slideDownTransition } from '@/utils/animation'
 import { appProxy, normalizeBatchMediaConfig } from '../../../../-state'
+import { useBatchVideoConfigKey } from '../-batchConfig'
 
 type VideoExtension =
   | keyof typeof extensions.video
@@ -106,13 +107,14 @@ function AudioCodec({ mediaIndex }: AudioCodecProps) {
       isLoadingMediaFiles,
     },
   } = useSnapshot(appProxy)
+  const batchConfigKey = useBatchVideoConfigKey()
   const video =
     media.length > 0 && mediaIndex >= 0 && media[mediaIndex].type === 'video'
       ? media[mediaIndex]
       : null
   const { config, videoInfoRaw, extension: videoExtension } = video ?? {}
   const { shouldEnableCustomAudioCodec, convertToExtension, audioConfig } =
-    config ?? commonConfigForBatchCompression.videoConfig ?? {}
+    config ?? commonConfigForBatchCompression[batchConfigKey] ?? {}
 
   const customAudioCodec = audioConfig?.audioCodec ?? '-'
 
@@ -141,8 +143,9 @@ function AudioCodec({ mediaIndex }: AudioCodecProps) {
             undefined
         } else {
           if (appProxy.state.media.length > 1) {
-            appProxy.state.commonConfigForBatchCompression.videoConfig.audioConfig.audioCodec =
-              undefined
+            appProxy.state.commonConfigForBatchCompression[
+              batchConfigKey
+            ].audioConfig.audioCodec = undefined
           }
         }
       }
@@ -152,6 +155,7 @@ function AudioCodec({ mediaIndex }: AudioCodecProps) {
     shouldEnableCustomAudioCodec,
     customAudioCodec,
     mediaIndex,
+    batchConfigKey,
   ])
 
   const handleSwitchToggle = useCallback(() => {
@@ -165,12 +169,13 @@ function AudioCodec({ mediaIndex }: AudioCodecProps) {
       appProxy.state.media[mediaIndex].isConfigDirty = true
     } else {
       if (appProxy.state.media.length > 1) {
-        appProxy.state.commonConfigForBatchCompression.videoConfig.shouldEnableCustomAudioCodec =
-          !shouldEnableCustomAudioCodec
+        appProxy.state.commonConfigForBatchCompression[
+          batchConfigKey
+        ].shouldEnableCustomAudioCodec = !shouldEnableCustomAudioCodec
         normalizeBatchMediaConfig()
       }
     }
-  }, [mediaIndex, shouldEnableCustomAudioCodec])
+  }, [mediaIndex, shouldEnableCustomAudioCodec, batchConfigKey])
 
   const handleValueChange = useCallback(
     (value: string) => {
@@ -183,13 +188,14 @@ function AudioCodec({ mediaIndex }: AudioCodecProps) {
         appProxy.state.media[mediaIndex].isConfigDirty = true
       } else {
         if (appProxy.state.media.length > 1) {
-          appProxy.state.commonConfigForBatchCompression.videoConfig.audioConfig.audioCodec =
-            value
+          appProxy.state.commonConfigForBatchCompression[
+            batchConfigKey
+          ].audioConfig.audioCodec = value
           normalizeBatchMediaConfig()
         }
       }
     },
-    [mediaIndex],
+    [mediaIndex, batchConfigKey],
   )
 
   const hasNoAudio = videoInfoRaw?.audioStreams?.length === 0

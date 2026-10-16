@@ -12,6 +12,7 @@ import { ImageConfig, VideoConfig } from '@/types/app'
 import {
   type BatchResolution,
   extensions,
+  getAudioFileOutputExtension,
   getBatchResolutionForLongerSide,
   getBatchResolutionLongerSide,
   inputOnlyExtensions,
@@ -20,6 +21,10 @@ import {
   VIDEO_CODECS,
 } from '@/types/compression'
 import {
+  type AudioPreset,
+  type AudioPresetKey,
+  type AudioPresetSettings,
+  audioFilePresetFields,
   type ImagePreset,
   type ImagePresetField,
   type ImagePresetKey,
@@ -46,6 +51,7 @@ import {
 } from '@/utils/video'
 import {
   appProxy,
+  audioFileConfigInitialState,
   imageConfigInitialState,
   normalizeBatchMediaConfig,
   videoConfigInitialState,
@@ -186,6 +192,31 @@ const defaultImagePreset: ImagePreset = {
   settings: pickImagePresetSettings(imageConfigInitialState, null),
 }
 
+export function pickAudioPresetSettings(
+  config: VideoConfig,
+): AudioPresetSettings {
+  const settings = {} as Record<AudioPresetKey, unknown>
+  for (const field of audioFilePresetFields) {
+    settings[field] = cloneDeep(config[field])
+  }
+  const { volume, audioCodec, audioChannelConfig, bitrate } =
+    config.audioConfig ?? audioFileConfigInitialState.audioConfig
+  settings.audioConfig = cloneDeep({
+    volume,
+    audioCodec,
+    audioChannelConfig,
+    bitrate,
+  })
+  return settings as AudioPresetSettings
+}
+
+const defaultAudioPreset: AudioPreset = {
+  id: STANDARD_PRESET_ID,
+  name: 'Standard',
+  mediaType: 'audio',
+  settings: pickAudioPresetSettings(audioFileConfigInitialState),
+}
+
 /**
  * A video preset, or the Standard preset when not found (e.g. deleted). `presets` can be a snapshot,
  * so components re-render when the preset changes.
@@ -206,14 +237,69 @@ export function getImagePreset(
   return preset?.mediaType === 'image' ? preset : defaultImagePreset
 }
 
+export function getAudioPreset(
+  id: string | null | undefined,
+  presets: readonly Preset[] = presetsStore.presets,
+): AudioPreset {
+  const preset = presets.find((p) => p.id === id)
+  return preset?.mediaType === 'audio' ? preset : defaultAudioPreset
+}
+
 export function getPreset(
   mediaType: PresetMediaType,
   id: string | null | undefined,
   presets: readonly Preset[] = presetsStore.presets,
 ): Preset {
-  return mediaType === 'video'
-    ? getVideoPreset(id, presets)
-    : getImagePreset(id, presets)
+  switch (mediaType) {
+    case 'video':
+      return getVideoPreset(id, presets)
+    case 'audio':
+      return getAudioPreset(id, presets)
+    default:
+      return getImagePreset(id, presets)
+  }
+}
+
+/** Standard preset of a media type */
+function getDefaultPreset(mediaType: PresetMediaType): Preset {
+  switch (mediaType) {
+    case 'video':
+      return defaultVideoPreset
+    case 'audio':
+      return defaultAudioPreset
+    default:
+      return defaultImagePreset
+  }
+}
+
+/**
+ * Whether a media uses the presets of a type: audio files (videos without a picture, see
+ * `Video.isAudioFile`) use audio presets, not video presets
+ */
+export function isMediaOfPresetType(
+  mediaFile: { type: 'video' | 'image'; isAudioFile?: boolean } | undefined,
+  mediaType: PresetMediaType,
+) {
+  if (!mediaFile) return false
+  if (mediaType === 'audio') {
+    return mediaFile.type === 'video' && !!mediaFile.isAudioFile
+  }
+  if (mediaType === 'video') {
+    return mediaFile.type === 'video' && !mediaFile.isAudioFile
+  }
+  return mediaFile.type === 'image'
+}
+
+/** The batch settings a preset type is applied to */
+export function getBatchConfigKey(mediaType: PresetMediaType) {
+  switch (mediaType) {
+    case 'video':
+      return 'videoConfig' as const
+    case 'audio':
+      return 'audioFileConfig' as const
+    default:
+      return 'imageConfig' as const
+  }
 }
 
 /** The presets of a media type, with the Standard preset first */
@@ -222,7 +308,7 @@ export function getPresets(
   presets: readonly Preset[] = presetsStore.presets,
 ): Preset[] {
   return [
-    mediaType === 'video' ? defaultVideoPreset : defaultImagePreset,
+    getDefaultPreset(mediaType),
     ...presets.filter((preset) => preset.mediaType === mediaType),
   ]
 }
@@ -473,6 +559,57 @@ export function applyImagePresetToConfig(
   return nextConfig
 }
 
+/**
+ * Applies an audio preset to an audio file's config (or to the batch's audio settings when
+ * `isBatchConfig`), keeping its trim & metadata values. "Same as input" is shown as the file's own
+ * format (the closest one that can be written for formats that can only be read); an audio codec
+ * the format cannot hold is left at its default and listed in `presetSkippedFields`.
+ */
+export function applyAudioPresetToConfig(
+  config: VideoConfig,
+  preset: AudioPreset,
+  { sourceExtension }: { sourceExtension: string | null | undefined },
+  { isBatchConfig }: { isBatchConfig: boolean },
+): VideoConfig {
+  const { settings } = preset
+  const defaults = defaultAudioPreset.settings
+  const skippedFields = new Set<AudioPresetKey>()
+  const nextConfig = cloneDeep(config)
+  const nextFields = nextConfig as Record<AudioPresetKey, unknown>
+  for (const field of audioFilePresetFields) {
+    if (field === 'audioConfig') continue
+    nextFields[field] = cloneDeep(settings[field])
+  }
+  if (nextConfig.convertToExtension === '-' && !isBatchConfig) {
+    nextConfig.convertToExtension = getAudioFileOutputExtension(sourceExtension)
+  }
+  // Unknown for "Same as input" on a batch, then every codec is kept
+  const format = isAudioExtension(nextConfig.convertToExtension)
+    ? nextConfig.convertToExtension
+    : null
+  if (format && settings.shouldEnableCustomAudioCodec) {
+    const codec = AUDIO_CODECS.find(
+      (c) => c.value === settings.audioConfig?.audioCodec,
+    )
+    if (codec && !(codec.compatible_containers as string[]).includes(format)) {
+      skippedFields.add('shouldEnableCustomAudioCodec')
+      nextConfig.shouldEnableCustomAudioCodec =
+        defaults.shouldEnableCustomAudioCodec
+    }
+  }
+  // Audio tracks are chosen per file, so they are kept
+  nextConfig.audioConfig = {
+    ...nextConfig.audioConfig,
+    ...cloneDeep(settings.audioConfig),
+  }
+  if (skippedFields.has('shouldEnableCustomAudioCodec')) {
+    nextConfig.audioConfig.audioCodec = defaults.audioConfig.audioCodec
+  }
+  nextConfig.presetId = preset.id
+  nextConfig.presetSkippedFields = [...skippedFields]
+  return nextConfig
+}
+
 /** Removes empty values, so a missing, `undefined` or `null` setting compares as the same */
 function withoutEmptyValues(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(withoutEmptyValues)
@@ -547,6 +684,78 @@ function getEffectiveImageSettings(
     )
   }
   return withoutEmptyValues(effective)
+}
+
+/**
+ * Settings of an audio file that change the output (see `getEffectiveVideoSettings`): the quality
+ * does not with a bitrate chosen, and "Same as input" is the format the file is written in
+ */
+function getEffectiveAudioSettings(
+  settings: AudioPresetSettings,
+  skippedFields: readonly string[] | undefined,
+  sourceExtension: string | null | undefined,
+) {
+  const effective: Record<string, unknown> = cloneDeep(settings)
+  const audioConfig = effective.audioConfig as Record<string, unknown>
+  if (!settings.shouldEnableCustomSpeed) delete effective.customSpeed
+  if (settings.shouldEnableCustomBitrate) delete effective.quality
+  if (audioConfig) {
+    if (
+      !settings.shouldEnableCustomAudioCodec ||
+      skippedFields?.includes('shouldEnableCustomAudioCodec')
+    ) {
+      delete audioConfig.audioCodec
+    }
+    if (!settings.shouldEnableCustomChannel) {
+      delete audioConfig.audioChannelConfig
+    }
+    if (!settings.shouldEnableCustomBitrate) delete audioConfig.bitrate
+  }
+  for (const field of skippedFields ?? []) delete effective[field]
+  if (effective.convertToExtension === '-' && sourceExtension) {
+    effective.convertToExtension = getAudioFileOutputExtension(sourceExtension)
+  }
+  return withoutEmptyValues(effective)
+}
+
+/** Whether an audio file's settings were changed after its preset was applied */
+export function isAudioPresetModified(
+  config: VideoConfig,
+  preset: AudioPreset,
+  sourceExtension: string | null | undefined,
+) {
+  const skippedFields =
+    config.presetId === preset.id ? config.presetSkippedFields : undefined
+  return !isEqual(
+    getEffectiveAudioSettings(
+      pickAudioPresetSettings(config),
+      skippedFields,
+      sourceExtension,
+    ),
+    getEffectiveAudioSettings(preset.settings, skippedFields, sourceExtension),
+  )
+}
+
+/** Settings to save to an audio preset (see `getVideoPresetSettingsToSave`) */
+export function getAudioPresetSettingsToSave(
+  config: VideoConfig,
+  preset: AudioPreset,
+): AudioPresetSettings {
+  const settings = pickAudioPresetSettings(config) as Record<
+    AudioPresetKey,
+    unknown
+  >
+  for (const field of config.presetId === preset.id
+    ? (config.presetSkippedFields ?? [])
+    : []) {
+    const key = field as AudioPresetKey
+    settings[key] = cloneDeep(preset.settings[key])
+    if (key === 'shouldEnableCustomAudioCodec') {
+      ;(settings.audioConfig as AudioPresetSettings['audioConfig']).audioCodec =
+        preset.settings.audioConfig?.audioCodec
+    }
+  }
+  return settings as AudioPresetSettings
 }
 
 /** Whether a video's settings were changed after its preset was applied */
@@ -712,9 +921,7 @@ export async function deletePresetAndUnlinkMedia(id: string) {
   if (isCompressing) return
   const isBatch = media.length > 1
   const batchConfig =
-    mediaType === 'video'
-      ? commonConfigForBatchCompression.videoConfig
-      : commonConfigForBatchCompression.imageConfig
+    commonConfigForBatchCompression[getBatchConfigKey(mediaType)]
   if (isBatch && batchConfig.presetId === id) {
     // Media following the batch settings get them too
     await applyPreset(mediaType, STANDARD_PRESET_ID, -1)
@@ -722,7 +929,7 @@ export async function deletePresetAndUnlinkMedia(id: string) {
   for (let index = 0; index < appProxy.state.media.length; index++) {
     const mediaFile = appProxy.state.media[index]
     if (
-      mediaFile.type === mediaType &&
+      isMediaOfPresetType(mediaFile, mediaType) &&
       mediaFile.config.presetId === id &&
       (!isBatch || mediaFile.isConfigDirty)
     ) {
@@ -743,9 +950,16 @@ export async function revertToPreset(
   const isBatch = appProxy.state.media.length > 1
   if (mediaIndex >= 0) {
     const mediaFile = appProxy.state.media[mediaIndex]
-    if (mediaFile?.type !== mediaType) return
+    if (!isMediaOfPresetType(mediaFile, mediaType)) return
     const presetId = mediaFile.config.presetId
-    if (mediaFile.type === 'video') {
+    if (mediaFile.type === 'video' && mediaType === 'audio') {
+      mediaFile.config = applyAudioPresetToConfig(
+        cloneDeep(audioFileConfigInitialState),
+        getAudioPreset(presetId),
+        { sourceExtension: mediaFile.extension },
+        { isBatchConfig: false },
+      )
+    } else if (mediaFile.type === 'video') {
       const preset = getVideoPreset(presetId)
       const hasAudio =
         preset.id === STANDARD_PRESET_ID ? null : await getHasAudio(mediaIndex)
@@ -784,7 +998,14 @@ export async function revertToPreset(
     }
   } else if (isBatch) {
     const batchConfig = appProxy.state.commonConfigForBatchCompression
-    if (mediaType === 'video') {
+    if (mediaType === 'audio') {
+      batchConfig.audioFileConfig = applyAudioPresetToConfig(
+        cloneDeep(audioFileConfigInitialState),
+        getAudioPreset(batchConfig.audioFileConfig.presetId),
+        { sourceExtension: null },
+        { isBatchConfig: true },
+      )
+    } else if (mediaType === 'video') {
       batchConfig.videoConfig = applyVideoPresetToConfig(
         cloneDeep(videoConfigInitialState),
         getVideoPreset(batchConfig.videoConfig.presetId),
@@ -815,8 +1036,15 @@ export async function applyPreset(
   const isBatch = appProxy.state.media.length > 1
   if (mediaIndex >= 0) {
     const mediaFile = appProxy.state.media[mediaIndex]
-    if (mediaFile?.type !== mediaType) return
-    if (mediaFile.type === 'video') {
+    if (!isMediaOfPresetType(mediaFile, mediaType)) return
+    if (mediaFile.type === 'video' && mediaType === 'audio') {
+      mediaFile.config = applyAudioPresetToConfig(
+        mediaFile.config,
+        getAudioPreset(presetId),
+        { sourceExtension: mediaFile.extension },
+        { isBatchConfig: false },
+      )
+    } else if (mediaFile.type === 'video') {
       const hasAudio =
         presetId === STANDARD_PRESET_ID ? null : await getHasAudio(mediaIndex)
       const targetVideo = appProxy.state.media[mediaIndex]
@@ -847,7 +1075,14 @@ export async function applyPreset(
     }
   } else if (isBatch) {
     const batchConfig = appProxy.state.commonConfigForBatchCompression
-    if (mediaType === 'video') {
+    if (mediaType === 'audio') {
+      batchConfig.audioFileConfig = applyAudioPresetToConfig(
+        batchConfig.audioFileConfig,
+        getAudioPreset(presetId),
+        { sourceExtension: null },
+        { isBatchConfig: true },
+      )
+    } else if (mediaType === 'video') {
       batchConfig.videoConfig = applyVideoPresetToConfig(
         batchConfig.videoConfig,
         getVideoPreset(presetId),
@@ -932,6 +1167,25 @@ export function applyDefaultPresetsToBatchConfig() {
     getImagePreset(presetsStore.defaultPresetIds.image),
     { sourceExtension: null },
     { isBatchConfig: true },
+  )
+  batchConfig.audioFileConfig = applyAudioPresetToConfig(
+    batchConfig.audioFileConfig,
+    getAudioPreset(presetsStore.defaultPresetIds.audio),
+    { sourceExtension: null },
+    { isBatchConfig: true },
+  )
+}
+
+/** Config for a newly added audio file, from the default audio preset */
+export function getInitialAudioFileConfig(
+  config: VideoConfig,
+  { sourceExtension }: { sourceExtension: string | null | undefined },
+) {
+  return applyAudioPresetToConfig(
+    config,
+    getAudioPreset(presetsStore.defaultPresetIds.audio),
+    { sourceExtension },
+    { isBatchConfig: false },
   )
 }
 
@@ -1026,6 +1280,38 @@ export function describeImagePresetSettings(settings: ImagePresetSettings) {
   }
   if (settings.shouldEnableAdvancedSvgSetting) {
     lines.push('Custom SVG conversion')
+  }
+  lines.push(
+    settings.shouldStripMetadata ? 'Metadata removed' : 'Metadata kept',
+  )
+  return lines
+}
+
+/** Short summary of what an audio preset changes */
+export function describeAudioPresetSettings(settings: AudioPresetSettings) {
+  const lines = [formatExtension(settings.convertToExtension)]
+  const { volume, audioCodec, audioChannelConfig, bitrate } =
+    settings.audioConfig ?? {}
+  lines.push(
+    settings.shouldEnableCustomBitrate && bitrate
+      ? `${bitrate} kbps`
+      : `Quality ${settings.quality ?? 0}%`,
+  )
+  if (settings.shouldEnableCustomSpeed && settings.customSpeed) {
+    lines.push(`${settings.customSpeed}x speed`)
+  }
+  if (volume != null && volume !== 100) lines.push(`Volume ${volume}%`)
+  if (
+    settings.shouldEnableCustomAudioCodec &&
+    audioCodec &&
+    audioCodec !== '-'
+  ) {
+    lines.push(
+      AUDIO_CODECS.find((c) => c.value === audioCodec)?.name ?? audioCodec,
+    )
+  }
+  if (settings.shouldEnableCustomChannel && audioChannelConfig?.channelLayout) {
+    lines.push(audioChannelConfig.channelLayout === 'mono' ? 'Mono' : 'Stereo')
   }
   lines.push(
     settings.shouldStripMetadata ? 'Metadata removed' : 'Metadata kept',

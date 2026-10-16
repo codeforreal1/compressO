@@ -16,6 +16,7 @@ import {
 } from '@/utils/animation'
 import { getOutputVideoContainer } from '@/utils/video'
 import { appProxy, normalizeBatchMediaConfig } from '../../../../-state'
+import { useBatchVideoConfigKey } from '../-batchConfig'
 
 type SubtitlesProps = {
   mediaIndex: number
@@ -178,6 +179,7 @@ function Subtitles({ mediaIndex }: SubtitlesProps) {
       isLoadingMediaFiles,
     },
   } = useSnapshot(appProxy)
+  const batchConfigKey = useBatchVideoConfigKey()
 
   const video =
     media.length > 0 && mediaIndex >= 0 && media[mediaIndex].type === 'video'
@@ -185,7 +187,7 @@ function Subtitles({ mediaIndex }: SubtitlesProps) {
       : null
   const { config } = video ?? {}
   const { subtitlesConfig, convertToExtension } =
-    config ?? commonConfigForBatchCompression.videoConfig ?? {}
+    config ?? commonConfigForBatchCompression[batchConfigKey] ?? {}
 
   const subtitles = subtitlesConfig?.subtitles ?? []
   const shouldEnableSubtitles = subtitlesConfig?.shouldEnableSubtitles ?? false
@@ -213,24 +215,25 @@ function Subtitles({ mediaIndex }: SubtitlesProps) {
       } else {
         if (appProxy.state.media.length > 1) {
           if (
-            !appProxy.state.commonConfigForBatchCompression.videoConfig
+            !appProxy.state.commonConfigForBatchCompression[batchConfigKey]
               .subtitlesConfig
           ) {
-            appProxy.state.commonConfigForBatchCompression.videoConfig.subtitlesConfig =
-              {
-                subtitles: [],
-                shouldEnableSubtitles: isSelected,
-                preserveExistingSubtitles: false,
-              }
+            appProxy.state.commonConfigForBatchCompression[
+              batchConfigKey
+            ].subtitlesConfig = {
+              subtitles: [],
+              shouldEnableSubtitles: isSelected,
+              preserveExistingSubtitles: false,
+            }
           } else {
-            appProxy.state.commonConfigForBatchCompression.videoConfig
+            appProxy.state.commonConfigForBatchCompression[batchConfigKey]
               .subtitlesConfig!.shouldEnableSubtitles = isSelected
           }
           normalizeBatchMediaConfig()
         }
       }
     },
-    [mediaIndex],
+    [mediaIndex, batchConfigKey],
   )
 
   const handlePreserveExistingChange = useCallback(
@@ -254,24 +257,25 @@ function Subtitles({ mediaIndex }: SubtitlesProps) {
       } else {
         if (appProxy.state.media.length > 1) {
           if (
-            !appProxy.state.commonConfigForBatchCompression.videoConfig
+            !appProxy.state.commonConfigForBatchCompression[batchConfigKey]
               .subtitlesConfig
           ) {
-            appProxy.state.commonConfigForBatchCompression.videoConfig.subtitlesConfig =
-              {
-                subtitles: [],
-                shouldEnableSubtitles: true,
-                preserveExistingSubtitles: isSelected,
-              }
+            appProxy.state.commonConfigForBatchCompression[
+              batchConfigKey
+            ].subtitlesConfig = {
+              subtitles: [],
+              shouldEnableSubtitles: true,
+              preserveExistingSubtitles: isSelected,
+            }
           } else {
-            appProxy.state.commonConfigForBatchCompression.videoConfig
+            appProxy.state.commonConfigForBatchCompression[batchConfigKey]
               .subtitlesConfig!.preserveExistingSubtitles = isSelected
           }
           normalizeBatchMediaConfig()
         }
       }
     },
-    [mediaIndex],
+    [mediaIndex, batchConfigKey],
   )
 
   const handleAddSubtitle = useCallback(async () => {
@@ -314,19 +318,20 @@ function Subtitles({ mediaIndex }: SubtitlesProps) {
         } else {
           if (appProxy.state.media.length > 1) {
             if (
-              !appProxy.state.commonConfigForBatchCompression.videoConfig
+              !appProxy.state.commonConfigForBatchCompression[batchConfigKey]
                 .subtitlesConfig
             ) {
-              appProxy.state.commonConfigForBatchCompression.videoConfig.subtitlesConfig =
-                {
-                  subtitles: [],
-                  shouldEnableSubtitles: true,
-                  preserveExistingSubtitles: false,
-                }
+              appProxy.state.commonConfigForBatchCompression[
+                batchConfigKey
+              ].subtitlesConfig = {
+                subtitles: [],
+                shouldEnableSubtitles: true,
+                preserveExistingSubtitles: false,
+              }
             }
-            appProxy.state.commonConfigForBatchCompression.videoConfig.subtitlesConfig!.subtitles.push(
-              newSubtitle,
-            )
+            appProxy.state.commonConfigForBatchCompression[
+              batchConfigKey
+            ].subtitlesConfig!.subtitles.push(newSubtitle)
             normalizeBatchMediaConfig()
           }
         }
@@ -334,7 +339,7 @@ function Subtitles({ mediaIndex }: SubtitlesProps) {
     } catch (error: any) {
       toast.error(error?.message ?? 'Could not select subtitle file.')
     }
-  }, [mediaIndex])
+  }, [mediaIndex, batchConfigKey])
 
   const handleRemoveSubtitle = useCallback(
     (index: number) => {
@@ -352,19 +357,18 @@ function Subtitles({ mediaIndex }: SubtitlesProps) {
       } else {
         if (appProxy.state.media.length > 1) {
           if (
-            appProxy.state.commonConfigForBatchCompression.videoConfig
+            appProxy.state.commonConfigForBatchCompression[batchConfigKey]
               .subtitlesConfig
           ) {
-            appProxy.state.commonConfigForBatchCompression.videoConfig.subtitlesConfig!.subtitles.splice(
-              index,
-              1,
-            )
+            appProxy.state.commonConfigForBatchCompression[
+              batchConfigKey
+            ].subtitlesConfig!.subtitles.splice(index, 1)
             normalizeBatchMediaConfig()
           }
         }
       }
     },
-    [mediaIndex],
+    [mediaIndex, batchConfigKey],
   )
 
   const handleLanguageChange = useCallback(
@@ -389,17 +393,17 @@ function Subtitles({ mediaIndex }: SubtitlesProps) {
       } else {
         if (appProxy.state.media.length > 1) {
           if (
-            appProxy.state.commonConfigForBatchCompression.videoConfig
+            appProxy.state.commonConfigForBatchCompression[batchConfigKey]
               .subtitlesConfig
           ) {
-            appProxy.state.commonConfigForBatchCompression.videoConfig
+            appProxy.state.commonConfigForBatchCompression[batchConfigKey]
               .subtitlesConfig!.subtitles[index].language = languageValue
             normalizeBatchMediaConfig()
           }
         }
       }
     },
-    [mediaIndex],
+    [mediaIndex, batchConfigKey],
   )
 
   const getDisplayLanguageCode = (code: string) => {

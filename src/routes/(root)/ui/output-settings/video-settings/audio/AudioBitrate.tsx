@@ -7,6 +7,7 @@ import Select from '@/components/Select'
 import Switch from '@/components/Switch'
 import { slideDownTransition } from '@/utils/animation'
 import { appProxy, normalizeBatchMediaConfig } from '../../../../-state'
+import { useBatchVideoConfigKey } from '../-batchConfig'
 
 const AUDIO_BITRATES = [
   { value: 64, label: '64 kbps' },
@@ -32,13 +33,14 @@ function AudioBitrate({ mediaIndex }: AudioBitrateProps) {
       isLoadingMediaFiles,
     },
   } = useSnapshot(appProxy)
+  const batchConfigKey = useBatchVideoConfigKey()
   const video =
     media.length > 0 && mediaIndex >= 0 && media[mediaIndex].type === 'video'
       ? media[mediaIndex]
       : null
   const { config, videoInfoRaw } = video ?? {}
   const { audioConfig, shouldEnableCustomBitrate, convertToExtension } =
-    config ?? commonConfigForBatchCompression.videoConfig ?? {}
+    config ?? commonConfigForBatchCompression[batchConfigKey] ?? {}
 
   const handleSwitchToggle = useCallback(() => {
     if (
@@ -62,7 +64,7 @@ function AudioBitrate({ mediaIndex }: AudioBitrateProps) {
     } else {
       if (appProxy.state.media.length > 1) {
         const commonConfig =
-          appProxy.state.commonConfigForBatchCompression.videoConfig
+          appProxy.state.commonConfigForBatchCompression[batchConfigKey]
         commonConfig.shouldEnableCustomBitrate = !shouldEnableCustomBitrate
         if (!commonConfig.audioConfig) {
           commonConfig.audioConfig = { volume: 100 }
@@ -75,7 +77,7 @@ function AudioBitrate({ mediaIndex }: AudioBitrateProps) {
         normalizeBatchMediaConfig()
       }
     }
-  }, [mediaIndex, shouldEnableCustomBitrate])
+  }, [mediaIndex, shouldEnableCustomBitrate, batchConfigKey])
 
   const handleBitrateChange = useCallback(
     (value: string) => {
@@ -94,21 +96,23 @@ function AudioBitrate({ mediaIndex }: AudioBitrateProps) {
       } else {
         if (appProxy.state.media.length > 1) {
           if (
-            !appProxy.state.commonConfigForBatchCompression.videoConfig
+            !appProxy.state.commonConfigForBatchCompression[batchConfigKey]
               .audioConfig
           ) {
-            appProxy.state.commonConfigForBatchCompression.videoConfig.audioConfig =
-              {
-                volume: 100,
-              }
+            appProxy.state.commonConfigForBatchCompression[
+              batchConfigKey
+            ].audioConfig = {
+              volume: 100,
+            }
           }
-          appProxy.state.commonConfigForBatchCompression.videoConfig.audioConfig.bitrate =
-            bitrate
+          appProxy.state.commonConfigForBatchCompression[
+            batchConfigKey
+          ].audioConfig.bitrate = bitrate
           normalizeBatchMediaConfig()
         }
       }
     },
-    [mediaIndex],
+    [mediaIndex, batchConfigKey],
   )
 
   const shouldDisableInput =

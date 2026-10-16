@@ -13,12 +13,29 @@ import Spinner from '@/components/Spinner'
 import { toast } from '@/components/Toast'
 import Tooltip from '@/components/Tooltip'
 import { copyFileToClipboard, showItemInFileManager } from '@/tauri/commands/fs'
+import type { MediaTab } from '@/types/app'
 import { zoomInStaggerAnimation } from '@/utils/animation'
 import { formatBytes } from '@/utils/fs'
 import { formatDuration } from '@/utils/string'
 import { cn } from '@/utils/tailwind'
 import { pickMediaToAdd } from '../-media'
 import { appProxy } from '../-state'
+
+type MediaKind = { type: 'video' | 'image'; isAudioFile?: boolean }
+
+/** Whether a media is shown with a filter tab ("Videos" leaves out audio files) */
+function isInTab(mediaFile: MediaKind, tab: MediaTab) {
+  switch (tab) {
+    case 'videos':
+      return mediaFile.type === 'video' && !mediaFile.isAudioFile
+    case 'audio':
+      return mediaFile.type === 'video' && !!mediaFile.isAudioFile
+    case 'images':
+      return mediaFile.type === 'image'
+    default:
+      return true
+  }
+}
 
 function PreviewBatchMedia() {
   const {
@@ -36,16 +53,14 @@ function PreviewBatchMedia() {
   } = useSnapshot(appProxy)
 
   const compressionStats = useMemo(() => {
-    const filteredMediaForStats =
-      activeTab === 'videos'
-        ? media.filter((m) => m.type === 'video')
-        : activeTab === 'images'
-          ? media.filter((m) => m.type === 'image')
-          : media
+    const filteredMediaForStats = media.filter((m) => isInTab(m, activeTab))
 
     const totalMedia = filteredMediaForStats.length
-    const totalVideos = filteredMediaForStats.filter(
-      (m) => m.type === 'video',
+    const totalVideos = filteredMediaForStats.filter((m) =>
+      isInTab(m, 'videos'),
+    ).length
+    const totalAudioFiles = filteredMediaForStats.filter((m) =>
+      isInTab(m, 'audio'),
     ).length
     const totalImages = filteredMediaForStats.filter(
       (m) => m.type === 'image',
@@ -63,7 +78,11 @@ function PreviewBatchMedia() {
       ? totalMedia - compressedMediaCount
       : 0
     const cancelledVideosCount = isBatchCompressionCancelled
-      ? totalVideos - completedMedia.filter((m) => m.type === 'video').length
+      ? totalVideos - completedMedia.filter((m) => isInTab(m, 'videos')).length
+      : 0
+    const cancelledAudioFilesCount = isBatchCompressionCancelled
+      ? totalAudioFiles -
+        completedMedia.filter((m) => isInTab(m, 'audio')).length
       : 0
     const cancelledImagesCount = isBatchCompressionCancelled
       ? totalImages - completedMedia.filter((m) => m.type === 'image').length
@@ -101,8 +120,11 @@ function PreviewBatchMedia() {
       ? compressedMediaCount
       : totalMedia
     const displayTotalVideos = isBatchCompressionCancelled
-      ? completedMedia.filter((m) => m.type === 'video').length
+      ? completedMedia.filter((m) => isInTab(m, 'videos')).length
       : totalVideos
+    const displayTotalAudioFiles = isBatchCompressionCancelled
+      ? completedMedia.filter((m) => isInTab(m, 'audio')).length
+      : totalAudioFiles
     const displayTotalImages = isBatchCompressionCancelled
       ? completedMedia.filter((m) => m.type === 'image').length
       : totalImages
@@ -123,9 +145,11 @@ function PreviewBatchMedia() {
       totalProgress,
       cancelledMediaCount,
       cancelledVideosCount,
+      cancelledAudioFilesCount,
       cancelledImagesCount,
       displayTotalMedia,
       displayTotalVideos,
+      displayTotalAudioFiles,
       displayTotalImages,
       displayTotalSize,
     }
@@ -152,14 +176,10 @@ function PreviewBatchMedia() {
     } catch {}
   }, [])
 
-  const filteredMedia = useMemo(() => {
-    if (activeTab === 'videos') {
-      return media.filter((m) => m.type === 'video')
-    } else if (activeTab === 'images') {
-      return media.filter((m) => m.type === 'image')
-    }
-    return media
-  }, [media, activeTab])
+  const filteredMedia = useMemo(
+    () => media.filter((m) => isInTab(m, activeTab)),
+    [media, activeTab],
+  )
 
   const getDisplayStats = useMemo(() => {
     const totalMedia = filteredMedia.length
@@ -211,6 +231,19 @@ function PreviewBatchMedia() {
         label: 'Videos',
         count: compressionStats.displayTotalVideos,
         cancelledCount: compressionStats.cancelledVideosCount,
+        totalMedia,
+        compressedMediaCount,
+        displayTotalSize,
+        outputSize,
+        sizeSaved,
+        percentageSaved,
+        totalProgress,
+      }
+    } else if (activeTab === 'audio') {
+      return {
+        label: 'Audio',
+        count: compressionStats.displayTotalAudioFiles,
+        cancelledCount: compressionStats.cancelledAudioFilesCount,
         totalMedia,
         compressedMediaCount,
         displayTotalSize,
@@ -306,7 +339,7 @@ function PreviewBatchMedia() {
                           />
                           {mediaFile.type === 'video' ? (
                             <Icon
-                              name="video"
+                              name={mediaFile.isAudioFile ? 'music' : 'video'}
                               size={40}
                               className="text-zinc-400 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[10]"
                             />
@@ -315,7 +348,12 @@ function PreviewBatchMedia() {
                       ) : (
                         <div className="w-full aspect-video bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center">
                           <Icon
-                            name="video"
+                            name={
+                              mediaFile.type === 'video' &&
+                              mediaFile.isAudioFile
+                                ? 'music'
+                                : 'video'
+                            }
                             size={40}
                             className="text-zinc-400"
                           />
