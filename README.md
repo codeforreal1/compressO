@@ -102,8 +102,12 @@ git push origin v3.0.0
 ```
 
 Alternatively, run `Release desktop app` from the Actions tab on the desired
-branch. It creates a `v<version>` tag at the selected commit. Bump the version
-before creating another release; published versions cannot be overwritten.
+branch. Each manual run increments the patch version, commits both version
+files, and pushes a matching tag: `v3.0.1`, `v3.0.2`, `v3.0.3`, and so on.
+It skips patch numbers already present in tags for the current major/minor
+version. All builds use the resulting release commit. The workflow needs
+permission to push to the selected branch; branch protection rules still apply.
+Pushing an explicit tag builds that exact version without incrementing it.
 
 No repository secrets are required for unsigned installers. To generate signed
 updater artifacts and `latest.json`, configure `TAURI_SIGNING_PRIVATE_KEY` and,
