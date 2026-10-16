@@ -153,15 +153,6 @@ xattr -cr /Applications/CompressO.app
 </p>
 </details>
 
-<details>
-<summary>
-  <strong>App not working on Debian 13 & Ubuntu 24</strong>
-</summary>
-<p>
-  Tauri seems to be missing some packages that were removed in Debian 13 and its derivatives like Ubuntu 24. The Tauri team is investigating the issue, so unfortunately there is no solution at the moment.
-</p>
-</details>
-
 ### License 🚨
 
 The project is licensed under <a href="./LICENSE">AGPL 3.0</a>
