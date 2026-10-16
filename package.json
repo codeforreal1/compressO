@@ -1,6 +1,6 @@
 {
   "name": "compresso",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "private": true,
   "author": {
     "name": "Code For Real",
@@ -21,7 +21,7 @@
     "tauri:build:mac": "pnpm tauri:build:mac:arm64 && pnpm tauri:build:mac:x64",
     "generate:latest-json": "node scripts/generate-latest-json.mts",
     "homebrew:release": "tsx scripts/homebrew-release.mts",
-    "pnpm:devPreinstall": "fnm use",
+    "pnpm:devPreinstall": "node -e \"if (!process.env.CI) require('node:child_process').execSync('fnm use', { stdio: 'inherit' })\"",
     "postinstall": "husky install",
     "lint-staged": "lint-staged",
     "tsc:check": "tsc --noEmit --skipLibCheck"

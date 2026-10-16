@@ -5,6 +5,7 @@ import { useSnapshot } from 'valtio'
 import Tabs from '@/components/Tabs'
 import { appProxy } from '@/routes/(root)/-state'
 import { ImageExtension as ImageExtensionType } from '@/types/compression'
+import AutoSaveSettings from '../AutoSaveSettings'
 import CompressionQuality from './image/CompressionQuality'
 import ImageDimensions from './image/Dimensions'
 import ImageExtension from './image/Extension'
@@ -45,6 +46,7 @@ function ImageSettings({ mediaIndex }: ImageSettingsProps) {
   return (
     <>
       <section>
+        <AutoSaveSettings />
         <Tabs
           aria-label="Compression Settings"
           size="sm"

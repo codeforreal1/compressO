@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "CompressO",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "identifier": "com.compresso.app",
   "build": {
     "beforeBuildCommand": "pnpm vite:build",
@@ -106,7 +106,7 @@
     "updater": {
       "active": true,
       "endpoints": [
-        "https://github.com/codeforreal1/compressO/releases/latest/download/latest.json"
+        "https://github.com/rajibdpi/compressO/releases/latest/download/latest.json"
       ],
       "dialog": false,
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDZDRjIzRTAxQzc1Njc4RjgKUldUNGVGYkhBVDd5YkJNejh2aHlOeS9XekFOcUlxUXhIYlBLS1ZLdHJzVW4zRVE1QUhUUjZOd0QK"

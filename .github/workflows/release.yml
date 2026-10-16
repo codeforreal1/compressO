@@ -1,0 +1,215 @@
+name: Release desktop app
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: desktop-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    runs-on: ubuntu-22.04
+    outputs:
+      release_id: ${{ steps.release.outputs.result }}
+      tag: ${{ steps.version.outputs.tag }}
+      commit: ${{ steps.version.outputs.commit }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Increment patch version for manual release
+        if: github.event_name == 'workflow_dispatch'
+        shell: bash
+        run: |
+          if [ "$GITHUB_REF_TYPE" != branch ]; then
+            echo 'Run automatic releases from a branch, not an existing tag.' >&2
+            exit 1
+          fi
+          node <<'NODE'
+          const fs = require('node:fs');
+          const { execFileSync } = require('node:child_process');
+          const nextPatch = require('./scripts/next-patch.cjs');
+          const files = ['package.json', 'src-tauri/tauri.conf.json'];
+          const versions = files.map(file => JSON.parse(fs.readFileSync(file)).version);
+          if (versions[0] !== versions[1]) throw new Error('App versions must match');
+          const tags = execFileSync('git', ['tag', '--list'], { encoding: 'utf8' }).split('\n');
+          const version = nextPatch(versions[0], tags);
+          for (const file of files) {
+            const source = fs.readFileSync(file, 'utf8');
+            fs.writeFileSync(file, source.replace(/("version"\s*:\s*")[^"]+"/, `$1${version}"`));
+          }
+          NODE
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          version=$(node -p "require('./package.json').version")
+          git add package.json src-tauri/tauri.conf.json
+          git commit -m "Release v$version"
+          git tag -a "v$version" -m "Release v$version"
+          git push --atomic origin "HEAD:refs/heads/$GITHUB_REF_NAME" "refs/tags/v$version"
+      - name: Validate release version
+        id: version
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import { execFileSync } from 'node:child_process';
+          const app = JSON.parse(fs.readFileSync('src-tauri/tauri.conf.json'));
+          const pkg = JSON.parse(fs.readFileSync('package.json'));
+          if (app.version !== pkg.version) {
+            throw new Error('package.json and tauri.conf.json versions must match');
+          }
+          const tag = `v${app.version}`;
+          if (process.env.GITHUB_REF_TYPE === 'tag' && process.env.GITHUB_REF_NAME !== tag) {
+            throw new Error(`Expected release tag ${tag}`);
+          }
+          const commit = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `tag=${tag}\ncommit=${commit}\n`);
+          NODE
+      - name: Create or reuse draft release
+        id: release
+        uses: actions/github-script@v7
+        env:
+          RELEASE_TAG: ${{ steps.version.outputs.tag }}
+          RELEASE_COMMIT: ${{ steps.version.outputs.commit }}
+        with:
+          script: |
+            const params = { ...context.repo, tag: process.env.RELEASE_TAG };
+            try {
+              const { data } = await github.rest.repos.getReleaseByTag(params);
+              if (!data.draft) {
+                throw new Error('This version is already published; bump the app version');
+              }
+              return data.id;
+            } catch (error) {
+              if (error.status !== 404) throw error;
+            }
+            const { data } = await github.rest.repos.createRelease({
+              ...context.repo,
+              tag_name: params.tag,
+              target_commitish: process.env.RELEASE_COMMIT,
+              name: `CompressO ${params.tag}`,
+              body: 'Download the installer for your operating system from the assets below.',
+              draft: true,
+              prerelease: params.tag.includes('-'),
+            });
+            return data.id;
+
+  build:
+    needs: prepare
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+            bundles: deb,appimage
+          - platform: windows-latest
+            target: x86_64-pc-windows-msvc
+            bundles: nsis
+          - platform: macos-latest
+            target: aarch64-apple-darwin
+            bundles: dmg,app
+          - platform: macos-latest
+            target: x86_64-apple-darwin
+            bundles: dmg,app
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ needs.prepare.outputs.commit }}
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+          key: ${{ matrix.target }}
+      - name: Install Linux build dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libdbus-1-dev libssl-dev libxdo-dev xdg-utils
+      - name: Install frontend dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Configure updater artifacts
+        id: updater
+        shell: bash
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const signed = Boolean(process.env.TAURI_SIGNING_PRIVATE_KEY);
+          fs.writeFileSync('src-tauri/tauri.release.conf.json', JSON.stringify({
+            bundle: { createUpdaterArtifacts: signed },
+          }));
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `signed=${signed}\n`);
+          NODE
+      - name: Build and upload installers
+        uses: tauri-apps/tauri-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        with:
+          releaseId: ${{ needs.prepare.outputs.release_id }}
+          tagName: ${{ needs.prepare.outputs.tag }}
+          releaseDraft: true
+          tauriScript: pnpm exec tauri
+          args: --target ${{ matrix.target }} --bundles ${{ matrix.bundles }} --config src-tauri/tauri.release.conf.json
+          uploadUpdaterJson: ${{ steps.updater.outputs.signed == 'true' }}
+          updaterJsonPreferNsis: true
+
+  publish:
+    needs: [prepare, build]
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ needs.prepare.outputs.commit }}
+      - name: Generate and attach SHA256 checksums
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ needs.prepare.outputs.tag }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/release-assets"
+          gh release download "$RELEASE_TAG" --dir "$RUNNER_TEMP/release-assets" --skip-existing
+          cd "$RUNNER_TEMP/release-assets"
+          find . -maxdepth 1 -type f ! -name SHA256SUMS -printf '%f\0' | sort -z | xargs -0 -r sha256sum > SHA256SUMS
+          test -s SHA256SUMS
+          gh release upload "$RELEASE_TAG" SHA256SUMS --clobber
+      - name: Publish completed release
+        uses: actions/github-script@v7
+        env:
+          RELEASE_ID: ${{ needs.prepare.outputs.release_id }}
+        with:
+          script: |
+            const release_id = Number(process.env.RELEASE_ID);
+            const assets = await github.paginate(github.rest.repos.listReleaseAssets, {
+              ...context.repo,
+              release_id,
+              per_page: 100,
+            });
+            const releaseNotes = require('./scripts/release-notes.cjs');
+            await github.rest.repos.updateRelease({
+              ...context.repo,
+              release_id,
+              body: releaseNotes(assets),
+              draft: false,
+            });

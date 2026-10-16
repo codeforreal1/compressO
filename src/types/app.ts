@@ -2,21 +2,21 @@ import { DateValue } from '@internationalized/date'
 import { TimelineAction } from '@xzdarcy/timeline-engine'
 
 import {
-  AudioChannelConfig,
-  AudioStream,
-  Chapter,
-  ContainerInfo,
-  compressionPresets,
-  ExifInfo,
-  extensions,
-  ImageBasicInfo,
-  ImageColorInfo,
-  ImageDimensions,
-  MediaTransformHistory,
-  MediaTransforms,
-  SubtitleStream,
-  SvgConfig,
-  VideoStream,
+    AudioChannelConfig,
+    AudioStream,
+    Chapter,
+    compressionPresets,
+    ContainerInfo,
+    ExifInfo,
+    extensions,
+    ImageBasicInfo,
+    ImageColorInfo,
+    ImageDimensions,
+    MediaTransformHistory,
+    MediaTransforms,
+    SubtitleStream,
+    SvgConfig,
+    VideoStream,
 } from '@/types/compression'
 
 export type MediaMetadataConfig = {
@@ -215,4 +215,6 @@ export type App = {
     imageConfig: ImageConfig
   }
   showMediaInfo?: boolean
+  autoSaveEnabled: boolean
+  autoSavePath?: string
 }
