@@ -52,9 +52,11 @@ jobs:
           for id in $(echo "$existing" | jq -r '.[].id'); do
             gh api -X DELETE "repos/$GITHUB_REPOSITORY/releases/$id"
           done
+          # The release text, from .github/release-template.md with the version filled in
+          body=$(sed "s/{{version}}/$VERSION/g" .github/release-template.md)
           gh api -X POST "repos/$GITHUB_REPOSITORY/releases" \
             -f tag_name="$VERSION" -f target_commitish="$GITHUB_SHA" -f name="$VERSION" \
-            -F draft=true > /dev/null
+            -f body="$body" -F draft=true > /dev/null
 
   build:
     name: Build (${{ matrix.name }})
@@ -229,11 +231,8 @@ jobs:
           jq -e '[.platforms[].signature] | all(. != null)' latest.json > /dev/null
           cat latest.json
 
-      # Uploaded last, once every installer & signature is in the release; its notes (from
-      # CHANGELOG.md) are the release's too
+      # Uploaded last, once every installer & signature is in the release
       - name: Upload latest.json
         env:
           GH_TOKEN: ${{ github.token }}
-        run: |
-          gh release upload "$VERSION" latest.json --clobber
-          gh release edit "$VERSION" --notes "$(jq -r .notes latest.json)"
+        run: gh release upload "$VERSION" latest.json --clobber
