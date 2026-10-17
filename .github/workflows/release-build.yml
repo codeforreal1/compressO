@@ -52,8 +52,24 @@ jobs:
           for id in $(echo "$existing" | jq -r '.[].id'); do
             gh api -X DELETE "repos/$GITHUB_REPOSITORY/releases/$id"
           done
-          # The release text, from .github/release-template.md with the version filled in
-          body=$(sed "s/{{version}}/$VERSION/g" .github/release-template.md)
+          # The release text: .github/release-template.md, with the version and its CHANGELOG.md
+          # section (as in latest.json, see scripts/generate-latest-json.mts) filled in
+          body=$(python3 - <<'PY'
+          import os
+          version = os.environ['VERSION']
+          lines = open('CHANGELOG.md', encoding='utf-8').read().split('\n')
+          start = next((i for i, line in enumerate(lines) if line.strip().startswith(f'### {version}')), None)
+          section = []
+          if start is not None:
+              for line in lines[start + 1:]:
+                  if line.startswith('###') and not line.startswith('####'):
+                      break
+                  section.append(line)
+          changelog = '\n'.join(section).strip() or 'No changelog available'
+          template = open('.github/release-template.md', encoding='utf-8').read()
+          print(template.replace('{{version}}', version).replace('{{changelog}}', changelog))
+          PY
+          )
           gh api -X POST "repos/$GITHUB_REPOSITORY/releases" \
             -f tag_name="$VERSION" -f target_commitish="$GITHUB_SHA" -f name="$VERSION" \
             -f body="$body" -F draft=true > /dev/null

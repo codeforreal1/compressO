@@ -32,8 +32,6 @@ brew install --cask codeforreal1/tap/compresso
 <details>
 <summary>View full changelog</summary>
 
-Features:
+{{changelog}}
 
-Enhancements:
-
-Bug Fixes:
+</details>
