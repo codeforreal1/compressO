@@ -155,36 +155,36 @@ jobs:
         shell: bash
         run: |
           bundle="src-tauri/target/$TARGET/release/bundle"
-          mkdir dist
+          mkdir release-files
           case "$TARGET" in
             *-apple-darwin)
               arch=$([ "$TARGET" = aarch64-apple-darwin ] && echo aarch64 || echo x64)
-              cp "$bundle/dmg/CompressO_${VERSION}_${arch}.dmg" dist/
-              cp "$bundle/macos/CompressO.app.tar.gz" "dist/CompressO_${VERSION}_${arch}.app.tar.gz"
-              cp "$bundle/macos/CompressO.app.tar.gz.sig" "dist/CompressO_${VERSION}_${arch}.app.tar.gz.sig"
+              cp "$bundle/dmg/CompressO_${VERSION}_${arch}.dmg" release-files/
+              cp "$bundle/macos/CompressO.app.tar.gz" "release-files/CompressO_${VERSION}_${arch}.app.tar.gz"
+              cp "$bundle/macos/CompressO.app.tar.gz.sig" "release-files/CompressO_${VERSION}_${arch}.app.tar.gz.sig"
               ;;
             *-windows-*)
-              cp "$bundle/nsis/CompressO_${VERSION}_x64-setup.exe" "dist/CompressO_${VERSION}_x64.exe"
-              cp "$bundle/nsis/CompressO_${VERSION}_x64-setup.exe.sig" "dist/CompressO_${VERSION}_x64.exe.sig"
+              cp "$bundle/nsis/CompressO_${VERSION}_x64-setup.exe" "release-files/CompressO_${VERSION}_x64.exe"
+              cp "$bundle/nsis/CompressO_${VERSION}_x64-setup.exe.sig" "release-files/CompressO_${VERSION}_x64.exe.sig"
               ;;
             *-linux-*)
-              cp "$bundle/deb/CompressO_${VERSION}_amd64.deb"* dist/
-              cp "$bundle/appimage/CompressO_${VERSION}_amd64.AppImage"* dist/
+              cp "$bundle/deb/CompressO_${VERSION}_amd64.deb"* release-files/
+              cp "$bundle/appimage/CompressO_${VERSION}_amd64.AppImage"* release-files/
               ;;
           esac
-          ls -l dist
+          ls -l release-files
 
       - name: Upload to the draft release
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release upload "$VERSION" dist/* --clobber
+        run: gh release upload "$VERSION" release-files/* --clobber
 
       # For latest.json, made once every platform is built
       - uses: actions/upload-artifact@v4
         with:
           name: signatures-${{ matrix.target }}
-          path: dist/*.sig
+          path: release-files/*.sig
 
   latest-json:
     name: Create latest.json
