@@ -55,3 +55,8 @@ export function setOpenAtLogin(enabled: boolean) {
 export function takeOpenedAtLogin() {
   return core.invoke<boolean>('take_opened_at_login')
 }
+
+/** The current log file (Settings -> About -> Show log files) */
+export function getLogFilePath() {
+  return core.invoke<string>('get_log_file_path')
+}

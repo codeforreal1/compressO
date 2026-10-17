@@ -50,6 +50,8 @@ pub async fn compress_media_batch(
     // `keep_awake` (Settings -> General)
     let _keep_awake = crate::sys::keep_awake::KeepAwake::acquire();
 
+    log::info!("[media] Compressing {} media (batch {})", media.len(), batch_id);
+
     // Cancelled between two media (or while paused), when no process would see it
     let is_cancelled = Arc::new(AtomicBool::new(false));
     let _cancel_listener = {
@@ -184,6 +186,11 @@ async fn compress_media_items(
 
             match compression {
                 Ok(result) => {
+                    log::info!(
+                        "[media] Compressed video '{}' ({} bytes)",
+                        video_id,
+                        result.file_metadata.as_ref().map(|m| m.size).unwrap_or(0)
+                    );
                     let media_id = result.video_id.clone();
                     results.insert(
                         media_id.clone(),
@@ -274,6 +281,11 @@ async fn compress_media_items(
 
             match compression {
                 Ok(result) => {
+                    log::info!(
+                        "[media] Compressed image '{}' ({} bytes)",
+                        image_id,
+                        result.file_metadata.as_ref().map(|m| m.size).unwrap_or(0)
+                    );
                     let media_id = result.image_id.clone();
                     results.insert(
                         media_id.clone(),

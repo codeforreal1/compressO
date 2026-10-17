@@ -141,3 +141,9 @@ pub fn set_open_at_login(app: AppHandle, enabled: bool) -> Result<(), String> {
     }
     .map_err(|err| err.to_string())
 }
+
+/// The current log file, which "Show log files" (Settings -> About) shows in the file manager
+#[tauri::command]
+pub fn get_log_file_path(app: AppHandle) -> Result<String, String> {
+    crate::sys::logging::log_file_path(&app).map(|path| path.to_string_lossy().to_string())
+}

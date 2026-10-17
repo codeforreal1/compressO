@@ -13,12 +13,14 @@ import { usePrimaryColor } from '@/hooks/usePrimaryColor'
 import { isWindowTintSupported } from '@/hooks/useWindowTint'
 import { settingsStore, TINT_OPACITY_RANGE } from '@/stores/settingsStore'
 import {
+  getLogFilePath,
   getOpenAtLogin,
   type OpenAtLoginState,
   openLoginItemsSettings,
   restartApp,
   setOpenAtLogin,
 } from '@/tauri/commands/app'
+import { showItemInFileManager } from '@/tauri/commands/fs'
 import { playCompletionSound as playSound } from '@/tauri/commands/sound'
 import { getPlatform } from '@/utils/fs'
 import { cn } from '@/utils/tailwind'
@@ -295,6 +297,25 @@ function General() {
               if (isSelected) playSound().catch(() => {})
             }}
           />
+        </SettingsRow>
+      </SettingsSection>
+      <SettingsSection title="Troubleshooting">
+        <SettingsRow
+          title="Log files"
+          description="A record of what the app did, which helps find the cause of a problem. Include them when reporting one. They contain the names of the files you compressed."
+        >
+          <Button
+            size="sm"
+            onPress={async () => {
+              try {
+                await showItemInFileManager(await getLogFilePath())
+              } catch {
+                toast.error('The log files could not be shown.')
+              }
+            }}
+          >
+            Show log files
+          </Button>
         </SettingsRow>
       </SettingsSection>
     </>

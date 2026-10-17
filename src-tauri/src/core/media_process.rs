@@ -2,6 +2,7 @@ use crate::core::domain::{CancelInProgressCompressionPayload, CustomEvents, Taur
 use crate::utils::event::EventListenerGuard;
 use shared_child::SharedChild;
 use std::{
+    collections::VecDeque,
     io::{BufRead, BufReader},
     process::Command,
     sync::{Arc, Mutex, Weak},
@@ -28,6 +29,59 @@ pub fn kill_running_processes() {
             process.kill().ok();
         }
     }
+}
+
+/// Lines of a process's error output kept, logged if it fails (ffmpeg prints why it failed last)
+const ERROR_OUTPUT_LINES: usize = 40;
+
+/// The last lines of a process's error output
+type ErrorOutputTail = Arc<Mutex<VecDeque<String>>>;
+
+fn keep_error_output_line(tail: &ErrorOutputTail, line: &str) {
+    if let Ok(mut lines) = tail.lock() {
+        if lines.len() == ERROR_OUTPUT_LINES {
+            lines.pop_front();
+        }
+        lines.push_back(line.trim_end().to_string());
+    }
+}
+
+/// The command a process runs, for the log: its program's name & arguments
+fn describe_command(command: &Command) -> String {
+    let program = std::path::Path::new(command.get_program())
+        .file_name()
+        .map(|name| name.to_string_lossy().to_string())
+        .unwrap_or_default();
+    let args = command
+        .get_args()
+        .map(|arg| arg.to_string_lossy().to_string())
+        .collect::<Vec<_>>()
+        .join(" ");
+    format!("{} {}", program, args)
+}
+
+/// Logs a process that failed, with its command & the end of its error output (once read)
+async fn log_failed_process(
+    command: &str,
+    exit_code: Option<u8>,
+    tail: &ErrorOutputTail,
+    reader: Option<tokio::task::JoinHandle<()>>,
+) {
+    if let Some(reader) = reader {
+        let _ = tokio::time::timeout(std::time::Duration::from_secs(2), reader).await;
+    }
+    let output = tail
+        .lock()
+        .map(|lines| lines.iter().cloned().collect::<Vec<_>>().join("\n"))
+        .unwrap_or_default();
+    log::warn!(
+        "[media_process] Failed{}: {}\n{}",
+        exit_code
+            .map(|code| format!(" (exit code {})", code))
+            .unwrap_or_default(),
+        command,
+        output
+    );
 }
 
 pub type CancelCallback = Arc<dyn Fn() + Send + Sync>;
@@ -175,6 +229,7 @@ impl MediaProcessExecutor {
         let mut processes: Vec<Arc<SharedChild>> = Vec::new();
         let should_cancel = Arc::new(Mutex::new(false));
         let captured_stdout = Arc::new(Mutex::new(None));
+        let command_descriptions: Vec<String> = self.commands.iter().map(describe_command).collect();
 
         for mut cmd in self.commands {
             let child = SharedChild::spawn(&mut cmd).map_err(|e| e.to_string())?;
@@ -236,10 +291,14 @@ impl MediaProcessExecutor {
             _listener_guards.push(EventListenerGuard::for_app(self.app.clone(), cancel_id));
         }
 
+        let mut error_outputs: Vec<(ErrorOutputTail, Option<tokio::task::JoinHandle<()>>)> =
+            Vec::new();
         for (idx, proc) in processes.iter().enumerate() {
             let proc_clone = proc.clone();
             let callback_clone = self.stderr_callback.clone();
-            tokio::spawn(async move {
+            let tail: ErrorOutputTail = Arc::new(Mutex::new(VecDeque::new()));
+            let tail_clone = tail.clone();
+            let reader = tokio::spawn(async move {
                 if let Some(stderr) = proc_clone.take_stderr() {
                     let mut reader = BufReader::new(stderr);
                     loop {
@@ -252,6 +311,7 @@ impl MediaProcessExecutor {
                                 if let Ok(val) = std::str::from_utf8(&buf) {
                                     #[cfg(debug_assertions)]
                                     log::debug!("[media:process {}] stderr: {:?}", idx, val);
+                                    keep_error_output_line(&tail_clone, val);
 
                                     if let Some(ref callback) = callback_clone {
                                         callback(idx, val.to_string());
@@ -263,6 +323,7 @@ impl MediaProcessExecutor {
                     }
                 }
             });
+            error_outputs.push((tail, Some(reader)));
         }
 
         let mut wait_handles: Vec<tokio::task::JoinHandle<u8>> = Vec::new();
@@ -377,6 +438,13 @@ impl MediaProcessExecutor {
             return Err("CANCELLED".to_string());
         }
 
+        if final_exit_code != 0 {
+            for (idx, (tail, reader)) in error_outputs.into_iter().enumerate() {
+                let command = command_descriptions.get(idx).map(String::as_str).unwrap_or("");
+                log_failed_process(command, Some(final_exit_code), &tail, reader).await;
+            }
+        }
+
         let stdout = if capture_stdout {
             let captured = captured_stdout.lock().unwrap();
             captured.clone()
@@ -397,6 +465,7 @@ impl MediaProcessExecutor {
 
         let mut previous_stdout: Option<std::process::ChildStdout> = None;
         let command_count = self.commands.len();
+        let command_descriptions: Vec<String> = self.commands.iter().map(describe_command).collect();
 
         for (idx, mut cmd) in self.commands.into_iter().enumerate() {
             if idx > 0 {
@@ -510,10 +579,14 @@ impl MediaProcessExecutor {
             _listener_guards.push(EventListenerGuard::for_app(self.app.clone(), cancel_id));
         }
 
+        let mut error_outputs: Vec<(ErrorOutputTail, Option<tokio::task::JoinHandle<()>>)> =
+            Vec::new();
         for (idx, proc) in processes.iter().enumerate() {
             let proc_clone = proc.clone();
             let callback_clone = self.stderr_callback.clone();
-            tokio::spawn(async move {
+            let tail: ErrorOutputTail = Arc::new(Mutex::new(VecDeque::new()));
+            let tail_clone = tail.clone();
+            let reader = tokio::spawn(async move {
                 if let Some(stderr) = proc_clone.take_stderr() {
                     let mut reader = BufReader::new(stderr);
                     loop {
@@ -526,6 +599,7 @@ impl MediaProcessExecutor {
                                 if let Ok(val) = std::str::from_utf8(&buf) {
                                     #[cfg(debug_assertions)]
                                     log::debug!("[media:piped process {}] stderr: {:?}", idx, val);
+                                    keep_error_output_line(&tail_clone, val);
                                     if let Some(ref callback) = callback_clone {
                                         callback(idx, val.to_string());
                                     }
@@ -536,6 +610,7 @@ impl MediaProcessExecutor {
                     }
                 }
             });
+            error_outputs.push((tail, Some(reader)));
         }
 
         // Capture stdout from LAST process in piped mode
@@ -686,6 +761,10 @@ impl MediaProcessExecutor {
 
 
         if !all_success {
+            for (idx, (tail, reader)) in error_outputs.into_iter().enumerate() {
+                let command = command_descriptions.get(idx).map(String::as_str).unwrap_or("");
+                log_failed_process(command, Some(final_exit_code), &tail, reader).await;
+            }
             return Err("Piped process chain failed".to_string());
         }
 

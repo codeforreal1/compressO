@@ -16,11 +16,10 @@ use sys::fs::{self as file_system};
 use sys::quit;
 use tauri::{Emitter, Listener, Manager, Url};
 use tauri_plugin_fs::FsExt;
-use tauri_plugin_log::{Target as LogTarget, TargetKind as LogTargetKind};
 
 use tauri_commands::{
     app::{
-        get_open_at_login, open_login_items_settings, restart_app, set_keep_awake_settings,
+        get_log_file_path, get_open_at_login, open_login_items_settings, restart_app, set_keep_awake_settings,
         set_open_at_login, take_opened_at_login, OPENED_AT_LOGIN_ARG,
     },
     compression_status::{
@@ -71,12 +70,6 @@ use tauri_commands::tray::{
 
 #[cfg(any(windows, target_os = "linux"))]
 use std::path::PathBuf;
-
-#[cfg(debug_assertions)]
-const LOG_TARGETS: [LogTarget; 1] = [LogTarget::new(LogTargetKind::Stdout)];
-
-#[cfg(not(debug_assertions))]
-const LOG_TARGETS: [LogTarget; 0] = [];
 
 const MAIN_WINDOW_LABEL: &str = "main";
 
@@ -279,14 +272,12 @@ fn can_open_files_in_main_window(app_handle: &tauri::AppHandle) -> bool {
 
 #[tokio::main]
 async fn main() {
+    sys::logging::log_panics();
     tauri::Builder::default()
         // First, so a second launch exits before anything else starts
         .plugin(tauri_plugin_single_instance::init(on_second_instance))
-        .plugin(
-            tauri_plugin_log::Builder::new()
-                .targets(LOG_TARGETS)
-                .build(),
-        )
+        // Log files, so problems can be looked into (see `sys::logging`)
+        .plugin(sys::logging::plugin())
         // Opens the app at login when turned on (Settings -> General), telling it so
         .plugin(tauri_plugin_autostart::init(
             tauri_plugin_autostart::MacosLauncher::LaunchAgent,
@@ -309,6 +300,7 @@ async fn main() {
         )
         .plugin(tauri_plugin_updater::Builder::new().build())
         .setup(|app| {
+            sys::logging::log_app_start(app.handle());
             app.manage(PendingFiles::new());
             app.manage(FrontendReady::new());
             app.manage(CompressionStatusState(Mutex::new(Default::default())));
@@ -457,6 +449,7 @@ async fn main() {
             get_open_at_login,
             set_open_at_login,
             open_login_items_settings,
+            get_log_file_path,
             #[cfg(target_os = "linux")]
             start_video_server,
             #[cfg(target_os = "linux")]
