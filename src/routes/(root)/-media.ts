@@ -37,6 +37,17 @@ import {
   videoConfigInitialState,
 } from './-state'
 
+/**
+ * A random id for a media, which its cached output (and thumbnail) is named after, so outputs never
+ * share a name (videos with a thumbnail are named after it instead)
+ */
+function createMediaId() {
+  const bytes = crypto.getRandomValues(new Uint8Array(12))
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join(
+    '',
+  )
+}
+
 /** File paths (picker, Open with) or files from dropped/pasted folders */
 export type MediaSelection = string | CollectedFile
 
@@ -149,7 +160,7 @@ export async function addMedia(selection: MediaSelection | MediaSelection[]) {
         const audioState: Video & { type: 'video' } = {
           type: 'video',
           isAudioFile: true,
-          id: coverArt?.id ?? `${index}-${+new Date()}`,
+          id: coverArt?.id ?? createMediaId(),
           pathRaw: path,
           path: core.convertFileSrc(path),
           relativeDir,
@@ -185,7 +196,7 @@ export async function addMedia(selection: MediaSelection | MediaSelection[]) {
 
         const videoState: Video & { type: 'video' } = {
           type: 'video',
-          id: videoThumbnail?.id ?? `${index}-${+new Date()}`,
+          id: videoThumbnail?.id ?? createMediaId(),
           pathRaw: path,
           path: core.convertFileSrc(path),
           relativeDir,
@@ -252,7 +263,7 @@ export async function addMedia(selection: MediaSelection | MediaSelection[]) {
           : getImageDimension(path))
         const imageState: Image & { type: 'image' } = {
           type: 'image',
-          id: `${index}-${+new Date()}`,
+          id: createMediaId(),
           pathRaw: path,
           path: core.convertFileSrc(path),
           relativeDir,

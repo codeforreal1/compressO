@@ -202,6 +202,69 @@ fn handle_open_with_app(app_handle: &tauri::AppHandle, urls: Vec<Url>) -> Result
     Ok(())
 }
 
+/// Files the app was launched with ("Open with", or dragged on its icon): file URLs or paths,
+/// relative ones resolved against `cwd` (the directory of a second launch). Options such as
+/// `--autostart` are skipped.
+#[cfg(any(windows, target_os = "linux"))]
+fn urls_from_launch_args(args: &[String], cwd: Option<&str>) -> Vec<Url> {
+    let mut urls = Vec::new();
+    for maybe_file in args.iter().skip(1) {
+        if maybe_file.starts_with('-') {
+            continue;
+        }
+
+        if !cfg!(target_os = "windows") {
+            if let Ok(url) = Url::parse(maybe_file) {
+                if url.to_file_path().is_ok() {
+                    urls.push(url);
+                }
+                continue;
+            }
+        }
+
+        let mut path = PathBuf::from(maybe_file);
+        if path.is_relative() {
+            if let Some(cwd) = cwd {
+                path = PathBuf::from(cwd).join(path);
+            }
+        }
+        match Url::from_file_path(&path) {
+            Ok(url) => urls.push(url),
+            Err(_) => log::error!("Failed to convert the launch path: {:?}", path),
+        }
+    }
+    urls
+}
+
+/// Another launch of the app (only one runs at a time, so they never share or clear each other's
+/// cache): the running app comes forward instead, with the files it was launched with
+fn on_second_instance(app_handle: &tauri::AppHandle, args: Vec<String>, cwd: String) {
+    log::info!("Another launch of the app, bringing this one forward");
+
+    #[cfg(target_os = "macos")]
+    if let Err(e) = tauri_commands::tray::focus_or_create_main_window(app_handle) {
+        log::error!("Failed to open the main window: {}", e);
+    }
+    #[cfg(not(target_os = "macos"))]
+    if let Some(window) = app_handle.get_webview_window(MAIN_WINDOW_LABEL) {
+        let _ = window.unminimize();
+        let _ = window.show();
+        let _ = window.set_focus();
+    }
+
+    #[cfg(any(windows, target_os = "linux"))]
+    {
+        let urls = urls_from_launch_args(&args, Some(&cwd));
+        if !urls.is_empty() {
+            if let Err(e) = handle_open_with_app(app_handle, urls) {
+                log::error!("Failed to open the files of another launch: {:?}", e);
+            }
+        }
+    }
+    #[cfg(target_os = "macos")]
+    let _ = (args, cwd);
+}
+
 /// Files dropped on the menu bar can be opened unless compressing or compressed media is unsaved,
 /// which the new media would replace
 #[cfg(target_os = "macos")]
@@ -212,6 +275,8 @@ fn can_open_files_in_main_window(app_handle: &tauri::AppHandle) -> bool {
 #[tokio::main]
 async fn main() {
     tauri::Builder::default()
+        // First, so a second launch exits before anything else starts
+        .plugin(tauri_plugin_single_instance::init(on_second_instance))
         .plugin(
             tauri_plugin_log::Builder::new()
                 .targets(LOG_TARGETS)
@@ -333,37 +398,7 @@ async fn main() {
             #[cfg(any(windows, target_os = "linux"))]
             {
                 let args: Vec<String> = std::env::args().collect();
-
-                let mut urls = Vec::new();
-                for maybe_file in args.iter().skip(1) {
-                    if maybe_file.starts_with('-') {
-                        continue;
-                    }
-
-                    if cfg!(target_os = "windows") {
-                        let path = PathBuf::from(maybe_file);
-
-                        match Url::from_file_path(&path) {
-                            Ok(url) => {
-                                urls.push(url);
-                            }
-                            Err(_) => {
-                                log::error!("Failed to convert Windows path: {:?}", path);
-                            }
-                        }
-                    } else {
-                        if let Ok(url) = Url::parse(maybe_file) {
-                            if let Ok(_path) = url.to_file_path() {
-                                urls.push(url);
-                            }
-                        } else {
-                            let path = PathBuf::from(maybe_file);
-                            if let Ok(url) = Url::from_file_path(&path) {
-                                urls.push(url);
-                            }
-                        }
-                    }
-                }
+                let urls = urls_from_launch_args(&args, None);
                 if let Err(e) = handle_open_with_app(app.handle(), urls) {
                     log::error!("Failed to handle open with app (platform args): {:?}", e);
                 }
