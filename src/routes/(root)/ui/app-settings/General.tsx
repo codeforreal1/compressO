@@ -74,46 +74,44 @@ function StartupSection() {
           onValueChange={handleOpenAtLoginChange}
         />
       </SettingsRow>
-      {state?.needsApproval ? (
-        <SettingsRow
-          isNested
-          title="Turned off in System Settings"
-          description="CompressO is not allowed to open at login. Allow it in System Settings, under General and Login Items."
+      <SettingsRow
+        isVisible={state?.needsApproval}
+        isNested
+        title="Turned off in System Settings"
+        description="CompressO is not allowed to open at login. Allow it in System Settings, under General and Login Items."
+      >
+        <Button
+          size="sm"
+          onPress={() => {
+            openLoginItemsSettings().catch(() => {})
+          }}
         >
-          <Button
-            size="sm"
-            onPress={() => {
-              openLoginItemsSettings().catch(() => {})
+          Open Login Items
+        </Button>
+      </SettingsRow>
+      <SettingsRow
+        isVisible={isMacOS && isOpenAtLogin}
+        isNested
+        title="Open in the menu bar only"
+        description="Do not show the main window when opened at login. Media can still be compressed from the menu bar."
+      >
+        <div className="flex items-center gap-2">
+          <InfoTooltip
+            content={
+              !showMenuBarIcon &&
+              'Turn on Show menu bar icon to use this, as the app is opened from there.'
+            }
+          />
+          <Switch
+            aria-label="Open in the menu bar only"
+            isSelected={openInMenuBarOnly && showMenuBarIcon}
+            isDisabled={!showMenuBarIcon}
+            onValueChange={(isSelected) => {
+              settingsStore.openInMenuBarOnly = isSelected
             }}
-          >
-            Open Login Items
-          </Button>
-        </SettingsRow>
-      ) : null}
-      {isMacOS && isOpenAtLogin ? (
-        <SettingsRow
-          isNested
-          title="Open in the menu bar only"
-          description="Do not show the main window when opened at login. Media can still be compressed from the menu bar."
-        >
-          <div className="flex items-center gap-2">
-            <InfoTooltip
-              content={
-                !showMenuBarIcon &&
-                'Turn on Show menu bar icon to use this, as the app is opened from there.'
-              }
-            />
-            <Switch
-              aria-label="Open in the menu bar only"
-              isSelected={openInMenuBarOnly && showMenuBarIcon}
-              isDisabled={!showMenuBarIcon}
-              onValueChange={(isSelected) => {
-                settingsStore.openInMenuBarOnly = isSelected
-              }}
-            />
-          </div>
-        </SettingsRow>
-      ) : null}
+          />
+        </div>
+      </SettingsRow>
     </SettingsSection>
   )
 }
@@ -168,32 +166,31 @@ function General() {
             />
           </SettingsRow>
         ) : null}
-        {isWindowTintSupported && tintedWindow ? (
-          <SettingsRow
-            isNested
-            title="Tint opacity"
-            description="How much of the desktop shows through. Lower values show more of it."
-          >
-            <div className="flex items-center gap-3 w-[220px]">
-              <Slider
-                aria-label="Tint opacity"
-                size="sm"
-                minValue={TINT_OPACITY_RANGE.min}
-                maxValue={TINT_OPACITY_RANGE.max}
-                step={5}
-                value={tintOpacity}
-                onChange={(value) => {
-                  settingsStore.tintOpacity = Array.isArray(value)
-                    ? value[0]
-                    : value
-                }}
-              />
-              <span className="text-sm w-10 text-right tabular-nums">
-                {tintOpacity}%
-              </span>
-            </div>
-          </SettingsRow>
-        ) : null}
+        <SettingsRow
+          isVisible={isWindowTintSupported && tintedWindow}
+          isNested
+          title="Tint opacity"
+          description="How much of the desktop shows through. Lower values show more of it."
+        >
+          <div className="flex items-center gap-3 w-[220px]">
+            <Slider
+              aria-label="Tint opacity"
+              size="sm"
+              minValue={TINT_OPACITY_RANGE.min}
+              maxValue={TINT_OPACITY_RANGE.max}
+              step={5}
+              value={tintOpacity}
+              onChange={(value) => {
+                settingsStore.tintOpacity = Array.isArray(value)
+                  ? value[0]
+                  : value
+              }}
+            />
+            <span className="text-sm w-10 text-right tabular-nums">
+              {tintOpacity}%
+            </span>
+          </div>
+        </SettingsRow>
       </SettingsSection>
       {isMacOS ? (
         <SettingsSection title="Menu bar">
@@ -269,21 +266,20 @@ function General() {
             }}
           />
         </SettingsRow>
-        {preventSleepWhileCompressing ? (
-          <SettingsRow
-            isNested
-            title="Keep the screen on"
-            description="Also keep the screen from turning off while compressing."
-          >
-            <Switch
-              aria-label="Keep the screen on"
-              isSelected={keepScreenOnWhileCompressing}
-              onValueChange={(isSelected) => {
-                settingsStore.keepScreenOnWhileCompressing = isSelected
-              }}
-            />
-          </SettingsRow>
-        ) : null}
+        <SettingsRow
+          isVisible={preventSleepWhileCompressing}
+          isNested
+          title="Keep the screen on"
+          description="Also keep the screen from turning off while compressing."
+        >
+          <Switch
+            aria-label="Keep the screen on"
+            isSelected={keepScreenOnWhileCompressing}
+            onValueChange={(isSelected) => {
+              settingsStore.keepScreenOnWhileCompressing = isSelected
+            }}
+          />
+        </SettingsRow>
       </SettingsSection>
       <SettingsSection title="Sound">
         <SettingsRow

@@ -136,58 +136,55 @@ function Output() {
             ))}
           </Select>
         </SettingsRow>
-        {saveLocation === 'fixedFolder' ? (
-          <SettingsRow
-            isNested
-            title="Folder"
-            description={
-              <span className="break-all">
-                {saveFolder ?? 'No folder chosen'}
-              </span>
-            }
+        <SettingsRow
+          isVisible={saveLocation === 'fixedFolder'}
+          isNested
+          title="Folder"
+          description={
+            <span className="break-all">
+              {saveFolder ?? 'No folder chosen'}
+            </span>
+          }
+        >
+          <Button
+            size="sm"
+            onPress={async () => {
+              const folder = await pickSaveFolder()
+              if (folder) settingsStore.saveFolder = folder
+            }}
           >
-            <Button
-              size="sm"
-              onPress={async () => {
-                const folder = await pickSaveFolder()
-                if (folder) settingsStore.saveFolder = folder
-              }}
-            >
-              Change
-            </Button>
-          </SettingsRow>
-        ) : null}
+            Change
+          </Button>
+        </SettingsRow>
         {/* Next to the originals, each file is always saved in its original's folder */}
-        {saveLocation !== 'sameFolder' ? (
-          <SettingsRow
-            isNested
-            title="Preserve folder structure"
-            description="Save the files of a dropped folder in the same folders. When off, all files are saved in one folder, and files with the same name are numbered."
-          >
-            <Switch
-              aria-label="Preserve folder structure"
-              isSelected={preserveFolderStructure}
-              onValueChange={(isSelected) => {
-                settingsStore.preserveFolderStructure = isSelected
-              }}
-            />
-          </SettingsRow>
-        ) : null}
-        {saveLocation !== 'ask' ? (
-          <SettingsRow
-            isNested
-            title="Skip larger outputs"
-            description="Do not save the compressed media when it is larger than the original."
-          >
-            <Switch
-              aria-label="Skip larger outputs"
-              isSelected={!saveLargerOutputs}
-              onValueChange={(isSelected) => {
-                settingsStore.saveLargerOutputs = !isSelected
-              }}
-            />
-          </SettingsRow>
-        ) : null}
+        <SettingsRow
+          isVisible={saveLocation !== 'sameFolder'}
+          isNested
+          title="Preserve folder structure"
+          description="Save the files of a dropped folder in the same folders. When off, all files are saved in one folder, and files with the same name are numbered."
+        >
+          <Switch
+            aria-label="Preserve folder structure"
+            isSelected={preserveFolderStructure}
+            onValueChange={(isSelected) => {
+              settingsStore.preserveFolderStructure = isSelected
+            }}
+          />
+        </SettingsRow>
+        <SettingsRow
+          isVisible={saveLocation !== 'ask'}
+          isNested
+          title="Skip larger outputs"
+          description="Do not save the compressed media when it is larger than the original."
+        >
+          <Switch
+            aria-label="Skip larger outputs"
+            isSelected={!saveLargerOutputs}
+            onValueChange={(isSelected) => {
+              settingsStore.saveLargerOutputs = !isSelected
+            }}
+          />
+        </SettingsRow>
         <SettingsRow
           title="File name prefix"
           description="Text added to the start of saved file names. Leave empty to keep the original names."
@@ -219,21 +216,20 @@ function Output() {
             }}
           />
         </SettingsRow>
-        {copyOutputToClipboard ? (
-          <SettingsRow
-            isNested
-            title="Include batch outputs"
-            description="Also copy the files when several are compressed at once."
-          >
-            <Switch
-              aria-label="Include batch outputs"
-              isSelected={copyBatchOutputToClipboard}
-              onValueChange={(isSelected) => {
-                settingsStore.copyBatchOutputToClipboard = isSelected
-              }}
-            />
-          </SettingsRow>
-        ) : null}
+        <SettingsRow
+          isVisible={copyOutputToClipboard}
+          isNested
+          title="Include batch outputs"
+          description="Also copy the files when several are compressed at once."
+        >
+          <Switch
+            aria-label="Include batch outputs"
+            isSelected={copyBatchOutputToClipboard}
+            onValueChange={(isSelected) => {
+              settingsStore.copyBatchOutputToClipboard = isSelected
+            }}
+          />
+        </SettingsRow>
       </SettingsSection>
 
       <SettingsSection title="Performance">

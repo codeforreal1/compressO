@@ -1,5 +1,7 @@
+import { AnimatePresence, motion } from 'framer-motion'
 import React from 'react'
 
+import { slideDownTransition } from '@/utils/animation'
 import { cn } from '@/utils/tailwind'
 
 type SettingsSectionProps = {
@@ -34,26 +36,25 @@ type SettingsRowProps = {
    * with a thread from that setting
    */
   isNested?: boolean
+  /**
+   * For a setting shown only in some cases (e.g. when the one above is on): it slides in & out
+   * when this changes, like the output settings, instead of appearing at once
+   */
+  isVisible?: boolean
   className?: string
 }
 
 /** A single setting: title & description on the left, its control on the right */
-export function SettingsRow({
-  title,
-  description,
-  children,
-  isNested,
-  className,
-}: SettingsRowProps) {
-  return (
-    <div
-      className={cn([
-        'flex items-center justify-between gap-8 py-4 first:pt-1',
-        // A thread from the setting above (see `global.css`)
-        isNested && 'settings-row-nested',
-        className,
-      ])}
-    >
+export function SettingsRow(props: SettingsRowProps) {
+  const { title, description, children, isNested, isVisible, className } = props
+  const rowClassName = cn([
+    // A thread from the setting above (see `global.css`)
+    isNested && 'settings-row-nested',
+    className,
+  ])
+  // The padding is inside, so a row sliding out shrinks to nothing
+  const content = (
+    <div className="flex items-center justify-between gap-8 py-4 [:first-child>&]:pt-1">
       <div className="min-w-0">
         <p className="text-sm text-foreground">{title}</p>
         {description ? (
@@ -64,5 +65,21 @@ export function SettingsRow({
       </div>
       {children ? <div className="flex-shrink-0">{children}</div> : null}
     </div>
+  )
+
+  // Passed (even as `undefined`, which hides it) only for a setting shown in some cases
+  if (!('isVisible' in props)) {
+    return <div className={rowClassName}>{content}</div>
+  }
+
+  return (
+    // Not when the settings open, only when the setting appears or goes
+    <AnimatePresence initial={false}>
+      {isVisible ? (
+        <motion.div className={rowClassName} {...slideDownTransition}>
+          {content}
+        </motion.div>
+      ) : null}
+    </AnimatePresence>
   )
 }

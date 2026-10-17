@@ -102,31 +102,30 @@ function DropZone() {
             />
           </div>
         </SettingsRow>
-        {autoCompress && canAutoCompress ? (
-          <>
-            <SettingsRow
-              isNested
-              title="Video preset"
-              description="Settings used for videos."
-            >
-              <DropZonePresetSelect mediaType="video" />
-            </SettingsRow>
-            <SettingsRow
-              isNested
-              title="Image preset"
-              description="Settings used for images."
-            >
-              <DropZonePresetSelect mediaType="image" />
-            </SettingsRow>
-            <SettingsRow
-              isNested
-              title="Audio preset"
-              description="Settings used for audio files."
-            >
-              <DropZonePresetSelect mediaType="audio" />
-            </SettingsRow>
-          </>
-        ) : null}
+        <SettingsRow
+          isVisible={autoCompress && canAutoCompress}
+          isNested
+          title="Video preset"
+          description="Settings used for videos."
+        >
+          <DropZonePresetSelect mediaType="video" />
+        </SettingsRow>
+        <SettingsRow
+          isVisible={autoCompress && canAutoCompress}
+          isNested
+          title="Image preset"
+          description="Settings used for images."
+        >
+          <DropZonePresetSelect mediaType="image" />
+        </SettingsRow>
+        <SettingsRow
+          isVisible={autoCompress && canAutoCompress}
+          isNested
+          title="Audio preset"
+          description="Settings used for audio files."
+        >
+          <DropZonePresetSelect mediaType="audio" />
+        </SettingsRow>
       </SettingsSection>
       <SettingsSection title="Clipboard">
         <SettingsRow
