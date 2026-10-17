@@ -39,6 +39,9 @@ import { getPlatform } from '@/utils/fs'
 import { cn } from '@/utils/tailwind'
 
 const { isWindows } = getPlatform()
+// Borders: the drop zone's dashed one & the buttons', light so they stay quiet
+const SUBTLE_BORDER = 'border-black/15 dark:border-white/15'
+
 // Secondary text. White in dark mode on Windows, where grey is hard to read on the Acrylic material
 const MUTED_TEXT = isWindows
   ? 'text-zinc-500 dark:text-white'
@@ -305,7 +308,10 @@ function TrayWindow() {
           size="sm"
           variant="bordered"
           radius="md"
-          className="relative overflow-hidden gap-1 px-2 text-[10px] font-normal border-1"
+          className={cn(
+            'relative overflow-hidden gap-1 px-2 text-[10px] font-normal border-1',
+            SUBTLE_BORDER,
+          )}
           onPress={handleOpenMainWindow}
           fullWidth
           aria-label={
@@ -322,7 +328,10 @@ function TrayWindow() {
           size="sm"
           variant="bordered"
           radius="md"
-          className="gap-1 px-2 text-[10px] font-normal border-1"
+          className={cn(
+            'gap-1 px-2 text-[10px] font-normal border-1',
+            SUBTLE_BORDER,
+          )}
           onPress={handleQuitApp}
           fullWidth
         >
@@ -349,7 +358,7 @@ function DropZone({
         isWindows ? 'rounded-lg' : 'rounded-2xl',
         isDragging
           ? 'border-primary bg-primary/10 text-primary'
-          : ['border-black/15 dark:border-white/15', MUTED_TEXT],
+          : [SUBTLE_BORDER, MUTED_TEXT],
       )}
     >
       <Icon name="dropzone" size={50} className="text-primary" />
@@ -389,9 +398,7 @@ function DropQueue({
     <div
       className={cn(
         'w-full flex-1 my-2 flex flex-col min-h-0 rounded-2xl border-2 border-dashed transition-colors',
-        isDragging
-          ? 'border-primary bg-primary/10'
-          : 'border-black/15 dark:border-white/15',
+        isDragging ? 'border-primary bg-primary/10' : SUBTLE_BORDER,
       )}
     >
       <DropQueueList items={items} isCompact className="flex-1" />
@@ -491,9 +498,7 @@ function DroppedFiles({
     <div
       className={cn(
         'w-full flex-1 my-2 flex flex-col min-h-0 rounded-2xl border-2 border-dashed transition-colors',
-        isDragging
-          ? 'border-primary bg-primary/10'
-          : 'border-black/15 dark:border-white/15',
+        isDragging ? 'border-primary bg-primary/10' : SUBTLE_BORDER,
       )}
     >
       <div className="flex items-center justify-between gap-2 pl-3 pr-1.5 pt-2 pb-1">

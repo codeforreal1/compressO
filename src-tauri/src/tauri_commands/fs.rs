@@ -38,10 +38,19 @@ pub async fn move_file(
     let to = fs::get_available_path(&PathBuf::from(to), false);
     let parent = to.parent().map(|p| p.to_path_buf()).unwrap_or_default();
 
-    // Destination folders may not exist yet, e.g. when mirroring a dropped folder's structure
-    tokio::fs::create_dir_all(&parent)
+    // Destination folders may not exist yet, e.g. when mirroring a dropped folder's structure. Only
+    // created when missing: creating an existing folder can fail on some drives (e.g. "Access is
+    // denied" for a top-level folder of a network drive), which would fail the save.
+    let parent_exists = tokio::fs::metadata(&parent)
         .await
-        .map_err(|err| err.to_string())?;
+        .map(|metadata| metadata.is_dir())
+        .unwrap_or(false);
+    if !parent_exists {
+        if let Err(err) = tokio::fs::create_dir_all(&parent).await {
+            log::error!("[save] Could not create {}: {}", parent.display(), err);
+            return Err(err.to_string());
+        }
+    }
 
     // Same drive: an instant, atomic rename
     if tokio::fs::rename(from, &to).await.is_ok() {
@@ -59,6 +68,7 @@ pub async fn move_file(
     }
     .await;
     if let Err(err) = copy_result {
+        log::error!("[save] Could not save {} to {}: {}", from, to.display(), err);
         let _ = tokio::fs::remove_file(&temp_path).await;
         return Err(err.to_string());
     }

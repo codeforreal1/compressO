@@ -599,12 +599,16 @@ impl ImageCompressor {
 
             return Ok(());
         } else {
+            // pngquant compresses this copy in place: on Windows it reads its arguments in the
+            // system's legacy code page, so it cannot open originals whose names have other
+            // characters (e.g. the narrow space before "PM" in macOS screenshot names). The copy's
+            // name is plain.
             std::fs::copy(input_path, &output_path).map_err(|e| e.to_string())?;
 
             let quality_str = quality.clamp(1, 100).to_string();
 
             let result = self
-                .run_pngquant(input_path, output_path, image_id, batch_id, &quality_str)
+                .run_pngquant(output_path, output_path, image_id, batch_id, &quality_str)
                 .await;
 
             match result {
@@ -620,7 +624,7 @@ impl ImageCompressor {
                     );
 
                     self.run_pngquant(
-                        input_path,
+                        output_path,
                         output_path,
                         image_id,
                         batch_id,
