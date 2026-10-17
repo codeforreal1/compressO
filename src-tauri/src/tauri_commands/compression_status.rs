@@ -59,7 +59,7 @@ pub fn update_compression_status(app_handle: &AppHandle, status: CompressionStat
     }
     let _ = app_handle.emit_to(TRAY_WINDOW_LABEL, COMPRESSION_STATUS_EVENT, status);
     // Files stored in the menu bar's drop zone, waiting for the main window to be free
-    #[cfg(target_os = "macos")]
+    #[cfg(any(target_os = "macos", windows))]
     crate::tauri_commands::tray::deliver_dropped_files_if_free(app_handle);
 }
 

@@ -1,11 +1,14 @@
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Mutex;
-use tauri::{webview::PageLoadEvent, AppHandle, Emitter, Manager, Url, WebviewWindowBuilder};
-
-use crate::macos::{
-    bridge,
-    tray_popover::{self, WindowExt, TRAY_WINDOW_LABEL},
+use tauri::{
+    menu::{Menu, MenuEvent, MenuItem},
+    utils::config::WindowConfig,
+    webview::PageLoadEvent,
+    AppHandle, Emitter, Manager, Url, WebviewWindowBuilder, Wry,
 };
+
+// The macOS menu bar popover, or the Windows system tray popover
+use crate::tray_popover::{self, WindowExt, TRAY_WINDOW_LABEL};
 
 pub const MAIN_WINDOW_LABEL: &str = "main";
 
@@ -38,13 +41,7 @@ pub fn resize_tray_popover(
     animate: Option<bool>,
     blur_overlay_on_resize: Option<bool>,
 ) -> Result<(), String> {
-    let tray_window = app_handle
-        .get_webview_window(TRAY_WINDOW_LABEL)
-        .ok_or("Tray window not found")?;
-    if tray_window.is_tray_popover_visible() {
-        bridge::resize_tray_popover(width, height, animate, blur_overlay_on_resize);
-    }
-    Ok(())
+    tray_popover::resize_popover(&app_handle, width, height, animate, blur_overlay_on_resize)
 }
 
 #[tauri::command]
@@ -57,19 +54,19 @@ pub fn is_tray_popover_visible(app_handle: AppHandle) -> bool {
 
 /// Pins the tray popover, so it stays open when clicking outside it, or restores the default
 #[tauri::command]
-pub fn set_tray_popover_pinned(pinned: bool) {
-    bridge::ffi::setTrayPopoverPinned(pinned);
+pub fn set_tray_popover_pinned(app_handle: AppHandle, pinned: bool) {
+    tray_popover::set_pinned(&app_handle, pinned);
 }
 
 /// Adds files copied to the clipboard to the media dropped on the menu bar (or stops doing so)
 #[tauri::command]
 pub fn set_clipboard_watch_enabled(app_handle: AppHandle, enabled: bool) {
-    crate::macos::clipboard_watch::set_enabled(&app_handle, enabled);
+    crate::sys::clipboard_watch::set_enabled(&app_handle, enabled);
 }
 
 #[tauri::command]
 pub fn is_clipboard_watch_enabled() -> bool {
-    crate::macos::clipboard_watch::is_enabled()
+    crate::sys::clipboard_watch::is_enabled()
 }
 
 /// Shows or removes the menu bar (tray) icon
@@ -178,7 +175,7 @@ pub fn add_dropped_files(app_handle: AppHandle, paths: Vec<String>) -> Result<us
 /// browser). Returns how many files were skipped as unsupported, or an error with nothing to add.
 #[tauri::command]
 pub fn paste_dropped_files(app_handle: AppHandle) -> Result<usize, String> {
-    let paths = crate::macos::clipboard_watch::read_clipboard_media(&app_handle);
+    let paths = crate::sys::clipboard_watch::read_clipboard_media(&app_handle);
     if paths.is_empty() {
         return Err("No files or images found in clipboard".to_string());
     }
@@ -236,8 +233,7 @@ fn deliver_dropped_files(app_handle: &AppHandle) -> Result<(), String> {
 /// Delivers the stored files asked for with "Open App" while the main window was busy, once it is
 /// free; called when its status changes
 pub fn deliver_dropped_files_if_free(app_handle: &AppHandle) {
-    if DELIVER_WHEN_FREE.load(Ordering::SeqCst)
-        && crate::can_open_files_in_main_window(app_handle)
+    if DELIVER_WHEN_FREE.load(Ordering::SeqCst) && crate::can_open_files_in_main_window(app_handle)
     {
         DELIVER_WHEN_FREE.store(false, Ordering::SeqCst);
         let _ = deliver_dropped_files(app_handle);
@@ -247,6 +243,28 @@ pub fn deliver_dropped_files_if_free(app_handle: &AppHandle) {
 #[tauri::command]
 pub fn quit_app(app_handle: AppHandle) {
     app_handle.exit(0);
+}
+
+/// The tray icon's menu, shown with a right click: opens the main window, or quits
+pub fn tray_icon_menu(app_handle: &AppHandle) -> Result<Menu<Wry>, String> {
+    let open_item = MenuItem::with_id(app_handle, "open", "Open CompressO", true, None::<&str>)
+        .map_err(|err| err.to_string())?;
+    let quit_item = MenuItem::with_id(app_handle, "quit", "Quit CompressO", true, None::<&str>)
+        .map_err(|err| err.to_string())?;
+    Menu::with_items(app_handle, &[&open_item, &quit_item]).map_err(|err| err.to_string())
+}
+
+pub fn handle_tray_icon_menu_event(app_handle: &AppHandle, event: MenuEvent) {
+    match event.id().as_ref() {
+        "open" => {
+            if let Err(err) = focus_or_create_main_window(app_handle) {
+                log::error!("Failed to open the main window: {}", err);
+            }
+        }
+        // Asks first while compressing (see `quit::quit_reason`)
+        "quit" => app_handle.exit(0),
+        _ => {}
+    }
 }
 
 /// Shows & focuses the main window, recreating it if it was closed (the app keeps running while
@@ -268,18 +286,35 @@ pub fn focus_or_create_main_window(app_handle: &AppHandle) -> Result<(), String>
                 .cloned()
                 .unwrap_or_default();
 
-            // The window starts hidden (see `tauri.conf.json`), so show it once it has loaded
-            WebviewWindowBuilder::from_config(app_handle, &window_config)
-                .map_err(|e| e.to_string())?
-                .on_page_load(|window, payload| {
-                    if let PageLoadEvent::Finished = payload.event() {
-                        let _ = window.show();
-                        let _ = window.set_focus();
+            // Created on another thread in Windows: this runs in synchronous commands, on the main
+            // thread, where creating a webview deadlocks there
+            #[cfg(windows)]
+            {
+                let app_handle = app_handle.clone();
+                std::thread::spawn(move || {
+                    if let Err(err) = create_main_window(&app_handle, &window_config) {
+                        log::error!("Failed to create the main window: {}", err);
                     }
-                })
-                .build()
-                .map_err(|e| e.to_string())?;
+                });
+            }
+            #[cfg(not(windows))]
+            create_main_window(app_handle, &window_config)?;
         }
     }
+    Ok(())
+}
+
+fn create_main_window(app_handle: &AppHandle, window_config: &WindowConfig) -> Result<(), String> {
+    // The window starts hidden (see `tauri.conf.json`), so show it once it has loaded
+    WebviewWindowBuilder::from_config(app_handle, window_config)
+        .map_err(|e| e.to_string())?
+        .on_page_load(|window, payload| {
+            if let PageLoadEvent::Finished = payload.event() {
+                let _ = window.show();
+                let _ = window.set_focus();
+            }
+        })
+        .build()
+        .map_err(|e| e.to_string())?;
     Ok(())
 }

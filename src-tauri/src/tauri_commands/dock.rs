@@ -25,7 +25,7 @@ pub fn set_dock_progress(app_handle: tauri::AppHandle, progress: f64) -> Result<
 
     // The menu bar (tray) icon shows the same progress
     #[cfg(target_os = "macos")]
-    crate::macos::tray_popover::set_tray_progress(&app_handle, progress)?;
+    crate::tray_popover::set_tray_progress(&app_handle, progress)?;
 
     #[cfg(target_os = "macos")]
     unsafe {
@@ -51,23 +51,52 @@ pub fn set_dock_progress(app_handle: tauri::AppHandle, progress: f64) -> Result<
         let _: () = msg_send![dock_tile, display];
     }
 
-    #[cfg(not(target_os = "macos"))]
+    // The tray icon's tooltip & the main window's taskbar button show the progress
+    #[cfg(windows)]
     {
-        // No-op on non-macOS platforms
+        crate::tray_popover::set_tray_progress(&app_handle, progress)?;
+        set_taskbar_progress(&app_handle, progress);
+    }
+
+    #[cfg(target_os = "linux")]
+    {
+        // No-op on Linux
         let _ = app_handle;
-        log::debug!(
-            "set_dock_progress called with {} on non-macOS platform",
-            progress
-        );
+        log::debug!("set_dock_progress called with {} on Linux", progress);
     }
 
     Ok(())
 }
 
+/// Fills the main window's taskbar button with the progress (as file copies do), or empties it at 0
+#[cfg(windows)]
+fn set_taskbar_progress(app_handle: &tauri::AppHandle, progress: f64) {
+    use tauri::window::{ProgressBarState, ProgressBarStatus};
+    use tauri::Manager;
+
+    let Some(window) =
+        app_handle.get_webview_window(crate::tauri_commands::tray::MAIN_WINDOW_LABEL)
+    else {
+        return;
+    };
+    let state = if progress <= 0.0 {
+        ProgressBarState {
+            status: Some(ProgressBarStatus::None),
+            progress: None,
+        }
+    } else {
+        ProgressBarState {
+            status: Some(ProgressBarStatus::Normal),
+            progress: Some(progress.round() as u64),
+        }
+    };
+    let _ = window.set_progress_bar(state);
+}
+
 #[cfg(target_os = "macos")]
 #[tauri::command]
 pub fn clear_dock_badge(app_handle: tauri::AppHandle) -> Result<(), String> {
-    crate::macos::tray_popover::set_tray_progress(&app_handle, 0.0)?;
+    crate::tray_popover::set_tray_progress(&app_handle, 0.0)?;
 
     unsafe {
         let app = NSApp();
@@ -88,9 +117,17 @@ pub fn clear_dock_badge(app_handle: tauri::AppHandle) -> Result<(), String> {
     Ok(())
 }
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(windows)]
+#[tauri::command]
+pub fn clear_dock_badge(app_handle: tauri::AppHandle) -> Result<(), String> {
+    crate::tray_popover::set_tray_progress(&app_handle, 0.0)?;
+    set_taskbar_progress(&app_handle, 0.0);
+    Ok(())
+}
+
+#[cfg(target_os = "linux")]
 #[tauri::command]
 pub fn clear_dock_badge() -> Result<(), String> {
-    // No-op on non-macOS platforms
+    // No-op on Linux
     Ok(())
 }

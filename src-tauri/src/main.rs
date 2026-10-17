@@ -7,6 +7,14 @@ mod macos;
 mod sys;
 mod tauri_commands;
 mod utils;
+#[cfg(windows)]
+mod win;
+
+// The tray popover with the drop zone: the macOS menu bar's, or the Windows system tray's
+#[cfg(target_os = "macos")]
+use macos::tray_popover;
+#[cfg(windows)]
+use win::tray_popover;
 
 #[cfg(target_os = "linux")]
 use core::server;
@@ -54,18 +62,19 @@ use tauri_commands::server::{construct_video_url, start_video_server};
 #[cfg(target_os = "linux")]
 use tauri_commands::file_manager::DbusState;
 
-#[cfg(target_os = "macos")]
+#[cfg(any(target_os = "macos", windows))]
 use tauri_commands::drop_queue::{
     cancel_drop_queue, clear_finished_drop_queue, is_drop_queue_paused, set_drop_queue_paused, get_drop_queue, remove_drop_queue_item, retry_drop_queue_item,
     set_auto_compress_enabled, update_drop_queue_item,
 };
 
-#[cfg(target_os = "macos")]
+#[cfg(any(target_os = "macos", windows))]
 use tauri_commands::tray::{
-    close_tray_popover, focus_main_window, is_tray_popover_visible, open_tray_popover, quit_app,
-    add_dropped_files, clear_dropped_files, get_dropped_files, is_clipboard_watch_enabled,
-    paste_dropped_files, remove_dropped_file, resize_tray_popover, set_clipboard_watch_enabled,
-    set_supported_drop_extensions, set_tray_icon_enabled, set_tray_popover_pinned,
+    add_dropped_files, clear_dropped_files, close_tray_popover, focus_main_window,
+    get_dropped_files, is_clipboard_watch_enabled, is_tray_popover_visible, open_tray_popover,
+    paste_dropped_files, quit_app, remove_dropped_file, resize_tray_popover,
+    set_clipboard_watch_enabled, set_supported_drop_extensions, set_tray_icon_enabled,
+    set_tray_popover_pinned,
 };
 
 #[cfg(any(windows, target_os = "linux"))]
@@ -239,11 +248,12 @@ fn urls_from_launch_args(args: &[String], cwd: Option<&str>) -> Vec<Url> {
 fn on_second_instance(app_handle: &tauri::AppHandle, args: Vec<String>, cwd: String) {
     log::info!("Another launch of the app, bringing this one forward");
 
-    #[cfg(target_os = "macos")]
+    // Also when the main window was closed, while the app keeps running in the tray
+    #[cfg(any(target_os = "macos", windows))]
     if let Err(e) = tauri_commands::tray::focus_or_create_main_window(app_handle) {
         log::error!("Failed to open the main window: {}", e);
     }
-    #[cfg(not(target_os = "macos"))]
+    #[cfg(target_os = "linux")]
     if let Some(window) = app_handle.get_webview_window(MAIN_WINDOW_LABEL) {
         let _ = window.unminimize();
         let _ = window.show();
@@ -263,9 +273,9 @@ fn on_second_instance(app_handle: &tauri::AppHandle, args: Vec<String>, cwd: Str
     let _ = (args, cwd);
 }
 
-/// Files dropped on the menu bar can be opened unless compressing or compressed media is unsaved,
-/// which the new media would replace
-#[cfg(target_os = "macos")]
+/// Files dropped on the tray can be opened unless compressing or compressed media is unsaved, which
+/// the new media would replace
+#[cfg(any(target_os = "macos", windows))]
 fn can_open_files_in_main_window(app_handle: &tauri::AppHandle) -> bool {
     !is_compressing(app_handle) && !has_unsaved_output(app_handle)
 }
@@ -340,8 +350,8 @@ async fn main() {
             file_system::ensure_assets_dir(&app.app_handle())?;
 
             // The tray icon itself is added by the frontend, depending on the user's setting
-            #[cfg(target_os = "macos")]
-            macos::tray_popover::init(app);
+            #[cfg(any(target_os = "macos", windows))]
+            tray_popover::init(app);
 
             // The window starts hidden (see `tauri.conf.json`) so the webview isn't shown before it
             // has painted, which flashed a blank background on launch
@@ -462,55 +472,55 @@ async fn main() {
             start_video_server,
             #[cfg(target_os = "linux")]
             construct_video_url,
-            #[cfg(target_os = "macos")]
+            #[cfg(any(target_os = "macos", windows))]
             open_tray_popover,
-            #[cfg(target_os = "macos")]
+            #[cfg(any(target_os = "macos", windows))]
             close_tray_popover,
-            #[cfg(target_os = "macos")]
+            #[cfg(any(target_os = "macos", windows))]
             resize_tray_popover,
-            #[cfg(target_os = "macos")]
+            #[cfg(any(target_os = "macos", windows))]
             is_tray_popover_visible,
-            #[cfg(target_os = "macos")]
+            #[cfg(any(target_os = "macos", windows))]
             focus_main_window,
-            #[cfg(target_os = "macos")]
+            #[cfg(any(target_os = "macos", windows))]
             quit_app,
-            #[cfg(target_os = "macos")]
+            #[cfg(any(target_os = "macos", windows))]
             set_tray_icon_enabled,
-            #[cfg(target_os = "macos")]
+            #[cfg(any(target_os = "macos", windows))]
             add_dropped_files,
-            #[cfg(target_os = "macos")]
+            #[cfg(any(target_os = "macos", windows))]
             paste_dropped_files,
-            #[cfg(target_os = "macos")]
+            #[cfg(any(target_os = "macos", windows))]
             remove_dropped_file,
-            #[cfg(target_os = "macos")]
+            #[cfg(any(target_os = "macos", windows))]
             get_dropped_files,
-            #[cfg(target_os = "macos")]
+            #[cfg(any(target_os = "macos", windows))]
             clear_dropped_files,
-            #[cfg(target_os = "macos")]
+            #[cfg(any(target_os = "macos", windows))]
             set_clipboard_watch_enabled,
-            #[cfg(target_os = "macos")]
+            #[cfg(any(target_os = "macos", windows))]
             is_clipboard_watch_enabled,
-            #[cfg(target_os = "macos")]
+            #[cfg(any(target_os = "macos", windows))]
             set_supported_drop_extensions,
-            #[cfg(target_os = "macos")]
+            #[cfg(any(target_os = "macos", windows))]
             set_tray_popover_pinned,
-            #[cfg(target_os = "macos")]
+            #[cfg(any(target_os = "macos", windows))]
             set_auto_compress_enabled,
-            #[cfg(target_os = "macos")]
+            #[cfg(any(target_os = "macos", windows))]
             get_drop_queue,
-            #[cfg(target_os = "macos")]
+            #[cfg(any(target_os = "macos", windows))]
             update_drop_queue_item,
-            #[cfg(target_os = "macos")]
+            #[cfg(any(target_os = "macos", windows))]
             retry_drop_queue_item,
-            #[cfg(target_os = "macos")]
+            #[cfg(any(target_os = "macos", windows))]
             remove_drop_queue_item,
-            #[cfg(target_os = "macos")]
+            #[cfg(any(target_os = "macos", windows))]
             clear_finished_drop_queue,
-            #[cfg(target_os = "macos")]
+            #[cfg(any(target_os = "macos", windows))]
             cancel_drop_queue,
-            #[cfg(target_os = "macos")]
+            #[cfg(any(target_os = "macos", windows))]
             set_drop_queue_paused,
-            #[cfg(target_os = "macos")]
+            #[cfg(any(target_os = "macos", windows))]
             is_drop_queue_paused,
             set_compression_status,
             get_compression_status
@@ -526,13 +536,12 @@ async fn main() {
                         return;
                     }
 
-                    // With the menu bar icon, closing the window during a compression (or with
-                    // unsaved outputs) only hides it: the compression continues (its progress
-                    // shows in the menu bar), nothing is lost & the window comes back from the
-                    // menu bar or the dock
-                    #[cfg(target_os = "macos")]
+                    // With the tray icon, closing the window during a compression (or with unsaved
+                    // outputs) only hides it: the compression continues (its progress shows in the
+                    // tray), nothing is lost & the window comes back from the tray (or the dock)
+                    #[cfg(any(target_os = "macos", windows))]
                     if app_handle
-                        .tray_by_id(macos::tray_popover::TRAY_WINDOW_LABEL)
+                        .tray_by_id(tray_popover::TRAY_WINDOW_LABEL)
                         .is_some()
                     {
                         api.prevent_close();
@@ -556,8 +565,8 @@ async fn main() {
                     if let Some(ready_state) = app_handle.try_state::<FrontendReady>() {
                         ready_state.set_not_ready();
                     }
-                    // Also clears the menu bar progress
-                    #[cfg(target_os = "macos")]
+                    // Also clears the tray's progress
+                    #[cfg(any(target_os = "macos", windows))]
                     let _ = clear_dock_badge(app_handle.clone());
                     update_compression_status(app_handle, Default::default());
                 }
@@ -579,7 +588,8 @@ async fn main() {
                     if IS_APP_SET_UP.load(std::sync::atomic::Ordering::SeqCst)
                         && app_handle.get_webview_window(MAIN_WINDOW_LABEL).is_none()
                     {
-                        if let Err(e) = tauri_commands::tray::focus_or_create_main_window(app_handle)
+                        if let Err(e) =
+                            tauri_commands::tray::focus_or_create_main_window(app_handle)
                         {
                             log::error!("Failed to open the main window: {}", e);
                         }

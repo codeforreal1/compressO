@@ -15,8 +15,9 @@ pub mod window;
 #[cfg(target_os = "linux")]
 pub mod server;
 
-#[cfg(target_os = "macos")]
+// The drop zone of the tray (the macOS menu bar or the Windows system tray)
+#[cfg(any(target_os = "macos", windows))]
 pub mod drop_queue;
 
-#[cfg(target_os = "macos")]
+#[cfg(any(target_os = "macos", windows))]
 pub mod tray;

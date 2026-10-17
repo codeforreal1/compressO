@@ -18,6 +18,7 @@ import { setTrayIconEnabled, TRAY_WINDOW_LABEL } from '@/tauri/commands/tray'
 import Titlebar from '@/tauri/components/Titlebar'
 import DropZoneIsland from '@/ui/DropZoneIsland'
 import { getPlatform } from '@/utils/fs'
+import { hasTray } from '@/utils/tray'
 import { useDropQueueRunner } from './webviews/tray/-queue'
 import UIProvider from '../providers/UIProvider'
 
@@ -51,7 +52,7 @@ function MainRoot() {
       .catch(() => false)
       .then((isOpenedAtLogin) => {
         const isMenuBarOnly =
-          isMacOS &&
+          hasTray &&
           isOpenedAtLogin &&
           settingsStore.openInMenuBarOnly &&
           settingsStore.showMenuBarIcon
@@ -62,8 +63,8 @@ function MainRoot() {
   }, [])
 
   useEffect(() => {
-    if (!isMacOS) return
-    // The backend adds the menu bar icon only when the setting (General -> Show menu bar icon) is on
+    if (!hasTray) return
+    // The backend adds the tray icon (the macOS menu bar's or the Windows system tray's) only when the setting (General -> Show menu bar icon) is on
     const applyMenuBarIcon = () => {
       setTrayIconEnabled(settingsStore.showMenuBarIcon).catch(() => {})
     }
@@ -76,8 +77,8 @@ function MainRoot() {
       <UIProvider className={isMacOS ? 'pt-4' : ''}>
         {isMacOS ? <Titlebar /> : null}
         <Outlet />
-        {/* The drop zone of the menu bar (macOS), while it has media */}
-        {isMacOS ? <DropZoneIsland /> : null}
+        {/* The drop zone of the tray, while it has media */}
+        {hasTray ? <DropZoneIsland /> : null}
       </UIProvider>
       <Toaster />
       {isDev ? <TanStackRouterDevtools position="bottom-right" /> : null}
@@ -93,9 +94,11 @@ function TrayRoot() {
   // The menu bar's window compresses the drop zone's queue
   useDropQueueRunner()
   useEffect(() => {
-    // The popover's native material follows the system appearance, so its content does too
+    // The popover follows the system appearance (on macOS, as its native material does), so its
+    // content does too
     const root = document.documentElement
-    root.dataset.window = TRAY_WINDOW_LABEL
+    // Transparent on macOS, where the native popover material shows through (see `global.css`)
+    if (isMacOS) root.dataset.window = TRAY_WINDOW_LABEL
     const systemTheme = window.matchMedia('(prefers-color-scheme: dark)')
     const applySystemTheme = () =>
       root.classList.toggle('dark', systemTheme.matches)
@@ -108,7 +111,14 @@ function TrayRoot() {
 
   return (
     <>
-      <UIProvider className="bg-transparent dark:bg-transparent">
+      {/* On Windows, a window of its own with a solid background, as Windows' flyouts */}
+      <UIProvider
+        className={
+          isMacOS
+            ? 'bg-transparent dark:bg-transparent'
+            : 'bg-zinc-50 dark:bg-zinc-900'
+        }
+      >
         <Outlet />
       </UIProvider>
       <Toaster />

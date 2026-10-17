@@ -11,6 +11,7 @@ import Tooltip from '@/components/Tooltip'
 import { updateStore } from '@/stores/updateStore'
 import { getPlatform } from '@/utils/fs'
 import { cn } from '@/utils/tailwind'
+import { hasTray } from '@/utils/tray'
 import About from './About'
 import Credits from './Credits'
 import DropZone from './DropZone'
@@ -50,8 +51,8 @@ const SETTINGS_GROUPS: { label: string; pages: SettingsPage[] }[] = [
         icon: 'star',
         Component: Presets,
       },
-      // The drop zone is in the menu bar, only on macOS
-      ...(isMacOS
+      // The drop zone is in the tray: the macOS menu bar or the Windows system tray
+      ...(hasTray
         ? [
             {
               id: 'dropZone',

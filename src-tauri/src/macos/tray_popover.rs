@@ -113,6 +113,28 @@ impl<R: Runtime> WindowExt<R> for WebviewWindow<R> {
 
 pub struct TrayPopoverState(pub Mutex<bool>);
 
+/// Pins the popover, so it stays open when clicking outside it, or restores the default
+pub fn set_pinned(_app_handle: &AppHandle, pinned: bool) {
+    ffi::setTrayPopoverPinned(pinned);
+}
+
+/// Resizes the popover while it is shown
+pub fn resize_popover(
+    app_handle: &AppHandle,
+    width: f64,
+    height: f64,
+    animate: Option<bool>,
+    blur_overlay_on_resize: Option<bool>,
+) -> Result<(), String> {
+    let tray_window = app_handle
+        .get_webview_window(TRAY_WINDOW_LABEL)
+        .ok_or("Tray window not found")?;
+    if tray_window.is_tray_popover_visible() {
+        crate::macos::bridge::resize_tray_popover(width, height, animate, blur_overlay_on_resize);
+    }
+    Ok(())
+}
+
 fn tray_icon_image() -> Image<'static> {
     tauri::include_image!("./icons/tray.png")
 }
@@ -209,7 +231,7 @@ pub fn init(app: &App) {
     app.manage(crate::tauri_commands::tray::DroppedFilesState::default());
     app.manage(crate::tauri_commands::drop_queue::DropQueueState::default());
     let _ = APP_HANDLE.set(app.handle().clone());
-    crate::macos::clipboard_watch::init(app.handle());
+    crate::sys::clipboard_watch::init(app.handle());
 }
 
 /// Shows or removes the status bar (tray) icon, which toggles a native popover (NSPopover) hosting
@@ -232,7 +254,20 @@ fn enable_tray_icon(app_handle: &AppHandle) -> Result<(), String> {
         .icon(tray_icon_image())
         .icon_as_template(true)
         .tooltip("CompressO")
+        // A right click shows the menu (see `show_tray_icon_menu`); a click opens the popover
+        .on_menu_event(crate::tauri_commands::tray::handle_tray_icon_menu_event)
         .on_tray_icon_event(|tray, event| {
+            if let TrayIconEvent::Click {
+                button: MouseButton::Right,
+                button_state: MouseButtonState::Down,
+                ..
+            } = event
+            {
+                if let Err(err) = show_tray_icon_menu(tray) {
+                    log::error!("Failed to show the tray icon menu: {}", err);
+                }
+                return;
+            }
             if let TrayIconEvent::Click {
                 button: MouseButton::Left,
                 button_state: MouseButtonState::Up,
@@ -264,6 +299,24 @@ fn enable_tray_icon(app_handle: &AppHandle) -> Result<(), String> {
     }
 
     Ok(())
+}
+
+/// Shows the tray icon's menu below the icon. The menu is only attached while it is shown: macOS
+/// shows an attached menu on every click, so a click could not open the popover.
+fn show_tray_icon_menu(tray: &TrayIcon) -> Result<(), String> {
+    let menu = crate::tauri_commands::tray::tray_icon_menu(tray.app_handle())?;
+    tray.set_menu(Some(menu)).map_err(|err| err.to_string())?;
+    let button = tray.raw_statusbar_button()?;
+    // Clicking the icon with the menu attached shows it, & returns once it is closed
+    unsafe {
+        let button = button as *mut objc2_app_kit::NSStatusBarButton;
+        let _: () =
+            objc2::msg_send![&*button, performClick: std::ptr::null::<objc2::runtime::AnyObject>()];
+        // `raw_statusbar_button` gives a retained pointer
+        drop(objc2::rc::Retained::from_raw(button));
+    }
+    tray.set_menu(None::<tauri::menu::Menu<tauri::Wry>>)
+        .map_err(|err| err.to_string())
 }
 
 /// Destroys the tray webview window along with the native popover hosting it (which would

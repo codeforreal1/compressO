@@ -1,16 +1,15 @@
 #![allow(unexpected_cfgs)]
 
-//! Watches the clipboard: files copied anywhere (e.g. in Finder) & copied images (e.g. in a browser)
-//! are added to the media dropped on the menu bar, as if they were dropped there. Optional & off by default (Settings -> Drop Zone ->
-//! Watch clipboard, or the switch in the menu bar popover), only while the menu bar icon is shown.
+//! Watches the clipboard: files copied anywhere (e.g. in Finder or File Explorer) & copied images
+//! (e.g. in a browser) are added to the media dropped on the tray (the macOS menu bar or the Windows
+//! system tray), as if they were dropped there. Optional & off by default (Settings -> Drop Zone ->
+//! Watch clipboard, or the switch in the tray popover), only while the tray icon is shown.
 
 use std::sync::atomic::{AtomicBool, AtomicIsize, Ordering};
 use std::sync::Mutex;
 use std::time::Duration;
 
 use clipboard_rs::{Clipboard, ClipboardContext};
-use objc::runtime::Object;
-use objc::{class, msg_send, sel, sel_impl};
 use tauri::{AppHandle, Emitter};
 
 static IS_ENABLED: AtomicBool = AtomicBool::new(false);
@@ -20,11 +19,25 @@ static HANDLED_CHANGE_COUNT: AtomicIsize = AtomicIsize::new(-1);
 const POLL_INTERVAL: Duration = Duration::from_secs(1);
 
 /// Increases whenever anything is copied; cheap to read, so the clipboard is only read on changes
+#[cfg(target_os = "macos")]
 fn pasteboard_change_count() -> isize {
+    use objc::runtime::Object;
+    use objc::{class, msg_send, sel, sel_impl};
     unsafe {
         let pasteboard: *mut Object = msg_send![class!(NSPasteboard), generalPasteboard];
         msg_send![pasteboard, changeCount]
     }
+}
+
+/// Increases whenever anything is copied (Windows' clipboard sequence number); cheap to read, so the
+/// clipboard is only read on changes
+#[cfg(windows)]
+fn pasteboard_change_count() -> isize {
+    #[link(name = "user32")]
+    extern "system" {
+        fn GetClipboardSequenceNumber() -> u32;
+    }
+    unsafe { GetClipboardSequenceNumber() as isize }
 }
 
 /// Sent to every window when watching is turned on or off, so all switches show the same
@@ -99,10 +112,10 @@ pub fn init(app_handle: &AppHandle) {
     let app_handle = app_handle.clone();
     std::thread::spawn(move || loop {
         std::thread::sleep(POLL_INTERVAL);
-        // Copied files go to the menu bar's dropped media, so only with the menu bar icon
+        // Copied files go to the tray's dropped media, so only with the tray icon
         if !IS_ENABLED.load(Ordering::SeqCst)
             || app_handle
-                .tray_by_id(crate::macos::tray_popover::TRAY_WINDOW_LABEL)
+                .tray_by_id(crate::tray_popover::TRAY_WINDOW_LABEL)
                 .is_none()
         {
             continue;

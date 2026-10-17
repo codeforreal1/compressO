@@ -24,10 +24,11 @@ import { showItemInFileManager } from '@/tauri/commands/fs'
 import { playCompletionSound as playSound } from '@/tauri/commands/sound'
 import { getPlatform } from '@/utils/fs'
 import { cn } from '@/utils/tailwind'
+import { hasTray, TRAY_ICON_SETTING_TITLE, TRAY_NAME } from '@/utils/tray'
 import { isVideoPreviewAvailable } from '@/utils/video'
 import { SettingsRow, SettingsSection } from './SettingsLayout'
 
-const { isMacOS, isLinux } = getPlatform()
+const { isLinux, isWindows } = getPlatform()
 
 /** Opening the app at login, which the system keeps (also changed in its login items) */
 function StartupSection() {
@@ -92,20 +93,20 @@ function StartupSection() {
         </Button>
       </SettingsRow>
       <SettingsRow
-        isVisible={isMacOS && isOpenAtLogin}
+        isVisible={hasTray && isOpenAtLogin}
         isNested
-        title="Open in the menu bar only"
-        description="Do not show the main window when opened at login. Media can still be compressed from the menu bar."
+        title={`Open in the ${TRAY_NAME} only`}
+        description={`Do not show the main window when opened at login. Media can still be compressed from the ${TRAY_NAME}.`}
       >
         <div className="flex items-center gap-2">
           <InfoTooltip
             content={
               !showMenuBarIcon &&
-              'Turn on Show menu bar icon to use this, as the app is opened from there.'
+              `Turn on ${TRAY_ICON_SETTING_TITLE} to use this, as the app is opened from there.`
             }
           />
           <Switch
-            aria-label="Open in the menu bar only"
+            aria-label={`Open in the ${TRAY_NAME} only`}
             isSelected={openInMenuBarOnly && showMenuBarIcon}
             isDisabled={!showMenuBarIcon}
             onValueChange={(isSelected) => {
@@ -194,11 +195,11 @@ function General() {
           </div>
         </SettingsRow>
       </SettingsSection>
-      {isMacOS ? (
-        <SettingsSection title="Menu bar">
+      {hasTray ? (
+        <SettingsSection title={isWindows ? 'System tray' : 'Menu bar'}>
           <SettingsRow
-            title="Show menu bar icon"
-            description="Show the CompressO icon, the compression progress and the drop zone in the menu bar."
+            title={TRAY_ICON_SETTING_TITLE}
+            description={`Show the CompressO icon, the compression progress and the drop zone in the ${TRAY_NAME}.`}
           >
             <div className="flex items-center gap-2">
               <InfoTooltip
@@ -208,7 +209,7 @@ function General() {
                 }
               />
               <Switch
-                aria-label="Show menu bar icon"
+                aria-label={TRAY_ICON_SETTING_TITLE}
                 isSelected={showMenuBarIcon}
                 isDisabled={isMenuBarIconLocked}
                 onValueChange={(isSelected) => {

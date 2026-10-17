@@ -11,9 +11,9 @@ use crate::tauri_commands::compression_status::{has_unsaved_output, is_compressi
 
 /// Whether media of the drop zone's queue (macOS) is waiting or being compressed
 fn is_drop_queue_active(app_handle: &AppHandle) -> bool {
-    #[cfg(target_os = "macos")]
+    #[cfg(any(target_os = "macos", windows))]
     return crate::tauri_commands::drop_queue::is_queue_active(app_handle);
-    #[cfg(not(target_os = "macos"))]
+    #[cfg(not(any(target_os = "macos", windows)))]
     {
         let _ = app_handle;
         false

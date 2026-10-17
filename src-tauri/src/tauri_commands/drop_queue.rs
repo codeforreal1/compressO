@@ -168,7 +168,7 @@ fn show_queue_progress(app_handle: &AppHandle, items: &[DropQueueItem]) {
     } else {
         0.0
     };
-    let _ = crate::macos::tray_popover::set_tray_progress(app_handle, progress);
+    let _ = crate::tray_popover::set_tray_progress(app_handle, progress);
 }
 
 /// Adds media to the end of the queue (folders are added as the media they contain), in order.
@@ -183,7 +183,7 @@ pub fn add_to_queue(app_handle: &AppHandle, paths: Vec<String>, is_supported: im
     };
     let group_id = nanoid!();
     // The tray webview compresses the queue
-    crate::macos::tray_popover::ensure_tray_window(app_handle);
+    crate::tray_popover::ensure_tray_window(app_handle);
     update_queue(app_handle, |items| {
         let batch_id = active_batch_id(items).unwrap_or_else(|| nanoid!());
         for file in files {

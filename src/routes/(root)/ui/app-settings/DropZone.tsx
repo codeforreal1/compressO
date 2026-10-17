@@ -13,6 +13,7 @@ import {
   type Preset,
   type PresetMediaType,
 } from '@/types/preset'
+import { TRAY_ICON_SETTING_TITLE, TRAY_NAME } from '@/utils/tray'
 import { SettingsRow, SettingsSection } from './SettingsLayout'
 import { getPreset, getPresets } from '../../-presets'
 
@@ -73,8 +74,8 @@ function DropZone() {
       {/* Only needed while the drop zone cannot be used */}
       {!showMenuBarIcon ? (
         <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-8">
-          The drop zone is in the menu bar, so it only works when Show menu bar
-          icon is turned on in General.
+          The drop zone is in the {TRAY_NAME}, so it only works when{' '}
+          {TRAY_ICON_SETTING_TITLE} is turned on in General.
         </p>
       ) : null}
       <SettingsSection title="Compression">
@@ -86,7 +87,7 @@ function DropZone() {
             <InfoTooltip
               content={
                 !showMenuBarIcon
-                  ? 'The drop zone is in the menu bar. Turn on Show menu bar icon in General first.'
+                  ? `The drop zone is in the ${TRAY_NAME}. Turn on ${TRAY_ICON_SETTING_TITLE} in General first.`
                   : !canAutoCompress
                     ? 'Choose a save location in Output, other than Ask every time, so the compressed media can be saved without asking.'
                     : null
@@ -130,13 +131,13 @@ function DropZone() {
       <SettingsSection title="Clipboard">
         <SettingsRow
           title="Watch clipboard"
-          description="Add media you copy, such as files or images from a browser, to the drop zone in the menu bar."
+          description={`Add media you copy, such as files or images from a browser, to the drop zone in the ${TRAY_NAME}.`}
         >
           <div className="flex items-center gap-2">
             <InfoTooltip
               content={
                 !showMenuBarIcon &&
-                'The drop zone is in the menu bar. Turn on Show menu bar icon in General first.'
+                `The drop zone is in the ${TRAY_NAME}. Turn on ${TRAY_ICON_SETTING_TITLE} in General first.`
               }
             />
             <Switch

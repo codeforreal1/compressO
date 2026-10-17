@@ -8,9 +8,7 @@ import {
   getDropQueue,
   isDropQueuePaused,
 } from '@/tauri/commands/dropQueue'
-import { getPlatform } from '@/utils/fs'
-
-const { isMacOS } = getPlatform()
+import { hasTray } from '@/utils/tray'
 
 /**
  * The drop zone's queue (macOS), kept up to date by the backend; the same in every window (the
@@ -20,7 +18,7 @@ export function useDropQueue() {
   const [items, setItems] = useState<DropQueueItem[]>([])
 
   useEffect(() => {
-    if (!isMacOS) return
+    if (!hasTray) return
     let unlisten: event.UnlistenFn | undefined
     let isMounted = true
     ;(async () => {
@@ -49,7 +47,7 @@ export function useDropQueuePaused() {
   const [isPaused, setIsPaused] = useState(false)
 
   useEffect(() => {
-    if (!isMacOS) return
+    if (!hasTray) return
     let unlisten: event.UnlistenFn | undefined
     let isMounted = true
     ;(async () => {

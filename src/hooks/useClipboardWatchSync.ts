@@ -8,9 +8,7 @@ import {
   isClipboardWatchEnabled,
   setClipboardWatchEnabled,
 } from '@/tauri/commands/tray'
-import { getPlatform } from '@/utils/fs'
-
-const { isMacOS } = getPlatform()
+import { hasTray } from '@/utils/tray'
 
 /**
  * Keeps the "Watch clipboard" setting in sync with the backend, which watches the clipboard, and
@@ -23,7 +21,7 @@ export function useClipboardWatchSync({
   applyOnMount: boolean
 }) {
   useEffect(() => {
-    if (!isMacOS) return
+    if (!hasTray) return
 
     let isMounted = true
     let unlisten: event.UnlistenFn | undefined

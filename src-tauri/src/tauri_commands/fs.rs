@@ -109,8 +109,8 @@ pub async fn copy_file_to_clipboard(_: tauri::AppHandle, file_path: &str) -> Res
     ctx.set_files(vec![file_path.to_owned()])
         .map_err(|err| err.to_string())?;
     // Not to be picked up as newly copied media
-    #[cfg(target_os = "macos")]
-    crate::macos::clipboard_watch::ignore_current_change();
+    #[cfg(any(target_os = "macos", windows))]
+    crate::sys::clipboard_watch::ignore_current_change();
     Ok(())
 }
 
@@ -145,8 +145,8 @@ pub async fn copy_files_to_clipboard(
     let ctx = ClipboardContext::new().map_err(|err| err.to_string())?;
     ctx.set_files(file_paths).map_err(|err| err.to_string())?;
     // Not to be picked up as newly copied media
-    #[cfg(target_os = "macos")]
-    crate::macos::clipboard_watch::ignore_current_change();
+    #[cfg(any(target_os = "macos", windows))]
+    crate::sys::clipboard_watch::ignore_current_change();
     Ok(())
 }
 

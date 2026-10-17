@@ -35,7 +35,10 @@ import {
 } from '@/tauri/commands/tray'
 import { inputExtensions } from '@/types/compression'
 import DropQueueList from '@/ui/DropQueueList'
+import { getPlatform } from '@/utils/fs'
 import { cn } from '@/utils/tailwind'
+
+const { isWindows } = getPlatform()
 
 export const Route = createFileRoute('/webviews/tray/')({
   component: TrayWindow,
@@ -200,6 +203,18 @@ function TrayWindow() {
     ]).catch(() => {})
   }, [])
 
+  // Escape closes the Windows popover (the macOS popover closes by itself), unless it is pinned
+  useEffect(() => {
+    if (!isWindows || isPinned) return
+    const handleKeyDown = (evt: KeyboardEvent) => {
+      if (evt.key === 'Escape' && !evt.defaultPrevented) {
+        closeTrayPopover().catch(() => {})
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isPinned])
+
   const togglePinned = async () => {
     const pinned = !isPinned
     try {
@@ -241,7 +256,9 @@ function TrayWindow() {
         aria-label={isPinned ? 'Unpin' : 'Pin'}
         title={isPinned ? 'Unpin' : 'Pin'}
         className={cn(
-          'absolute top-4 right-4 z-10 min-w-8 w-8 h-8',
+          'absolute z-10 min-w-8 w-8 h-8',
+          // On the drop zone's top right corner, which is closer to the edges on Windows
+          isWindows ? 'top-1 right-1' : 'top-4 right-4',
           isPinned ? 'text-primary' : 'text-zinc-500 dark:text-zinc-400',
         )}
         onPress={togglePinned}
@@ -252,8 +269,13 @@ function TrayWindow() {
           className="rotate-[30deg]"
         />
       </Button>
-      {/* Top padding clears the popover's arrow, which overlaps the content */}
-      <div className="flex flex-1 flex-col items-center justify-center gap-2 px-6 pt-5 min-h-0">
+      {/* On macOS, the top padding also clears the popover's arrow, which overlaps the content */}
+      <div
+        className={cn(
+          'flex flex-1 flex-col items-center justify-center gap-2 min-h-0',
+          isWindows ? 'px-3 pt-2' : 'px-6 pt-5',
+        )}
+      >
         {isAutoCompressing && queueItems.length > 0 ? (
           <DropQueue items={queueItems} isDragging={isDragging} />
         ) : droppedFiles.length > 0 ? (
@@ -269,7 +291,12 @@ function TrayWindow() {
           />
         )}
       </div>
-      <div className="flex items-center justify-around gap-2 px-6 pb-6">
+      <div
+        className={cn(
+          'flex items-center justify-around gap-2',
+          isWindows ? 'px-3 pb-3' : 'px-6 pb-6',
+        )}
+      >
         <Button
           size="sm"
           variant="bordered"
