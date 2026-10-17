@@ -67,7 +67,7 @@ body #app {
 }
 
 /* Tinted window (Settings -> General): the native translucent material (macOS sidebar material,
-   Windows 11 Mica) shows through a lightly tinted app background */
+   Windows 11 Acrylic) shows through a lightly tinted app background */
 html[data-tinted="true"],
 html[data-tinted="true"] body,
 html[data-tinted="true"] body #app,

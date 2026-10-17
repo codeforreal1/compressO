@@ -15,6 +15,7 @@ import { settingsStore } from '@/stores/settingsStore'
 import { checkForUpdates, setupUpdateListeners } from '@/stores/updateStore'
 import { takeOpenedAtLogin } from '@/tauri/commands/app'
 import { setTrayIconEnabled, TRAY_WINDOW_LABEL } from '@/tauri/commands/tray'
+import { isWindowTintSupported } from '@/tauri/commands/window'
 import Titlebar from '@/tauri/components/Titlebar'
 import DropZoneIsland from '@/ui/DropZoneIsland'
 import { getPlatform } from '@/utils/fs'
@@ -28,7 +29,9 @@ export const Route = createRootRoute({
 
 const isDev = import.meta.env.DEV
 
-const { isMacOS } = getPlatform()
+const { isMacOS, isWindows } = getPlatform()
+// The tray popover's translucent material: macOS' popover, or Windows 11's Acrylic
+const hasTrayMaterial = isMacOS || (isWindows && isWindowTintSupported())
 
 // The tray popover (macOS status bar) renders this frontend in its own webview window
 const isTrayWindow = getCurrentWindow().label === TRAY_WINDOW_LABEL
@@ -94,14 +97,33 @@ function TrayRoot() {
   // The menu bar's window compresses the drop zone's queue
   useDropQueueRunner()
   useEffect(() => {
-    // The popover follows the system appearance (on macOS, as its native material does), so its
-    // content does too
+    // The popover follows the system appearance (as its native material does), so its content
+    // does too
     const root = document.documentElement
-    // Transparent on macOS, where the native popover material shows through (see `global.css`)
-    if (isMacOS) root.dataset.window = TRAY_WINDOW_LABEL
+    // Transparent where the native material shows through (see `global.css`)
+    if (hasTrayMaterial) root.dataset.window = TRAY_WINDOW_LABEL
+    const applyTheme = (isDark: boolean) =>
+      root.classList.toggle('dark', isDark)
+
+    // On Windows, from the tray window's own theme, which follows the system (see `system_theme`
+    // in `win/tray_popover.rs`): the page's `prefers-color-scheme` is shared with the main
+    // window's webview, which follows the app's theme instead
+    if (isWindows) {
+      const trayWindow = getCurrentWindow()
+      trayWindow
+        .theme()
+        .then((theme) => applyTheme(theme === 'dark'))
+        .catch(() => {})
+      const unlisten = trayWindow.onThemeChanged(({ payload }) =>
+        applyTheme(payload === 'dark'),
+      )
+      return () => {
+        unlisten.then((fn) => fn()).catch(() => {})
+      }
+    }
+
     const systemTheme = window.matchMedia('(prefers-color-scheme: dark)')
-    const applySystemTheme = () =>
-      root.classList.toggle('dark', systemTheme.matches)
+    const applySystemTheme = () => applyTheme(systemTheme.matches)
     applySystemTheme()
     systemTheme.addEventListener('change', applySystemTheme)
     return () => {
@@ -111,12 +133,15 @@ function TrayRoot() {
 
   return (
     <>
-      {/* On Windows, a window of its own with a solid background, as Windows' flyouts */}
+      {/* Without the material (Windows 10), a solid background */}
       <UIProvider
         className={
-          isMacOS
-            ? 'bg-transparent dark:bg-transparent'
-            : 'bg-zinc-50 dark:bg-zinc-900'
+          !hasTrayMaterial
+            ? 'bg-zinc-50 dark:bg-zinc-900'
+            : isWindows
+              ? // Light Acrylic alone turns grey over dark windows: tinted white, as Windows' flyouts
+                'bg-white/60 dark:bg-transparent'
+              : 'bg-transparent dark:bg-transparent'
         }
       >
         <Outlet />

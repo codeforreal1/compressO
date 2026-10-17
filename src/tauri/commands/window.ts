@@ -11,7 +11,7 @@ export function setWindowTint(enabled: boolean, dark: boolean) {
   return core.invoke<void>('set_window_tint', { enabled, dark })
 }
 
-/** The tinted window needs macOS, or Windows 11 (build 22000+) for its Mica material */
+/** The tinted window needs macOS, or Windows 11 (build 22000+) for its Acrylic or Mica material */
 export function isWindowTintSupported() {
   const { isMacOS, isWindows } = getPlatform()
   if (isMacOS) return true

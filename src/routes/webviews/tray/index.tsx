@@ -39,6 +39,10 @@ import { getPlatform } from '@/utils/fs'
 import { cn } from '@/utils/tailwind'
 
 const { isWindows } = getPlatform()
+// Secondary text. White in dark mode on Windows, where grey is hard to read on the Acrylic material
+const MUTED_TEXT = isWindows
+  ? 'text-zinc-500 dark:text-white'
+  : 'text-zinc-500 dark:text-zinc-400'
 
 export const Route = createFileRoute('/webviews/tray/')({
   component: TrayWindow,
@@ -259,7 +263,7 @@ function TrayWindow() {
           'absolute z-10 min-w-8 w-8 h-8',
           // On the drop zone's top right corner, which is closer to the edges on Windows
           isWindows ? 'top-1 right-1' : 'top-4 right-4',
-          isPinned ? 'text-primary' : 'text-zinc-500 dark:text-zinc-400',
+          isPinned ? 'text-primary' : MUTED_TEXT,
         )}
         onPress={togglePinned}
       >
@@ -345,7 +349,7 @@ function DropZone({
         isWindows ? 'rounded-lg' : 'rounded-2xl',
         isDragging
           ? 'border-primary bg-primary/10 text-primary'
-          : 'border-black/15 dark:border-white/15 text-zinc-500 dark:text-zinc-400',
+          : ['border-black/15 dark:border-white/15', MUTED_TEXT],
       )}
     >
       <Icon name="dropzone" size={50} className="text-primary" />
@@ -356,7 +360,12 @@ function DropZone({
             ? 'Drop or paste media here to compress'
             : 'Drop or paste media here to store'}
       </p>
-      <p className="text-[11px] text-center px-4 opacity-70">
+      <p
+        className={cn(
+          'text-[11px] text-center px-4',
+          !isWindows && 'opacity-70',
+        )}
+      >
         Videos, images, or folders...
       </p>
       {/* Settings -> Drop Zone, here too while nothing is dropped */}
@@ -389,7 +398,7 @@ function DropQueue({
       <p
         className={cn(
           'px-3 py-2 text-[11px] text-center',
-          isDragging ? 'text-primary' : 'text-zinc-500 dark:text-zinc-400',
+          isDragging ? 'text-primary' : MUTED_TEXT,
         )}
       >
         {isDragging ? 'Release to add the media' : ''}
@@ -525,7 +534,7 @@ function DroppedFiles({
               variant="light"
               radius="full"
               aria-label={`Remove ${getName(path)}`}
-              className="min-w-6 w-6 h-6 text-zinc-500 dark:text-zinc-400"
+              className={cn('min-w-6 w-6 h-6', MUTED_TEXT)}
               onPress={() => {
                 removeDroppedFile(path).catch(() => {})
               }}
@@ -538,7 +547,7 @@ function DroppedFiles({
       <p
         className={cn(
           'px-3 py-2 text-[11px] text-center',
-          isDragging ? 'text-primary' : 'text-zinc-500 dark:text-zinc-400',
+          isDragging ? 'text-primary' : MUTED_TEXT,
         )}
       >
         {isDragging
@@ -569,7 +578,7 @@ function AutoCompressSwitch() {
         onValueChange={(isSelected) => {
           settingsStore.autoCompress = isSelected
         }}
-        classNames={{ label: 'text-[11px] text-zinc-500 dark:text-zinc-400' }}
+        classNames={{ label: cn('text-[11px]', MUTED_TEXT) }}
       >
         Compress automatically
       </Switch>
@@ -594,7 +603,7 @@ function ClipboardWatchSwitch() {
       onValueChange={(isSelected) => {
         settingsStore.watchClipboard = isSelected
       }}
-      classNames={{ label: 'text-[11px] text-zinc-500 dark:text-zinc-400' }}
+      classNames={{ label: cn('text-[11px]', MUTED_TEXT) }}
     >
       Watch clipboard
     </Switch>

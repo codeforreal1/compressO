@@ -2,7 +2,7 @@ use tauri::{Theme, WebviewWindow};
 
 /// Turns the tinted window on or off: the native translucent material behind the (then
 /// semi-transparent) app background, like macOS' own windows. `dark` matches the material to the
-/// app's theme. **macOS & Windows 11 only** (Mica); other platforms return an error.
+/// app's theme. **macOS & Windows 11 only** (Acrylic); other platforms return an error.
 #[tauri::command]
 pub fn set_window_tint(window: WebviewWindow, enabled: bool, dark: bool) -> Result<(), String> {
     window
@@ -42,11 +42,24 @@ fn apply_window_tint(window: &WebviewWindow, enabled: bool, _dark: bool) -> Resu
         .map_err(|err| err.to_string())
 }
 
+/// Windows' translucent Acrylic material, as the tray popover's, which blurs what is behind the
+/// window & follows its theme (set above). Before Windows 11 build 22523, Acrylic lags while the
+/// window is moved or resized, so Mica (tinted by the desktop wallpaper) is used there instead.
 #[cfg(windows)]
 fn apply_window_tint(window: &WebviewWindow, enabled: bool, dark: bool) -> Result<(), String> {
+    let has_system_acrylic = matches!(
+        tauri_plugin_os::version(),
+        tauri_plugin_os::Version::Semantic(10, 0, build) if build >= 22523
+    );
     if enabled {
-        // Fails before Windows 11
-        window_vibrancy::apply_mica(window, Some(dark)).map_err(|err| err.to_string())
+        if has_system_acrylic {
+            window_vibrancy::apply_acrylic(window, None).map_err(|err| err.to_string())
+        } else {
+            // Fails before Windows 11
+            window_vibrancy::apply_mica(window, Some(dark)).map_err(|err| err.to_string())
+        }
+    } else if has_system_acrylic {
+        window_vibrancy::clear_acrylic(window).map_err(|err| err.to_string())
     } else {
         window_vibrancy::clear_mica(window)
             .map(|_| ())

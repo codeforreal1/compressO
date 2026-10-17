@@ -278,6 +278,8 @@ fn create_tray_window(app_handle: &AppHandle) -> Result<WebviewWindow, String> {
     .decorations(false)
     // Windows 11 draws it with rounded corners & a shadow, as its own flyouts
     .shadow(true)
+    // So the Acrylic material shows through the page
+    .transparent(true)
     .resizable(false)
     .maximizable(false)
     .minimizable(false)
@@ -289,6 +291,13 @@ fn create_tray_window(app_handle: &AppHandle) -> Result<WebviewWindow, String> {
     .theme(Some(system_theme()))
     .build()
     .map_err(|err| err.to_string())?;
+
+    // Windows' translucent material for flyouts (Acrylic), which blurs what is behind the popover &
+    // follows its light or dark theme. Fails before Windows 11, where the page keeps a solid
+    // background (see `TrayRoot`).
+    if let Err(err) = window_vibrancy::apply_acrylic(&window, None) {
+        log::warn!("Could not apply the tray window's material: {}", err);
+    }
 
     // Hidden when another window is clicked, unless pinned
     let event_window = window.clone();
