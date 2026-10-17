@@ -3,6 +3,7 @@ import { core } from '@tauri-apps/api'
 import { motion } from 'framer-motion'
 import { cloneDeep } from 'lodash'
 import { memo, useCallback, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { snapshot, useSnapshot } from 'valtio'
 
 import { zoomInTransition } from '@/utils/animation'
@@ -15,6 +16,7 @@ import {
 } from '../-state'
 
 function CustomizeMediaOnBatchActions() {
+  const { t } = useTranslation()
   const {
     state: {
       selectedMediaIndexForCustomization,
@@ -183,7 +185,7 @@ function CustomizeMediaOnBatchActions() {
                   radius="md"
                   className="h-7"
                 >
-                  Close
+                  {t('common.close')}
                 </Button>
               ) : (
                 <>
@@ -195,7 +197,7 @@ function CustomizeMediaOnBatchActions() {
                     radius="md"
                     className="h-7"
                   >
-                    Reset
+                    {t('common.reset')}
                   </Button>
                   <Button
                     size="sm"
@@ -204,7 +206,7 @@ function CustomizeMediaOnBatchActions() {
                     onPress={handleApplyVideoConfig}
                     className="h-7"
                   >
-                    Apply
+                    {t('common.apply')}
                   </Button>
                 </>
               )

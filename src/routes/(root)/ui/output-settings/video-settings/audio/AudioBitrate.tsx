@@ -1,6 +1,7 @@
 import { SelectItem } from '@heroui/react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
 import Select from '@/components/Select'
@@ -24,6 +25,7 @@ type AudioBitrateProps = {
 }
 
 function AudioBitrate({ mediaIndex }: AudioBitrateProps) {
+  const { t } = useTranslation()
   const {
     state: {
       media,
@@ -134,7 +136,7 @@ function AudioBitrate({ mediaIndex }: AudioBitrateProps) {
         isDisabled={shouldDisableInput || hasNoAudio}
       >
         <p className="text-gray-600 dark:text-gray-400 text-sm mr-2 w-full">
-          Bitrate
+          {t('audio.bitrate')}
         </p>
       </Switch>
       <AnimatePresence mode="wait">
@@ -142,7 +144,7 @@ function AudioBitrate({ mediaIndex }: AudioBitrateProps) {
           <motion.div {...slideDownTransition}>
             <Select
               fullWidth
-              label="Bitrate:"
+              label={t('audio.bitrateLabel')}
               className="block flex-shrink-0 rounded-2xl !mt-8"
               size="sm"
               value={currentValue?.toString() ?? '128'}

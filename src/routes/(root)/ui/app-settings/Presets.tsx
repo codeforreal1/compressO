@@ -1,5 +1,6 @@
 import cloneDeep from 'lodash/cloneDeep'
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
 import AnimatedLabel from '@/components/AnimatedLabel'
@@ -7,6 +8,7 @@ import Button from '@/components/Button'
 import Icon from '@/components/Icon'
 import TextInput from '@/components/TextInput'
 import Tooltip from '@/components/Tooltip'
+import { t } from '@/i18n'
 import {
   generatePresetId,
   getAvailablePresetName,
@@ -16,7 +18,6 @@ import {
   setDefaultPreset,
 } from '@/stores/presetsStore'
 import {
-  PRESET_MEDIA_LABELS,
   type Preset,
   type PresetMediaType,
   STANDARD_PRESET_ID,
@@ -47,7 +48,10 @@ function duplicatePreset(id: string) {
   presetsStore.presets.splice(index + 1, 0, {
     ...cloneDeep(preset),
     id: generatePresetId(),
-    name: getAvailablePresetName(`${preset.name} Copy`, preset.mediaType),
+    name: getAvailablePresetName(
+      t('settings.presets.copyName', { name: preset.name }),
+      preset.mediaType,
+    ),
   })
 }
 
@@ -60,10 +64,10 @@ type PresetCardProps = {
 }
 
 function PresetCard({ preset, isFirst, isLast, isDefault }: PresetCardProps) {
-  const mediaLabel = PRESET_MEDIA_LABELS[preset.mediaType].plural
+  const { t } = useTranslation()
   const defaultTooltip = isDefault
-    ? `Default for new ${mediaLabel}. Select to use the Standard preset instead.`
-    : `Set as default for new ${mediaLabel}`
+    ? t('settings.presets.isDefault', { context: preset.mediaType })
+    : t('settings.presets.setDefault', { context: preset.mediaType })
   const [name, setName] = React.useState(preset.name)
   const [confirmDelete, setConfirmDelete] = React.useState(false)
 
@@ -100,7 +104,7 @@ function PresetCard({ preset, isFirst, isLast, isDefault }: PresetCardProps) {
     <div className="py-4 first:pt-1">
       <div className="flex items-center gap-2">
         <TextInput
-          aria-label="Preset name"
+          aria-label={t('settings.presets.name')}
           value={name}
           maxLength={40}
           onValueChange={setName}
@@ -131,7 +135,10 @@ function PresetCard({ preset, isFirst, isLast, isDefault }: PresetCardProps) {
               />
             </Button>
           </Tooltip>
-          <Tooltip content="Move up" aria-label="Move up">
+          <Tooltip
+            content={t('settings.presets.moveUp')}
+            aria-label={t('settings.presets.moveUp')}
+          >
             <Button
               isIconOnly
               size="sm"
@@ -142,7 +149,10 @@ function PresetCard({ preset, isFirst, isLast, isDefault }: PresetCardProps) {
               <Icon name="chevron" className="rotate-180" />
             </Button>
           </Tooltip>
-          <Tooltip content="Move down" aria-label="Move down">
+          <Tooltip
+            content={t('settings.presets.moveDown')}
+            aria-label={t('settings.presets.moveDown')}
+          >
             <Button
               isIconOnly
               size="sm"
@@ -153,7 +163,10 @@ function PresetCard({ preset, isFirst, isLast, isDefault }: PresetCardProps) {
               <Icon name="chevron" />
             </Button>
           </Tooltip>
-          <Tooltip content="Duplicate" aria-label="Duplicate">
+          <Tooltip
+            content={t('settings.presets.duplicate')}
+            aria-label={t('settings.presets.duplicate')}
+          >
             <Button
               isIconOnly
               size="sm"
@@ -177,11 +190,11 @@ function PresetCard({ preset, isFirst, isLast, isDefault }: PresetCardProps) {
               }
             }}
             onBlur={() => setConfirmDelete(false)}
-            aria-label="Delete preset"
+            aria-label={t('settings.presets.delete')}
           >
             <Icon name="trash" />
             <AnimatedLabel textClassName="pl-1.5">
-              {confirmDelete ? 'Delete' : ''}
+              {confirmDelete ? t('common.delete') : ''}
             </AnimatedLabel>
           </Button>
         </div>
@@ -198,15 +211,15 @@ function PresetList({ mediaType }: { mediaType: PresetMediaType }) {
   const presetsOfType = presets.filter(
     (preset) => preset.mediaType === mediaType,
   ) as Preset[]
-  const labels = PRESET_MEDIA_LABELS[mediaType]
+  const { t } = useTranslation()
 
   return (
-    <SettingsSection title={`${labels.title} Presets`}>
+    <SettingsSection
+      title={t('settings.presets.title', { context: mediaType })}
+    >
       {presetsOfType.length === 0 ? (
         <p className="text-sm text-zinc-500 dark:text-zinc-400 py-4 first:pt-1">
-          There are no {labels.title.toLowerCase()} presets yet. Adjust the
-          settings of {labels.withArticle} and select the plus button next to
-          the Preset menu to save them as a preset.
+          {t('settings.presets.empty', { context: mediaType })}
         </p>
       ) : (
         presetsOfType.map((preset, index) => (

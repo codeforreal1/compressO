@@ -131,24 +131,3 @@ export type PresetMediaType = Preset['mediaType']
 
 /** The built-in preset of each media type: the default settings, which cannot be changed */
 export const STANDARD_PRESET_ID = 'standard'
-
-/** How the media of each preset type is named in the interface */
-export const PRESET_MEDIA_LABELS: Record<
-  PresetMediaType,
-  {
-    /** e.g. "Video", in titles */
-    title: string
-    /** e.g. "videos" */
-    plural: string
-    /** e.g. "a video" */
-    withArticle: string
-  }
-> = {
-  video: { title: 'Video', plural: 'videos', withArticle: 'a video' },
-  image: { title: 'Image', plural: 'images', withArticle: 'an image' },
-  audio: {
-    title: 'Audio',
-    plural: 'audio files',
-    withArticle: 'an audio file',
-  },
-}

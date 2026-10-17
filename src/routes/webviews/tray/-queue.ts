@@ -4,6 +4,7 @@ import cloneDeep from 'lodash/cloneDeep'
 import { useEffect } from 'react'
 
 import { useDropQueue, useDropQueuePaused } from '@/hooks/useDropQueue'
+import { t } from '@/i18n'
 import {
   getMediaItemConfig,
   getOutputDuration,
@@ -259,7 +260,7 @@ async function compressQueueItem(item: DropQueueItem) {
         outputSize: outputMetadata.size,
         // Kept until the item is cleared, which deletes it
         outputPath: outputMetadata.path,
-        message: 'Not saved, as it is larger than the original.',
+        message: t('queue.notSavedLarger'),
       })
     } else {
       await update({
@@ -267,15 +268,15 @@ async function compressQueueItem(item: DropQueueItem) {
         outputPath: outputMetadata.path,
         message:
           saved.reason === 'no-save-location'
-            ? 'Choose a save location in Settings, under Output.'
-            : 'The compressed media could not be saved.',
+            ? t('queue.noSaveLocation')
+            : t('queue.saveFailed'),
       })
     }
     return true
   } catch {
     await update({
       status: 'failed',
-      message: 'The media could not be compressed.',
+      message: t('queue.compressFailed'),
     })
     return false
   } finally {

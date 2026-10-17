@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import cloneDeep from 'lodash/cloneDeep'
 import { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
 import Card from '@/components/Card'
@@ -38,18 +39,18 @@ const AUDIO_FORMAT_UNSUPPORTED_FIELDS: Record<
   opus: ['description'],
 }
 
-/** Output formats that cannot keep all the metadata (MP4, MKV and WebM keep every field) */
-const METADATA_FORMAT_LIMITATIONS: Record<string, string | undefined> = {
-  mov: 'MOV files cannot keep the description or synopsis.',
-  avi: 'AVI files cannot keep the description, synopsis or creation date.',
-  ts: 'TS files can only keep the title. Other details are not saved.',
-}
+/**
+ * Output formats that cannot keep all the metadata (MP4, MKV and WebM keep every field), described
+ * by `metadata.limitation_<format>`
+ */
+const METADATA_FORMAT_LIMITATIONS = ['mov', 'avi', 'ts'] as const
 
 type MetadataProps = {
   mediaIndex: number
 }
 
 function Metadata({ mediaIndex }: MetadataProps) {
+  const { t } = useTranslation()
   const {
     state: {
       media,
@@ -194,10 +195,16 @@ function Metadata({ mediaIndex }: MetadataProps) {
     []
 
   // Unknown for "Same as input" on a batch
-  const formatLimitation =
-    METADATA_FORMAT_LIMITATIONS[
-      getOutputVideoContainer(convertToExtension, video?.extension)
-    ]
+  const outputContainer = getOutputVideoContainer(
+    convertToExtension,
+    video?.extension,
+  )
+  const limitedFormat = METADATA_FORMAT_LIMITATIONS.find(
+    (format) => format === outputContainer,
+  )
+  const formatLimitation = limitedFormat
+    ? t('metadata.limitation', { context: limitedFormat })
+    : null
 
   return (
     <>
@@ -210,7 +217,7 @@ function Metadata({ mediaIndex }: MetadataProps) {
         >
           <div className="flex justify-center items-center">
             <span className="text-gray-600 dark:text-gray-400 block mr-2 text-sm">
-              Strip Metadata
+              {t('metadata.strip')}
             </span>
           </div>
         </Switch>
@@ -225,19 +232,17 @@ function Metadata({ mediaIndex }: MetadataProps) {
           <Card className="px-2 my-2 pb-4 shadow-none border-1 dark:border-none">
             <motion.div {...slideDownTransition} className="space-y-4 pt-2">
               <div className="text-zinc-700 dark:text-zinc-400">
-                <p className="text-xs  italic">
-                  - Leave the field empty to keep the original
-                </p>{' '}
-                <p className="text-xs  italic">
-                  - Or, add a whitespace to remove the original
-                </p>
+                <p className="text-xs  italic">- {t('metadata.keepHint')}</p>{' '}
+                <p className="text-xs  italic">- {t('metadata.removeHint')}</p>
               </div>
               <div>
                 <TextInput
                   type="text"
-                  label="Title"
+                  label={t('metadata.title.label')}
                   placeholder={
-                    isAudioFileSettings ? 'Enter title' : 'Enter video title'
+                    isAudioFileSettings
+                      ? t('metadata.title.placeholder')
+                      : t('metadata.title.placeholderVideo')
                   }
                   value={metadataConfig?.title ?? ''}
                   isDisabled={shouldDisableInput}
@@ -249,8 +254,8 @@ function Metadata({ mediaIndex }: MetadataProps) {
               <div>
                 <TextInput
                   type="text"
-                  label="Artist"
-                  placeholder="Enter artist name"
+                  label={t('metadata.artist.label')}
+                  placeholder={t('metadata.artist.placeholder')}
                   value={metadataConfig?.artist ?? ''}
                   isDisabled={shouldDisableInput}
                   onValueChange={(value) =>
@@ -263,8 +268,8 @@ function Metadata({ mediaIndex }: MetadataProps) {
               <div>
                 <TextInput
                   type="text"
-                  label="Album"
-                  placeholder="Enter album name"
+                  label={t('metadata.album.label')}
+                  placeholder={t('metadata.album.placeholder')}
                   value={metadataConfig?.album ?? ''}
                   isDisabled={shouldDisableInput}
                   onValueChange={(value) => updateMetadataField('album', value)}
@@ -275,8 +280,8 @@ function Metadata({ mediaIndex }: MetadataProps) {
               <div>
                 <TextInput
                   type="text"
-                  label="Genre"
-                  placeholder="Enter genre"
+                  label={t('metadata.genre.label')}
+                  placeholder={t('metadata.genre.placeholder')}
                   value={metadataConfig?.genre ?? ''}
                   isDisabled={shouldDisableInput}
                   classNames={{ mainWrapper: 'my-3' }}
@@ -287,8 +292,8 @@ function Metadata({ mediaIndex }: MetadataProps) {
               <div>
                 <TextInput
                   type="text"
-                  label="Year/Date"
-                  placeholder="Enter year or date"
+                  label={t('metadata.year.label')}
+                  placeholder={t('metadata.year.placeholder')}
                   value={metadataConfig?.year ?? ''}
                   isDisabled={shouldDisableInput}
                   classNames={{ mainWrapper: 'my-3' }}
@@ -300,8 +305,8 @@ function Metadata({ mediaIndex }: MetadataProps) {
                 <div className="!mt-[-10px]">
                   <TextArea
                     type="text"
-                    label="Description"
-                    placeholder="Enter description"
+                    label={t('metadata.description.label')}
+                    placeholder={t('metadata.description.placeholder')}
                     value={metadataConfig?.description ?? ''}
                     isDisabled={shouldDisableInput}
                     onValueChange={(value) =>
@@ -316,8 +321,8 @@ function Metadata({ mediaIndex }: MetadataProps) {
                 <div className="!mt-[-10px]">
                   <TextArea
                     type="text"
-                    label="Synopsis"
-                    placeholder="Enter synopsis"
+                    label={t('metadata.synopsis.label')}
+                    placeholder={t('metadata.synopsis.placeholder')}
                     value={metadataConfig?.synopsis ?? ''}
                     isDisabled={shouldDisableInput}
                     onValueChange={(value) =>
@@ -331,8 +336,8 @@ function Metadata({ mediaIndex }: MetadataProps) {
               <div className="!mt-[-10px]">
                 <TextArea
                   type="text"
-                  label="Comment"
-                  placeholder="Enter comment"
+                  label={t('metadata.comment.label')}
+                  placeholder={t('metadata.comment.placeholder')}
                   value={metadataConfig?.comment ?? ''}
                   isDisabled={shouldDisableInput}
                   onValueChange={(value) =>
@@ -345,8 +350,8 @@ function Metadata({ mediaIndex }: MetadataProps) {
               <div className="!mt-[-10px]">
                 <TextArea
                   type="text"
-                  label="Copyright"
-                  placeholder="Enter copyright information"
+                  label={t('metadata.copyright.label')}
+                  placeholder={t('metadata.copyright.placeholder')}
                   value={metadataConfig?.copyright ?? ''}
                   isDisabled={shouldDisableInput}
                   onValueChange={(value) =>
@@ -376,7 +381,7 @@ function Metadata({ mediaIndex }: MetadataProps) {
                     >
                       <div className="flex justify-center items-center">
                         <span className="text-black1 dark:text-white1 block mr-2 text-xs opacity-90">
-                          Creation Time
+                          {t('metadata.creationTime.label')}
                         </span>
                       </div>
                     </Switch>
@@ -387,7 +392,7 @@ function Metadata({ mediaIndex }: MetadataProps) {
                       hideTimeZone
                       showMonthAndYearPickers
                       label=""
-                      placeholder="Enter creation time"
+                      placeholder={t('metadata.creationTime.placeholder')}
                       isDisabled={
                         shouldDisableInput ||
                         !metadataConfig?.shouldEnableCreationTime

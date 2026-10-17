@@ -2,6 +2,7 @@ import { core } from '@tauri-apps/api'
 import merge from 'lodash/merge'
 import { memo, useCallback, useId } from 'react'
 import { ReactCompareSliderHandle } from 'react-compare-slider'
+import { useTranslation } from 'react-i18next'
 import { PhotoView } from 'react-photo-view'
 import { useSnapshot } from 'valtio'
 
@@ -43,6 +44,7 @@ const platform = getPlatform()
 function MediaOutputCompareSlider({
   mediaIndex,
 }: MediaOutputCompareSliderProps) {
+  const { t } = useTranslation()
   if (mediaIndex < 0) return
 
   const {
@@ -63,7 +65,7 @@ function MediaOutputCompareSlider({
         >
           <img
             src={src}
-            alt={`compare image ${options?.isOriginal ? 0 : 1}`}
+            alt={options?.isOriginal ? t('compare.input') : t('compare.output')}
             className="w-full h-full max-h-[60vh] object-contain"
           />
           {options?.enableZoomViewer ? (
@@ -85,7 +87,11 @@ function MediaOutputCompareSlider({
                 <PhotoView src={src!}>
                   <div>
                     <Tooltip
-                      content={`Enlarge ${options?.isOriginal ? 'input' : 'output'}`}
+                      content={
+                        options?.isOriginal
+                          ? t('compare.enlargeInput')
+                          : t('compare.enlargeOutput')
+                      }
                     >
                       <Icon name="zoom" size={18} className="cursor-pointer" />
                     </Tooltip>
@@ -97,7 +103,7 @@ function MediaOutputCompareSlider({
         </div>
       )
     },
-    [mediaFile?.isProcessCompleted, mediaFile?.config?.convertToExtension],
+    [mediaFile?.isProcessCompleted, mediaFile?.config?.convertToExtension, t],
   )
 
   const renderVideo = useCallback(
@@ -152,7 +158,7 @@ function MediaOutputCompareSlider({
           (mediaFile?.sizeInBytes ?? 0) >= SVG_MAX_RENDERING_SIZE_LIMIT)) ? (
         <p className="text-xs mb-2 flex justify-center items-center gap-1 text-warning-400">
           <Icon name="warning" />
-          SVG file too large. Might affect the comparison renderer performance.
+          {t('compare.svgTooLarge')}
         </p>
       ) : null}
       <div className="border-1 border-zinc-200 dark:border-zinc-900 overflow-hidden">

@@ -1,4 +1,5 @@
 import React, { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { snapshot, useSnapshot } from 'valtio'
 
 import Slider from '@/components/Slider'
@@ -10,6 +11,7 @@ type AudioVolumeProps = {
 }
 
 function AudioVolume({ mediaIndex }: AudioVolumeProps) {
+  const { t } = useTranslation()
   const {
     state: {
       media,
@@ -119,13 +121,13 @@ function AudioVolume({ mediaIndex }: AudioVolumeProps) {
   return (
     <>
       <Slider
-        label="Volume:"
-        aria-label="Audio Volume"
+        label={t('audio.volumeLabel')}
+        aria-label={t('audio.volume')}
         maxValue={200}
         marks={[
           {
             value: 0,
-            label: 'Mute',
+            label: t('audio.mute'),
           },
           {
             value: 100,

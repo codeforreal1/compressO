@@ -14,6 +14,7 @@ import {
   getBackgroundStyle,
 } from 'react-advanced-cropper'
 import 'react-advanced-cropper/dist/style.css'
+import { useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
 import Button from '@/components/Button'
@@ -219,6 +220,7 @@ function Transformer({
   onTransformChange,
   onTransformHistoryChange,
 }: TransformerProps) {
+  const { t } = useTranslation()
   const cropperRef = useRef<CropperRef>(null)
   const debouncedRef = useRef<NodeJS.Timeout | null>(null)
   const [aspectRatio, setAspectRatio] = useState(initialAspectRatio)
@@ -426,14 +428,17 @@ function Transformer({
             onPress={() => changeAspectRatio(ratio)}
             className="min-w-[unset] h-7 px-3 text-xs"
           >
-            {ratio ?? 'Free'}
+            {ratio ?? t('transform.free')}
           </Button>
         ))}
       </div>
       <div className="mx-auto flex items-center justify-center gap-2 mt-2">
         <>
           <Button size="sm" isIconOnly onPress={() => rotate(-90)}>
-            <Tooltip content="Rotate Left" aria-label="Rotate Left">
+            <Tooltip
+              content={t('transform.rotateLeft')}
+              aria-label={t('transform.rotateLeft')}
+            >
               <Icon name="rotateLeft" size={20} />
             </Tooltip>
           </Button>
@@ -441,7 +446,10 @@ function Transformer({
         </>
         <>
           <Button size="sm" isIconOnly onPress={() => flip(false, true)}>
-            <Tooltip content="Flip Vertical" aria-label="Flip Vertical">
+            <Tooltip
+              content={t('transform.flipVertical')}
+              aria-label={t('transform.flipVertical')}
+            >
               <Icon name="flipVertical" size={20} />
             </Tooltip>
           </Button>
@@ -449,7 +457,10 @@ function Transformer({
         </>
         <>
           <Button size="sm" isIconOnly onPress={() => flip(true, false)}>
-            <Tooltip content="Flip Horizontal" aria-label="Flip Horizontal">
+            <Tooltip
+              content={t('transform.flipHorizontal')}
+              aria-label={t('transform.flipHorizontal')}
+            >
               <Icon name="flipHorizontal" size={20} />
             </Tooltip>
           </Button>
@@ -457,7 +468,10 @@ function Transformer({
         </>
         <>
           <Button size="sm" isIconOnly onPress={resetZoom}>
-            <Tooltip content="Reset Zoom" aria-label="Reset Zoom">
+            <Tooltip
+              content={t('transform.resetZoom')}
+              aria-label={t('transform.resetZoom')}
+            >
               <Icon name="zoom" size={20} />
             </Tooltip>
             <Divider className="my-3 h-5" orientation="vertical" />
@@ -466,7 +480,10 @@ function Transformer({
         </>
         <>
           <Button size="sm" isIconOnly onPress={expandCropArea}>
-            <Tooltip content="Expand" aria-label="Expand">
+            <Tooltip
+              content={t('transform.expand')}
+              aria-label={t('transform.expand')}
+            >
               <Icon name="expand" size={20} />
             </Tooltip>
           </Button>

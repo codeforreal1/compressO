@@ -263,11 +263,22 @@ pub fn set_tray_progress_color(app_handle: AppHandle, color: String) {
 
 /// The tray icon's menu, shown with a right click: opens the main window, or quits
 pub fn tray_icon_menu(app_handle: &AppHandle) -> Result<Menu<Wry>, String> {
-    let open_item = MenuItem::with_id(app_handle, "open", "Open CompressO", true, None::<&str>)
+    let texts = crate::sys::native_text::get();
+    let open_item = MenuItem::with_id(app_handle, "open", &texts.open_app, true, None::<&str>)
         .map_err(|err| err.to_string())?;
-    let quit_item = MenuItem::with_id(app_handle, "quit", "Quit CompressO", true, None::<&str>)
+    let quit_item = MenuItem::with_id(app_handle, "quit", &texts.quit_app, true, None::<&str>)
         .map_err(|err| err.to_string())?;
     Menu::with_items(app_handle, &[&open_item, &quit_item]).map_err(|err| err.to_string())
+}
+
+/// Rebuilds the tray icon's menu in the app's language (Windows, where it stays attached)
+#[cfg(windows)]
+pub fn update_tray_icon_menu(app_handle: &AppHandle) -> Result<(), String> {
+    let Some(tray) = app_handle.tray_by_id(TRAY_WINDOW_LABEL) else {
+        return Ok(());
+    };
+    tray.set_menu(Some(tray_icon_menu(app_handle)?))
+        .map_err(|err| err.to_string())
 }
 
 pub fn handle_tray_icon_menu_event(app_handle: &AppHandle, event: MenuEvent) {

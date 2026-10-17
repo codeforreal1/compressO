@@ -3,6 +3,7 @@ import { open } from '@tauri-apps/plugin-dialog'
 import cloneDeep from 'lodash/cloneDeep'
 
 import { toast } from '@/components/Toast'
+import { t } from '@/i18n'
 import { generateVideoThumbnail } from '@/tauri/commands/ffmpeg'
 import { getVideoBasicInfo } from '@/tauri/commands/ffprobe'
 import {
@@ -74,9 +75,7 @@ export function canAddMedia() {
 export async function addMedia(selection: MediaSelection | MediaSelection[]) {
   if (appProxy.state.isCompressing) return
   if (appProxy.state.isProcessCompleted) {
-    toast.info(
-      'Media cannot be added after compression. Start a new compression to add more media.',
-    )
+    toast.info(t('media.addAfterCompression'))
     return
   }
 
@@ -101,7 +100,7 @@ export async function addMedia(selection: MediaSelection | MediaSelection[]) {
   })
 
   if (supportedFiles.length === 0) {
-    toast.error('No valid media files found.')
+    toast.error(t('media.noValidFiles'))
     return
   }
 
@@ -113,7 +112,7 @@ export async function addMedia(selection: MediaSelection | MediaSelection[]) {
   })
 
   if (mediaPaths.length === 0) {
-    toast.info('The selected media has already been added.')
+    toast.info(t('media.alreadyAdded'))
     return
   }
 
@@ -337,9 +336,7 @@ export async function addMedia(selection: MediaSelection | MediaSelection[]) {
 
   if (corruptedFilesCount > 0) {
     toast.error(
-      mediaPaths.length > 1
-        ? 'Some files appear to be corrupted or invalid and were not added.'
-        : 'The file appears to be corrupted or invalid.',
+      mediaPaths.length > 1 ? t('media.someCorrupted') : t('media.corrupted'),
     )
     // Only start over when nothing was selected before
     if (corruptedFilesCount === mediaPaths.length && existingMediaCount === 0) {
@@ -354,7 +351,7 @@ export async function pickMediaToAdd() {
     const filePath = await open({
       directory: false,
       multiple: true,
-      title: `Select images, videos or audio to compress.`,
+      title: t('media.selectTitle'),
       filters: [
         { name: 'video', extensions: inputExtensions.video },
         { name: 'image', extensions: inputExtensions.image },
@@ -366,7 +363,7 @@ export async function pickMediaToAdd() {
     }
     await addMedia(filePath)
   } catch (error: any) {
-    toast.error(error?.message ?? 'Could not select media.')
+    toast.error(error?.message ?? t('media.selectFailed'))
   }
 }
 
@@ -393,6 +390,6 @@ export async function openExternalMedia(paths: string[]) {
     const files = await readFilesFromPaths(paths)
     await addMedia(files)
   } catch {
-    toast.error('Invalid files/folders')
+    toast.error(t('media.invalidFiles'))
   }
 }

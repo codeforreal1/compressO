@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
 import Slider from '@/components/Slider'
@@ -16,6 +17,7 @@ const SPEED_OPTIONS = [0.25, 1, 2, 3, 4] as const
 const DEFAULT_SPEED = 1
 
 const VideoSpeed = ({ mediaIndex }: VideoSpeedProps) => {
+  const { t } = useTranslation()
   const {
     state: {
       media,
@@ -100,7 +102,7 @@ const VideoSpeed = ({ mediaIndex }: VideoSpeedProps) => {
         isDisabled={shouldDisableInput}
       >
         <p className="text-gray-600 dark:text-gray-400 text-sm mr-2 w-full">
-          Speed
+          {t('speed.title')}
         </p>
       </Switch>
       <AnimatePresence mode="wait">

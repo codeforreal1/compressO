@@ -1,5 +1,6 @@
 import { SelectItem, SelectSection } from '@heroui/react'
 import { useCallback, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
 import Icon from '@/components/Icon'
@@ -18,6 +19,7 @@ type VideoExtensionProps = {
 }
 
 function Extension({ mediaIndex }: VideoExtensionProps) {
+  const { t } = useTranslation()
   const {
     state: {
       media,
@@ -76,7 +78,7 @@ function Extension({ mediaIndex }: VideoExtensionProps) {
               targetVideo.videoInfoRaw?.audioStreams ??
               (await getAudioStreams(targetVideo.pathRaw).catch(() => null))
             if (audioStreams && audioStreams.length === 0) {
-              toast.error('This video has no audio to extract.')
+              toast.error(t('extension.noAudio'))
               return
             }
           }
@@ -92,7 +94,7 @@ function Extension({ mediaIndex }: VideoExtensionProps) {
         }
       }
     },
-    [mediaIndex, batchConfigKey],
+    [mediaIndex, batchConfigKey, t],
   )
 
   const shouldDisableInput =
@@ -104,7 +106,7 @@ function Extension({ mediaIndex }: VideoExtensionProps) {
   return (
     <Select
       fullWidth
-      label="Extension:"
+      label={t('extension.label')}
       className="block flex-shrink-0 rounded-2xl"
       size="sm"
       value={convertToExtension}
@@ -124,10 +126,10 @@ function Extension({ mediaIndex }: VideoExtensionProps) {
     >
       <SelectItem
         key="-"
-        textValue="Same as input"
+        textValue={t('extension.sameAsInput')}
         className="flex justify-center items-center"
       >
-        Same as input
+        {t('extension.sameAsInput')}
       </SelectItem>
       <SelectSection>
         {(isAudioFileSettings ? audioExtensions : videoExtensions).map(
@@ -143,7 +145,11 @@ function Extension({ mediaIndex }: VideoExtensionProps) {
         )}
       </SelectSection>
       <SelectSection
-        title={hasNoAudio ? 'Extract audio (No audio found)' : 'Extract audio'}
+        title={
+          hasNoAudio
+            ? t('extension.extractAudioNone')
+            : t('extension.extractAudio')
+        }
         classNames={{
           heading: hasNoAudio ? 'text-danger' : '',
           base: isAudioFileSettings ? 'hidden' : '',

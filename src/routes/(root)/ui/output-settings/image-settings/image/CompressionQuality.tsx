@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { cloneDeep } from 'lodash'
 import { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
 import Slider from '@/components/Slider'
@@ -20,6 +21,7 @@ type CompressionQualityProps = {
 const imageConfigInitialStateCloned = cloneDeep(imageConfigInitialState)
 
 function CompressionQuality({ mediaIndex }: CompressionQualityProps) {
+  const { t } = useTranslation()
   const {
     state: {
       isCompressing,
@@ -97,27 +99,27 @@ function CompressionQuality({ mediaIndex }: CompressionQualityProps) {
         isDisabled={shouldDisableInput}
       >
         <p className="text-gray-600 dark:text-gray-400 text-sm mr-2 w-full">
-          Lossless Compression
+          {t('quality.lossless')}
         </p>
       </Switch>
       <AnimatePresence mode="wait">
         {!isLossless ? (
           <motion.div {...slideDownTransition}>
             <Slider
-              label="Quality"
-              aria-label="Quality"
+              label={t('quality.title')}
+              aria-label={t('quality.title')}
               marks={[
                 {
                   value: 1,
-                  label: 'Low',
+                  label: t('svg.levels.low'),
                 },
                 {
                   value: 50,
-                  label: 'Medium',
+                  label: t('svg.levels.medium'),
                 },
                 {
                   value: 100,
-                  label: 'High',
+                  label: t('svg.levels.high'),
                 },
               ]}
               minValue={1}
@@ -131,10 +133,10 @@ function CompressionQuality({ mediaIndex }: CompressionQualityProps) {
               getValue={(value) => {
                 const val = Array.isArray(value) ? value?.[0] : +value
                 return val < 50
-                  ? 'Low'
+                  ? t('svg.levels.low')
                   : val >= 50 && val < 99
-                    ? 'Medium'
-                    : 'High'
+                    ? t('svg.levels.medium')
+                    : t('svg.levels.high')
               }}
               renderValue={() => (
                 <p className="text-primary text-xs">{quality}%</p>

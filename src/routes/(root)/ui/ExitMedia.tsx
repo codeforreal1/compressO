@@ -1,5 +1,6 @@
 import { UseDisclosureProps, useDisclosure } from '@heroui/react'
 import { memo, useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { snapshot, useSnapshot } from 'valtio'
 
 import Button from '@/components/Button'
@@ -21,6 +22,7 @@ type ExitMediaProps = {
  * after exiting) or compressed.
  */
 function ExitMedia({ className }: ExitMediaProps) {
+  const { t } = useTranslation()
   const {
     state: { media, isSaving, isLoadingMediaFiles },
     resetProxy,
@@ -114,7 +116,10 @@ function ExitMedia({ className }: ExitMediaProps) {
     <>
       {/* Hidden while media is being added; the dialog stays mounted */}
       {isLoadingMediaFiles ? null : (
-        <Tooltip content="Exit (Esc)" aria-label="Exit">
+        <Tooltip
+          content={`${t('exit.title')} (Esc)`}
+          aria-label={t('exit.title')}
+        >
           <Button
             size="sm"
             onPress={handleExit}
@@ -123,24 +128,26 @@ function ExitMedia({ className }: ExitMediaProps) {
             className={cn(['h-7 w-7 min-w-7', className])}
             isDisabled={isSaving}
             isIconOnly
-            aria-label="Exit"
+            aria-label={t('exit.title')}
           >
             <Icon name="cross" size={20} />
           </Button>
         </Tooltip>
       )}
       <AlertDialog
-        title={`Media not saved`}
+        title={t('exit.notSaved')}
         disclosure={alertDisclosure}
-        description={`Your compressed media${media.length > 1 ? 'are' : ' is'} not yet saved. Are you sure you want to discard it?`}
+        description={t('exit.discardConfirm', { count: media.length })}
         renderFooter={({ closeModal }) => (
           <>
-            <AlertDialogButton onPress={closeModal}>Go Back</AlertDialogButton>
+            <AlertDialogButton onPress={closeModal}>
+              {t('exit.goBack')}
+            </AlertDialogButton>
             <AlertDialogButton
               color="danger"
               onPress={() => handleDiscard({ closeModal })}
             >
-              Yes
+              {t('common.yes')}
             </AlertDialogButton>
           </>
         )}

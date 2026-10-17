@@ -1,6 +1,7 @@
 import { PopoverContent, PopoverTrigger } from '@heroui/react'
 import React, { useCallback } from 'react'
 import { RgbColorPicker } from 'react-colorful'
+import { useTranslation } from 'react-i18next'
 
 import Button from '@/components/Button'
 import Popover from '@/components/Popover'
@@ -28,6 +29,7 @@ function ColorPicker({
   defaultColor = DEFAULT_PRIMARY_COLOR,
   onChange,
 }: ColorPickerProps) {
+  const { t } = useTranslation()
   const rgbColor = React.useMemo(() => rgbStringToObject(color), [color])
 
   const [inputValue, setInputValue] = React.useState(
@@ -105,7 +107,7 @@ function ColorPicker({
                   onChange?.(defaultColor)
                 }}
               >
-                Reset
+                {t('common.reset')}
               </Button>
             ) : null}
           </div>

@@ -2,6 +2,7 @@ import { core } from '@tauri-apps/api'
 import cloneDeep from 'lodash/cloneDeep'
 import isEqual from 'lodash/isEqual'
 
+import { t } from '@/i18n'
 import {
   deletePreset,
   getStoredPreset,
@@ -180,14 +181,18 @@ export function pickImagePresetSettings(
 
 const defaultVideoPreset: VideoPreset = {
   id: STANDARD_PRESET_ID,
-  name: 'Standard',
+  get name() {
+    return t('presets.standard')
+  },
   mediaType: 'video',
   settings: pickVideoPresetSettings(videoConfigInitialState, null),
 }
 
 const defaultImagePreset: ImagePreset = {
   id: STANDARD_PRESET_ID,
-  name: 'Standard',
+  get name() {
+    return t('presets.standard')
+  },
   mediaType: 'image',
   settings: pickImagePresetSettings(imageConfigInitialState, null),
 }
@@ -212,7 +217,9 @@ export function pickAudioPresetSettings(
 
 const defaultAudioPreset: AudioPreset = {
   id: STANDARD_PRESET_ID,
-  name: 'Standard',
+  get name() {
+    return t('presets.standard')
+  },
   mediaType: 'audio',
   settings: pickAudioPresetSettings(audioFileConfigInitialState),
 }
@@ -1191,7 +1198,7 @@ export function getInitialAudioFileConfig(
 
 function formatExtension(extension: string | undefined) {
   return !extension || extension === '-'
-    ? 'Same format as input'
+    ? t('common.sameFormatAsInput')
     : extension.toUpperCase()
 }
 
@@ -1199,11 +1206,14 @@ function describeTransform(transform: PortableTransform | null | undefined) {
   if (!transform) return []
   const lines: string[] = []
   const rotate = normalizeRotation(transform.rotate)
-  if (rotate) lines.push(`Rotated ${rotate}°`)
+  if (rotate) lines.push(t('presets.summary.rotated', { degrees: rotate }))
   if (transform.flip?.horizontal || transform.flip?.vertical) {
-    lines.push('Flipped')
+    lines.push(t('presets.summary.flipped'))
   }
-  if (transform.aspectRatio) lines.push(`Cropped to ${transform.aspectRatio}`)
+  if (transform.aspectRatio)
+    lines.push(
+      t('presets.summary.cropped', { aspectRatio: transform.aspectRatio }),
+    )
   return lines
 }
 
@@ -1214,8 +1224,8 @@ export function describeVideoPresetSettings(settings: VideoPresetSettings) {
   if (!isAudioOutput) {
     lines.push(
       settings.shouldDisableCompression
-        ? 'Lossless'
-        : `Quality ${settings.quality ?? 0}%`,
+        ? t('common.lossless')
+        : t('presets.summary.quality', { value: settings.quality ?? 0 }),
     )
     if (settings.shouldEnableCustomVideoCodec && settings.customVideoCodec) {
       lines.push(
@@ -1224,29 +1234,34 @@ export function describeVideoPresetSettings(settings: VideoPresetSettings) {
       )
     }
     if (settings.resolution) {
-      lines.push(`${settings.resolution} px longer side`)
+      lines.push(t('presets.summary.resolution', { size: settings.resolution }))
     }
     lines.push(...describeTransform(settings.transform))
     if (settings.shouldEnableCustomFPS && settings.customFPS) {
-      lines.push(`${settings.customFPS} FPS`)
+      lines.push(t('presets.summary.fps', { fps: settings.customFPS }))
     }
   }
   if (settings.shouldEnableCustomSpeed && settings.customSpeed) {
-    lines.push(`${settings.customSpeed}x speed`)
+    lines.push(t('presets.summary.speed', { speed: settings.customSpeed }))
   }
   const { volume, audioCodec, audioChannelConfig, bitrate } =
     settings.audioConfig ?? {}
   if (volume === 0) {
-    lines.push('Audio removed')
+    lines.push(t('presets.summary.audioRemoved'))
   } else {
-    if (volume != null && volume !== 100) lines.push(`Volume ${volume}%`)
+    if (volume != null && volume !== 100)
+      lines.push(t('presets.summary.volume', { value: volume }))
     if (
       settings.shouldEnableCustomAudioCodec &&
       audioCodec &&
       audioCodec !== '-'
     ) {
       lines.push(
-        `${AUDIO_CODECS.find((c) => c.value === audioCodec)?.name ?? audioCodec} audio`,
+        t('presets.summary.audioCodec', {
+          codec:
+            AUDIO_CODECS.find((c) => c.value === audioCodec)?.name ??
+            audioCodec,
+        }),
       )
     }
     if (
@@ -1254,15 +1269,19 @@ export function describeVideoPresetSettings(settings: VideoPresetSettings) {
       audioChannelConfig?.channelLayout
     ) {
       lines.push(
-        audioChannelConfig.channelLayout === 'mono' ? 'Mono' : 'Stereo',
+        audioChannelConfig.channelLayout === 'mono'
+          ? t('common.mono')
+          : t('common.stereo'),
       )
     }
     if (settings.shouldEnableCustomBitrate && bitrate) {
-      lines.push(`${bitrate} kbps`)
+      lines.push(t('common.kbps', { value: bitrate }))
     }
   }
   lines.push(
-    settings.shouldStripMetadata ? 'Metadata removed' : 'Metadata kept',
+    settings.shouldStripMetadata
+      ? t('presets.summary.metadataRemoved')
+      : t('presets.summary.metadataKept'),
   )
   return lines
 }
@@ -1270,19 +1289,27 @@ export function describeVideoPresetSettings(settings: VideoPresetSettings) {
 /** Short summary of what an image preset changes */
 export function describeImagePresetSettings(settings: ImagePresetSettings) {
   const lines = [formatExtension(settings.convertToExtension)]
-  lines.push(settings.isLossless ? 'Lossless' : `Quality ${settings.quality}%`)
+  lines.push(
+    settings.isLossless
+      ? t('common.lossless')
+      : t('presets.summary.quality', { value: settings.quality }),
+  )
   if (settings.resolution) {
-    lines.push(`${settings.resolution} px longer side`)
+    lines.push(t('presets.summary.resolution', { size: settings.resolution }))
   }
   lines.push(...describeTransform(settings.transform))
   if (settings.svgScaleFactor && settings.svgScaleFactor !== 1) {
-    lines.push(`SVG scale ${settings.svgScaleFactor}x`)
+    lines.push(
+      t('presets.summary.svgScale', { scale: settings.svgScaleFactor }),
+    )
   }
   if (settings.shouldEnableAdvancedSvgSetting) {
-    lines.push('Custom SVG conversion')
+    lines.push(t('presets.summary.customSvg'))
   }
   lines.push(
-    settings.shouldStripMetadata ? 'Metadata removed' : 'Metadata kept',
+    settings.shouldStripMetadata
+      ? t('presets.summary.metadataRemoved')
+      : t('presets.summary.metadataKept'),
   )
   return lines
 }
@@ -1294,13 +1321,14 @@ export function describeAudioPresetSettings(settings: AudioPresetSettings) {
     settings.audioConfig ?? {}
   lines.push(
     settings.shouldEnableCustomBitrate && bitrate
-      ? `${bitrate} kbps`
-      : `Quality ${settings.quality ?? 0}%`,
+      ? t('common.kbps', { value: bitrate })
+      : t('presets.summary.quality', { value: settings.quality ?? 0 }),
   )
   if (settings.shouldEnableCustomSpeed && settings.customSpeed) {
-    lines.push(`${settings.customSpeed}x speed`)
+    lines.push(t('presets.summary.speed', { speed: settings.customSpeed }))
   }
-  if (volume != null && volume !== 100) lines.push(`Volume ${volume}%`)
+  if (volume != null && volume !== 100)
+    lines.push(t('presets.summary.volume', { value: volume }))
   if (
     settings.shouldEnableCustomAudioCodec &&
     audioCodec &&
@@ -1311,10 +1339,16 @@ export function describeAudioPresetSettings(settings: AudioPresetSettings) {
     )
   }
   if (settings.shouldEnableCustomChannel && audioChannelConfig?.channelLayout) {
-    lines.push(audioChannelConfig.channelLayout === 'mono' ? 'Mono' : 'Stereo')
+    lines.push(
+      audioChannelConfig.channelLayout === 'mono'
+        ? t('common.mono')
+        : t('common.stereo'),
+    )
   }
   lines.push(
-    settings.shouldStripMetadata ? 'Metadata removed' : 'Metadata kept',
+    settings.shouldStripMetadata
+      ? t('presets.summary.metadataRemoved')
+      : t('presets.summary.metadataKept'),
   )
   return lines
 }

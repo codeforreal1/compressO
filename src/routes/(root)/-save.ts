@@ -3,6 +3,7 @@ import { open, save } from '@tauri-apps/plugin-dialog'
 import { snapshot } from 'valtio'
 
 import { toast } from '@/components/Toast'
+import { t } from '@/i18n'
 import { settingsStore } from '@/stores/settingsStore'
 import {
   copyFilesToClipboard,
@@ -109,10 +110,14 @@ async function saveCompressedMedia(
   if (failedCount > 0) {
     toast.error(
       savedCount > 0
-        ? `Saved ${savedCount} of ${savedCount + failedCount} files. ${failedCount} could not be saved. Use Save Media to choose another location.`
+        ? t('save.partiallySaved', {
+            saved: savedCount,
+            count: savedCount + failedCount,
+            failed: failedCount,
+          })
         : isAutomatic
-          ? 'Could not save automatically, possibly due to missing folder permissions. Use Save Media to choose a location.'
-          : 'Could not save media to the given path.',
+          ? t('save.autoSaveFailed')
+          : t('save.failed'),
     )
   }
 
@@ -132,7 +137,7 @@ export async function saveCompressedMediaWithPrompt() {
   if (media.length > 1) {
     const directory = await open({
       directory: true,
-      title: 'Choose directory to save the compressed media.',
+      title: t('save.chooseDirectory'),
     })
     if (typeof directory === 'string') {
       await saveCompressedMedia(() => directory, {
@@ -147,7 +152,7 @@ export async function saveCompressedMediaWithPrompt() {
   if (!compressedFile?.pathRaw) return
 
   const pathToSave = await save({
-    title: 'Choose location to save the compressed media.',
+    title: t('save.chooseLocation'),
     defaultPath: `${settingsStore.outputFilePrefix}${compressedFile.fileNameToDisplay ?? mediaFile.fileName ?? ''}`,
   })
   if (!pathToSave) return
@@ -165,7 +170,7 @@ export async function saveCompressedMediaWithPrompt() {
     }
     appProxy.state.isSaved = true
   } catch (_) {
-    toast.error('Could not save media to the given path.')
+    toast.error(t('save.failed'))
   } finally {
     appProxy.state.isSaving = false
   }
@@ -226,9 +231,7 @@ export async function autoSaveCompressedMedia() {
   )
 
   if (largerCount > 0) {
-    toast.info(
-      `${largerCount} ${largerCount > 1 ? 'outputs were' : 'output was'} larger than the original and not saved automatically. Use Save if you still want ${largerCount > 1 ? 'them' : 'it'}.`,
-    )
+    toast.info(t('save.largerSkipped', { count: largerCount }))
   }
 }
 
@@ -263,7 +266,7 @@ export async function autoCopyCompressedMediaToClipboard() {
   try {
     await copyFilesToClipboard(files)
   } catch {
-    toast.error('The output could not be copied to the clipboard.')
+    toast.error(t('save.copyFailed'))
   }
 }
 

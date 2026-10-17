@@ -1,16 +1,20 @@
 import { Kbd } from '@heroui/react'
 import { AnimatePresence, motion } from 'framer-motion'
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 
+import { t } from '@/i18n'
 import { getPlatform } from '@/utils/fs'
 import { cn } from '@/utils/tailwind'
 
 const { isMacOS } = getPlatform()
 
-/** ⌘+Shift+Enter on macOS, Ctrl+Shift+Enter elsewhere */
-const COMMAND_ENTER_KEYS = isMacOS
-  ? ['⌘', '⇧', '↵']
-  : ['Ctrl', 'Shift', 'Enter']
+/** ⌘+Shift+Enter on macOS, Ctrl+Shift+Enter elsewhere (named as on the keyboards of the language) */
+function getCommandEnterKeys() {
+  return isMacOS
+    ? ['⌘', '⇧', '↵']
+    : [t('keys.ctrl'), t('keys.shift'), t('keys.enter')]
+}
 
 export interface ShortcutHintProps {
   isVisible: boolean
@@ -21,7 +25,9 @@ export interface ShortcutHintProps {
 /** Keys of a keyboard shortcut, revealed inline (e.g. inside a button) while `isVisible` */
 const ShortcutHint = React.forwardRef<HTMLSpanElement, ShortcutHintProps>(
   (props, ref) => {
-    const { isVisible, keys = COMMAND_ENTER_KEYS, className } = props
+    // Re-rendered in another language
+    useTranslation()
+    const { isVisible, keys = getCommandEnterKeys(), className } = props
 
     return (
       <AnimatePresence initial={false}>

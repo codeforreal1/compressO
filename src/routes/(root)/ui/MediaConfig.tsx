@@ -1,6 +1,7 @@
 import { ScrollShadow, Tab } from '@heroui/react'
 import { AnimatePresence, motion } from 'framer-motion'
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
 import Layout from '@/components/Layout'
@@ -21,6 +22,7 @@ import styles from './styles.module.css'
 import { appProxy } from '../-state'
 
 function MediaConfig() {
+  const { t } = useTranslation()
   const {
     state: {
       activeTab,
@@ -50,7 +52,7 @@ function MediaConfig() {
               {...zoomInTransition}
             >
               <Tabs
-                aria-label="Media Filter"
+                aria-label={t('mediaConfig.filter')}
                 size="sm"
                 selectedKey={activeTab}
                 onSelectionChange={(t) => {
@@ -62,10 +64,18 @@ function MediaConfig() {
                   tab: 'h-5',
                 }}
               >
-                <Tab key="all" value="all" title="All" />
-                <Tab key="videos" value="videos" title="Videos" />
-                <Tab key="images" value="images" title="Images" />
-                <Tab key="audio" value="audio" title="Audio" />
+                <Tab key="all" value="all" title={t('mediaConfig.all')} />
+                <Tab
+                  key="videos"
+                  value="videos"
+                  title={t('batch.label_videos')}
+                />
+                <Tab
+                  key="images"
+                  value="images"
+                  title={t('batch.label_images')}
+                />
+                <Tab key="audio" value="audio" title={t('batch.label_audio')} />
               </Tabs>
             </motion.div>
           ) : null}
@@ -99,8 +109,8 @@ function MediaConfig() {
             <Title
               title={
                 media.length === 1 || selectedMediaIndexForCustomization > -1
-                  ? 'Output Settings'
-                  : 'Batch Settings'
+                  ? t('mediaConfig.outputSettings')
+                  : t('mediaConfig.batchSettings')
               }
               className="text-xl font-bold"
             />

@@ -3,6 +3,7 @@ import { event } from '@tauri-apps/api'
 import { getCurrentWebview } from '@tauri-apps/api/webview'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
 import Button from '@/components/Button'
@@ -13,6 +14,7 @@ import Switch from '@/components/Switch'
 import { toast } from '@/components/Toast'
 import { isAutoCompressAvailable } from '@/hooks/useAutoCompressSync'
 import { useDropQueue } from '@/hooks/useDropQueue'
+import { t } from '@/i18n'
 import { settingsStore } from '@/stores/settingsStore'
 import {
   COMPRESSION_STATUS_EVENT,
@@ -76,13 +78,13 @@ function useFileDrop(isEnabled: boolean) {
           if (skippedCount > 0) {
             toast.error(
               skippedCount === paths.length
-                ? 'This file type is not supported.'
-                : 'Unsupported files were skipped.',
+                ? t('dropZone.unsupportedType')
+                : t('dropZone.unsupportedSkipped'),
               { classNames: { toast: 'scale-[0.75]' } },
             )
           }
         } catch {
-          toast.error('The media could not be added.')
+          toast.error(t('dropZone.addFailed'))
         }
       })
       // Unmounted while the listener was being added
@@ -107,7 +109,7 @@ function usePasteFiles() {
       try {
         const skippedCount = await pasteDroppedFiles()
         if (skippedCount > 0) {
-          toast.error('Unsupported files were skipped.', {
+          toast.error(t('dropZone.unsupportedSkipped'), {
             classNames: { toast: 'scale-[0.75]' },
           })
         }
@@ -184,6 +186,7 @@ function useCompressionStatus() {
 }
 
 function TrayWindow() {
+  const { t } = useTranslation()
   const status = useCompressionStatus()
   const [isPinned, setIsPinned] = useState(false)
   // With "Compress automatically", dropped media is queued instead (Settings -> Drop Zone), also
@@ -240,7 +243,7 @@ function TrayWindow() {
       }
       await closeTrayPopover()
     } catch {
-      toast.error('CompressO could not be opened.')
+      toast.error(t('dropZone.openFailed'))
     }
   }
 
@@ -248,7 +251,7 @@ function TrayWindow() {
     try {
       await quitApp()
     } catch {
-      toast.error('CompressO could not be quit.')
+      toast.error(t('dropZone.quitFailed'))
     }
   }
 
@@ -260,8 +263,8 @@ function TrayWindow() {
         size="sm"
         variant="light"
         radius="full"
-        aria-label={isPinned ? 'Unpin' : 'Pin'}
-        title={isPinned ? 'Unpin' : 'Pin'}
+        aria-label={isPinned ? t('dropZone.unpin') : t('dropZone.pin')}
+        title={isPinned ? t('dropZone.unpin') : t('dropZone.pin')}
         className={cn(
           'absolute z-10 min-w-8 w-8 h-8',
           // On the drop zone's top right corner, which is closer to the edges on Windows
@@ -316,13 +319,18 @@ function TrayWindow() {
           fullWidth
           aria-label={
             status?.state === 'compressing'
-              ? `Open App, ${status.isPaused ? 'paused' : 'compressing'} ${Math.round(status.progress)}%`
-              : 'Open App'
+              ? t(
+                  status.isPaused
+                    ? 'dropZone.openAppPaused'
+                    : 'dropZone.openAppCompressing',
+                  { progress: Math.round(status.progress) },
+                )
+              : t('dropZone.openApp')
           }
         >
           <MainWindowProgress status={status} />
           <Icon name="compresso" size={18} className="relative" />
-          <span className="relative">Open App</span>
+          <span className="relative">{t('dropZone.openApp')}</span>
         </Button>
         <Button
           size="sm"
@@ -336,7 +344,7 @@ function TrayWindow() {
           fullWidth
         >
           <Icon name="power" size={20} />
-          Quit App
+          {t('dropZone.quitApp')}
         </Button>
       </div>
     </div>
@@ -351,6 +359,8 @@ function DropZone({
   isDragging: boolean
   isAutoCompressing: boolean
 }) {
+  const { t } = useTranslation()
+
   return (
     <div
       className={cn(
@@ -364,10 +374,10 @@ function DropZone({
       <Icon name="dropzone" size={50} className="text-primary" />
       <p className="text-[13px] text-center px-8 my-[-5px]">
         {isDragging
-          ? 'Release to add the media'
+          ? t('dropZone.release')
           : isAutoCompressing
-            ? 'Drop or paste media here to compress'
-            : 'Drop or paste media here to store'}
+            ? t('dropZone.dropToCompress')
+            : t('dropZone.dropToStore')}
       </p>
       <p
         className={cn(
@@ -375,7 +385,7 @@ function DropZone({
           !isWindows && 'opacity-70',
         )}
       >
-        Videos, images, or folders...
+        {t('dropZone.mediaTypes')}
       </p>
       {/* Settings -> Drop Zone, here too while nothing is dropped */}
       <div className="mt-1 flex flex-col items-start gap-1.5">
@@ -394,6 +404,8 @@ function DropQueue({
   items: readonly DropQueueItem[]
   isDragging: boolean
 }) {
+  const { t } = useTranslation()
+
   return (
     <div
       className={cn(
@@ -408,7 +420,7 @@ function DropQueue({
           isDragging ? 'text-primary' : MUTED_TEXT,
         )}
       >
-        {isDragging ? 'Release to add the media' : ''}
+        {isDragging ? t('dropZone.release') : ''}
       </p>
       <div className="flex justify-center pb-2">
         <ClipboardWatchSwitch />
@@ -494,6 +506,8 @@ function DroppedFiles({
   /** Compressing, or with unsaved media: the files open once it is free */
   isMainWindowBusy: boolean
 }) {
+  const { t } = useTranslation()
+
   return (
     <div
       className={cn(
@@ -503,7 +517,7 @@ function DroppedFiles({
     >
       <div className="flex items-center justify-between gap-2 pl-3 pr-1.5 pt-2 pb-1">
         <p className="text-xs font-semibold">
-          {files.length} {files.length === 1 ? 'item' : 'items'} ready
+          {t('dropZone.itemsReady', { count: files.length })}
         </p>
         <Button
           isIconOnly
@@ -511,7 +525,7 @@ function DroppedFiles({
           variant="light"
           radius="md"
           className="h-6 min-w-0 pl-2 text-[11px] font-normal"
-          aria-label="Discard all"
+          aria-label={t('dropZone.discardAll')}
           onPress={() => {
             clearDroppedFiles().catch(() => {})
           }}
@@ -538,7 +552,7 @@ function DroppedFiles({
               size="sm"
               variant="light"
               radius="full"
-              aria-label={`Remove ${getName(path)}`}
+              aria-label={t('dropZone.remove', { name: getName(path) })}
               className={cn('min-w-6 w-6 h-6', MUTED_TEXT)}
               onPress={() => {
                 removeDroppedFile(path).catch(() => {})
@@ -556,10 +570,10 @@ function DroppedFiles({
         )}
       >
         {isDragging
-          ? 'Release to add the media'
+          ? t('dropZone.release')
           : isMainWindowBusy
-            ? 'Stored. Open the app to compress them after the current media.'
-            : 'Drop more media, or open the app to start compression.'}
+            ? t('dropZone.storedBusy')
+            : t('dropZone.storedIdle')}
       </p>
       <div className="flex justify-center pb-2">
         <ClipboardWatchSwitch />
@@ -570,6 +584,7 @@ function DroppedFiles({
 
 /** Switches compressing the dropped media automatically (Settings -> Drop Zone) */
 function AutoCompressSwitch() {
+  const { t } = useTranslation()
   const { autoCompress, saveLocation, saveFolder } = useSnapshot(settingsStore)
   // Only with a save location, as nothing can ask where to save
   const canAutoCompress = isAutoCompressAvailable({ saveLocation, saveFolder })
@@ -585,13 +600,10 @@ function AutoCompressSwitch() {
         }}
         classNames={{ label: cn('text-[11px]', MUTED_TEXT) }}
       >
-        Compress automatically
+        {t('settings.dropZone.compression.autoCompress.title')}
       </Switch>
       <InfoTooltip
-        content={
-          !canAutoCompress &&
-          'Choose a save location in Settings, under Output, so the compressed media can be saved without asking.'
-        }
+        content={!canAutoCompress && t('dropZone.needsSaveLocation')}
       />
     </div>
   )
@@ -599,6 +611,7 @@ function AutoCompressSwitch() {
 
 /** Switches watching the clipboard: copied media files are added to the drop zone */
 function ClipboardWatchSwitch() {
+  const { t } = useTranslation()
   const { watchClipboard } = useSnapshot(settingsStore)
 
   return (
@@ -610,7 +623,7 @@ function ClipboardWatchSwitch() {
       }}
       classNames={{ label: cn('text-[11px]', MUTED_TEXT) }}
     >
-      Watch clipboard
+      {t('settings.dropZone.clipboard.watch.title')}
     </Switch>
   )
 }

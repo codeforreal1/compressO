@@ -3,6 +3,7 @@ import { core } from '@tauri-apps/api'
 import { motion } from 'framer-motion'
 import isEqual from 'lodash/isEqual'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { PhotoView } from 'react-photo-view'
 import { OnProgressProps } from 'react-player/base'
 import { toast } from 'sonner'
@@ -48,6 +49,7 @@ type MediaThumbnailProps = {
 }
 
 function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
+  const { t } = useTranslation()
   if (mediaIndex < 0) return
 
   const {
@@ -90,7 +92,7 @@ function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
       !mediaPathRaw ||
       !playerRef.current
     ) {
-      toast.error('Unable to copy frame')
+      toast.error(t('thumbnail.copyFrameUnavailable'))
       return
     }
 
@@ -109,13 +111,13 @@ function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
       const result = await generateVideoThumbnail(mediaPathRaw, timestamp)
 
       await copyFileToClipboard(result.filePath)
-      toast.success('Frame copied to clipboard')
+      toast.success(t('thumbnail.frameCopied'))
     } catch {
-      toast.error('Failed to copy frame to clipboard')
+      toast.error(t('thumbnail.copyFrameFailed'))
     } finally {
       setIsCopyingFrame(false)
     }
-  }, [mediaPathRaw, mediaIndex])
+  }, [mediaPathRaw, mediaIndex, t])
 
   const handleRegenerateThumbnail = useCallback(
     async (timeStamp?: string, retries = 2, forced = false) => {
@@ -446,7 +448,7 @@ function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
     <div className="absolute inset-0 flex items-center justify-center overflow-hidden rounded-3xl border-1 border-zinc-200 dark:border-zinc-900">
       {videoThumbnailPath ? (
         <Image
-          alt="cover art"
+          alt={t('thumbnail.coverArt')}
           src={videoThumbnailPath}
           className="h-full w-full object-contain"
           removeWrapper
@@ -513,7 +515,7 @@ function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
                         disabled={isCopyingFrame}
                       >
                         <Icon name="copy" size={20} />
-                        <span>Copy current frame</span>
+                        <span>{t('thumbnail.copyFrame')}</span>
                       </button>
                     </div>
                   ) : null
@@ -544,8 +546,8 @@ function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
                   if (error.name !== 'AbortError') {
                     toast.warning(
                       isAudioFile
-                        ? 'This audio cannot be played here, but it can still be compressed.'
-                        : 'Switching to image thumbnail...',
+                        ? t('thumbnail.audioUnplayable')
+                        : t('thumbnail.switchingToImage'),
                     )
                     if (appProxy.state.media[mediaIndex].type === 'video') {
                       appProxy.state.media[mediaIndex].previewMode = 'image'
@@ -606,7 +608,11 @@ function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
                     variant="bordered"
                     isIconOnly
                     radius="full"
-                    aria-label={isAudioPlaying ? 'Pause audio' : 'Play audio'}
+                    aria-label={
+                      isAudioPlaying
+                        ? t('thumbnail.pauseAudio')
+                        : t('thumbnail.playAudio')
+                    }
                     className="absolute bottom-4 left-1/2 -translate-x-1/2"
                   >
                     <Icon
@@ -637,7 +643,7 @@ function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
                 >
                   <div style={gifTransformPreview.frameStyle}>
                     <img
-                      alt="image to compress"
+                      alt={t('preview.mediaToCompress')}
                       src={imageToRenderSrc}
                       style={gifTransformPreview.mediaStyle}
                     />
@@ -645,7 +651,7 @@ function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
                 </div>
               ) : (
                 <Image
-                  alt="image to compress"
+                  alt={t('preview.mediaToCompress')}
                   src={imageToRenderSrc}
                   className="object-contain rounded-3xl max-h-[60vh] border-1 border-zinc-200 dark:border-zinc-900 min-w-[100px] min-h-[100px]"
                   onError={() => {
@@ -672,24 +678,14 @@ function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
                       <PopoverContent>
                         <div className="py-2 px-1 max-w-[250px]">
                           {isVideoPreviewAvailable ? (
-                            <p>
-                              This video is unable to play by this app because
-                              it contains advanced codec/configurations. Such
-                              videos require dedicated media players like VLC.
-                            </p>
+                            <p>{t('thumbnail.videoUnplayable')}</p>
                           ) : (
-                            <p>
-                              Video previews are turned off. They can be turned
-                              on in Settings, under General.
-                            </p>
+                            <p>{t('thumbnail.previewsOff')}</p>
                           )}
                           {!isProcessCompleted ? (
                             <>
                               <br />
-                              <p>
-                                Rest assured, you can still apply the output
-                                settings and perform all the conversions.
-                              </p>
+                              <p>{t('thumbnail.stillCompressible')}</p>
                             </>
                           ) : null}
                         </div>
@@ -712,7 +708,7 @@ function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
                         className="!p-0 !min-h-0 !py-2 !w-[unset] !min-w-[unset] !h-0 "
                       >
                         <Tooltip
-                          content="Regenerate Thumbnail"
+                          content={t('thumbnail.regenerate')}
                           className="w-0! h-0!"
                         >
                           <Icon name="image" size={20} />
@@ -739,7 +735,7 @@ function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
                       }
                     >
                       <div>
-                        <Tooltip content="Enlarge image">
+                        <Tooltip content={t('thumbnail.enlarge')}>
                           <Icon
                             name="zoom"
                             size={18}

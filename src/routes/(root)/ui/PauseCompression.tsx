@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
 import Button from '@/components/Button'
@@ -13,20 +14,21 @@ import { appProxy } from '../-state'
  * has nothing after it to pause before.
  */
 function PauseCompression() {
+  const { t } = useTranslation()
   const {
     state: { media, batchId, isBatchPaused, isCompressing },
   } = useSnapshot(appProxy)
 
   if (!isCompressing || media.length < 2 || !batchId) return null
 
-  const label = isBatchPaused ? 'Resume' : 'Pause after the current file'
+  const label = isBatchPaused ? t('queue.resume') : t('queue.pauseAfterCurrent')
 
   return (
     <Tooltip content={label} aria-label={label}>
       <Button
         isIconOnly
         variant="flat"
-        aria-label={isBatchPaused ? 'Resume' : 'Pause'}
+        aria-label={isBatchPaused ? t('queue.resume') : t('queue.pause')}
         className="relative flex-shrink-0"
         onPress={async () => {
           const paused = !appProxy.state.isBatchPaused
@@ -36,8 +38,8 @@ function PauseCompression() {
           } catch {
             toast.error(
               paused
-                ? 'The compression could not be paused.'
-                : 'The compression could not be resumed.',
+                ? t('compression.pauseFailed')
+                : t('compression.resumeFailed'),
             )
           }
         }}

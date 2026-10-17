@@ -61,21 +61,18 @@ pub fn confirm_quit(
         return;
     }
 
+    let texts = super::native_text::get();
     let (title, message, cancel_label) = match reason {
         QuitReason::Compressing => (
-            "Compression in progress",
-            "Media is still being compressed. Quitting now will cancel the compression.",
-            "Continue Compressing",
+            texts.compressing_title,
+            texts.compressing_message,
+            texts.continue_compressing,
         ),
-        QuitReason::UnsavedOutput => (
-            "Media not saved",
-            "Your compressed media is not saved yet. Quitting now will discard it.",
-            "Go Back",
-        ),
+        QuitReason::UnsavedOutput => (texts.unsaved_title, texts.unsaved_message, texts.go_back),
         QuitReason::DropQueue => (
-            "Compression in progress",
-            "Media in the drop zone is still being compressed. Quitting now will stop it.",
-            "Continue Compressing",
+            texts.compressing_title,
+            texts.drop_queue_message,
+            texts.continue_compressing,
         ),
     };
 
@@ -84,10 +81,7 @@ pub fn confirm_quit(
         .message(message)
         .title(title)
         .kind(MessageDialogKind::Warning)
-        .buttons(MessageDialogButtons::OkCancelCustom(
-            "Quit".to_string(),
-            cancel_label.to_string(),
-        ))
+        .buttons(MessageDialogButtons::OkCancelCustom(texts.quit, cancel_label))
         .show(move |is_confirmed| {
             IS_CONFIRMATION_OPEN.store(false, Ordering::SeqCst);
             if is_confirmed {

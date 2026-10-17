@@ -2,7 +2,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use tauri::AppHandle;
 use tauri_plugin_autostart::ManagerExt;
 
-use crate::sys::quit;
+use crate::sys::{native_text, quit};
 
 /// Restarts the app (e.g. to apply a setting read when it starts). Asks first while media is being
 /// compressed or not saved yet, since a restart cannot be stopped once it is requested.
@@ -15,6 +15,26 @@ pub fn restart_app(app: AppHandle) {
         }
         None => app.request_restart(),
     }
+}
+
+/// The native interface's texts in the app's language (see `native_text`), sent by the frontend
+/// when it starts & when the language changes: the menus are rebuilt with them
+#[tauri::command]
+pub fn set_native_texts(app: AppHandle, texts: native_text::NativeTexts) {
+    if !native_text::set(texts) {
+        return;
+    }
+    #[cfg(target_os = "macos")]
+    if let Err(err) = crate::macos::app_menu::update(&app) {
+        log::error!("Failed to update the app menu: {}", err);
+    }
+    // The macOS tray icon's menu is built each time it is shown
+    #[cfg(windows)]
+    if let Err(err) = crate::tauri_commands::tray::update_tray_icon_menu(&app) {
+        log::error!("Failed to update the tray icon's menu: {}", err);
+    }
+    #[cfg(not(any(target_os = "macos", windows)))]
+    let _ = app;
 }
 
 /// "Prevent sleep while compressing" & "Keep the screen on" (Settings -> General), for the

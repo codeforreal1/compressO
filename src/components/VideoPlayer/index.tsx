@@ -15,6 +15,7 @@ import { BaseReactPlayerProps } from 'react-player/base'
 import { ClassNameValue } from 'tailwind-merge'
 
 import { usePlayPauseOnSpace } from '@/hooks/usePlayPauseOnSpace'
+import { t } from '@/i18n'
 import { MediaTransformHistory } from '@/types/compression'
 import { cn } from '@/utils/tailwind'
 import { getTransformPreview } from '@/utils/transform'
@@ -526,7 +527,7 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                 variant="bordered"
                 isIconOnly
                 radius="full"
-                aria-label={isPlaying ? 'Pause' : 'Play'}
+                aria-label={isPlaying ? t('player.pause') : t('player.play')}
                 className="absolute bottom-4 left-1/2 -translate-x-1/2 cursor-pointer"
               >
                 <Icon

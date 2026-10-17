@@ -2,6 +2,7 @@ import { core } from '@tauri-apps/api'
 import { AnimatePresence, motion } from 'framer-motion'
 import type React from 'react'
 import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import Button from '@/components/Button'
 import Icon from '@/components/Icon'
@@ -113,6 +114,7 @@ function IslandTile({
   /** Position in the virtual grid */
   style: React.CSSProperties
 }) {
+  const { t } = useTranslation()
   const { src, kind } = useThumbnail(item)
   const name = getName(item.path)
   const reduction =
@@ -132,7 +134,7 @@ function IslandTile({
       className="group absolute rounded-xl overflow-hidden bg-white/10"
       title={
         item.status === 'done' && item.originalSize && item.outputSize != null
-          ? `${name}: ${formatBytes(item.originalSize)} to ${formatBytes(item.outputSize)}`
+          ? `${name}: ${t('common.sizeChange', { from: formatBytes(item.originalSize), to: formatBytes(item.outputSize) })}`
           : (item.message ?? name)
       }
     >
@@ -163,7 +165,7 @@ function IslandTile({
       {item.status === 'compressing' ? (
         <div className="absolute inset-0 flex items-center justify-center bg-black/50">
           <CircularProgress
-            aria-label={`Compressing ${name}`}
+            aria-label={t('queue.compressingName', { name })}
             value={item.progress}
             showValueLabel
             strokeWidth={3}
@@ -177,19 +179,21 @@ function IslandTile({
         </div>
       ) : item.status === 'waiting' || item.status === 'cancelled' ? (
         <div className="absolute bottom-1 left-1 right-1 text-[10px] text-white/70 truncate">
-          {item.status === 'waiting' ? 'Waiting' : 'Cancelled'}
+          {item.status === 'waiting'
+            ? t('queue.status.waiting')
+            : t('queue.status.cancelled')}
         </div>
       ) : item.status === 'done' ? (
         <div className="absolute bottom-1 left-1 flex items-center gap-0.5 rounded-full bg-black/60 px-1.5 py-0.5 text-[10px] text-white">
           <Icon name="tick" size={10} className="text-success" />
           {reduction != null && reduction > 0
-            ? `${reduction}% smaller`
-            : 'Done'}
+            ? t('queue.status.smaller', { value: reduction })
+            : t('queue.status.done')}
         </div>
       ) : (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-danger/40 text-white text-[10px]">
           <Icon name="warning" size={18} />
-          Failed
+          {t('queue.status.failed')}
         </div>
       )}
 
@@ -197,14 +201,14 @@ function IslandTile({
       <div className="absolute top-1 right-1 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
         {item.status === 'done' && item.savedPath ? (
           <Tooltip
-            content="Show in File Explorer"
-            aria-label="Show in File Explorer"
+            content={t('common.showInFileManager')}
+            aria-label={t('common.showInFileManager')}
           >
             <Button
               isIconOnly
               size="sm"
               radius="full"
-              aria-label={`Show ${name} in File Explorer`}
+              aria-label={t('common.showNameInFileManager', { name })}
               className="min-w-6 w-6 h-6 bg-black/60 text-white"
               onPress={() => {
                 showItemInFileManager(item.savedPath!).catch(() => {})
@@ -215,12 +219,15 @@ function IslandTile({
           </Tooltip>
         ) : null}
         {item.status === 'failed' || item.status === 'cancelled' ? (
-          <Tooltip content="Try again" aria-label="Try again">
+          <Tooltip
+            content={t('queue.tryAgain')}
+            aria-label={t('queue.tryAgain')}
+          >
             <Button
               isIconOnly
               size="sm"
               radius="full"
-              aria-label={`Try ${name} again`}
+              aria-label={t('queue.tryNameAgain', { name })}
               className="min-w-6 w-6 h-6 bg-black/60 text-white"
               onPress={() => {
                 retryDropQueueItem(item.id).catch(() => {})
@@ -235,7 +242,7 @@ function IslandTile({
             isIconOnly
             size="sm"
             radius="full"
-            aria-label={`Remove ${name}`}
+            aria-label={t('dropZone.remove', { name })}
             className="min-w-6 w-6 h-6 bg-black/60 text-white"
             onPress={() => {
               removeDropQueueItem(item.id).catch(() => {})
@@ -333,6 +340,7 @@ function IslandGrid({ items }: { items: readonly DropQueueItem[] }) {
  * drop zone has media, expanding into a grid of it
  */
 function DropZoneIsland() {
+  const { t } = useTranslation()
   const items = useDropQueue()
   const isPaused = useDropQueuePaused()
   const [isExpanded, setIsExpanded] = useState(false)
@@ -430,16 +438,22 @@ function DropZoneIsland() {
                       {pendingCount ? (
                         <Tooltip
                           content={
-                            isPaused ? 'Resume' : 'Pause after the current file'
+                            isPaused
+                              ? t('queue.resume')
+                              : t('queue.pauseAfterCurrent')
                           }
-                          aria-label={isPaused ? 'Resume' : 'Pause'}
+                          aria-label={
+                            isPaused ? t('queue.resume') : t('queue.pause')
+                          }
                         >
                           <Button
                             isIconOnly
                             size="sm"
                             variant="light"
                             radius="full"
-                            aria-label={isPaused ? 'Resume' : 'Pause'}
+                            aria-label={
+                              isPaused ? t('queue.resume') : t('queue.pause')
+                            }
                             className="min-w-6 w-6 h-6 text-white/80"
                             onPress={() => {
                               setDropQueuePaused(!isPaused).catch(() => {})
@@ -455,16 +469,22 @@ function DropZoneIsland() {
                       {/* Stop first (while compressing), then clear what is finished */}
                       <Tooltip
                         content={
-                          pendingCount ? 'Stop compression' : 'Clear all'
+                          pendingCount
+                            ? t('queue.stopCompression')
+                            : t('queue.clearAll')
                         }
-                        aria-label={pendingCount ? 'Stop' : 'Clear'}
+                        aria-label={
+                          pendingCount ? t('queue.stop') : t('queue.clear')
+                        }
                       >
                         <Button
                           isIconOnly
                           size="sm"
                           variant="light"
                           radius="full"
-                          aria-label={pendingCount ? 'Stop' : 'Clear'}
+                          aria-label={
+                            pendingCount ? t('queue.stop') : t('queue.clear')
+                          }
                           className={cn(
                             'min-w-6 w-6 h-6',
                             pendingCount ? 'text-danger' : 'text-white/80',
@@ -487,7 +507,7 @@ function DropZoneIsland() {
                         size="sm"
                         variant="light"
                         radius="full"
-                        aria-label="Collapse"
+                        aria-label={t('queue.collapse')}
                         className="min-w-6 w-6 h-6 text-white/80"
                         onPress={() => setIsExpanded(false)}
                       >
@@ -510,14 +530,14 @@ function DropZoneIsland() {
                 >
                   <button
                     type="button"
-                    aria-label="Show the drop zone"
+                    aria-label={t('queue.showDropZone')}
                     className="flex items-center gap-2 h-full"
                   >
                     <Icon name="dropzone" size={18} className="text-primary" />
                     <span>
                       {pendingCount
                         ? getSummary(items, isPaused)
-                        : `${finishedCount} ${finishedCount === 1 ? 'file' : 'files'} compressed`}
+                        : t('queue.filesCompressed', { count: finishedCount })}
                     </span>
                   </button>
                   {pendingCount ? (
@@ -545,8 +565,8 @@ function DropZoneIsland() {
                           evt.stopPropagation()
                           clearFinishedDropQueue().catch(() => {})
                         }}
-                        aria-label="Clear the finished media"
-                        title="Clear the finished media"
+                        aria-label={t('queue.clearFinished')}
+                        title={t('queue.clearFinished')}
                         className="absolute inset-0 flex items-center justify-center rounded-full text-white/80 opacity-0 pointer-events-none transition-opacity duration-150 group-hover:opacity-100 group-hover:pointer-events-auto hover:bg-white/15 hover:text-white"
                       >
                         <Icon name="cross" size={12} />

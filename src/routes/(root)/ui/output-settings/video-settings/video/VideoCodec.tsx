@@ -1,6 +1,7 @@
 import { SelectItem, SelectSection } from '@heroui/react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useCallback, useEffect, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
 import Icon from '@/components/Icon'
@@ -19,6 +20,7 @@ type VideoCodecProps = {
 }
 
 function VideoCodec({ mediaIndex }: VideoCodecProps) {
+  const { t, i18n } = useTranslation()
   const {
     state: {
       media,
@@ -163,11 +165,11 @@ function VideoCodec({ mediaIndex }: VideoCodecProps) {
     : []
   const codecNote =
     shouldEnableCustomVideoCodec && selectedCodec && skippedVideoCount > 0
-      ? `${selectedCodec.name} cannot be used in ${formatList(skippedContainers)} files, so ${
-          skippedVideoCount === 1
-            ? '1 video keeps its default codec'
-            : `${skippedVideoCount} videos keep their default codec`
-        }.`
+      ? t('codecs.unusableIn', {
+          codec: selectedCodec.name,
+          containers: formatList(skippedContainers, i18n.language),
+          count: skippedVideoCount,
+        })
       : null
 
   return (
@@ -180,7 +182,7 @@ function VideoCodec({ mediaIndex }: VideoCodecProps) {
           isDisabled={shouldDisableInput}
         >
           <p className="text-gray-600 dark:text-gray-400 text-sm mr-2 w-full">
-            Codec
+            {t('codecs.title')}
           </p>
         </Switch>
         <InfoTooltip content={!shouldDisableInput && codecNote} />
@@ -190,7 +192,7 @@ function VideoCodec({ mediaIndex }: VideoCodecProps) {
           <motion.div {...slideDownTransition}>
             <Select
               fullWidth
-              label="Select Codec:"
+              label={t('codecs.select')}
               className="block flex-shrink-0 rounded-2xl !mt-8"
               selectedKeys={[initialCodecValue]}
               size="sm"
@@ -212,12 +214,12 @@ function VideoCodec({ mediaIndex }: VideoCodecProps) {
             >
               <SelectItem
                 key="-"
-                textValue="Default"
+                textValue={t('codecs.default')}
                 className="flex justify-center items-center"
                 endContent={
                   <Tooltip
-                    content="Default codec for the selected container"
-                    aria-label="Default codec for the selected container"
+                    content={t('codecs.defaultDescription')}
+                    aria-label={t('codecs.defaultDescription')}
                   >
                     <Icon
                       name="info"
@@ -228,12 +230,15 @@ function VideoCodec({ mediaIndex }: VideoCodecProps) {
                 }
               >
                 <div className="flex flex-col">
-                  <span className="text-sm">Default</span>
+                  <span className="text-sm">{t('codecs.default')}</span>
                 </div>
               </SelectItem>
               <SelectSection>
                 {codecOptions.map((codec) => {
-                  const videoCountText = `${codec.videoCount} of ${outputContainers.length} ${outputContainers.length === 1 ? 'video' : 'videos'}`
+                  const videoCountText = t('codecs.videoCount', {
+                    count: outputContainers.length,
+                    usable: codec.videoCount,
+                  })
                   const isPartial =
                     isBatch && codec.videoCount < outputContainers.length
                   return (
@@ -244,8 +249,14 @@ function VideoCodec({ mediaIndex }: VideoCodecProps) {
                       endContent={
                         isPartial && codec.videoCount > 0 ? (
                           <Tooltip
-                            content={`Only ${videoCountText} can use ${codec.name}. The others keep their default codec.`}
-                            aria-label={`Only ${videoCountText} can use ${codec.name}`}
+                            content={t('codecs.partial', {
+                              videos: videoCountText,
+                              codec: codec.name,
+                            })}
+                            aria-label={t('codecs.partial', {
+                              videos: videoCountText,
+                              codec: codec.name,
+                            })}
                             className="max-w-64"
                           >
                             <Icon
@@ -280,11 +291,9 @@ function VideoCodec({ mediaIndex }: VideoCodecProps) {
   )
 }
 
-/** "MP4", "MP4 and TS", "MP4, TS and AVI" */
-function formatList(items: string[]) {
-  return items.length > 1
-    ? `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}`
-    : (items[0] ?? '')
+/** "MP4", "MP4 and TS", "MP4, TS and AVI", in the interface's language */
+function formatList(items: string[], language: string) {
+  return new Intl.ListFormat(language, { type: 'conjunction' }).format(items)
 }
 
 export default VideoCodec

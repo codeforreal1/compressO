@@ -1,9 +1,11 @@
 import { Checkbox } from '@heroui/react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useCallback, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
 import Switch from '@/components/Switch'
+import { t } from '@/i18n'
 import { AudioStream } from '@/types/compression'
 import { slideDownTransition } from '@/utils/animation'
 import { cn } from '@/utils/tailwind'
@@ -17,7 +19,7 @@ type AudioTracksProps = {
 function getLanguageFromTags(
   tags: readonly (readonly [string, string])[] | null,
 ): string {
-  if (!tags) return 'Unknown'
+  if (!tags) return t('subtitles.unknownLanguage')
   const langTag = tags.find(([key]) => key.toLowerCase() === 'language')
   return langTag ? langTag[1] : '-'
 }
@@ -31,6 +33,7 @@ function getTitleFromTags(
 }
 
 function AudioTracks({ mediaIndex }: AudioTracksProps) {
+  const { t } = useTranslation()
   if (mediaIndex < 0) return null
 
   const {
@@ -180,7 +183,7 @@ function AudioTracks({ mediaIndex }: AudioTracksProps) {
         isDisabled={shouldDisableInput || audioStreams.length === 0}
       >
         <p className="text-gray-600 dark:text-gray-400 text-sm mr-2 w-full">
-          Tracks
+          {t('audio.tracks')}
         </p>
       </Switch>
       <AnimatePresence mode="wait">
@@ -212,13 +215,13 @@ function AudioTracks({ mediaIndex }: AudioTracksProps) {
                   >
                     <div className="flex flex-col ml-2">
                       <span className="text-sm font-medium">
-                        Track #{index + 1}
+                        {t('audio.track', { number: index + 1 })}
                         {title ? ` - ${title}` : ''}
                       </span>
                       <span className="text-xs text-gray-500 dark:text-gray-400">
                         {language ? `${language} • ` : ''}
-                        {stream.codec.toUpperCase?.() ?? ''} • {stream.channels}{' '}
-                        channels
+                        {stream.codec.toUpperCase?.() ?? ''} •{' '}
+                        {t('audio.channelCount', { count: stream.channels })}
                       </span>
                     </div>
                   </Checkbox>

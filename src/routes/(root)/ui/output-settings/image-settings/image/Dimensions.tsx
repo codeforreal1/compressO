@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import React, { useCallback, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { subscribe, useSnapshot } from 'valtio'
 import { subscribeKey } from 'valtio/utils'
 
@@ -22,6 +23,7 @@ type DimensionsProps = {
 }
 
 function Dimensions({ mediaIndex }: DimensionsProps) {
+  const { t } = useTranslation()
   if (mediaIndex < 0) return
 
   const {
@@ -257,7 +259,7 @@ function Dimensions({ mediaIndex }: DimensionsProps) {
           isDisabled={shouldDisableInput}
         >
           <p className="text-gray-600 dark:text-gray-400 text-sm mr-2 w-full">
-            Resolution
+            {t('dimensions.resolution')}
           </p>
         </Switch>
         {/* Always rendered (only faded) so showing it never shifts the layout; it is only needed
@@ -270,12 +272,12 @@ function Dimensions({ mediaIndex }: DimensionsProps) {
           isDisabled={!canRevert}
           aria-hidden={!canRevert}
           tabIndex={canRevert ? undefined : -1}
-          aria-label="Revert to original resolution"
+          aria-label={t('dimensions.revert')}
           className={`ml-auto transition-opacity ${canRevert ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         >
           <Tooltip
-            content="Revert to original resolution"
-            aria-label="Revert to original resolution"
+            content={t('dimensions.revert')}
+            aria-label={t('dimensions.revert')}
           >
             <Icon name="redo" size={18} className="-scale-x-100" />
           </Tooltip>
@@ -286,7 +288,7 @@ function Dimensions({ mediaIndex }: DimensionsProps) {
           <motion.div {...slideDownTransition}>
             <div className="mt-2 flex items-center space-x-2">
               <NumberInput
-                label="Width"
+                label={t('dimensions.width')}
                 className="max-w-[120px] xl:max-w-[150px]"
                 value={dimensions?.width}
                 onValueChange={(val) => handleChange(val, 'width')}
@@ -295,7 +297,7 @@ function Dimensions({ mediaIndex }: DimensionsProps) {
                 isDisabled={!shouldEnableCustomDimensions || shouldDisableInput}
               />
               <NumberInput
-                label="Height"
+                label={t('dimensions.height')}
                 className="max-w-[120px] xl:max-w-[150px]"
                 value={dimensions?.height}
                 onValueChange={(val) => handleChange(val, 'height')}

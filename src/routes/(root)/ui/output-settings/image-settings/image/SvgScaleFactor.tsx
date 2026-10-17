@@ -1,5 +1,6 @@
 import { cloneDeep } from 'lodash'
 import { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
 import Slider from '@/components/Slider'
@@ -19,6 +20,7 @@ const SVG_SCALE_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8] as const
 const imageConfigInitialStateClone = cloneDeep(imageConfigInitialState)
 
 const SvgScaleFactor = ({ mediaIndex }: SvgScaleFactorProps) => {
+  const { t } = useTranslation()
   const {
     state: {
       media,
@@ -72,7 +74,7 @@ const SvgScaleFactor = ({ mediaIndex }: SvgScaleFactorProps) => {
 
   return (
     <Slider
-      label="Scale Factor"
+      label={t('svg.scaleFactor')}
       step={1}
       minValue={1}
       maxValue={8}

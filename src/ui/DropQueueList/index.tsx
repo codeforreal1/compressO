@@ -1,5 +1,6 @@
 import type React from 'react'
 import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import Button from '@/components/Button'
 import Icon from '@/components/Icon'
@@ -7,6 +8,7 @@ import Progress from '@/components/Progress'
 import ScrollShadow from '@/components/ScrollShadow'
 import Tooltip from '@/components/Tooltip'
 import { useDropQueuePaused } from '@/hooks/useDropQueue'
+import { t } from '@/i18n'
 import {
   cancelDropQueue,
   clearFinishedDropQueue,
@@ -36,24 +38,27 @@ export function getSummary(items: readonly DropQueueItem[], isPaused = false) {
     ).length
     if (cancelledCount) {
       return failedCount
-        ? `${cancelledCount} cancelled, ${failedCount} could not be compressed`
-        : `${cancelledCount} cancelled`
+        ? t('queue.summary.cancelledAndFailed', {
+            cancelled: t('queue.summary.cancelled', { count: cancelledCount }),
+            failed: t('queue.summary.failed', { count: failedCount }),
+          })
+        : t('queue.summary.cancelled', { count: cancelledCount })
     }
     return failedCount
-      ? `${failedCount} could not be compressed`
-      : 'Compression complete'
+      ? t('queue.summary.failed', { count: failedCount })
+      : t('queue.summary.complete')
   }
   const finishedCount = items.length - pendingCount
   const position = finishedCount + 1
   const isCompressing = items.some((item) => item.status === 'compressing')
   if (isPaused) {
     return isCompressing
-      ? `Pausing after ${position} of ${items.length}`
-      : `Paused, ${pendingCount} waiting`
+      ? t('queue.summary.pausing', { position, total: items.length })
+      : t('queue.summary.paused', { count: pendingCount })
   }
   return isCompressing
-    ? `Compressing ${position} of ${items.length}`
-    : `${pendingCount} waiting`
+    ? t('queue.summary.compressing', { position, total: items.length })
+    : t('queue.summary.waiting', { count: pendingCount })
 }
 
 function QueueItem({
@@ -66,6 +71,7 @@ function QueueItem({
   /** Position in the virtual list */
   style: React.CSSProperties
 }) {
+  const { t } = useTranslation()
   const name = getName(item.path)
   const iconButtonClassName = isCompact ? 'min-w-4 w-4 h-4' : 'min-w-6 w-6 h-6'
 
@@ -86,7 +92,7 @@ function QueueItem({
         </p>
         {item.status === 'compressing' ? (
           <Progress
-            aria-label={`Compressing ${name}`}
+            aria-label={t('queue.compressingName', { name })}
             size="sm"
             value={item.progress}
             classNames={{ base: 'mt-1', track: 'h-1', indicator: 'h-1' }}
@@ -101,14 +107,14 @@ function QueueItem({
             title={item.message ?? undefined}
           >
             {item.status === 'waiting'
-              ? 'Waiting'
+              ? t('queue.status.waiting')
               : item.status === 'cancelled'
-                ? 'Cancelled'
+                ? t('queue.status.cancelled')
                 : item.status === 'failed'
-                  ? (item.message ?? 'The media could not be compressed.')
+                  ? (item.message ?? t('queue.compressFailed'))
                   : item.originalSize != null && item.outputSize != null
-                    ? `${formatBytes(item.originalSize)} to ${formatBytes(item.outputSize)}${item.message ? `. ${item.message}` : ''}`
-                    : (item.message ?? 'Done')}
+                    ? `${t('common.sizeChange', { from: formatBytes(item.originalSize), to: formatBytes(item.outputSize) })}${item.message ? `. ${item.message}` : ''}`
+                    : (item.message ?? t('queue.status.done'))}
           </p>
         )}
       </div>
@@ -124,15 +130,15 @@ function QueueItem({
       ) : null}
       {item.status === 'done' && item.savedPath ? (
         <Tooltip
-          content="Show in File Explorer"
-          aria-label="Show in File Explorer"
+          content={t('common.showInFileManager')}
+          aria-label={t('common.showInFileManager')}
         >
           <Button
             isIconOnly
             size="sm"
             variant="light"
             radius="full"
-            aria-label={`Show ${name} in File Explorer`}
+            aria-label={t('common.showNameInFileManager', { name })}
             className={cn(iconButtonClassName, 'text-success')}
             onPress={() => {
               showItemInFileManager(item.savedPath!).catch(() => {})
@@ -143,13 +149,13 @@ function QueueItem({
         </Tooltip>
       ) : null}
       {item.status === 'failed' || item.status === 'cancelled' ? (
-        <Tooltip content="Try again" aria-label="Try again">
+        <Tooltip content={t('queue.tryAgain')} aria-label={t('queue.tryAgain')}>
           <Button
             isIconOnly
             size="sm"
             variant="light"
             radius="full"
-            aria-label={`Try ${name} again`}
+            aria-label={t('queue.tryNameAgain', { name })}
             className={cn(
               iconButtonClassName,
               'text-zinc-500 dark:text-zinc-400',
@@ -168,7 +174,7 @@ function QueueItem({
           size="sm"
           variant="light"
           radius="full"
-          aria-label={`Remove ${name}`}
+          aria-label={t('dropZone.remove', { name })}
           className={cn(
             iconButtonClassName,
             'text-zinc-500 dark:text-zinc-400',
@@ -282,6 +288,7 @@ function DropQueueList({
   )
 
   const isPaused = useDropQueuePaused()
+  const { t } = useTranslation()
 
   return (
     <div className={cn('flex flex-col min-h-0', className)}>
@@ -302,8 +309,10 @@ function DropQueueList({
               variant="light"
               radius="md"
               className="min-w-6 w-6 h-6"
-              aria-label={isPaused ? 'Resume' : 'Pause'}
-              title={isPaused ? 'Resume' : 'Pause after the current file'}
+              aria-label={isPaused ? t('queue.resume') : t('queue.pause')}
+              title={
+                isPaused ? t('queue.resume') : t('queue.pauseAfterCurrent')
+              }
               onPress={() => {
                 setDropQueuePaused(!isPaused).catch(() => {})
               }}
@@ -318,11 +327,9 @@ function DropQueueList({
             variant="light"
             radius="md"
             className={cn('min-w-6 w-6 h-6', isActive && 'text-danger')}
-            aria-label={isActive ? 'Stop' : 'Clear'}
+            aria-label={isActive ? t('queue.stop') : t('queue.clear')}
             title={
-              isActive
-                ? 'Stop compressing and cancel the waiting media'
-                : 'Clear the finished media'
+              isActive ? t('queue.stopAndCancel') : t('queue.clearFinished')
             }
             onPress={() => {
               ;(isActive ? cancelDropQueue() : clearFinishedDropQueue()).catch(

@@ -1,6 +1,7 @@
 import { proxy, subscribe } from 'valtio'
 
 import * as constants from '@/constants'
+import { isLanguageCode, type LanguageCode } from '@/i18n/languages'
 import { STANDARD_PRESET_ID } from '@/types/preset'
 
 export const DEFAULT_OUTPUT_FILE_PREFIX = 'compressO-'
@@ -91,6 +92,8 @@ export type SettingsState = {
    * icon; on by default). Whether the app opens at login is the system's setting, not kept here.
    */
   openInMenuBarOnly: boolean
+  /** Language of the interface (Settings -> General), English by default */
+  language: LanguageCode
 }
 
 // Replaced by `saveLargerOutputs`, which defaults to on
@@ -146,7 +149,14 @@ function readSettings(): SettingsState {
       localStorage.getItem(constants.keepScreenOnWhileCompressing) === 'true',
     openInMenuBarOnly:
       localStorage.getItem(constants.openInMenuBarOnly) !== 'false',
+    language: readLanguage(),
   }
+}
+
+/** The stored language, or English when none (or an unknown one) is stored */
+function readLanguage(): LanguageCode {
+  const stored = localStorage.getItem(constants.language)
+  return isLanguageCode(stored) ? stored : 'en'
 }
 
 export const settingsStore = proxy<SettingsState>(readSettings())
@@ -163,6 +173,7 @@ window.addEventListener('storage', (evt) => {
 })
 
 subscribe(settingsStore, () => {
+  localStorage.setItem(constants.language, settingsStore.language)
   localStorage.setItem(
     constants.outputFilePrefix,
     settingsStore.outputFilePrefix,

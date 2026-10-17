@@ -60,3 +60,11 @@ export function takeOpenedAtLogin() {
 export function getLogFilePath() {
   return core.invoke<string>('get_log_file_path')
 }
+
+/**
+ * The native interface's texts (the menus, the quit confirmation) in the app's language, which the
+ * backend shows from now on
+ */
+export function setNativeTexts(texts: Record<string, string>) {
+  return core.invoke<void>('set_native_texts', { texts })
+}

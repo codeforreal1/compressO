@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import React, { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
 import Button from '@/components/Button'
@@ -41,6 +42,7 @@ function PreviewSingleMedia({
   mediaIndex,
   headerEnd,
 }: PreviewSingleMediaProps) {
+  const { t } = useTranslation()
   if (mediaIndex < 0) return
 
   const {
@@ -184,8 +186,8 @@ function PreviewSingleMedia({
             </Code>
             {mediaFile?.pathRaw ? (
               <Tooltip
-                content="Show in File Explorer"
-                aria-label="Show in File Explorer"
+                content={t('common.showInFileManager')}
+                aria-label={t('common.showInFileManager')}
               >
                 <Button
                   size="sm"
@@ -194,7 +196,7 @@ function PreviewSingleMedia({
                   onPress={() => {
                     if (mediaFile.pathRaw) {
                       showItemInFileManager(mediaFile.pathRaw).catch(() => {
-                        toast.error('The file could not be shown.')
+                        toast.error(t('preview.showFailed'))
                       })
                     }
                   }}
@@ -219,10 +221,10 @@ function PreviewSingleMedia({
                     String(isSelected),
                   )
                 }}
-                aria-label="Compare"
+                aria-label={t('preview.compare')}
               >
                 <span className="text-xs text-zinc-600 dark:text-zinc-400">
-                  Compare
+                  {t('preview.compare')}
                 </span>
               </Switch>
             ) : null}
@@ -234,16 +236,19 @@ function PreviewSingleMedia({
                   setShowOriginal(!isSelected)
                   localStorage.setItem(constants.showEdits, String(isSelected))
                 }}
-                aria-label="Show edits"
+                aria-label={t('preview.showEdits')}
               >
                 <span className="text-xs text-zinc-600 dark:text-zinc-400">
-                  Show edits
+                  {t('preview.showEdits')}
                 </span>
               </Switch>
             ) : null}
             {/* Not when customizing a media of a batch, which has its own "Add more" card */}
             {media.length === 1 && !isProcessCompleted && !isEditing ? (
-              <Tooltip content="Add more media" aria-label="Add more media">
+              <Tooltip
+                content={t('batch.addMoreMedia')}
+                aria-label={t('batch.addMoreMedia')}
+              >
                 <Button
                   size="sm"
                   variant="flat"
@@ -252,7 +257,7 @@ function PreviewSingleMedia({
                   className="h-7 min-w-[unset] px-3 text-xs"
                 >
                   <Icon name="addMedia" size={14} />
-                  Add more
+                  {t('batch.addMore')}
                 </Button>
               </Tooltip>
             ) : null}
@@ -291,7 +296,8 @@ function PreviewSingleMedia({
                 {compressedSizeDiff.toFixed(2)?.endsWith('.00')
                   ? compressedSizeDiff.toFixed(2)?.slice(0, -3)
                   : compressedSizeDiff.toFixed(2)}
-                %<span className="text-large block">smaller</span>
+                %
+                <span className="text-large block">{t('preview.smaller')}</span>
               </p>
             ) : null}
           </section>
@@ -299,14 +305,18 @@ function PreviewSingleMedia({
           <section className={cn(['my-4 mb-2', styles.videoMetadata])}>
             <>
               <div>
-                <p className=" text-gray-600 dark:text-gray-400">Size</p>
+                <p className=" text-gray-600 dark:text-gray-400">
+                  {t('preview.size')}
+                </p>
                 <span className="block font-black">{mediaSize}</span>
               </div>
               <Divider orientation="vertical" className="h-8" />
             </>
             <>
               <div>
-                <p className=" text-gray-600 dark:text-gray-400">Extension</p>
+                <p className=" text-gray-600 dark:text-gray-400">
+                  {t('batch.extension')}
+                </p>
                 <span className="block font-black">
                   {mediaExtension ?? '-'}
                 </span>
@@ -317,7 +327,9 @@ function PreviewSingleMedia({
             {videoDuration ? (
               <>
                 <div>
-                  <p className=" text-gray-600 dark:text-gray-400">Duration</p>
+                  <p className=" text-gray-600 dark:text-gray-400">
+                    {t('batch.duration')}
+                  </p>
                   <span className="block font-black">
                     {formatDuration(videoDuration) ?? '-'}
                   </span>
@@ -330,7 +342,7 @@ function PreviewSingleMedia({
                 <>
                   <div>
                     <p className=" text-gray-600 dark:text-gray-400">
-                      Dimensions
+                      {t('batch.dimensions')}
                     </p>
                     <span className="block font-black">
                       {dimensions.width ?? '-'} x {dimensions.height ?? '-'}
@@ -344,7 +356,9 @@ function PreviewSingleMedia({
               {fps ? (
                 <>
                   <div>
-                    <p className=" text-gray-600 dark:text-gray-400">FPS</p>
+                    <p className=" text-gray-600 dark:text-gray-400">
+                      {t('preview.fps')}
+                    </p>
                     <span className="block font-black">{fps ?? '-'}</span>
                   </div>
                   <Divider orientation="vertical" className="h-8" />{' '}
@@ -359,7 +373,7 @@ function PreviewSingleMedia({
                   }}
                   size="sm"
                 >
-                  View Full Info
+                  {t('preview.viewFullInfo')}
                 </Button>
               </div>
             </>
@@ -438,18 +452,20 @@ function PreviewSingleMedia({
             value: 'text-3xl font-semibold text-primary',
           }}
           strokeWidth={2}
-          aria-label={`Progress-${compressionProgress}%`}
+          aria-label={t('preview.progress', {
+            value: compressionProgress?.toFixed(0) ?? 0,
+          })}
         />
         <Image
-          alt="video to compress"
+          alt={t('preview.mediaToCompress')}
           src={thumbnailPath as string}
           className="z-0 w-[400px] h-[400px] min-w-[400px] min-h-[400px] hlg:w-[450px] hlg:h-[450px] hlg:min-w-[450px] hlg:min-h-[450px] object-cover rounded-full flex-shrink-0"
         />
         <div className="flex flex-col justify-center absolute top-1/2 left-1/2  translate-x-[-50%] translate-y-[-50%] z-[11] text-white1">
           <p className=" text-sm mt-10 text-center animate-pulse">
             {isWaitingForDropZone
-              ? 'Waiting for the drop zone...'
-              : 'Processing...'}
+              ? t('preview.waitingForDropZone')
+              : t('preview.processing')}
           </p>
           <p
             className={`text-2xl text-center font-bold my-2 opacity-${

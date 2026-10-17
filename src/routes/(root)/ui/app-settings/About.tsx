@@ -1,3 +1,4 @@
+import { Trans, useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
 import Button from '@/components/Button'
@@ -13,6 +14,7 @@ import Link from '@/tauri/components/Link'
 import { SettingsRow, SettingsSection } from './SettingsLayout'
 
 function About() {
+  const { t } = useTranslation()
   const {
     isUpdateAvailable,
     latestVersion,
@@ -32,7 +34,7 @@ function About() {
         <Image
           disableAnimation
           src="/logo.png"
-          alt="logo"
+          alt="CompressO"
           width={56}
           height={56}
         />
@@ -41,20 +43,22 @@ function About() {
             <h2 className="text-2xl font-bold text-primary">CompressO</h2>
           </Link>
           <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            Compress any image/video into a tiny size.
+            {t('settings.about.tagline')}
           </p>
         </div>
       </div>
 
-      <SettingsSection title="About">
+      <SettingsSection title={t('settings.pages.about')}>
         <SettingsRow
-          title={`Version ${currentVersion || window.__appVersion || ''}`}
+          title={t('settings.about.version', {
+            version: currentVersion || window.__appVersion || '',
+          })}
           description={
             hasNewVersion
-              ? `Version ${latestVersion} is available. Restart the app after updating to use it.`
+              ? t('settings.about.newVersion', { version: latestVersion })
               : hasChecked
-                ? 'You are on the latest version.'
-                : 'Check if a newer version of CompressO is available.'
+                ? t('settings.about.upToDate')
+                : t('settings.about.checkDescription')
           }
         >
           {hasNewVersion ? (
@@ -65,7 +69,8 @@ function About() {
               isLoading={isInstalling}
               isDisabled={isInstalling}
             >
-              Update now {isInstalling ? `(${installProgress}%)` : ''}
+              {t('settings.about.updateNow')}{' '}
+              {isInstalling ? `(${installProgress}%)` : ''}
             </Button>
           ) : (
             <Button
@@ -74,23 +79,23 @@ function About() {
               isLoading={isChecking}
               isDisabled={isChecking}
             >
-              Check for updates
+              {t('settings.about.checkForUpdates')}
             </Button>
           )}
         </SettingsRow>
         <SettingsRow
-          title="Website"
-          description="Downloads, features and documentation."
+          title={t('settings.about.website.title')}
+          description={t('settings.about.website.description')}
         >
           <Link href="https://compresso.codeforreal.com" className="text-sm">
             compresso.codeforreal.com
           </Link>
         </SettingsRow>
         <SettingsRow
-          title="Free and open-source"
+          title={t('settings.about.openSource.title')}
           description={
             <Link href="https://github.com/codeforreal1/compressO/blob/main/LICENSE">
-              Licensed under AGPL-3.0
+              {t('settings.about.openSource.license')}
             </Link>
           }
         >
@@ -105,18 +110,23 @@ function About() {
         <SettingsRow
           title=""
           description={
-            <>
-              Made with{' '}
-              <Icon className="inline text-primary" name="lowResHeart" /> in
-              public by{' '}
-              <Link href="https://codeforreal.com">Code For Real⚡</Link>
-            </>
+            <Trans
+              i18nKey="settings.about.madeBy"
+              components={{
+                heart: (
+                  <Icon className="inline text-primary" name="lowResHeart" />
+                ),
+                link: (
+                  <Link href="https://codeforreal.com">Code For Real⚡</Link>
+                ),
+              }}
+            />
           }
         />
       </SettingsSection>
 
       {hasNewVersion && body ? (
-        <SettingsSection title="Release notes">
+        <SettingsSection title={t('settings.about.releaseNotes')}>
           <div className="pt-1">
             <Markdown content={body} className="text-sm" />
           </div>

@@ -1,6 +1,7 @@
 import { core, event } from '@tauri-apps/api'
 import { motion } from 'framer-motion'
 import { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { snapshot, useSnapshot } from 'valtio'
 
@@ -33,6 +34,7 @@ import {
 import { appProxy } from '../-state'
 
 function StartCompression() {
+  const { t } = useTranslation()
   const {
     state: {
       selectedMediaIndexForCustomization,
@@ -225,11 +227,11 @@ function StartCompression() {
       await autoCopyCompressedMediaToClipboard()
     } catch (error) {
       if (error !== 'CANCELLED') {
-        toast.error('Something went wrong during compression.')
+        toast.error(t('compression.failed'))
         appProxy.timeTravel('beforeCompressionStarted')
       }
     }
-  }, [])
+  }, [t])
 
   // ⌘+Shift+Enter acts like the Process button (cancelling is handled by CancelCompression)
   const isShortcutEnabled =
@@ -261,7 +263,7 @@ function StartCompression() {
           variant="solid"
           isDisabled={isLoadingMediaFiles}
         >
-          Process
+          {t('compression.process')}
           <ShortcutHint isVisible={isCommandKeyHeld} />
         </Button>
       )}

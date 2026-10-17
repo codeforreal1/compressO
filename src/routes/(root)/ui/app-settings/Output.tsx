@@ -2,6 +2,7 @@
 import { SelectItem } from '@heroui/react'
 import { open } from '@tauri-apps/plugin-dialog'
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
 import AnimatedLabel from '@/components/AnimatedLabel'
@@ -13,6 +14,7 @@ import Switch from '@/components/Switch'
 import TextInput from '@/components/TextInput'
 import { toast } from '@/components/Toast'
 import { useHardwareEncoders } from '@/hooks/useHardwareEncoding'
+import { t } from '@/i18n'
 import {
   type SaveLocation,
   sanitizeFileNamePart,
@@ -31,39 +33,22 @@ function isOnHomeScreen() {
   return media.length === 0 && !isLoadingMediaFiles && !isCompressing
 }
 
-const SAVE_LOCATION_OPTIONS: {
-  key: SaveLocation
-  label: string
-  description: string
-}[] = [
-  {
-    key: 'ask',
-    label: 'Ask every time',
-    description: 'Choose where to save after each compression.',
-  },
-  {
-    key: 'fixedFolder',
-    label: 'Fixed folder',
-    description:
-      'Save automatically to the chosen folder after each compression.',
-  },
-  {
-    key: 'sameFolder',
-    label: 'Same folder as original',
-    description:
-      'Save automatically next to the original file, in the same folder.',
-  },
+const SAVE_LOCATION_OPTIONS: SaveLocation[] = [
+  'ask',
+  'fixedFolder',
+  'sameFolder',
 ]
 
 async function pickSaveFolder() {
   const folder = await open({
     directory: true,
-    title: 'Choose a folder to save compressed media to.',
+    title: t('settings.output.saving.folder.dialogTitle'),
   })
   return typeof folder === 'string' ? folder : null
 }
 
 function Output() {
+  const { t } = useTranslation()
   const [confirmClearCache, setConfirmClearCache] = React.useState(false)
   const [isCacheDeleting, setIsCacheDeleting] = React.useState(false)
   const {
@@ -80,9 +65,6 @@ function Output() {
   const hardwareEncoders = useHardwareEncoders()
   const hasHardwareAcceleration =
     hardwareEncoders == null || hardwareEncoders.length > 0
-  const selectedSaveLocation = SAVE_LOCATION_OPTIONS.find(
-    (option) => option.key === saveLocation,
-  )
 
   const handleSaveLocationChange = async (location: SaveLocation) => {
     // A fixed folder needs a folder; keep the previous option if none is chosen
@@ -105,23 +87,25 @@ function Output() {
     setIsCacheDeleting(true)
     try {
       await invokeDeleteCache()
-      toast.success('All cache was cleared.')
+      toast.success(t('settings.output.storage.clearCache.cleared'))
       setConfirmClearCache(false)
     } catch (_) {
-      toast.error('There was a problem clearing cache.')
+      toast.error(t('settings.output.storage.clearCache.failed'))
     }
     setIsCacheDeleting(false)
   }
 
   return (
     <>
-      <SettingsSection title="Saving">
+      <SettingsSection title={t('settings.output.saving.title')}>
         <SettingsRow
-          title="Save location"
-          description={selectedSaveLocation?.description}
+          title={t('settings.output.saving.location.title')}
+          description={t('settings.output.saving.location.description', {
+            context: saveLocation,
+          })}
         >
           <Select
-            aria-label="Save location"
+            aria-label={t('settings.output.saving.location.title')}
             selectedKeys={[saveLocation]}
             disallowEmptySelection
             onSelectionChange={(keys) => {
@@ -132,17 +116,21 @@ function Output() {
             classNames={{ popoverContent: 'settings-dialog' }}
           >
             {SAVE_LOCATION_OPTIONS.map((option) => (
-              <SelectItem key={option.key}>{option.label}</SelectItem>
+              <SelectItem key={option}>
+                {t('settings.output.saving.location.option', {
+                  context: option,
+                })}
+              </SelectItem>
             ))}
           </Select>
         </SettingsRow>
         <SettingsRow
           isVisible={saveLocation === 'fixedFolder'}
           isNested
-          title="Folder"
+          title={t('settings.output.saving.folder.title')}
           description={
             <span className="break-all">
-              {saveFolder ?? 'No folder chosen'}
+              {saveFolder ?? t('settings.output.saving.folder.none')}
             </span>
           }
         >
@@ -153,18 +141,18 @@ function Output() {
               if (folder) settingsStore.saveFolder = folder
             }}
           >
-            Change
+            {t('settings.output.saving.folder.change')}
           </Button>
         </SettingsRow>
         {/* Next to the originals, each file is always saved in its original's folder */}
         <SettingsRow
           isVisible={saveLocation !== 'sameFolder'}
           isNested
-          title="Preserve folder structure"
-          description="Save the files of a dropped folder in the same folders. When off, all files are saved in one folder, and files with the same name are numbered."
+          title={t('settings.output.saving.preserveFolders.title')}
+          description={t('settings.output.saving.preserveFolders.description')}
         >
           <Switch
-            aria-label="Preserve folder structure"
+            aria-label={t('settings.output.saving.preserveFolders.title')}
             isSelected={preserveFolderStructure}
             onValueChange={(isSelected) => {
               settingsStore.preserveFolderStructure = isSelected
@@ -174,11 +162,11 @@ function Output() {
         <SettingsRow
           isVisible={saveLocation !== 'ask'}
           isNested
-          title="Skip larger outputs"
-          description="Do not save the compressed media when it is larger than the original."
+          title={t('settings.output.saving.skipLarger.title')}
+          description={t('settings.output.saving.skipLarger.description')}
         >
           <Switch
-            aria-label="Skip larger outputs"
+            aria-label={t('settings.output.saving.skipLarger.title')}
             isSelected={!saveLargerOutputs}
             onValueChange={(isSelected) => {
               settingsStore.saveLargerOutputs = !isSelected
@@ -186,12 +174,12 @@ function Output() {
           />
         </SettingsRow>
         <SettingsRow
-          title="File name prefix"
-          description="Text added to the start of saved file names. Leave empty to keep the original names."
+          title={t('settings.output.saving.prefix.title')}
+          description={t('settings.output.saving.prefix.description')}
         >
           <TextInput
-            aria-label="File name prefix"
-            placeholder="No prefix"
+            aria-label={t('settings.output.saving.prefix.title')}
+            placeholder={t('settings.output.saving.prefix.placeholder')}
             value={outputFilePrefix}
             onValueChange={(value) => {
               settingsStore.outputFilePrefix = sanitizeFileNamePart(value)
@@ -201,13 +189,13 @@ function Output() {
         </SettingsRow>
       </SettingsSection>
 
-      <SettingsSection title="Clipboard">
+      <SettingsSection title={t('settings.output.clipboard.title')}>
         <SettingsRow
-          title="Copy output to clipboard"
-          description="Copy the compressed media to the clipboard after each compression, so it can be pasted right away."
+          title={t('settings.output.clipboard.copyOutput.title')}
+          description={t('settings.output.clipboard.copyOutput.description')}
         >
           <Switch
-            aria-label="Copy output to clipboard"
+            aria-label={t('settings.output.clipboard.copyOutput.title')}
             isSelected={copyOutputToClipboard}
             onValueChange={(isSelected) => {
               settingsStore.copyOutputToClipboard = isSelected
@@ -219,11 +207,11 @@ function Output() {
         <SettingsRow
           isVisible={copyOutputToClipboard}
           isNested
-          title="Include batch outputs"
-          description="Also copy the files when several are compressed at once."
+          title={t('settings.output.clipboard.includeBatch.title')}
+          description={t('settings.output.clipboard.includeBatch.description')}
         >
           <Switch
-            aria-label="Include batch outputs"
+            aria-label={t('settings.output.clipboard.includeBatch.title')}
             isSelected={copyBatchOutputToClipboard}
             onValueChange={(isSelected) => {
               settingsStore.copyBatchOutputToClipboard = isSelected
@@ -232,20 +220,26 @@ function Output() {
         </SettingsRow>
       </SettingsSection>
 
-      <SettingsSection title="Performance">
+      <SettingsSection title={t('settings.output.performance.title')}>
         <SettingsRow
-          title="Use hardware acceleration"
-          description="Compress videos faster with hardware acceleration (Files can be slightly larger)"
+          title={t('settings.output.performance.hardwareAcceleration.title')}
+          description={t(
+            'settings.output.performance.hardwareAcceleration.description',
+          )}
         >
           <div className="flex items-center gap-2">
             <InfoTooltip
               content={
                 !hasHardwareAcceleration &&
-                'Hardware acceleration is not available on this computer.'
+                t(
+                  'settings.output.performance.hardwareAcceleration.unavailable',
+                )
               }
             />
             <Switch
-              aria-label="Use hardware acceleration"
+              aria-label={t(
+                'settings.output.performance.hardwareAcceleration.title',
+              )}
               isSelected={useHardwareAcceleration && hasHardwareAcceleration}
               isDisabled={!hasHardwareAcceleration}
               onValueChange={(isSelected) => {
@@ -256,16 +250,16 @@ function Output() {
         </SettingsRow>
       </SettingsSection>
 
-      <SettingsSection title="Storage">
+      <SettingsSection title={t('settings.output.storage.title')}>
         <SettingsRow
-          title="Clear cache"
-          description="Free up space by deleting temporary files. Your saved files are not affected."
+          title={t('settings.output.storage.clearCache.title')}
+          description={t('settings.output.storage.clearCache.description')}
         >
           <div className="flex items-center gap-2">
             <InfoTooltip
               content={
                 !canClearCache &&
-                'Close the media you are working on first, as it uses the cache.'
+                t('settings.output.storage.clearCache.mediaOpen')
               }
             />
             <Button
@@ -284,7 +278,9 @@ function Output() {
             >
               <Icon name="trash" />
               <AnimatedLabel>
-                {confirmClearCache ? 'Clear now' : 'Clear cache'}
+                {confirmClearCache
+                  ? t('settings.output.storage.clearCache.confirm')
+                  : t('settings.output.storage.clearCache.title')}
               </AnimatedLabel>
             </Button>
           </div>

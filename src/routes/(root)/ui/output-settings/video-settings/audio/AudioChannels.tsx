@@ -1,6 +1,7 @@
 import { SelectItem } from '@heroui/react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
 import Checkbox from '@/components/Checkbox'
@@ -16,6 +17,7 @@ type AudioChannelsProps = {
 }
 
 function AudioChannels({ mediaIndex }: AudioChannelsProps) {
+  const { t } = useTranslation()
   const {
     state: {
       media,
@@ -301,7 +303,7 @@ function AudioChannels({ mediaIndex }: AudioChannelsProps) {
         isDisabled={shouldDisableInput || hasNoAudio}
       >
         <p className="text-gray-600 dark:text-gray-400 text-sm mr-2 w-full">
-          Channels
+          {t('audio.channels')}
         </p>
       </Switch>
       <AnimatePresence mode="wait">
@@ -309,7 +311,7 @@ function AudioChannels({ mediaIndex }: AudioChannelsProps) {
           <motion.div {...slideDownTransition}>
             <Select
               fullWidth
-              label="Layout:"
+              label={t('audio.layout')}
               className="block flex-shrink-0 rounded-2xl !mt-8"
               size="sm"
               value={audioConfig?.audioChannelConfig?.channelLayout ?? 'stereo'}
@@ -328,18 +330,18 @@ function AudioChannels({ mediaIndex }: AudioChannelsProps) {
                 label: '!text-gray-600 dark:!text-gray-400 text-xs',
               }}
             >
-              <SelectItem key="mono" textValue="Mono">
-                Mono
+              <SelectItem key="mono" textValue={t('common.mono')}>
+                {t('common.mono')}
               </SelectItem>
-              <SelectItem key="stereo" textValue="Stereo">
-                Stereo
+              <SelectItem key="stereo" textValue={t('common.stereo')}>
+                {t('common.stereo')}
               </SelectItem>
             </Select>
             <AnimatePresence mode="wait">
               {audioConfig?.audioChannelConfig?.channelLayout === 'mono' ? (
                 <motion.div {...slideDownTransition} className="pt-4">
                   <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
-                    Mono Source:
+                    {t('audio.monoSource')}
                   </p>
                   <div className="flex gap-4">
                     <Checkbox
@@ -350,7 +352,7 @@ function AudioChannels({ mediaIndex }: AudioChannelsProps) {
                       onValueChange={handleMonoLeftChange}
                       isDisabled={shouldDisableInput}
                     >
-                      <span className="text-sm">Left</span>
+                      <span className="text-sm">{t('audio.left')}</span>
                     </Checkbox>
                     <Divider orientation="vertical" className="h-5" />
                     <Checkbox
@@ -361,7 +363,7 @@ function AudioChannels({ mediaIndex }: AudioChannelsProps) {
                       onValueChange={handleMonoRightChange}
                       isDisabled={shouldDisableInput}
                     >
-                      <span className="text-sm">Right</span>
+                      <span className="text-sm">{t('audio.right')}</span>
                     </Checkbox>
                   </div>
                 </motion.div>
@@ -377,7 +379,7 @@ function AudioChannels({ mediaIndex }: AudioChannelsProps) {
                     isDisabled={shouldDisableInput}
                   >
                     <p className="text-gray-600 dark:text-gray-400 text-sm mr-2 w-full">
-                      Swap left and right channels
+                      {t('audio.swapChannels')}
                     </p>
                   </Switch>
                 </motion.div>

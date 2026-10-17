@@ -1,5 +1,6 @@
 import { AccordionItem } from '@heroui/react'
 import { memo, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
 import Accordion from '@/components/Accordion'
@@ -13,6 +14,7 @@ type OutputSettingsProps = {
   mediaIndex: number
 }
 function OutputSettings({ mediaIndex }: OutputSettingsProps) {
+  const { t } = useTranslation()
   const {
     state: { activeTab, media, selectedMediaIndexForCustomization },
   } = useSnapshot(appProxy)
@@ -42,19 +44,19 @@ function OutputSettings({ mediaIndex }: OutputSettingsProps) {
   const sections = [
     (activeTab === 'videos' || activeTab === 'all') && {
       key: 'video',
-      title: 'Video Settings',
+      title: t('outputSettings.video'),
       icon: 'video' as const,
       content: <VideoSettings mediaIndex={mediaIndex} />,
     },
     (activeTab === 'images' || activeTab === 'all') && {
       key: 'image',
-      title: 'Image Settings',
+      title: t('outputSettings.image'),
       icon: 'image' as const,
       content: <ImageSettings mediaIndex={mediaIndex} />,
     },
     (activeTab === 'audio' || activeTab === 'all') && {
       key: 'audio',
-      title: 'Audio Settings',
+      title: t('outputSettings.audio'),
       icon: 'music' as const,
       content: (
         <VideoSettings

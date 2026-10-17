@@ -1,7 +1,9 @@
 import { SelectItem } from '@heroui/react'
+import { useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
 import Select from '@/components/Select'
+import { t } from '@/i18n'
 import {
   type BatchResolution as BatchResolutionKey,
   batchResolutions,
@@ -10,7 +12,9 @@ import { appProxy, normalizeBatchMediaConfig } from '../../../../-state'
 import { useBatchVideoConfigKey } from '../-batchConfig'
 
 const RESOLUTION_LABELS: Record<keyof typeof batchResolutions, string> = {
-  original: 'Original',
+  get original() {
+    return t('dimensions.original')
+  },
   '480p': '480p',
   '720p': '720p',
   '1080p': '1080p',
@@ -25,6 +29,7 @@ const RESOLUTION_LABELS: Record<keyof typeof batchResolutions, string> = {
  * custom dimensions keep those.
  */
 function BatchResolution() {
+  const { t } = useTranslation()
   const {
     state: {
       isCompressing,
@@ -47,7 +52,7 @@ function BatchResolution() {
     <div>
       <Select
         fullWidth
-        label="Resolution:"
+        label={t('dimensions.resolutionLabel')}
         size="sm"
         selectedKeys={[batchResolution]}
         disallowEmptySelection

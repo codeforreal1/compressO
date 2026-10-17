@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
 import Switch from '@/components/Switch'
@@ -13,6 +14,7 @@ type CompressionPresetProps = {
 }
 
 function CompressionPreset({ mediaIndex }: CompressionPresetProps) {
+  const { t } = useTranslation()
   const {
     state: {
       isCompressing,
@@ -70,7 +72,7 @@ function CompressionPreset({ mediaIndex }: CompressionPresetProps) {
         >
           <div className="flex justify-center items-center">
             <span className="text-gray-600 dark:text-gray-400 block mr-2 text-sm">
-              Lossless Compression
+              {t('quality.lossless')}
             </span>
           </div>
         </Switch>

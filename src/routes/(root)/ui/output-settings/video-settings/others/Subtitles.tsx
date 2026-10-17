@@ -1,7 +1,8 @@
 import { AutocompleteItem } from '@heroui/react'
 import { open } from '@tauri-apps/plugin-dialog'
 import { AnimatePresence, motion } from 'framer-motion'
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { useSnapshot } from 'valtio'
 
@@ -10,6 +11,7 @@ import Button from '@/components/Button'
 import Card from '@/components/Card'
 import Icon from '@/components/Icon'
 import Switch from '@/components/Switch'
+import { t } from '@/i18n'
 import {
   slideDownStaggerAnimation,
   slideDownTransition,
@@ -169,7 +171,31 @@ const LANGUAGE_OPTIONS: Subtitle[] = [
   { code: 'und', name: 'Unknown' },
 ]
 
+/**
+ * The language's name in the interface's language (from the system, e.g. "Deutsch" -> "German"), or
+ * its English name for the few languages the system does not name
+ */
+function getLanguageName(language: Subtitle, displayNames: Intl.DisplayNames) {
+  if (language.code === 'und') return t('subtitles.unknownLanguage')
+  try {
+    return displayNames.of(language.code) ?? language.name
+  } catch {
+    return language.name
+  }
+}
+
 function Subtitles({ mediaIndex }: SubtitlesProps) {
+  const { t, i18n } = useTranslation()
+  const languageOptions = useMemo(() => {
+    const displayNames = new Intl.DisplayNames([i18n.language, 'en'], {
+      type: 'language',
+      fallback: 'none',
+    })
+    return LANGUAGE_OPTIONS.map((language) => ({
+      ...language,
+      displayName: getLanguageName(language, displayNames),
+    }))
+  }, [i18n.language])
   const {
     state: {
       media,
@@ -283,7 +309,7 @@ function Subtitles({ mediaIndex }: SubtitlesProps) {
       const filePath = await open({
         directory: false,
         multiple: false,
-        title: 'Select subtitle file (SRT)',
+        title: t('subtitles.selectFile'),
         filters: [
           {
             name: 'subtitle',
@@ -337,9 +363,9 @@ function Subtitles({ mediaIndex }: SubtitlesProps) {
         }
       }
     } catch (error: any) {
-      toast.error(error?.message ?? 'Could not select subtitle file.')
+      toast.error(error?.message ?? t('subtitles.selectFailed'))
     }
-  }, [mediaIndex, batchConfigKey])
+  }, [mediaIndex, batchConfigKey, t])
 
   const handleRemoveSubtitle = useCallback(
     (index: number) => {
@@ -436,7 +462,7 @@ function Subtitles({ mediaIndex }: SubtitlesProps) {
           >
             <div className="flex justify-center items-center">
               <span className="text-gray-600 dark:text-gray-400 block mr-2 text-sm">
-                Subtitles
+                {t('subtitles.title')}
               </span>
             </div>
           </Switch>
@@ -452,7 +478,7 @@ function Subtitles({ mediaIndex }: SubtitlesProps) {
                   size="sm"
                 >
                   <span className="text-sm text-gray-600 dark:text-gray-400">
-                    Preserve existing subtitles
+                    {t('subtitles.preserveExisting')}
                   </span>
                 </Switch>
               </div>
@@ -472,15 +498,16 @@ function Subtitles({ mediaIndex }: SubtitlesProps) {
                       className="mb-2 p-3 bg-default-50 rounded-xl border border-default-200 dark:border-default-100"
                     >
                       <div className="text-xs font-medium text-gray-700 dark:text-gray-300 truncate mb-2 text-center">
-                        {subtitle.fileName || `Subtitle ${index + 1}`}
+                        {subtitle.fileName ||
+                          t('subtitles.untitled', { number: index + 1 })}
                       </div>
                       <div className="flex items-center justify-center gap-2">
                         <div className="flex-1 min-w-0">
                           <Autocomplete
                             fullWidth
-                            label="Language"
+                            label={t('subtitles.language')}
                             size="sm"
-                            defaultItems={LANGUAGE_OPTIONS}
+                            defaultItems={languageOptions}
                             defaultSelectedKey={getDisplayLanguageCode(
                               subtitle.language ?? 'eng',
                             )}
@@ -493,13 +520,14 @@ function Subtitles({ mediaIndex }: SubtitlesProps) {
                             }}
                           >
                             {(lang) => {
-                              const language = lang as Subtitle
+                              const language =
+                                lang as (typeof languageOptions)[number]
                               return (
                                 <AutocompleteItem
                                   key={language.code}
-                                  textValue={language.name}
+                                  textValue={language.displayName}
                                 >
-                                  {language.name}
+                                  {language.displayName}
                                 </AutocompleteItem>
                               )
                             }}
@@ -530,13 +558,13 @@ function Subtitles({ mediaIndex }: SubtitlesProps) {
                 isDisabled={shouldDisableInput || isUnsupported}
                 className="mt-2"
               >
-                Add Subtitle
+                {t('subtitles.add')}
                 <Icon name="fileExplorer" size={14} />
               </Button>
 
               {isUnsupported ? (
                 <p className="text-xs italic text-danger-300 mt-2">
-                  {outputContainer} does not support soft subtitles
+                  {t('subtitles.unsupported', { container: outputContainer })}
                 </p>
               ) : null}
             </motion.div>

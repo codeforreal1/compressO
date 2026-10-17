@@ -1,4 +1,5 @@
 import { memo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
 import Button from '@/components/Button'
@@ -12,6 +13,7 @@ const { isMacOS } = getPlatform()
 
 /** Reconfigure: back to the settings used for the compression, to change them and compress again */
 function CompressionActions() {
+  const { t } = useTranslation()
   const {
     state: { media, isProcessCompleted, isLoadingMediaFiles, isSaving },
   } = useSnapshot(appProxy)
@@ -30,8 +32,8 @@ function CompressionActions() {
   return media.length && !isLoadingMediaFiles && isProcessCompleted ? (
     <div className="w-fit flex justify-center items-center z-[10]">
       <Tooltip
-        content={`Reconfigure (${isMacOS ? '⌘⇧R' : 'Ctrl+Shift+R'})`}
-        aria-label="Reconfigure"
+        content={`${t('compression.reconfigure')} (${isMacOS ? '⌘⇧R' : 'Ctrl+Shift+R'})`}
+        aria-label={t('compression.reconfigure')}
       >
         <Button
           size="sm"

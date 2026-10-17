@@ -1,3 +1,4 @@
+import { t } from '@/i18n'
 import { AudioConfig, MediaMetadataConfig, SubtitlesConfig } from './app'
 import { FileMetadata } from './fs'
 
@@ -61,7 +62,9 @@ export const VIDEO_CODECS: readonly VideoCodecOption[] = [
   {
     value: 'libx264',
     name: 'H.264 (AVC)',
-    description: 'Most compatible, good quality',
+    get description() {
+      return t('codecs.video.libx264')
+    },
     compatible_containers: [
       'mp4',
       'mov',
@@ -73,26 +76,34 @@ export const VIDEO_CODECS: readonly VideoCodecOption[] = [
   {
     value: 'libx265',
     name: 'H.265 (HEVC)',
-    description: 'Better compression, newer standard',
+    get description() {
+      return t('codecs.video.libx265')
+    },
     compatible_containers: ['mp4', 'mov', 'mkv', 'ts'] as VideoExtension[],
   },
   {
     value: 'libvpx-vp9',
     name: 'VP9',
-    description: 'Open-source, great for web',
+    get description() {
+      return t('codecs.video.libvpx_vp9')
+    },
     compatible_containers: ['webm', 'mkv'] as VideoExtension[],
   },
   {
     // Kept as is for saved presets; compressed with SVT-AV1 when ffmpeg has it (see `ffmpeg.rs`)
     value: 'libaom-av1',
     name: 'AV1',
-    description: 'Best compression, slower',
+    get description() {
+      return t('codecs.video.libaom_av1')
+    },
     compatible_containers: ['mp4', 'mkv', 'webm'] as VideoExtension[],
   },
   {
     value: 'mpeg4',
     name: 'MPEG-4',
-    description: 'Legacy codec, wide support',
+    get description() {
+      return t('codecs.video.mpeg4')
+    },
     compatible_containers: ['mp4', 'mov', 'mkv', 'avi'] as VideoExtension[],
   },
 ]

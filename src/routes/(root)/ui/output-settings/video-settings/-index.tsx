@@ -1,5 +1,6 @@
 import { Divider, Tab } from '@heroui/react'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
 import Tabs from '@/components/Tabs'
@@ -36,19 +37,11 @@ type VideoSettingsProps = {
   batchConfigKey?: BatchVideoConfigKey
 }
 
+/** Titled with `outputSettings.tabs.<id>` */
 const TABS = {
-  video: {
-    id: 'video',
-    title: 'Video',
-  },
-  audio: {
-    id: 'audio',
-    title: 'Audio',
-  },
-  others: {
-    id: 'others',
-    title: 'Others',
-  },
+  video: { id: 'video' },
+  audio: { id: 'audio' },
+  others: { id: 'others' },
 } as const
 
 /** Tabs of an audio file (or a batch's audio files): no video settings */
@@ -61,6 +54,7 @@ function VideoSettings({
   mediaIndex,
   batchConfigKey = 'videoConfig',
 }: VideoSettingsProps) {
+  const { t } = useTranslation()
   const {
     state: { media, commonConfigForBatchCompression },
   } = useSnapshot(appProxy)
@@ -119,10 +113,10 @@ function VideoSettings({
           mediaIndex={mediaIndex}
         />
         <Tabs
-          aria-label="Compression Settings"
+          aria-label={t('outputSettings.compressionSettings')}
           size="sm"
           selectedKey={tab}
-          onSelectionChange={(t) => setTab(t as keyof typeof TABS)}
+          onSelectionChange={(key) => setTab(key as keyof typeof TABS)}
           className="w-full"
           fullWidth
           classNames={{
@@ -130,8 +124,12 @@ function VideoSettings({
             tabContent: 'text-[11px]',
           }}
         >
-          {Object.values(tabs).map((t) => (
-            <Tab key={t.id} value={t.id} title={t.title} />
+          {Object.values(tabs).map((item) => (
+            <Tab
+              key={item.id}
+              value={item.id}
+              title={t(`outputSettings.tabs.${item.id}`)}
+            />
           ))}
         </Tabs>
         <div className="my-4">
@@ -214,7 +212,7 @@ function VideoSettings({
             <div className="relative">
               {hasNoAudio ? (
                 <p className="text-sm text-center mb-4 text-zinc-600 dark:text-zinc-400 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                  No audio found
+                  {t('outputSettings.noAudio')}
                 </p>
               ) : null}
               {/* Without audio, the controls are dimmed & cannot be used */}

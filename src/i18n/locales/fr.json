@@ -1,0 +1,874 @@
+{
+  "settings": {
+    "general": {
+      "startup": {
+        "title": "Démarrage",
+        "changeFailed": "Le réglage n’a pas pu être modifié.",
+        "openAtLogin": {
+          "title": "Ouvrir à la connexion",
+          "description": "Ouvrir CompressO automatiquement lorsque vous vous connectez à votre ordinateur."
+        },
+        "needsApproval": {
+          "title": "Désactivé dans les Réglages Système",
+          "description": "CompressO n’est pas autorisé à s’ouvrir à la connexion. Autorisez-le dans les Réglages Système, sous Général puis Ouverture.",
+          "button": "Ouvrir les éléments d’ouverture"
+        },
+        "openInTrayOnly": {
+          "title_macos": "Ouvrir uniquement dans la barre des menus",
+          "title_windows": "Ouvrir uniquement dans la zone de notification",
+          "description_macos": "Ne pas afficher la fenêtre principale à l’ouverture lors de la connexion. Les médias peuvent toujours être compressés depuis la barre des menus.",
+          "description_windows": "Ne pas afficher la fenêtre principale à l’ouverture lors de la connexion. Les médias peuvent toujours être compressés depuis la zone de notification.",
+          "needsTrayIcon_macos": "Activez « Afficher l’icône dans la barre des menus » pour utiliser cette option, car l’app s’ouvre depuis cet endroit.",
+          "needsTrayIcon_windows": "Activez « Afficher l’icône dans la zone de notification » pour utiliser cette option, car l’app s’ouvre depuis cet endroit."
+        }
+      },
+      "appearance": {
+        "title": "Apparence",
+        "language": {
+          "title": "Langue",
+          "description": "La langue de l’app."
+        },
+        "theme": {
+          "title": "Thème",
+          "description": "Basculer entre l’interface claire et l’interface sombre."
+        },
+        "accentColor": {
+          "title": "Couleur d’accentuation",
+          "description": "Couleur des boutons, des éléments mis en évidence et de la progression."
+        },
+        "tintedWindow": {
+          "title": "Fenêtre teintée",
+          "description": "Laisser le bureau transparaître doucement à travers l’arrière-plan de la fenêtre."
+        },
+        "tintOpacity": {
+          "title": "Opacité de la teinte",
+          "description": "La part du bureau qui transparaît. Des valeurs plus faibles en montrent davantage."
+        }
+      },
+      "tray": {
+        "title_macos": "Barre des menus",
+        "title_windows": "Zone de notification",
+        "showIcon": {
+          "title_macos": "Afficher l’icône dans la barre des menus",
+          "title_windows": "Afficher l’icône dans la zone de notification",
+          "description_macos": "Afficher l’icône de CompressO, la progression de la compression et la zone de dépôt dans la barre des menus.",
+          "description_windows": "Afficher l’icône de CompressO, la progression de la compression et la zone de dépôt dans la zone de notification.",
+          "locked": "Des médias de la zone de dépôt sont en cours de compression. Cette option pourra être désactivée une fois l’opération terminée ou arrêtée."
+        }
+      },
+      "preview": {
+        "title": "Aperçu",
+        "videoPreviews": {
+          "title": "Aperçus vidéo",
+          "description": "Lire les vidéos dans l’app. Les vidéos ne sont pas bien lues sur certains systèmes Linux ; une image fixe est donc affichée par défaut. Les modifications s’appliquent après un redémarrage."
+        },
+        "restart": "Redémarrer"
+      },
+      "sleep": {
+        "title": "Veille",
+        "preventSleep": {
+          "title": "Empêcher la veille pendant la compression",
+          "description": "Garder l’ordinateur actif jusqu’à la fin de la compression. L’écran peut toujours s’éteindre. Fermer l’écran du portable le met toujours en veille."
+        },
+        "keepScreenOn": {
+          "title": "Garder l’écran allumé",
+          "description": "Empêcher également l’écran de s’éteindre pendant la compression."
+        }
+      },
+      "sound": {
+        "title": "Son",
+        "completionSound": {
+          "title": "Son de fin",
+          "description": "Jouer un son lorsqu’une compression est terminée."
+        }
+      },
+      "troubleshooting": {
+        "title": "Dépannage",
+        "logFiles": {
+          "title": "Fichiers journaux",
+          "description": "Un historique des actions de l’app, qui aide à trouver la cause d’un problème. Joignez-les lorsque vous signalez un problème. Ils contiennent le nom des fichiers que vous avez compressés.",
+          "button": "Afficher les fichiers journaux",
+          "failed": "Les fichiers journaux n’ont pas pu être affichés."
+        }
+      }
+    },
+    "presets": {
+      "copyName": "{{name}} copie",
+      "isDefault_video": "Par défaut pour les nouvelles vidéos. Sélectionnez pour utiliser plutôt le préréglage Standard.",
+      "isDefault_image": "Par défaut pour les nouvelles images. Sélectionnez pour utiliser plutôt le préréglage Standard.",
+      "isDefault_audio": "Par défaut pour les nouveaux fichiers audio. Sélectionnez pour utiliser plutôt le préréglage Standard.",
+      "setDefault_video": "Définir par défaut pour les nouvelles vidéos",
+      "setDefault_image": "Définir par défaut pour les nouvelles images",
+      "setDefault_audio": "Définir par défaut pour les nouveaux fichiers audio",
+      "name": "Nom du préréglage",
+      "moveUp": "Monter",
+      "moveDown": "Descendre",
+      "duplicate": "Dupliquer",
+      "delete": "Supprimer le préréglage",
+      "title_video": "Préréglages vidéo",
+      "title_image": "Préréglages d’image",
+      "title_audio": "Préréglages audio",
+      "empty_video": "Il n’y a encore aucun préréglage vidéo. Ajustez les réglages d’une vidéo et sélectionnez le bouton plus à côté du menu Préréglage pour les enregistrer comme préréglage.",
+      "empty_image": "Il n’y a encore aucun préréglage d’image. Ajustez les réglages d’une image et sélectionnez le bouton plus à côté du menu Préréglage pour les enregistrer comme préréglage.",
+      "empty_audio": "Il n’y a encore aucun préréglage audio. Ajustez les réglages d’un fichier audio et sélectionnez le bouton plus à côté du menu Préréglage pour les enregistrer comme préréglage."
+    },
+    "dropZone": {
+      "needsTrayIcon_macos": "La zone de dépôt se trouve dans la barre des menus ; elle ne fonctionne donc que si « Afficher l’icône dans la barre des menus » est activé dans Général.",
+      "needsTrayIcon_windows": "La zone de dépôt se trouve dans la zone de notification ; elle ne fonctionne donc que si « Afficher l’icône dans la zone de notification » est activé dans Général.",
+      "turnOnTrayIcon_macos": "La zone de dépôt se trouve dans la barre des menus. Activez d’abord « Afficher l’icône dans la barre des menus » dans Général.",
+      "turnOnTrayIcon_windows": "La zone de dépôt se trouve dans la zone de notification. Activez d’abord « Afficher l’icône dans la zone de notification » dans Général.",
+      "compression": {
+        "title": "Compression",
+        "autoCompress": {
+          "title": "Compresser automatiquement",
+          "description": "Compresser les médias dès qu’ils sont ajoutés à la zone de dépôt, un à la fois, et les enregistrer à l’emplacement d’enregistrement défini dans Sortie.",
+          "needsSaveLocation": "Choisissez dans Sortie un emplacement d’enregistrement autre que « Demander à chaque fois », afin que les médias compressés puissent être enregistrés sans demande."
+        }
+      },
+      "preset": {
+        "title_video": "Préréglage vidéo",
+        "title_image": "Préréglage d’image",
+        "title_audio": "Préréglage audio",
+        "description_video": "Réglages utilisés pour les vidéos.",
+        "description_image": "Réglages utilisés pour les images.",
+        "description_audio": "Réglages utilisés pour les fichiers audio."
+      },
+      "clipboard": {
+        "title": "Presse-papiers",
+        "watch": {
+          "title": "Surveiller le presse-papiers",
+          "description_macos": "Ajouter les médias que vous copiez, comme des fichiers ou des images d’un navigateur, à la zone de dépôt de la barre des menus.",
+          "description_windows": "Ajouter les médias que vous copiez, comme des fichiers ou des images d’un navigateur, à la zone de dépôt de la zone de notification."
+        }
+      }
+    },
+    "output": {
+      "saving": {
+        "title": "Enregistrement",
+        "location": {
+          "title": "Emplacement d’enregistrement",
+          "option_ask": "Demander à chaque fois",
+          "option_fixedFolder": "Dossier fixe",
+          "option_sameFolder": "Même dossier que l’original",
+          "description_ask": "Choisir où enregistrer après chaque compression.",
+          "description_fixedFolder": "Enregistrer automatiquement dans le dossier choisi après chaque compression.",
+          "description_sameFolder": "Enregistrer automatiquement à côté du fichier original, dans le même dossier."
+        },
+        "folder": {
+          "title": "Dossier",
+          "none": "Aucun dossier choisi",
+          "change": "Modifier",
+          "dialogTitle": "Choisissez un dossier où enregistrer les médias compressés."
+        },
+        "preserveFolders": {
+          "title": "Conserver la structure des dossiers",
+          "description": "Enregistrer les fichiers d’un dossier déposé dans les mêmes dossiers. Si cette option est désactivée, tous les fichiers sont enregistrés dans un seul dossier et les fichiers portant le même nom sont numérotés."
+        },
+        "skipLarger": {
+          "title": "Ignorer les sorties plus volumineuses",
+          "description": "Ne pas enregistrer le média compressé s’il est plus volumineux que l’original."
+        },
+        "prefix": {
+          "title": "Préfixe du nom de fichier",
+          "description": "Texte ajouté au début du nom des fichiers enregistrés. Laissez vide pour conserver les noms d’origine.",
+          "placeholder": "Aucun préfixe"
+        }
+      },
+      "clipboard": {
+        "title": "Presse-papiers",
+        "copyOutput": {
+          "title": "Copier la sortie dans le presse-papiers",
+          "description": "Copier le média compressé dans le presse-papiers après chaque compression, pour pouvoir le coller immédiatement."
+        },
+        "includeBatch": {
+          "title": "Inclure les sorties par lot",
+          "description": "Copier également les fichiers lorsque plusieurs sont compressés à la fois."
+        }
+      },
+      "performance": {
+        "title": "Performances",
+        "hardwareAcceleration": {
+          "title": "Utiliser l’accélération matérielle",
+          "description": "Compresser les vidéos plus rapidement grâce à l’accélération matérielle (les fichiers peuvent être légèrement plus volumineux)",
+          "unavailable": "L’accélération matérielle n’est pas disponible sur cet ordinateur."
+        }
+      },
+      "storage": {
+        "title": "Stockage",
+        "clearCache": {
+          "title": "Vider le cache",
+          "confirm": "Vider maintenant",
+          "description": "Libérer de l’espace en supprimant les fichiers temporaires. Vos fichiers enregistrés ne sont pas concernés.",
+          "mediaOpen": "Fermez d’abord les médias sur lesquels vous travaillez, car ils utilisent le cache.",
+          "cleared": "Tout le cache a été vidé.",
+          "failed": "Un problème est survenu lors du vidage du cache."
+        }
+      }
+    },
+    "open": "Ouvrir les réglages",
+    "groups": {
+      "settings": "Réglages",
+      "app": "CompressO"
+    },
+    "pages": {
+      "general": "Général",
+      "output": "Sortie",
+      "presets": "Préréglages",
+      "dropZone": "Zone de dépôt",
+      "about": "À propos",
+      "credits": "Remerciements"
+    },
+    "about": {
+      "updateAvailable": "Mise à jour disponible",
+      "tagline": "Compressez n’importe quelle image ou vidéo à une taille minuscule.",
+      "version": "Version {{version}}",
+      "newVersion": "La version {{version}} est disponible. Redémarrez l’app après la mise à jour pour l’utiliser.",
+      "upToDate": "Vous utilisez la dernière version.",
+      "checkDescription": "Vérifier si une version plus récente de CompressO est disponible.",
+      "updateNow": "Mettre à jour",
+      "checkForUpdates": "Rechercher des mises à jour",
+      "website": {
+        "title": "Site web",
+        "description": "Téléchargements, fonctionnalités et documentation."
+      },
+      "openSource": {
+        "title": "Gratuit et open source",
+        "license": "Sous licence AGPL-3.0"
+      },
+      "madeBy": "Fait avec <heart></heart> en public par <link>Code For Real⚡</link>",
+      "releaseNotes": "Notes de version"
+    },
+    "credits": {
+      "tools": {
+        "title": "Outils open source",
+        "description": "CompressO ne serait pas possible sans ces formidables outils et bibliothèques open source."
+      },
+      "license": "Sous licence {{license}}",
+      "notices": {
+        "title": "Mentions de tiers",
+        "description": "Mentions et licences complètes des tiers.",
+        "view": "Afficher"
+      }
+    }
+  },
+  "common": {
+    "sameFormatAsInput": "Même format que l’entrée",
+    "lossless": "Sans perte",
+    "mono": "Mono",
+    "stereo": "Stéréo",
+    "kbps": "{{value}} kbit/s",
+    "delete": "Supprimer",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "sizeChange": "{{from}} à {{to}}",
+    "showInFileManager": "Afficher dans l’Explorateur de fichiers",
+    "showNameInFileManager": "Afficher {{name}} dans l’Explorateur de fichiers",
+    "copied": "Copié dans le presse-papiers.",
+    "close": "Fermer",
+    "reset": "Réinitialiser",
+    "apply": "Appliquer",
+    "yes": "Oui",
+    "edit": "Modifier"
+  },
+  "presets": {
+    "standard": "Standard",
+    "summary": {
+      "rotated": "Pivoté de {{degrees}}°",
+      "flipped": "Retourné",
+      "cropped": "Recadré en {{aspectRatio}}",
+      "quality": "Qualité {{value}} %",
+      "resolution": "{{size}} px côté le plus long",
+      "fps": "{{fps}} i/s",
+      "speed": "Vitesse {{speed}}x",
+      "audioRemoved": "Audio supprimé",
+      "volume": "Volume {{value}} %",
+      "audioCodec": "Audio {{codec}}",
+      "metadataRemoved": "Métadonnées supprimées",
+      "metadataKept": "Métadonnées conservées",
+      "svgScale": "Échelle SVG {{scale}}x",
+      "customSvg": "Conversion SVG personnalisée"
+    },
+    "save": {
+      "title_video": "Enregistrer le préréglage vidéo",
+      "title_image": "Enregistrer le préréglage d’image",
+      "title_audio": "Enregistrer le préréglage audio",
+      "name": "Nom",
+      "placeholder_video": "p. ex. Web 1080p",
+      "placeholder_image": "p. ex. Web",
+      "placeholder_audio": "p. ex. Podcast",
+      "nameTaken": "Un préréglage portant ce nom existe déjà.",
+      "hint": "Les préréglages peuvent être renommés, réorganisés et supprimés dans les Réglages, sous Préréglages."
+    },
+    "updated": "Le préréglage « {{name}} » a été mis à jour.",
+    "saved": "Le préréglage « {{name}} » a été enregistré.",
+    "revertFailed": "Les réglages n’ont pas pu être rétablis.",
+    "applyFailed": "Le préréglage n’a pas pu être appliqué.",
+    "label": "Préréglage :",
+    "update": "Mettre à jour « {{name}} »",
+    "saveAsNew": "Enregistrer comme nouveau préréglage",
+    "revert": "Revenir au préréglage"
+  },
+  "dropZone": {
+    "unsupportedType": "Ce type de fichier n’est pas pris en charge.",
+    "unsupportedSkipped": "Les fichiers non pris en charge ont été ignorés.",
+    "addFailed": "Les médias n’ont pas pu être ajoutés.",
+    "openFailed": "CompressO n’a pas pu être ouvert.",
+    "quitFailed": "CompressO n’a pas pu être quitté.",
+    "pin": "Épingler",
+    "unpin": "Détacher",
+    "openApp": "Ouvrir l’app",
+    "openAppCompressing": "Ouvrir l’app, compression {{progress}} %",
+    "openAppPaused": "Ouvrir l’app, en pause à {{progress}} %",
+    "quitApp": "Quitter l’app",
+    "release": "Relâchez pour ajouter les médias",
+    "dropToCompress": "Déposez ou collez des médias ici pour les compresser",
+    "dropToStore": "Déposez ou collez des médias ici pour les conserver",
+    "mediaTypes": "Vidéos, images ou dossiers…",
+    "itemsReady_one": "{{count}} élément prêt",
+    "itemsReady_many": "{{count}} éléments prêts",
+    "itemsReady_other": "{{count}} éléments prêts",
+    "discardAll": "Tout supprimer",
+    "remove": "Retirer {{name}}",
+    "storedBusy": "Conservés. Ouvrez l’app pour les compresser après les médias en cours.",
+    "storedIdle": "Déposez d’autres médias, ou ouvrez l’app pour lancer la compression.",
+    "needsSaveLocation": "Choisissez un emplacement d’enregistrement dans les Réglages, sous Sortie, afin que les médias compressés puissent être enregistrés sans demande."
+  },
+  "queue": {
+    "notSavedLarger": "Non enregistré, car plus volumineux que l’original.",
+    "noSaveLocation": "Choisissez un emplacement d’enregistrement dans les Réglages, sous Sortie.",
+    "saveFailed": "Le média compressé n’a pas pu être enregistré.",
+    "compressFailed": "Le média n’a pas pu être compressé.",
+    "summary": {
+      "cancelledAndFailed": "{{cancelled}}, {{failed}}",
+      "cancelled_one": "{{count}} annulé",
+      "cancelled_many": "{{count}} annulés",
+      "cancelled_other": "{{count}} annulés",
+      "failed_one": "{{count}} n’a pas pu être compressé",
+      "failed_many": "{{count}} n’ont pas pu être compressés",
+      "failed_other": "{{count}} n’ont pas pu être compressés",
+      "complete": "Compression terminée",
+      "pausing": "Pause après {{position}} sur {{total}}",
+      "paused_one": "En pause, {{count}} en attente",
+      "paused_many": "En pause, {{count}} en attente",
+      "paused_other": "En pause, {{count}} en attente",
+      "compressing": "Compression de {{position}} sur {{total}}",
+      "waiting_one": "{{count}} en attente",
+      "waiting_many": "{{count}} en attente",
+      "waiting_other": "{{count}} en attente"
+    },
+    "compressingName": "Compression de {{name}}",
+    "status": {
+      "waiting": "En attente",
+      "cancelled": "Annulé",
+      "done": "Terminé",
+      "failed": "Échec",
+      "smaller": "{{value}} % plus petit"
+    },
+    "tryAgain": "Réessayer",
+    "tryNameAgain": "Réessayer {{name}}",
+    "resume": "Reprendre",
+    "pause": "Pause",
+    "pauseAfterCurrent": "Mettre en pause après le fichier en cours",
+    "stop": "Arrêter",
+    "clear": "Effacer",
+    "stopAndCancel": "Arrêter la compression et annuler les médias en attente",
+    "clearFinished": "Effacer les médias terminés",
+    "stopCompression": "Arrêter la compression",
+    "clearAll": "Tout effacer",
+    "collapse": "Réduire",
+    "showDropZone": "Afficher la zone de dépôt",
+    "filesCompressed_one": "{{count}} fichier compressé",
+    "filesCompressed_many": "{{count}} fichiers compressés",
+    "filesCompressed_other": "{{count}} fichiers compressés"
+  },
+  "subtitles": {
+    "unknownLanguage": "Inconnue",
+    "selectFile": "Sélectionner un fichier de sous-titres (SRT)",
+    "selectFailed": "Le fichier de sous-titres n’a pas pu être sélectionné.",
+    "title": "Sous-titres",
+    "preserveExisting": "Conserver les sous-titres existants",
+    "untitled": "Sous-titre {{number}}",
+    "language": "Langue",
+    "add": "Ajouter des sous-titres",
+    "unsupported": "{{container}} ne prend pas en charge les sous-titres intégrés"
+  },
+  "mediaInfo": {
+    "videoInformation": "Informations sur la vidéo",
+    "fullPath": "Chemin complet",
+    "formatName": "Nom du format",
+    "format": "Format",
+    "duration": "Durée",
+    "size": "Taille",
+    "bitrate": "Débit",
+    "totalStreams": "Nombre de flux",
+    "codec": "Codec",
+    "profile": "Profil",
+    "width": "Largeur",
+    "height": "Hauteur",
+    "codedWidth": "Largeur encodée",
+    "codedHeight": "Hauteur encodée",
+    "frameRate": "Fréquence d’images",
+    "avgFrameRate": "Fréquence d’images moyenne",
+    "pixelFormat": "Format de pixel",
+    "colorSpace": "Espace colorimétrique",
+    "colorRange": "Plage de couleurs",
+    "colorPrimaries": "Primaires de couleur",
+    "colorTransfer": "Transfert de couleur",
+    "chromaLocation": "Position de la chrominance",
+    "totalFrames": "Nombre d’images",
+    "referenceFrames": "Images de référence",
+    "gopSize": "Taille du GOP",
+    "codecLevel": "Niveau du codec",
+    "fieldOrder": "Ordre des trames",
+    "timeBase": "Base de temps",
+    "rotation": "Rotation",
+    "channels": "Canaux",
+    "channelLayout": "Disposition des canaux",
+    "sampleRate": "Fréquence d’échantillonnage",
+    "sampleFormat": "Format d’échantillon",
+    "bitsPerSample": "Bits par échantillon",
+    "metadataTags": "Balises de métadonnées",
+    "subtitleFormat": "Format des sous-titres",
+    "language": "Langue",
+    "title": "Titre",
+    "disposition": "Disposition",
+    "start": "Début",
+    "end": "Fin",
+    "imageInformation": "Informations sur l’image",
+    "fileName": "Nom du fichier",
+    "mimeType": "Type MIME",
+    "aspectRatio": "Format d’image",
+    "orientation": "Orientation",
+    "dpi": "PPP",
+    "megapixels": "Mégapixels",
+    "colorType": "Type de couleur",
+    "bitDepth": "Profondeur de bits",
+    "alphaChannel": "Couche alpha",
+    "make": "Fabricant",
+    "model": "Modèle",
+    "lensModel": "Modèle d’objectif",
+    "software": "Logiciel",
+    "iso": "ISO",
+    "exposureTime": "Temps d’exposition",
+    "aperture": "Ouverture",
+    "focalLength": "Focale",
+    "flash": "Flash",
+    "dateTaken": "Date de prise de vue",
+    "dateDigitized": "Date de numérisation",
+    "artist": "Artiste",
+    "copyright": "Droits d’auteur",
+    "coordinates": "Coordonnées",
+    "tabs": {
+      "container": "Conteneur",
+      "video": "Vidéo",
+      "audio": "Audio",
+      "subtitles": "Sous-titres",
+      "chapters": "Chapitres",
+      "metadata": "Métadonnées",
+      "color": "Couleur",
+      "exif": "EXIF"
+    },
+    "noMetadata": "Aucune métadonnée trouvée",
+    "notAvailable": "N/D",
+    "videoStream": "Flux vidéo",
+    "audioStream": "Flux audio",
+    "noAudioStreams": "Aucun flux audio trouvé",
+    "noSubtitleStreams": "Aucun flux de sous-titres trouvé",
+    "noVideoPath": "Chemin de la vidéo non disponible",
+    "subtitleFiles": "Fichiers de sous-titres",
+    "subtitleSaved": "Sous-titres extraits et enregistrés au format {{format}}.",
+    "subtitleStream": "Flux de sous-titres {{number}}",
+    "subtitleNotExtractable": "Ce format de sous-titres ({{codec}}) ne peut pas être converti en SRT. Il s’agit probablement d’un format basé sur des images (p. ex. Blu-ray PGS ou DVD VobSub). Il ne peut donc pas être téléchargé.",
+    "downloading": "Téléchargement…",
+    "unsupported": "Non pris en charge",
+    "downloadAs": "Télécharger en {{format}}",
+    "dispositions": {
+      "default": "Par défaut",
+      "forced": "Forcé",
+      "attachedPicture": "Image jointe",
+      "comment": "Commentaire",
+      "karaoke": "Karaoké",
+      "lyrics": "Paroles"
+    },
+    "noChapters": "Aucun chapitre trouvé",
+    "chapter": "Chapitre {{number}}",
+    "noExif": "Aucune donnée EXIF trouvée",
+    "cameraInformation": "Informations sur l’appareil",
+    "shootingInformation": "Informations de prise de vue",
+    "dateInformation": "Informations de date",
+    "copyrightInformation": "Informations sur les droits d’auteur",
+    "gpsInformation": "Informations GPS",
+    "allTags": "Toutes les balises"
+  },
+  "svg": {
+    "advanced": "Réglages SVG avancés",
+    "blackAndWhite": "Noir et blanc",
+    "levels": {
+      "low": "Faible",
+      "medium": "Moyen",
+      "high": "Élevé",
+      "few": "Peu",
+      "many": "Beaucoup",
+      "sharp": "Net",
+      "smooth": "Lisse",
+      "fine": "Fin",
+      "coarse": "Grossier",
+      "accurate": "Précis",
+      "less": "Moins"
+    },
+    "filterSpeckle": {
+      "title": "Filtrer les taches",
+      "tooltip": "Plus élevé donne un résultat plus net et plus lisse"
+    },
+    "colorPrecision": {
+      "title": "Précision des couleurs",
+      "tooltip": "Plus élevé est plus précis, mais peut sursaturer"
+    },
+    "layerDifference": {
+      "title": "Différence entre calques",
+      "tooltip": "Plus élevé signifie moins de calques"
+    },
+    "cornerThreshold": {
+      "title": "Seuil des angles",
+      "tooltip": "Plus élevé est plus lisse"
+    },
+    "segmentLength": {
+      "title": "Longueur des segments",
+      "tooltip": "Plus élevé est plus grossier"
+    },
+    "spliceThreshold": {
+      "title": "Seuil de raccord",
+      "tooltip": "Plus élevé est moins précis"
+    },
+    "scaleFactor": "Facteur d’échelle"
+  },
+  "batch": {
+    "copyOutput": "Copier la sortie dans le presse-papiers",
+    "compareOutput": "Comparer la sortie",
+    "processing": "Traitement",
+    "paused": "En pause",
+    "inputSize": "Taille d’entrée",
+    "outputSize": "Taille de sortie",
+    "extension": "Extension",
+    "duration": "Durée",
+    "dimensions": "Dimensions",
+    "compressed_videos": "Vidéos compressées",
+    "compressed_audio": "Fichiers audio compressés",
+    "compressed_images": "Images compressées",
+    "compressed_media": "Médias compressés",
+    "label_videos": "Vidéos",
+    "label_audio": "Audio",
+    "label_images": "Images",
+    "label_media": "Médias",
+    "sizeSaved": "Espace gagné",
+    "addMoreTooltip": "Ajouter d’autres médias. Vous pouvez aussi déposer ou coller des fichiers.",
+    "addMoreMedia": "Ajouter d’autres médias",
+    "addMore": "Ajouter"
+  },
+  "preview": {
+    "showFailed": "Le fichier n’a pas pu être affiché.",
+    "compare": "Comparer",
+    "showEdits": "Afficher les modifications",
+    "smaller": "plus petit",
+    "size": "Taille",
+    "fps": "I/s",
+    "viewFullInfo": "Toutes les informations",
+    "progress": "Progression {{value}} %",
+    "mediaToCompress": "Média à compresser",
+    "waitingForDropZone": "En attente de la zone de dépôt…",
+    "processing": "Traitement…"
+  },
+  "thumbnail": {
+    "copyFrameUnavailable": "Impossible de copier l’image",
+    "frameCopied": "Image copiée dans le presse-papiers",
+    "copyFrameFailed": "L’image n’a pas pu être copiée dans le presse-papiers",
+    "coverArt": "Pochette",
+    "copyFrame": "Copier l’image actuelle",
+    "audioUnplayable": "Cet audio ne peut pas être lu ici, mais il peut tout de même être compressé.",
+    "switchingToImage": "Passage à la vignette…",
+    "pauseAudio": "Mettre l’audio en pause",
+    "playAudio": "Lire l’audio",
+    "videoUnplayable": "Cette vidéo ne peut pas être lue par cette app, car elle utilise des codecs ou des configurations avancés. Ces vidéos nécessitent un lecteur dédié tel que VLC.",
+    "previewsOff": "Les aperçus vidéo sont désactivés. Ils peuvent être activés dans les Réglages, sous Général.",
+    "stillCompressible": "Vous pouvez néanmoins appliquer les réglages de sortie et effectuer toutes les conversions.",
+    "regenerate": "Régénérer la vignette",
+    "enlarge": "Agrandir l’image",
+    "select": "Sélectionner une image de vignette.",
+    "selectFailed": "L’image de vignette n’a pas pu être sélectionnée.",
+    "title": "Vignette",
+    "noneSelected": "Aucune vignette sélectionnée",
+    "custom": "Vignette personnalisée",
+    "choose": "Choisir",
+    "unsupported": "{{container}} ne prend pas en charge les vignettes personnalisées"
+  },
+  "codecs": {
+    "video": {
+      "libx264": "Le plus compatible, bonne qualité",
+      "libx265": "Meilleure compression, norme plus récente",
+      "libvpx_vp9": "Open source, idéal pour le web",
+      "libaom_av1": "Meilleure compression, plus lent",
+      "mpeg4": "Ancien codec, large prise en charge"
+    },
+    "audio": {
+      "aac": "Codec standard, large compatibilité",
+      "libmp3lame": "Format audio universel",
+      "libopus": "Moderne, haute qualité",
+      "libvorbis": "Open source, bonne qualité",
+      "ac3": "Dolby Digital, son surround",
+      "alac": "Compression sans perte optimisée pour les appareils Apple",
+      "flac": "Compression sans perte",
+      "pcm_s16le": "Non compressé, meilleure qualité"
+    },
+    "title": "Codec",
+    "select": "Choisir le codec :",
+    "default": "Par défaut",
+    "defaultDescription": "Codec par défaut du conteneur choisi",
+    "unusableIn_one": "{{codec}} ne peut pas être utilisé dans les fichiers {{containers}} ; {{count}} vidéo conserve donc son codec par défaut.",
+    "unusableIn_many": "{{codec}} ne peut pas être utilisé dans les fichiers {{containers}} ; {{count}} vidéos conservent donc leur codec par défaut.",
+    "unusableIn_other": "{{codec}} ne peut pas être utilisé dans les fichiers {{containers}} ; {{count}} vidéos conservent donc leur codec par défaut.",
+    "videoCount_one": "{{usable}} sur {{count}} vidéo",
+    "videoCount_many": "{{usable}} sur {{count}} vidéos",
+    "videoCount_other": "{{usable}} sur {{count}} vidéos",
+    "partial": "Seules {{videos}} peuvent utiliser {{codec}}. Les autres conservent leur codec par défaut."
+  },
+  "metadata": {
+    "limitation_mov": "Les fichiers MOV ne peuvent pas conserver la description ni le synopsis.",
+    "limitation_avi": "Les fichiers AVI ne peuvent pas conserver la description, le synopsis ni la date de création.",
+    "limitation_ts": "Les fichiers TS ne peuvent conserver que le titre. Les autres informations ne sont pas enregistrées.",
+    "strip": "Supprimer les métadonnées",
+    "keepHint": "Laissez le champ vide pour conserver l’original",
+    "removeHint": "Ou saisissez une espace pour supprimer l’original",
+    "title": {
+      "label": "Titre",
+      "placeholder": "Saisissez le titre",
+      "placeholderVideo": "Saisissez le titre de la vidéo"
+    },
+    "artist": {
+      "label": "Artiste",
+      "placeholder": "Saisissez le nom de l’artiste"
+    },
+    "album": {
+      "label": "Album",
+      "placeholder": "Saisissez le nom de l’album"
+    },
+    "genre": {
+      "label": "Genre",
+      "placeholder": "Saisissez le genre"
+    },
+    "year": {
+      "label": "Année/Date",
+      "placeholder": "Saisissez l’année ou la date"
+    },
+    "description": {
+      "label": "Description",
+      "placeholder": "Saisissez la description"
+    },
+    "synopsis": {
+      "label": "Synopsis",
+      "placeholder": "Saisissez le synopsis"
+    },
+    "comment": {
+      "label": "Commentaire",
+      "placeholder": "Saisissez un commentaire"
+    },
+    "copyright": {
+      "label": "Droits d’auteur",
+      "placeholder": "Saisissez les informations sur les droits d’auteur"
+    },
+    "creationTime": {
+      "label": "Date de création",
+      "placeholder": "Saisissez la date de création"
+    }
+  },
+  "media": {
+    "addAfterCompression": "Impossible d’ajouter des médias après la compression. Lancez une nouvelle compression pour en ajouter d’autres.",
+    "noValidFiles": "Aucun fichier multimédia valide trouvé.",
+    "alreadyAdded": "Les médias sélectionnés ont déjà été ajoutés.",
+    "someCorrupted": "Certains fichiers semblent endommagés ou invalides et n’ont pas été ajoutés.",
+    "corrupted": "Le fichier semble endommagé ou invalide.",
+    "selectTitle": "Sélectionnez des images, des vidéos ou de l’audio à compresser.",
+    "selectFailed": "Les médias n’ont pas pu être sélectionnés.",
+    "invalidFiles": "Fichiers ou dossiers non valides"
+  },
+  "save": {
+    "partiallySaved_one": "{{saved}} fichier sur {{count}} enregistré. {{failed}} n’ont pas pu être enregistrés. Utilisez « Enregistrer les médias » pour choisir un autre emplacement.",
+    "partiallySaved_many": "{{saved}} fichiers sur {{count}} enregistrés. {{failed}} n’ont pas pu être enregistrés. Utilisez « Enregistrer les médias » pour choisir un autre emplacement.",
+    "partiallySaved_other": "{{saved}} fichiers sur {{count}} enregistrés. {{failed}} n’ont pas pu être enregistrés. Utilisez « Enregistrer les médias » pour choisir un autre emplacement.",
+    "autoSaveFailed": "Impossible d’enregistrer automatiquement, peut-être en raison d’autorisations manquantes sur le dossier. Utilisez « Enregistrer les médias » pour choisir un emplacement.",
+    "failed": "Les médias n’ont pas pu être enregistrés à l’emplacement indiqué.",
+    "chooseDirectory": "Choisissez le dossier où enregistrer les médias compressés.",
+    "chooseLocation": "Choisissez l’emplacement où enregistrer le média compressé.",
+    "largerSkipped_one": "{{count}} sortie était plus volumineuse que l’original et n’a pas été enregistrée automatiquement. Utilisez « Enregistrer » si vous souhaitez tout de même la conserver.",
+    "largerSkipped_many": "{{count}} sorties étaient plus volumineuses que l’original et n’ont pas été enregistrées automatiquement. Utilisez « Enregistrer » si vous souhaitez tout de même les conserver.",
+    "largerSkipped_other": "{{count}} sorties étaient plus volumineuses que l’original et n’ont pas été enregistrées automatiquement. Utilisez « Enregistrer » si vous souhaitez tout de même les conserver.",
+    "copyFailed": "La sortie n’a pas pu être copiée dans le presse-papiers.",
+    "saving": "Enregistrement…",
+    "saved": "Enregistré",
+    "saveMedia": "Enregistrer les médias"
+  },
+  "home": {
+    "dragAndDrop": "Glisser-déposer",
+    "or": "Ou",
+    "clickToSelect": "Cliquez pour sélectionner des médias",
+    "dropAnywhere": "Déposez n’importe où…"
+  },
+  "compression": {
+    "cannotCancel": "La compression ne peut pas être annulée à ce stade.",
+    "confirmCancel": "Confirmer l’annulation",
+    "cancelling": "Annulation…",
+    "reconfigure": "Reconfigurer",
+    "pauseFailed": "La compression n’a pas pu être mise en pause.",
+    "resumeFailed": "La compression n’a pas pu reprendre.",
+    "failed": "Une erreur s’est produite pendant la compression.",
+    "process": "Traiter"
+  },
+  "exit": {
+    "title": "Quitter",
+    "notSaved": "Médias non enregistrés",
+    "discardConfirm_one": "Votre média compressé n’est pas encore enregistré. Voulez-vous vraiment l’abandonner ?",
+    "discardConfirm_many": "Vos médias compressés ne sont pas encore enregistrés. Voulez-vous vraiment les abandonner ?",
+    "discardConfirm_other": "Vos médias compressés ne sont pas encore enregistrés. Voulez-vous vraiment les abandonner ?",
+    "goBack": "Retour"
+  },
+  "mediaConfig": {
+    "filter": "Filtre de médias",
+    "all": "Tous",
+    "outputSettings": "Réglages de sortie",
+    "batchSettings": "Réglages du lot"
+  },
+  "compare": {
+    "input": "Entrée",
+    "output": "Sortie",
+    "enlargeInput": "Agrandir l’entrée",
+    "enlargeOutput": "Agrandir la sortie",
+    "svgTooLarge": "Fichier SVG trop volumineux. Les performances de la comparaison peuvent en être affectées."
+  },
+  "transform": {
+    "free": "Libre",
+    "rotateLeft": "Pivoter à gauche",
+    "flipVertical": "Retourner verticalement",
+    "flipHorizontal": "Retourner horizontalement",
+    "resetZoom": "Réinitialiser le zoom",
+    "expand": "Agrandir",
+    "title": "Transformer"
+  },
+  "outputSettings": {
+    "video": "Réglages vidéo",
+    "image": "Réglages d’image",
+    "audio": "Réglages audio",
+    "compressionSettings": "Réglages de compression",
+    "tabs": {
+      "image": "Image",
+      "video": "Vidéo",
+      "audio": "Audio",
+      "others": "Autres"
+    },
+    "noAudio": "Aucun audio trouvé"
+  },
+  "quality": {
+    "lossless": "Compression sans perte",
+    "title": "Qualité"
+  },
+  "dimensions": {
+    "resolution": "Résolution",
+    "revert": "Revenir à la résolution d’origine",
+    "width": "Largeur",
+    "height": "Hauteur",
+    "original": "Originale",
+    "resolutionLabel": "Résolution :"
+  },
+  "extension": {
+    "label": "Extension :",
+    "sameAsInput": "Identique à l’entrée",
+    "noAudio": "Cette vidéo ne contient aucun audio à extraire.",
+    "extractAudio": "Extraire l’audio",
+    "extractAudioNone": "Extraire l’audio (aucun audio trouvé)"
+  },
+  "trim": {
+    "title": "Découper",
+    "instructions": "Instructions",
+    "controls": "Commandes de la timeline :",
+    "select": "Cliquez pour sélectionner une piste",
+    "split": "Double-cliquez sur la piste pour la diviser",
+    "add": "Double-cliquez sur une zone libre pour ajouter une piste",
+    "delete": "Sélectionnez une piste et appuyez sur <key>Suppr</key> pour la supprimer",
+    "hideInstructions": "Masquer les instructions"
+  },
+  "audio": {
+    "bitrate": "Débit",
+    "bitrateLabel": "Débit :",
+    "channels": "Canaux",
+    "layout": "Disposition :",
+    "monoSource": "Source mono :",
+    "left": "Gauche",
+    "right": "Droite",
+    "swapChannels": "Inverser les canaux gauche et droit",
+    "tracks": "Pistes",
+    "track": "Piste {{number}}",
+    "channelCount_one": "{{count}} canal",
+    "channelCount_many": "{{count}} canaux",
+    "channelCount_other": "{{count}} canaux",
+    "volumeLabel": "Volume :",
+    "volume": "Volume audio",
+    "mute": "Muet"
+  },
+  "fps": {
+    "label": "Images par seconde :"
+  },
+  "speed": {
+    "title": "Vitesse"
+  },
+  "keys": {
+    "ctrl": "Ctrl",
+    "shift": "Maj",
+    "enter": "Entrée"
+  },
+  "theme": {
+    "toggle": "Changer de thème"
+  },
+  "errorBoundary": {
+    "title": "Une erreur s’est produite.",
+    "retry": "Réessayer"
+  },
+  "player": {
+    "play": "Lire",
+    "pause": "Pause"
+  },
+  "update": {
+    "installed": "La mise à jour a été installée. Redémarrez l’app pour utiliser la nouvelle version.",
+    "installFailed": "La mise à jour n’a pas pu être installée. Veuillez réessayer.",
+    "error": "Erreur de mise à jour : {{message}}"
+  },
+  "native": {
+    "quit": "Quitter",
+    "continueCompressing": "Continuer la compression",
+    "goBack": "Retour",
+    "compressingTitle": "Compression en cours",
+    "compressingMessage": "Des médias sont encore en cours de compression. Si vous quittez maintenant, la compression sera annulée.",
+    "unsavedTitle": "Médias non enregistrés",
+    "unsavedMessage": "Vos médias compressés ne sont pas encore enregistrés. Si vous quittez maintenant, ils seront perdus.",
+    "dropQueueMessage": "Des médias de la zone de dépôt sont encore en cours de compression. Si vous quittez maintenant, elle sera arrêtée.",
+    "openApp": "Ouvrir CompressO",
+    "quitApp": "Quitter CompressO",
+    "aboutApp": "À propos de CompressO",
+    "settings": "Réglages…",
+    "services": "Services",
+    "hideApp": "Masquer CompressO",
+    "hideOthers": "Masquer les autres",
+    "file": "Fichier",
+    "closeWindow": "Fermer la fenêtre",
+    "edit": "Édition",
+    "undo": "Annuler",
+    "redo": "Rétablir",
+    "cut": "Couper",
+    "copy": "Copier",
+    "paste": "Coller",
+    "selectAll": "Tout sélectionner",
+    "view": "Présentation",
+    "fullScreen": "Activer/désactiver le plein écran",
+    "window": "Fenêtre",
+    "minimize": "Placer dans le Dock",
+    "zoom": "Réduire/agrandir",
+    "help": "Aide"
+  }
+}

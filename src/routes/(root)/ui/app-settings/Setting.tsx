@@ -1,5 +1,6 @@
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow'
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { proxy, useSnapshot } from 'valtio'
 
 import Badge from '@/components/Badge'
@@ -8,6 +9,7 @@ import Icon, { IconProps } from '@/components/Icon'
 import Modal, { ModalContent } from '@/components/Modal'
 import ScrollShadow from '@/components/ScrollShadow'
 import Tooltip from '@/components/Tooltip'
+import type { Translation } from '@/i18n'
 import { updateStore } from '@/stores/updateStore'
 import { getPlatform } from '@/utils/fs'
 import { cn } from '@/utils/tailwind'
@@ -20,8 +22,7 @@ import Output from './Output'
 import Presets from './Presets'
 
 type SettingsPage = {
-  id: string
-  label: string
+  id: keyof Translation['settings']['pages']
   // TODO: replace with dedicated icons
   icon: IconProps['name']
   Component: React.ComponentType
@@ -29,25 +30,26 @@ type SettingsPage = {
 
 const { isMacOS } = getPlatform()
 
-const SETTINGS_GROUPS: { label: string; pages: SettingsPage[] }[] = [
+const SETTINGS_GROUPS: {
+  /** Translated (`settings.groups`) */
+  id: keyof Translation['settings']['groups']
+  pages: SettingsPage[]
+}[] = [
   {
-    label: 'Settings',
+    id: 'settings',
     pages: [
       {
         id: 'general',
-        label: 'General',
         icon: 'setting',
         Component: General,
       },
       {
         id: 'output',
-        label: 'Output',
         icon: 'fileExplorer',
         Component: Output,
       },
       {
         id: 'presets',
-        label: 'Presets',
         icon: 'star',
         Component: Presets,
       },
@@ -55,8 +57,7 @@ const SETTINGS_GROUPS: { label: string; pages: SettingsPage[] }[] = [
       ...(hasTray
         ? [
             {
-              id: 'dropZone',
-              label: 'Drop Zone',
+              id: 'dropZone' as const,
               icon: 'dropzone' as const,
               Component: DropZone,
             },
@@ -65,17 +66,15 @@ const SETTINGS_GROUPS: { label: string; pages: SettingsPage[] }[] = [
     ],
   },
   {
-    label: 'CompressO',
+    id: 'app',
     pages: [
       {
         id: 'about',
-        label: 'About',
         icon: 'info',
         Component: About,
       },
       {
         id: 'credits',
-        label: 'Credits',
         icon: 'lowResHeart',
         Component: Credits,
       },
@@ -92,6 +91,7 @@ const OPEN_SETTINGS_EVENT = 'open-settings'
 
 /** Settings button, shown on the home screen */
 function Setting() {
+  const { t } = useTranslation()
   const { isUpdateAvailable, latestVersion } = useSnapshot(updateStore)
 
   const hasNewVersion = !!(isUpdateAvailable && latestVersion)
@@ -107,8 +107,8 @@ function Setting() {
         }}
       >
         <Tooltip
-          content={`Open Settings (${isMacOS ? '⌘' : 'Ctrl'} ,)`}
-          aria-label="Open Settings"
+          content={`${t('settings.open')} (${isMacOS ? '⌘' : 'Ctrl'} ,)`}
+          aria-label={t('settings.open')}
           placement="right"
         >
           <Badge
@@ -190,6 +190,7 @@ type SettingsDialogProps = {
 }
 
 function SettingsDialog({ onClose, hasNewVersion }: SettingsDialogProps) {
+  const { t } = useTranslation()
   const [selectedPageId, setSelectedPageId] = React.useState(ALL_PAGES[0].id)
   const selectedPage =
     ALL_PAGES.find((page) => page.id === selectedPageId) ?? ALL_PAGES[0]
@@ -199,8 +200,10 @@ function SettingsDialog({ onClose, hasNewVersion }: SettingsDialogProps) {
       <aside className="w-[240px] flex-shrink-0 flex flex-col border-r border-zinc-400 dark:border-zinc-800 p-3">
         <ScrollShadow className="flex-1" hideScrollBar>
           {SETTINGS_GROUPS.map((group) => (
-            <nav key={group.label} className="mt-5 first:mt-2">
-              <p className="px-3 mb-1 text-xs text-zinc-500">{group.label}</p>
+            <nav key={group.id} className="mt-5 first:mt-2">
+              <p className="px-3 mb-1 text-xs text-zinc-500">
+                {t(`settings.groups.${group.id}`)}
+              </p>
               {group.pages.map((page) => (
                 <button
                   key={page.id}
@@ -214,11 +217,13 @@ function SettingsDialog({ onClose, hasNewVersion }: SettingsDialogProps) {
                   ])}
                 >
                   <Icon name={page.icon} size={18} />
-                  <span className="flex-1">{page.label}</span>
+                  <span className="flex-1">
+                    {t(`settings.pages.${page.id}`)}
+                  </span>
                   {page.id === 'about' && hasNewVersion ? (
                     <span
                       className="w-2 h-2 rounded-full bg-primary"
-                      aria-label="Update available"
+                      aria-label={t('settings.about.updateAvailable')}
                     />
                   ) : null}
                 </button>

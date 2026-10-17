@@ -1,6 +1,7 @@
 import { proxy } from 'valtio'
 
 import { toast } from '@/components/Toast'
+import { t } from '@/i18n'
 import { checkUpdate, downloadAndInstallUpdate } from '@/tauri/commands/updater'
 
 export type UpdateState = {
@@ -56,13 +57,11 @@ export async function downloadAndInstallUpdateApp() {
 
   try {
     await downloadAndInstallUpdate()
-    toast.success(
-      'Update installed successfully. Restart the app to use the new version.',
-    )
+    toast.success(t('update.installed'))
   } catch (error) {
     // biome-ignore lint/suspicious/noConsole: <>
     console.error('Failed to install update:', error)
-    toast.error('Failed to install update. Please try again.')
+    toast.error(t('update.installFailed'))
   } finally {
     setTimeout(() => {
       updateStore.isUpdateAvailable = false
@@ -85,7 +84,7 @@ export function setupUpdateListeners() {
     })
 
     listen('update-error', (event) => {
-      toast.error(`Update error: ${event.payload}`)
+      toast.error(t('update.error', { message: event.payload }))
       updateStore.isInstalling = false
     })
   })

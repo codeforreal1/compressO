@@ -1,5 +1,6 @@
 // The item must be HeroUI's own (not a wrapper) so the Select can build its collection
 import { SelectItem } from '@heroui/react'
+import { useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
 import InfoTooltip from '@/components/InfoTooltip'
@@ -8,12 +9,8 @@ import Switch from '@/components/Switch'
 import { isAutoCompressAvailable } from '@/hooks/useAutoCompressSync'
 import { presetsStore } from '@/stores/presetsStore'
 import { settingsStore } from '@/stores/settingsStore'
-import {
-  PRESET_MEDIA_LABELS,
-  type Preset,
-  type PresetMediaType,
-} from '@/types/preset'
-import { TRAY_ICON_SETTING_TITLE, TRAY_NAME } from '@/utils/tray'
+import type { Preset, PresetMediaType } from '@/types/preset'
+import { TRAY_CONTEXT } from '@/utils/tray'
 import { SettingsRow, SettingsSection } from './SettingsLayout'
 import { getPreset, getPresets } from '../../-presets'
 
@@ -26,6 +23,7 @@ const DROP_ZONE_PRESET_SETTINGS = {
 
 /** Picks the preset of the media compressed by the drop zone */
 function DropZonePresetSelect({ mediaType }: { mediaType: PresetMediaType }) {
+  const { t } = useTranslation()
   const { presets } = useSnapshot(presetsStore)
   const settings = useSnapshot(settingsStore)
   const settingKey = DROP_ZONE_PRESET_SETTINGS[mediaType]
@@ -39,7 +37,7 @@ function DropZonePresetSelect({ mediaType }: { mediaType: PresetMediaType }) {
 
   return (
     <Select
-      aria-label={`${PRESET_MEDIA_LABELS[mediaType].title} preset`}
+      aria-label={t('settings.dropZone.preset.title', { context: mediaType })}
       selectedKeys={[selectedPreset.id]}
       disallowEmptySelection
       onSelectionChange={(keys) => {
@@ -59,6 +57,7 @@ function DropZonePresetSelect({ mediaType }: { mediaType: PresetMediaType }) {
 
 /** Settings of the drop zone in the menu bar (macOS only) */
 function DropZone() {
+  const { t } = useTranslation()
   const {
     showMenuBarIcon,
     watchClipboard,
@@ -74,27 +73,32 @@ function DropZone() {
       {/* Only needed while the drop zone cannot be used */}
       {!showMenuBarIcon ? (
         <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-8">
-          The drop zone is in the {TRAY_NAME}, so it only works when{' '}
-          {TRAY_ICON_SETTING_TITLE} is turned on in General.
+          {t('settings.dropZone.needsTrayIcon', { context: TRAY_CONTEXT })}
         </p>
       ) : null}
-      <SettingsSection title="Compression">
+      <SettingsSection title={t('settings.dropZone.compression.title')}>
         <SettingsRow
-          title="Compress automatically"
-          description="Compress media as soon as it is added to the drop zone, one at a time, and save it to the save location of Output."
+          title={t('settings.dropZone.compression.autoCompress.title')}
+          description={t(
+            'settings.dropZone.compression.autoCompress.description',
+          )}
         >
           <div className="flex items-center gap-2">
             <InfoTooltip
               content={
                 !showMenuBarIcon
-                  ? `The drop zone is in the ${TRAY_NAME}. Turn on ${TRAY_ICON_SETTING_TITLE} in General first.`
+                  ? t('settings.dropZone.turnOnTrayIcon', {
+                      context: TRAY_CONTEXT,
+                    })
                   : !canAutoCompress
-                    ? 'Choose a save location in Output, other than Ask every time, so the compressed media can be saved without asking.'
+                    ? t(
+                        'settings.dropZone.compression.autoCompress.needsSaveLocation',
+                      )
                     : null
               }
             />
             <Switch
-              aria-label="Compress automatically"
+              aria-label={t('settings.dropZone.compression.autoCompress.title')}
               isSelected={autoCompress && canAutoCompress}
               isDisabled={!showMenuBarIcon || !canAutoCompress}
               onValueChange={(isSelected) => {
@@ -106,42 +110,44 @@ function DropZone() {
         <SettingsRow
           isVisible={autoCompress && canAutoCompress}
           isNested
-          title="Video preset"
-          description="Settings used for videos."
+          title={t('settings.dropZone.preset.title_video')}
+          description={t('settings.dropZone.preset.description_video')}
         >
           <DropZonePresetSelect mediaType="video" />
         </SettingsRow>
         <SettingsRow
           isVisible={autoCompress && canAutoCompress}
           isNested
-          title="Image preset"
-          description="Settings used for images."
+          title={t('settings.dropZone.preset.title_image')}
+          description={t('settings.dropZone.preset.description_image')}
         >
           <DropZonePresetSelect mediaType="image" />
         </SettingsRow>
         <SettingsRow
           isVisible={autoCompress && canAutoCompress}
           isNested
-          title="Audio preset"
-          description="Settings used for audio files."
+          title={t('settings.dropZone.preset.title_audio')}
+          description={t('settings.dropZone.preset.description_audio')}
         >
           <DropZonePresetSelect mediaType="audio" />
         </SettingsRow>
       </SettingsSection>
-      <SettingsSection title="Clipboard">
+      <SettingsSection title={t('settings.dropZone.clipboard.title')}>
         <SettingsRow
-          title="Watch clipboard"
-          description={`Add media you copy, such as files or images from a browser, to the drop zone in the ${TRAY_NAME}.`}
+          title={t('settings.dropZone.clipboard.watch.title')}
+          description={t('settings.dropZone.clipboard.watch.description', {
+            context: TRAY_CONTEXT,
+          })}
         >
           <div className="flex items-center gap-2">
             <InfoTooltip
               content={
                 !showMenuBarIcon &&
-                `The drop zone is in the ${TRAY_NAME}. Turn on ${TRAY_ICON_SETTING_TITLE} in General first.`
+                t('settings.dropZone.turnOnTrayIcon', { context: TRAY_CONTEXT })
               }
             />
             <Switch
-              aria-label="Watch clipboard"
+              aria-label={t('settings.dropZone.clipboard.watch.title')}
               isSelected={watchClipboard}
               isDisabled={!showMenuBarIcon}
               onValueChange={(isSelected) => {

@@ -8,10 +8,8 @@ const { isMacOS, isWindows } = getPlatform()
  */
 export const hasTray = !!(isMacOS || isWindows)
 
-/** The tray's name in the interface, e.g. "The drop zone is in the menu bar" */
-export const TRAY_NAME = isWindows ? 'system tray' : 'menu bar'
-
-/** The setting that shows the tray icon (Settings -> General) */
-export const TRAY_ICON_SETTING_TITLE = isWindows
-  ? 'Show system tray icon'
-  : 'Show menu bar icon'
+/**
+ * Which tray the text is about, as i18next's context (`t(key, { context: TRAY_CONTEXT })` uses
+ * `key_macos` or `key_windows`): each language words the menu bar & the system tray its own way
+ */
+export const TRAY_CONTEXT = isWindows ? 'windows' : 'macos'

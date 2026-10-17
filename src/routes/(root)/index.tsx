@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
 import Icon from '@/components/Icon'
@@ -19,6 +20,7 @@ export const Route = createFileRoute('/(root)/')({
 })
 
 function Root() {
+  const { t } = useTranslation()
   const { state } = useSnapshot(appProxy)
   useCompressionStatusSync()
 
@@ -73,9 +75,9 @@ function Root() {
         <div className="flex flex-col justify-center items-center py-16 px-20 border-2 border-dashed border-zinc-200 dark:border-zinc-800 rounded-3xl">
           <Icon name="addMedia" className="text-primary" size={60} />
           <p className="text-sm mt-4 text-gray-600 dark:text-gray-400 text-center">
-            Drag & Drop
-            <span className="block text-xs">Or</span>
-            Click to select media
+            {t('home.dragAndDrop')}
+            <span className="block text-xs">{t('home.or')}</span>
+            {t('home.clickToSelect')}
           </p>
         </div>
       </motion.div>

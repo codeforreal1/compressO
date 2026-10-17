@@ -1,5 +1,6 @@
 import { cloneDeep } from 'lodash'
 import { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
 import Slider from '@/components/Slider'
@@ -23,6 +24,7 @@ function CompressionQuality({
   mediaIndex,
   isDisabled,
 }: CompressionQualityProps) {
+  const { t } = useTranslation()
   const {
     state: {
       isCompressing,
@@ -80,20 +82,20 @@ function CompressionQuality({
     // Shown under Lossless Compression, which animates it in & out (see `CompressionPreset`)
     <div>
       <Slider
-        label="Quality"
-        aria-label="Quality"
+        label={t('quality.title')}
+        aria-label={t('quality.title')}
         marks={[
           {
             value: 1,
-            label: 'Low',
+            label: t('svg.levels.low'),
           },
           {
             value: 50,
-            label: 'Medium',
+            label: t('svg.levels.medium'),
           },
           {
             value: 99,
-            label: 'High',
+            label: t('svg.levels.high'),
           },
         ]}
         minValue={1}
@@ -106,7 +108,11 @@ function CompressionQuality({
         }}
         getValue={(value) => {
           const val = Array.isArray(value) ? value?.[0] : +value
-          return val < 50 ? 'Low' : val >= 50 && val < 100 ? 'Medium' : 'High'
+          return val < 50
+            ? t('svg.levels.low')
+            : val >= 50 && val < 100
+              ? t('svg.levels.medium')
+              : t('svg.levels.high')
         }}
         renderValue={() => <p className="text-primary text-xs">{quality}%</p>}
         value={quality}

@@ -1,9 +1,12 @@
+import { SelectItem } from '@heroui/react'
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
 import Button from '@/components/Button'
 import ColorPicker from '@/components/ColorPicker'
 import InfoTooltip from '@/components/InfoTooltip'
+import Select from '@/components/Select'
 import Slider from '@/components/Slider'
 import Switch from '@/components/Switch'
 import { ThemeSwitcher } from '@/components/ThemeSwitcher'
@@ -11,6 +14,7 @@ import { toast } from '@/components/Toast'
 import { useDropQueue } from '@/hooks/useDropQueue'
 import { usePrimaryColor } from '@/hooks/usePrimaryColor'
 import { isWindowTintSupported } from '@/hooks/useWindowTint'
+import { LANGUAGES, type LanguageCode } from '@/i18n/languages'
 import { settingsStore, TINT_OPACITY_RANGE } from '@/stores/settingsStore'
 import {
   getLogFilePath,
@@ -24,14 +28,15 @@ import { showItemInFileManager } from '@/tauri/commands/fs'
 import { playCompletionSound as playSound } from '@/tauri/commands/sound'
 import { getPlatform } from '@/utils/fs'
 import { cn } from '@/utils/tailwind'
-import { hasTray, TRAY_ICON_SETTING_TITLE, TRAY_NAME } from '@/utils/tray'
+import { hasTray, TRAY_CONTEXT } from '@/utils/tray'
 import { isVideoPreviewAvailable } from '@/utils/video'
 import { SettingsRow, SettingsSection } from './SettingsLayout'
 
-const { isLinux, isWindows } = getPlatform()
+const { isLinux } = getPlatform()
 
 /** Opening the app at login, which the system keeps (also changed in its login items) */
 function StartupSection() {
+  const { t } = useTranslation()
   const { openInMenuBarOnly, showMenuBarIcon } = useSnapshot(settingsStore)
   // `null` until read from the system
   const [state, setState] = React.useState<OpenAtLoginState | null>(null)
@@ -58,20 +63,20 @@ function StartupSection() {
     try {
       await setOpenAtLogin(isSelected)
     } catch {
-      toast.error('The setting could not be changed.')
+      toast.error(t('settings.general.startup.changeFailed'))
     }
     // As the system has it (e.g. still switched off in its settings)
     readState()
   }
 
   return (
-    <SettingsSection title="Startup">
+    <SettingsSection title={t('settings.general.startup.title')}>
       <SettingsRow
-        title="Open at login"
-        description="Open CompressO automatically when you log in to your computer."
+        title={t('settings.general.startup.openAtLogin.title')}
+        description={t('settings.general.startup.openAtLogin.description')}
       >
         <Switch
-          aria-label="Open at login"
+          aria-label={t('settings.general.startup.openAtLogin.title')}
           isSelected={isOpenAtLogin}
           isDisabled={state == null}
           onValueChange={handleOpenAtLoginChange}
@@ -80,8 +85,8 @@ function StartupSection() {
       <SettingsRow
         isVisible={state?.needsApproval}
         isNested
-        title="Turned off in System Settings"
-        description="CompressO is not allowed to open at login. Allow it in System Settings, under General and Login Items."
+        title={t('settings.general.startup.needsApproval.title')}
+        description={t('settings.general.startup.needsApproval.description')}
       >
         <Button
           size="sm"
@@ -89,24 +94,32 @@ function StartupSection() {
             openLoginItemsSettings().catch(() => {})
           }}
         >
-          Open Login Items
+          {t('settings.general.startup.needsApproval.button')}
         </Button>
       </SettingsRow>
       <SettingsRow
         isVisible={hasTray && isOpenAtLogin}
         isNested
-        title={`Open in the ${TRAY_NAME} only`}
-        description={`Do not show the main window when opened at login. Media can still be compressed from the ${TRAY_NAME}.`}
+        title={t('settings.general.startup.openInTrayOnly.title', {
+          context: TRAY_CONTEXT,
+        })}
+        description={t('settings.general.startup.openInTrayOnly.description', {
+          context: TRAY_CONTEXT,
+        })}
       >
         <div className="flex items-center gap-2">
           <InfoTooltip
             content={
               !showMenuBarIcon &&
-              `Turn on ${TRAY_ICON_SETTING_TITLE} to use this, as the app is opened from there.`
+              t('settings.general.startup.openInTrayOnly.needsTrayIcon', {
+                context: TRAY_CONTEXT,
+              })
             }
           />
           <Switch
-            aria-label={`Open in the ${TRAY_NAME} only`}
+            aria-label={t('settings.general.startup.openInTrayOnly.title', {
+              context: TRAY_CONTEXT,
+            })}
             isSelected={openInMenuBarOnly && showMenuBarIcon}
             isDisabled={!showMenuBarIcon}
             onValueChange={(isSelected) => {
@@ -119,7 +132,32 @@ function StartupSection() {
   )
 }
 
+/** The language of the interface (English by default) */
+function LanguageSelect() {
+  const { t } = useTranslation()
+  const { language } = useSnapshot(settingsStore)
+
+  return (
+    <Select
+      aria-label={t('settings.general.appearance.language.title')}
+      selectedKeys={[language]}
+      disallowEmptySelection
+      onSelectionChange={(keys) => {
+        const [key] = Array.from(keys)
+        if (key) settingsStore.language = key as LanguageCode
+      }}
+      size="sm"
+      className="w-[200px]"
+    >
+      {LANGUAGES.map((item) => (
+        <SelectItem key={item.code}>{item.name}</SelectItem>
+      ))}
+    </Select>
+  )
+}
+
 function General() {
+  const { t } = useTranslation()
   const { color, setColor } = usePrimaryColor()
   const {
     tintedWindow,
@@ -142,26 +180,34 @@ function General() {
 
   return (
     <>
-      <SettingsSection title="Appearance">
+      <SettingsSection title={t('settings.general.appearance.title')}>
         <SettingsRow
-          title="Theme"
-          description="Switch between the light and dark interface."
+          title={t('settings.general.appearance.language.title')}
+          description={t('settings.general.appearance.language.description')}
+        >
+          <LanguageSelect />
+        </SettingsRow>
+        <SettingsRow
+          title={t('settings.general.appearance.theme.title')}
+          description={t('settings.general.appearance.theme.description')}
         >
           <ThemeSwitcher />
         </SettingsRow>
         <SettingsRow
-          title="Accent color"
-          description="Color used for buttons, highlights and progress."
+          title={t('settings.general.appearance.accentColor.title')}
+          description={t('settings.general.appearance.accentColor.description')}
         >
           <ColorPicker color={color} onChange={setColor} />
         </SettingsRow>
         {isWindowTintSupported ? (
           <SettingsRow
-            title="Tinted window"
-            description="Let the desktop show softly through the window background."
+            title={t('settings.general.appearance.tintedWindow.title')}
+            description={t(
+              'settings.general.appearance.tintedWindow.description',
+            )}
           >
             <Switch
-              aria-label="Tinted window"
+              aria-label={t('settings.general.appearance.tintedWindow.title')}
               isSelected={tintedWindow}
               onValueChange={(isSelected) => {
                 settingsStore.tintedWindow = isSelected
@@ -172,12 +218,12 @@ function General() {
         <SettingsRow
           isVisible={isWindowTintSupported && tintedWindow}
           isNested
-          title="Tint opacity"
-          description="How much of the desktop shows through. Lower values show more of it."
+          title={t('settings.general.appearance.tintOpacity.title')}
+          description={t('settings.general.appearance.tintOpacity.description')}
         >
           <div className="flex items-center gap-3 w-[220px]">
             <Slider
-              aria-label="Tint opacity"
+              aria-label={t('settings.general.appearance.tintOpacity.title')}
               size="sm"
               minValue={TINT_OPACITY_RANGE.min}
               maxValue={TINT_OPACITY_RANGE.max}
@@ -196,20 +242,28 @@ function General() {
         </SettingsRow>
       </SettingsSection>
       {hasTray ? (
-        <SettingsSection title={isWindows ? 'System tray' : 'Menu bar'}>
+        <SettingsSection
+          title={t('settings.general.tray.title', { context: TRAY_CONTEXT })}
+        >
           <SettingsRow
-            title={TRAY_ICON_SETTING_TITLE}
-            description={`Show the CompressO icon, the compression progress and the drop zone in the ${TRAY_NAME}.`}
+            title={t('settings.general.tray.showIcon.title', {
+              context: TRAY_CONTEXT,
+            })}
+            description={t('settings.general.tray.showIcon.description', {
+              context: TRAY_CONTEXT,
+            })}
           >
             <div className="flex items-center gap-2">
               <InfoTooltip
                 content={
                   isMenuBarIconLocked &&
-                  'Media in the drop zone is being compressed. This can be turned off once it is done or stopped.'
+                  t('settings.general.tray.showIcon.locked')
                 }
               />
               <Switch
-                aria-label={TRAY_ICON_SETTING_TITLE}
+                aria-label={t('settings.general.tray.showIcon.title', {
+                  context: TRAY_CONTEXT,
+                })}
                 isSelected={showMenuBarIcon}
                 isDisabled={isMenuBarIconLocked}
                 onValueChange={(isSelected) => {
@@ -221,10 +275,12 @@ function General() {
         </SettingsSection>
       ) : null}
       {isLinux ? (
-        <SettingsSection title="Preview">
+        <SettingsSection title={t('settings.general.preview.title')}>
           <SettingsRow
-            title="Video previews"
-            description="Play videos inside the app. Videos do not play well on some Linux systems, so a still image is shown instead by default. Changes apply after a restart."
+            title={t('settings.general.preview.videoPreviews.title')}
+            description={t(
+              'settings.general.preview.videoPreviews.description',
+            )}
           >
             <div className="flex items-center gap-2">
               {/* Its space is always kept & it fades in, so the switch does not move */}
@@ -241,10 +297,10 @@ function General() {
                   !needsRestart && 'pointer-events-none',
                 )}
               >
-                Restart
+                {t('settings.general.preview.restart')}
               </Button>
               <Switch
-                aria-label="Video previews"
+                aria-label={t('settings.general.preview.videoPreviews.title')}
                 isSelected={enableVideoPreviews}
                 onValueChange={(isSelected) => {
                   settingsStore.enableVideoPreviews = isSelected
@@ -256,13 +312,13 @@ function General() {
       ) : null}
 
       <StartupSection />
-      <SettingsSection title="Sleep">
+      <SettingsSection title={t('settings.general.sleep.title')}>
         <SettingsRow
-          title="Prevent sleep while compressing"
-          description="Keep the computer awake until the compression is done. The screen can still turn off. Closing the lid still puts it to sleep."
+          title={t('settings.general.sleep.preventSleep.title')}
+          description={t('settings.general.sleep.preventSleep.description')}
         >
           <Switch
-            aria-label="Prevent sleep while compressing"
+            aria-label={t('settings.general.sleep.preventSleep.title')}
             isSelected={preventSleepWhileCompressing}
             onValueChange={(isSelected) => {
               settingsStore.preventSleepWhileCompressing = isSelected
@@ -272,11 +328,11 @@ function General() {
         <SettingsRow
           isVisible={preventSleepWhileCompressing}
           isNested
-          title="Keep the screen on"
-          description="Also keep the screen from turning off while compressing."
+          title={t('settings.general.sleep.keepScreenOn.title')}
+          description={t('settings.general.sleep.keepScreenOn.description')}
         >
           <Switch
-            aria-label="Keep the screen on"
+            aria-label={t('settings.general.sleep.keepScreenOn.title')}
             isSelected={keepScreenOnWhileCompressing}
             onValueChange={(isSelected) => {
               settingsStore.keepScreenOnWhileCompressing = isSelected
@@ -284,13 +340,13 @@ function General() {
           />
         </SettingsRow>
       </SettingsSection>
-      <SettingsSection title="Sound">
+      <SettingsSection title={t('settings.general.sound.title')}>
         <SettingsRow
-          title="Completion sound"
-          description="Play a sound when a compression completes."
+          title={t('settings.general.sound.completionSound.title')}
+          description={t('settings.general.sound.completionSound.description')}
         >
           <Switch
-            aria-label="Completion sound"
+            aria-label={t('settings.general.sound.completionSound.title')}
             isSelected={playCompletionSound}
             onValueChange={(isSelected) => {
               settingsStore.playCompletionSound = isSelected
@@ -300,10 +356,12 @@ function General() {
           />
         </SettingsRow>
       </SettingsSection>
-      <SettingsSection title="Troubleshooting">
+      <SettingsSection title={t('settings.general.troubleshooting.title')}>
         <SettingsRow
-          title="Log files"
-          description="A record of what the app did, which helps find the cause of a problem. Include them when reporting one. They contain the names of the files you compressed."
+          title={t('settings.general.troubleshooting.logFiles.title')}
+          description={t(
+            'settings.general.troubleshooting.logFiles.description',
+          )}
         >
           <Button
             size="sm"
@@ -311,11 +369,13 @@ function General() {
               try {
                 await showItemInFileManager(await getLogFilePath())
               } catch {
-                toast.error('The log files could not be shown.')
+                toast.error(
+                  t('settings.general.troubleshooting.logFiles.failed'),
+                )
               }
             }}
           >
-            Show log files
+            {t('settings.general.troubleshooting.logFiles.button')}
           </Button>
         </SettingsRow>
       </SettingsSection>

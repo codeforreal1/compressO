@@ -3,6 +3,7 @@ import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow'
 import { AnimatePresence, motion } from 'framer-motion'
 import React, { useEffect } from 'react'
 import ReactDOM from 'react-dom'
+import { useTranslation } from 'react-i18next'
 
 import Icon from '@/components/Icon'
 import { toast } from '@/components/Toast'
@@ -24,6 +25,7 @@ function DragAndDropFiles({
   onFile,
   multiple = false,
 }: DragAndDropFilesProps) {
+  const { t } = useTranslation()
   const [dragAndDropState, setDragAndDropState] = React.useState<
     'idle' | 'dragging' | 'dropped'
   >('idle')
@@ -67,7 +69,7 @@ function DragAndDropFiles({
             if (Array.isArray(files)) {
               onFile?.(files)
             } else {
-              toast.error('Invalid files/folders')
+              toast.error(t('media.invalidFiles'))
             }
           }
         })
@@ -89,7 +91,7 @@ function DragAndDropFiles({
     return () => {
       cancelDragAndDropEvents()
     }
-  }, [onFile, disable, cancelDragAndDropEvents, multiple])
+  }, [onFile, disable, cancelDragAndDropEvents, multiple, t])
 
   return (
     <>
@@ -107,7 +109,7 @@ function DragAndDropFiles({
               >
                 <Icon name="dragAndDrop" className="text-primary" size={50} />
                 <p className="my-2 text-gray-600 dark:text-gray-400 text-sm">
-                  Drop anywhere...
+                  {t('home.dropAnywhere')}
                 </p>
               </motion.div>
             </div>

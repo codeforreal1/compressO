@@ -1,6 +1,7 @@
 import { SelectItem } from '@heroui/react'
 import { AnimatePresence, motion } from 'framer-motion'
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
 import Button from '@/components/Button'
@@ -53,6 +54,7 @@ type PresetSelectorProps = {
  * changed, they can be saved to the preset, saved as a new preset or reverted.
  */
 function PresetSelector({ mediaType, mediaIndex }: PresetSelectorProps) {
+  const { t } = useTranslation()
   const {
     state: {
       media,
@@ -196,7 +198,7 @@ function PresetSelector({ mediaType, mediaIndex }: PresetSelectorProps) {
       storedPreset,
     )
     linkToPreset(storedPreset.id)
-    toast.success(`The preset "${storedPreset.name}" was updated.`)
+    toast.success(t('presets.updated', { name: storedPreset.name }))
   }
 
   const handleSaveAsNewPreset = (name: string) => {
@@ -208,14 +210,14 @@ function PresetSelector({ mediaType, mediaIndex }: PresetSelectorProps) {
     )
     linkToPreset(id)
     setIsSaveModalOpen(false)
-    toast.success(`The preset "${name}" was saved.`)
+    toast.success(t('presets.saved', { name }))
   }
 
   const handleRevert = async () => {
     try {
       await revertToPreset(mediaType, mediaIndex)
     } catch {
-      toast.error('The settings could not be reverted.')
+      toast.error(t('presets.revertFailed'))
     }
   }
 
@@ -223,7 +225,7 @@ function PresetSelector({ mediaType, mediaIndex }: PresetSelectorProps) {
     try {
       await applyPreset(mediaType, presetId, mediaIndex)
     } catch {
-      toast.error('The preset could not be applied.')
+      toast.error(t('presets.applyFailed'))
     }
   }
 
@@ -234,7 +236,7 @@ function PresetSelector({ mediaType, mediaIndex }: PresetSelectorProps) {
       <div className="flex items-end">
         <Select
           fullWidth
-          label="Preset:"
+          label={t('presets.label')}
           size="sm"
           selectedKeys={[preset.id]}
           disallowEmptySelection
@@ -302,11 +304,17 @@ function PresetSelector({ mediaType, mediaIndex }: PresetSelectorProps) {
                             size="sm"
                             variant="solid"
                             onPress={handleUpdatePreset}
-                            aria-label={`Update "${preset.name}"`}
+                            aria-label={t('presets.update', {
+                              name: preset.name,
+                            })}
                           >
                             <Tooltip
-                              content={`Update "${preset.name}"`}
-                              aria-label={`Update "${preset.name}"`}
+                              content={t('presets.update', {
+                                name: preset.name,
+                              })}
+                              aria-label={t('presets.update', {
+                                name: preset.name,
+                              })}
                             >
                               <Icon name="tick" size={18} />
                             </Tooltip>
@@ -317,11 +325,11 @@ function PresetSelector({ mediaType, mediaIndex }: PresetSelectorProps) {
                           size="sm"
                           variant="solid"
                           onPress={openSaveModal}
-                          aria-label="Save as new preset"
+                          aria-label={t('presets.saveAsNew')}
                         >
                           <Tooltip
-                            content="Save as new preset"
-                            aria-label="Save as new preset"
+                            content={t('presets.saveAsNew')}
+                            aria-label={t('presets.saveAsNew')}
                           >
                             <Icon name="plus" size={18} />
                           </Tooltip>
@@ -335,11 +343,11 @@ function PresetSelector({ mediaType, mediaIndex }: PresetSelectorProps) {
                   size="sm"
                   variant="solid"
                   onPress={handleRevert}
-                  aria-label="Revert to preset"
+                  aria-label={t('presets.revert')}
                 >
                   <Tooltip
-                    content="Revert to preset"
-                    aria-label="Revert to preset"
+                    content={t('presets.revert')}
+                    aria-label={t('presets.revert')}
                   >
                     <Icon name="redo" size={18} className="-scale-x-100" />
                   </Tooltip>

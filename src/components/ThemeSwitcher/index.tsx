@@ -1,6 +1,7 @@
 import { Button } from '@heroui/react'
 import { useCallback, useEffect, useRef } from 'react'
 import { flushSync } from 'react-dom'
+import { useTranslation } from 'react-i18next'
 
 import { useTheme } from '@/hooks/useTheme'
 import { cn } from '@/utils/tailwind'
@@ -15,6 +16,7 @@ export const ThemeSwitcher = ({
   className,
   duration = 400,
 }: ThemeSwitcherProps) => {
+  const { t } = useTranslation()
   const { theme, setTheme, toggleTheme } = useTheme()
 
   const buttonRef = useRef<HTMLButtonElement>(null)
@@ -103,13 +105,13 @@ export const ThemeSwitcher = ({
       onPress={handleThemeToggle}
     >
       <Tooltip
-        content="Toggle theme"
-        aria-label="Toggle theme"
+        content={t('theme.toggle')}
+        aria-label={t('theme.toggle')}
         placement="right"
       >
         <Icon name={theme === 'light' ? 'moon' : 'sun'} />
       </Tooltip>
-      <span className="sr-only">Toggle theme</span>
+      <span className="sr-only">{t('theme.toggle')}</span>
     </Button>
   )
 }

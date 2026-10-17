@@ -2,6 +2,8 @@
 import { createRouter, RouterProvider } from '@tanstack/react-router'
 import ReactDOM from 'react-dom/client'
 import './global.css'
+// Before anything is rendered, so the first frame is in the right language
+import './i18n'
 
 import { routeTree } from './routeTree.gen'
 import { getServerUrl } from './utils/video'

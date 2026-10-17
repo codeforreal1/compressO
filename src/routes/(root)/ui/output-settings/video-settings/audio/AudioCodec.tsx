@@ -1,12 +1,14 @@
 import { SelectItem, SelectSection } from '@heroui/react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useCallback, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
 import Icon from '@/components/Icon'
 import Select from '@/components/Select'
 import Switch from '@/components/Switch'
 import Tooltip from '@/components/Tooltip'
+import { t } from '@/i18n'
 import { extensions } from '@/types/compression'
 import { slideDownTransition } from '@/utils/animation'
 import { appProxy, normalizeBatchMediaConfig } from '../../../../-state'
@@ -27,7 +29,9 @@ export const AUDIO_CODECS: readonly AudioCodecOption[] = [
   {
     value: 'aac',
     name: 'AAC',
-    description: 'Standard codec, wide compatibility',
+    get description() {
+      return t('codecs.audio.aac')
+    },
     compatible_containers: [
       'mp4',
       'mov',
@@ -39,7 +43,9 @@ export const AUDIO_CODECS: readonly AudioCodecOption[] = [
   {
     value: 'libmp3lame',
     name: 'MP3',
-    description: 'Universal audio format',
+    get description() {
+      return t('codecs.audio.libmp3lame')
+    },
     compatible_containers: [
       'mp4',
       'mov',
@@ -52,19 +58,25 @@ export const AUDIO_CODECS: readonly AudioCodecOption[] = [
   {
     value: 'libopus',
     name: 'Opus',
-    description: 'Modern, high quality',
+    get description() {
+      return t('codecs.audio.libopus')
+    },
     compatible_containers: ['webm', 'mkv', 'ogg', 'opus'] as VideoExtension[],
   },
   {
     value: 'libvorbis',
     name: 'Vorbis',
-    description: 'Open-source, good quality',
+    get description() {
+      return t('codecs.audio.libvorbis')
+    },
     compatible_containers: ['webm', 'mkv', 'ogg'] as VideoExtension[],
   },
   {
     value: 'ac3',
     name: 'AC3',
-    description: 'Dolby Digital, surround sound',
+    get description() {
+      return t('codecs.audio.ac3')
+    },
     compatible_containers: [
       'mp4',
       'mov',
@@ -76,19 +88,25 @@ export const AUDIO_CODECS: readonly AudioCodecOption[] = [
   {
     value: 'alac',
     name: 'ALAC',
-    description: 'Lossless compression optimized for Apple devices',
+    get description() {
+      return t('codecs.audio.alac')
+    },
     compatible_containers: ['mp4', 'mov', 'm4a'] as VideoExtension[],
   },
   {
     value: 'flac',
     name: 'FLAC',
-    description: 'Lossless compression',
+    get description() {
+      return t('codecs.audio.flac')
+    },
     compatible_containers: ['mkv', 'flac', 'ogg'] as VideoExtension[],
   },
   {
     value: 'pcm_s16le',
     name: 'PCM',
-    description: 'Uncompressed, best quality',
+    get description() {
+      return t('codecs.audio.pcm_s16le')
+    },
     compatible_containers: ['mov', 'avi', 'wav'] as VideoExtension[],
   },
 ]
@@ -98,6 +116,7 @@ type AudioCodecProps = {
 }
 
 function AudioCodec({ mediaIndex }: AudioCodecProps) {
+  const { t } = useTranslation()
   const {
     state: {
       media,
@@ -223,7 +242,7 @@ function AudioCodec({ mediaIndex }: AudioCodecProps) {
         isDisabled={shouldDisableInput}
       >
         <p className="text-gray-600 dark:text-gray-400 text-sm mr-2 w-full">
-          Codec
+          {t('codecs.title')}
         </p>
       </Switch>
       <AnimatePresence mode="wait">
@@ -231,7 +250,7 @@ function AudioCodec({ mediaIndex }: AudioCodecProps) {
           <motion.div {...slideDownTransition}>
             <Select
               fullWidth
-              label="Select Codec:"
+              label={t('codecs.select')}
               className="block flex-shrink-0 rounded-2xl !mt-8"
               selectedKeys={[initialCodecValue]}
               size="sm"
@@ -250,12 +269,12 @@ function AudioCodec({ mediaIndex }: AudioCodecProps) {
             >
               <SelectItem
                 key="-"
-                textValue="Default"
+                textValue={t('codecs.default')}
                 className="flex justify-center items-center"
                 endContent={
                   <Tooltip
-                    content="Default codec for the selected container"
-                    aria-label="Default codec for the selected container"
+                    content={t('codecs.defaultDescription')}
+                    aria-label={t('codecs.defaultDescription')}
                   >
                     <Icon
                       name="info"
@@ -266,7 +285,7 @@ function AudioCodec({ mediaIndex }: AudioCodecProps) {
                 }
               >
                 <div className="flex flex-col">
-                  <span className="text-sm">Default</span>
+                  <span className="text-sm">{t('codecs.default')}</span>
                 </div>
               </SelectItem>
               <SelectSection>

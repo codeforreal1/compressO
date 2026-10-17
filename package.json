@@ -42,6 +42,7 @@
     "@xzdarcy/timeline-engine": "^1.0.0",
     "clsx": "^2.0.0",
     "framer-motion": "11.18.2",
+    "i18next": "^26.4.7",
     "lodash": "^4.17.21",
     "pretty-bytes": "^6.1.1",
     "react": "^18",
@@ -49,6 +50,7 @@
     "react-colorful": "^5.6.1",
     "react-compare-slider": "^3.1.0",
     "react-dom": "^18",
+    "react-i18next": "^17.0.20",
     "react-markdown": "^10.1.0",
     "react-photo-view": "^1.2.7",
     "react-player": "^2.16.0",
@@ -84,6 +86,8 @@
     }
   },
   "lint-staged": {
-    "src/**/*.{js,ts,jsx,tsx}": ["biome check --write"]
+    "src/**/*.{js,ts,jsx,tsx}": [
+      "biome check --write"
+    ]
   }
 }

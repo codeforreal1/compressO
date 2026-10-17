@@ -1,4 +1,5 @@
 import React, { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
 import Button from '@/components/Button'
@@ -10,6 +11,7 @@ import { saveCompressedMediaWithPrompt } from '../-save'
 import { appProxy } from '../-state'
 
 function SaveMedia() {
+  const { t } = useTranslation()
   const {
     state: { media, isSaving, isSaved, isCompressing },
   } = useSnapshot(appProxy)
@@ -44,7 +46,7 @@ function SaveMedia() {
 
     try {
       await copyFileToClipboard(savedPath)
-      toast.success('Copied to clipboard.')
+      toast.success(t('common.copied'))
     } catch {}
   }
 
@@ -59,7 +61,11 @@ function SaveMedia() {
         fullWidth
         variant="solid"
       >
-        {isSaving ? 'Saving...' : isSaved ? 'Saved' : `Save Media`}
+        {isSaving
+          ? t('save.saving')
+          : isSaved
+            ? t('save.saved')
+            : t('save.saveMedia')}
         {!isSaving ? (
           <Icon name={isSaved ? 'tick' : 'download'} className="text-primary" />
         ) : null}
@@ -67,8 +73,8 @@ function SaveMedia() {
       {isSaved ? (
         <>
           <Tooltip
-            content="Show in File Explorer"
-            aria-label="Show in File Explorer"
+            content={t('common.showInFileManager')}
+            aria-label={t('common.showInFileManager')}
           >
             <Button
               isIconOnly
@@ -84,8 +90,8 @@ function SaveMedia() {
       mediaFile?.isProcessCompleted &&
       mediaFile?.compressedFile?.isSuccessful ? (
         <Tooltip
-          content="Copy output to clipboard"
-          aria-label="Copy output to clipboard"
+          content={t('batch.copyOutput')}
+          aria-label={t('batch.copyOutput')}
         >
           <Button
             isIconOnly

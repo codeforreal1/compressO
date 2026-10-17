@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 
 import Button from '@/components/Button'
 import Modal, {
@@ -9,7 +10,7 @@ import Modal, {
 } from '@/components/Modal'
 import TextInput from '@/components/TextInput'
 import { presetsStore } from '@/stores/presetsStore'
-import { PRESET_MEDIA_LABELS, PresetMediaType } from '@/types/preset'
+import type { PresetMediaType } from '@/types/preset'
 
 type SavePresetModalProps = {
   isOpen: boolean
@@ -25,6 +26,7 @@ function SavePresetModal({
   onClose,
   onSave,
 }: SavePresetModalProps) {
+  const { t } = useTranslation()
   const [name, setName] = React.useState('')
 
   React.useEffect(() => {
@@ -50,38 +52,29 @@ function SavePresetModal({
       {/* Normal weight throughout, like the settings dialog (only section headings are bold) */}
       <ModalContent className="rounded-2xl settings-dialog">
         <ModalHeader className="pb-1">
-          Save {PRESET_MEDIA_LABELS[mediaType].title} Preset
+          {t('presets.save.title', { context: mediaType })}
         </ModalHeader>
         <ModalBody>
           <TextInput
             autoFocus
-            label="Name"
-            placeholder={
-              mediaType === 'video'
-                ? 'e.g. Web 1080p'
-                : mediaType === 'audio'
-                  ? 'e.g. Podcast'
-                  : 'e.g. Web'
-            }
+            label={t('presets.save.name')}
+            placeholder={t('presets.save.placeholder', { context: mediaType })}
             value={name}
             maxLength={40}
             onValueChange={setName}
             isInvalid={isNameTaken}
-            errorMessage={
-              isNameTaken ? 'A preset with this name already exists.' : null
-            }
+            errorMessage={isNameTaken ? t('presets.save.nameTaken') : null}
             onKeyDown={(evt) => {
               if (evt.key === 'Enter') handleSave()
             }}
           />
           <p className="text-xs text-zinc-500 dark:text-zinc-400">
-            Presets can be renamed, reordered and deleted in Settings, under
-            Presets.
+            {t('presets.save.hint')}
           </p>
         </ModalBody>
         <ModalFooter>
           <Button size="sm" onPress={onClose}>
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button
             size="sm"
@@ -90,7 +83,7 @@ function SavePresetModal({
             isDisabled={!canSave}
             onPress={handleSave}
           >
-            Save
+            {t('common.save')}
           </Button>
         </ModalFooter>
       </ModalContent>

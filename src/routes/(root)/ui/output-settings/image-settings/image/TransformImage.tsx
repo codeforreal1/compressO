@@ -1,4 +1,5 @@
 import { core } from '@tauri-apps/api'
+import { useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
 import Button from '@/components/Button'
@@ -11,6 +12,7 @@ type TransformProps = {
 }
 
 function Transform({ mediaIndex }: TransformProps) {
+  const { t } = useTranslation()
   if (mediaIndex < 0) return
 
   const {
@@ -63,7 +65,7 @@ function Transform({ mediaIndex }: TransformProps) {
         isDisabled={shouldDisableInput}
       >
         <p className="text-gray-600 dark:text-gray-400 text-sm mr-2 w-full">
-          Transform
+          {t('transform.title')}
         </p>
       </Switch>
       {shouldTransformImage ? (
@@ -81,7 +83,7 @@ function Transform({ mediaIndex }: TransformProps) {
             className="h-[unset] py-1 ml-auto"
             isDisabled={shouldDisableInput}
           >
-            Save
+            {t('common.save')}
           </Button>
         ) : (
           <Button
@@ -96,7 +98,7 @@ function Transform({ mediaIndex }: TransformProps) {
             className="h-[unset] py-1 ml-auto"
             isDisabled={shouldDisableInput}
           >
-            <Icon name="pencil" size={16} /> Edit
+            <Icon name="pencil" size={16} /> {t('common.edit')}
           </Button>
         )
       ) : null}

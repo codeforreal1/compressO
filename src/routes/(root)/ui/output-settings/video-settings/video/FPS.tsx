@@ -1,6 +1,7 @@
 import { SelectItem } from '@heroui/react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useCallback, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
 import Select from '@/components/Select'
@@ -18,6 +19,7 @@ type VideoFPSProps = {
 }
 
 function FPS({ mediaIndex }: VideoFPSProps) {
+  const { t } = useTranslation()
   const {
     state: {
       media,
@@ -117,7 +119,7 @@ function FPS({ mediaIndex }: VideoFPSProps) {
         isDisabled={shouldDisableInput}
       >
         <p className="text-gray-600 dark:text-gray-400 text-sm mr-2 w-full">
-          FPS
+          {t('preview.fps')}
         </p>
       </Switch>
       <AnimatePresence mode="wait">
@@ -146,7 +148,7 @@ function FPS({ mediaIndex }: VideoFPSProps) {
             ) : (
               <Select
                 fullWidth
-                label="Frames Per Second:"
+                label={t('fps.label')}
                 className="block flex-shrink-0 rounded-2xl !mt-8"
                 selectedKeys={[String(initialFpsValue)!]}
                 size="sm"
