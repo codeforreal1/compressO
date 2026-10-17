@@ -51,6 +51,9 @@ pub fn show_item_in_file_manager(path: String) -> Result<(), String> {
     use std::{path::PathBuf, process::Command};
     #[cfg(target_os = "windows")]
     {
+        // Explorer only understands backslashes: with a forward slash (saved paths are joined with
+        // `/`), it opens its default folder instead of selecting the file
+        let path = path.replace('/', "\\");
         Command::new("explorer")
             .args(["/select,", &path])
             .spawn()
