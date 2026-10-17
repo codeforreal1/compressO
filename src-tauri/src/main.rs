@@ -84,6 +84,11 @@ const MAIN_WINDOW_LABEL: &str = "main";
 // "Open with CompressO" triggers `application:openURLs` before app setup is complete
 static EARLY_URLS: OnceLock<Mutex<Vec<Url>>> = OnceLock::new();
 
+/// Set once the app is set up, with its main window. "Open with CompressO" can open files while
+/// the app is still launching, before that window exists: creating one then made the app's own
+/// creation of it fail (& the app crash), so files opened then wait for it instead.
+static IS_APP_SET_UP: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
 struct PendingFiles(Arc<Mutex<Vec<String>>>);
 
 impl PendingFiles {
@@ -404,6 +409,7 @@ async fn main() {
                 }
             }
 
+            IS_APP_SET_UP.store(true, std::sync::atomic::Ordering::SeqCst);
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -567,8 +573,11 @@ async fn main() {
                     if let Err(e) = handle_open_with_app(app_handle, urls.clone()) {
                         log::error!("Failed to handle open with app: {:?}", e);
                     }
-                    // The app may still be running in the menu bar without a main window
-                    if app_handle.get_webview_window(MAIN_WINDOW_LABEL).is_none() {
+                    // The app may still be running in the menu bar without a main window (not while
+                    // it is launching, when the main window is about to be created)
+                    if IS_APP_SET_UP.load(std::sync::atomic::Ordering::SeqCst)
+                        && app_handle.get_webview_window(MAIN_WINDOW_LABEL).is_none()
+                    {
                         if let Err(e) = tauri_commands::tray::focus_or_create_main_window(app_handle)
                         {
                             log::error!("Failed to open the main window: {}", e);
