@@ -341,7 +341,8 @@ function DropZone({
   return (
     <div
       className={cn(
-        'w-full flex-1 my-2 flex flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed transition-colors',
+        'w-full flex-1 my-2 flex flex-col items-center justify-center gap-2 border-2 border-dashed transition-colors',
+        isWindows ? 'rounded-lg' : 'rounded-2xl',
         isDragging
           ? 'border-primary bg-primary/10 text-primary'
           : 'border-black/15 dark:border-white/15 text-zinc-500 dark:text-zinc-400',
