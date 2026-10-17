@@ -39,3 +39,5 @@ yarn-error.log*
 
 analyze
 target
+
+.DS_Store
