@@ -16,7 +16,7 @@ cask "compresso@2.0.0" do
   desc "Compress any video file to a tiny size"
   homepage "https://github.com/codeforreal1/compressO"
 
-  depends_on macos: ">= :ventura" # macOS 13
+  depends_on macos: :ventura # macOS 13 or newer
 
   postflight do
     system "xattr -cr com.apple.quarantine #{appdir}/CompressO.app"
