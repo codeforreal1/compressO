@@ -21,7 +21,7 @@ const TRAY_WINDOW_URL: &str = "webviews/tray";
 const TRAY_WINDOW_WIDTH: f64 = 320.0;
 const TRAY_WINDOW_HEIGHT: f64 = 420.0;
 /// Gap between the popover & the taskbar or the screen's edge (logical pixels), as Windows' flyouts
-const MARGIN: f64 = 12.0;
+const MARGIN: f64 = 1.0;
 /// A click on the tray icon this soon after the popover was hidden by that same click (it took the
 /// focus) leaves it closed, instead of opening it again
 const REOPEN_DELAY: Duration = Duration::from_millis(300);
