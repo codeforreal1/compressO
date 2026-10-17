@@ -1,0 +1,10 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "website",
+      "url": "http://localhost:4322",
+      "port": 4322
+    }
+  ]
+}
