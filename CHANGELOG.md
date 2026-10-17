@@ -1,5 +1,45 @@
 # Changelog
 
+### 4.0.0
+
+Features:
+
+- **Languages**: CompressO is now available in Simplified and Traditional Chinese, Russian, Spanish, Portuguese, German, French, Japanese, Korean, Polish, Turkish, Italian, Indonesian, Vietnamese and Hindi, chosen in Settings.
+- **Drop Zone**: Drop or paste media on the menu bar (macOS) or the system tray (Windows) to compress it without opening the app. It can compress automatically, one file at a time, and the queue can be paused, stopped and tried again.
+- **Presets**: Save video, image and audio settings as presets, choose the default preset for new media and manage presets in Settings.
+- **Audio Compression**: Compress audio files, and extract the audio of videos.
+- **Hardware Acceleration**: Compress videos faster with the graphics card (Settings, under Output).
+- **Faster AV1**: AV1 videos are compressed much faster.
+- **Saving**: Save automatically to a chosen folder or next to the originals, keep the folder structure of dropped folders, skip outputs that are larger than the original and copy outputs to the clipboard.
+- **Startup**: Open CompressO at login, optionally in the menu bar or system tray only.
+- **Batch Improvements**: Add more media to a selection, pause a batch, set one resolution for all videos and choose any video codec for mixed batches.
+- **Transform Previews**: See rotations, flips and crops live, also for videos and animated GIFs, and keep them in presets.
+- **New Formats**: Support for M4V, MTS, M2TS, TS, AVIF, BMP and TIFF.
+- **Completion Sound**: Play a sound when a compression completes.
+- **Keep Awake**: Prevent the computer from sleeping while compressing.
+- **Redesigned Settings**: Settings are now a dialog with a sidebar, available from the app menu and with Cmd/Ctrl + comma.
+- **Keyboard Shortcuts**: Start and cancel a compression with Cmd/Ctrl + Shift + Enter, and reconfigure with Cmd/Ctrl + Shift + R.
+- **New Logo**: A new CompressO logo and app icon.
+
+Enhancements:
+
+- The app asks before quitting while media is being compressed or is not saved yet.
+- Disabled settings explain why they are disabled.
+- A tinted window and an accent color can be chosen in Settings.
+- HEVC videos can be previewed and played on macOS.
+- Photos with an EXIF orientation are shown upright.
+- Log files are kept by date, and can be opened from Settings.
+- Video previews on Linux can be turned on in Settings.
+
+Bug Fixes:
+
+- Fixed the progress of videos with a custom speed.
+- Fixed batches stopping when a single file fails.
+- Fixed saving next to files on network drives.
+- Fixed showing saved files in their folder on Windows.
+- Fixed a crash when a file is opened while the app launches.
+- Fixed audio playback and video previews on Linux.
+
 ### 3.0.0
 
 Features:
