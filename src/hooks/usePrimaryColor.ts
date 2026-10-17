@@ -60,3 +60,12 @@ export function usePrimaryColor() {
 
   return snapshot
 }
+
+/**
+ * Calls `onChange` with the accent color now & whenever it changes, also from another window.
+ * Returns a function that stops it.
+ */
+export function watchPrimaryColor(onChange: (color: string) => void) {
+  onChange(primaryColorProxy.color)
+  return subscribe(primaryColorProxy, () => onChange(primaryColorProxy.color))
+}

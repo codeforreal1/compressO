@@ -8,7 +8,6 @@ use std::sync::Mutex;
 use std::time::{Duration, Instant};
 
 use tauri::{
-    image::Image,
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
     App, AppHandle, LogicalSize, Manager, PhysicalPosition, Rect, Runtime, Theme, WebviewUrl,
     WebviewWindow, WebviewWindowBuilder, WindowEvent,
@@ -219,17 +218,15 @@ pub fn resize_popover(
     Ok(())
 }
 
-fn tray_icon_image() -> Image<'static> {
-    // The app's colored icon: the macOS one is a black template, which a dark taskbar would hide
-    tauri::include_image!("./icons/32x32.png")
-}
-
-/// Shows the progress (e.g. "45%") in the tray icon's tooltip (Windows has no text beside tray
-/// icons). A progress of 0 removes it.
+/// Shows the progress in the tray icon, as a ring around the logo (see `tray_icon`), & in its
+/// tooltip (e.g. "45%"), as Windows has no text beside tray icons. A progress of 0 removes it.
 pub fn set_tray_progress(app_handle: &AppHandle, progress: f64) -> Result<(), String> {
     let Some(tray) = app_handle.tray_by_id(TRAY_WINDOW_LABEL) else {
         return Ok(());
     };
+    if let Some(icon) = crate::win::tray_icon::icon_for_progress(progress) {
+        tray.set_icon(Some(icon)).map_err(|err| err.to_string())?;
+    }
     let tooltip = if progress <= 0.0 {
         "CompressO".to_string()
     } else {
@@ -239,29 +236,9 @@ pub fn set_tray_progress(app_handle: &AppHandle, progress: f64) -> Result<(), St
         .map_err(|err| err.to_string())
 }
 
-/// The system's light or dark mode for apps (Settings -> Personalization -> Colors), which the
-/// popover follows. Read from Windows itself: the webview's own detection can report light in dark
-/// mode, & only reads it when created.
+/// The system's light or dark mode for apps, which the popover follows
 fn system_theme() -> Theme {
-    use windows_sys::Win32::System::Registry::{RegGetValueW, HKEY_CURRENT_USER, RRF_RT_REG_DWORD};
-
-    let wide = |text: &str| text.encode_utf16().chain(Some(0)).collect::<Vec<u16>>();
-    let key = wide("Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize");
-    let value = wide("AppsUseLightTheme");
-    let mut uses_light_theme: u32 = 1;
-    let mut size = std::mem::size_of::<u32>() as u32;
-    let status = unsafe {
-        RegGetValueW(
-            HKEY_CURRENT_USER,
-            key.as_ptr(),
-            value.as_ptr(),
-            RRF_RT_REG_DWORD,
-            std::ptr::null_mut(),
-            &mut uses_light_theme as *mut u32 as *mut std::ffi::c_void,
-            &mut size,
-        )
-    };
-    if status == 0 && uses_light_theme == 0 {
+    if crate::win::theme::apps_use_dark_mode() {
         Theme::Dark
     } else {
         Theme::Light
@@ -369,7 +346,7 @@ fn enable_tray_icon(app_handle: &AppHandle) -> Result<(), String> {
 
     // A right click shows the menu; a click opens the popover
     TrayIconBuilder::with_id(TRAY_WINDOW_LABEL)
-        .icon(tray_icon_image())
+        .icon(crate::win::tray_icon::plain_icon())
         .tooltip("CompressO")
         .menu(&crate::tauri_commands::tray::tray_icon_menu(app_handle)?)
         .show_menu_on_left_click(false)
@@ -404,6 +381,8 @@ fn enable_tray_icon(app_handle: &AppHandle) -> Result<(), String> {
         })
         .build(app_handle)
         .map_err(|err| err.to_string())?;
+    // White on a dark taskbar, near-black on a light one
+    crate::win::tray_icon::watch_taskbar_theme(app_handle);
 
     if app_handle.get_webview_window(TRAY_WINDOW_LABEL).is_none() {
         create_tray_window_in_background(app_handle);

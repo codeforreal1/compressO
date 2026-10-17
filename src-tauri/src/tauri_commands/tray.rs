@@ -245,6 +245,22 @@ pub fn quit_app(app_handle: AppHandle) {
     app_handle.exit(0);
 }
 
+/// The app's accent color (as `"255 132 0"`), which the Windows tray icon's progress ring fills
+/// with. The macOS menu bar shows the progress as text, so it is not used there.
+#[tauri::command]
+pub fn set_tray_progress_color(app_handle: AppHandle, color: String) {
+    let channels: Vec<u8> = color
+        .split_whitespace()
+        .filter_map(|channel| channel.parse().ok())
+        .collect();
+    #[cfg(windows)]
+    if let [red, green, blue] = channels[..] {
+        crate::win::tray_icon::set_progress_color(&app_handle, [red, green, blue]);
+    }
+    #[cfg(not(windows))]
+    let _ = (app_handle, channels);
+}
+
 /// The tray icon's menu, shown with a right click: opens the main window, or quits
 pub fn tray_icon_menu(app_handle: &AppHandle) -> Result<Menu<Wry>, String> {
     let open_item = MenuItem::with_id(app_handle, "open", "Open CompressO", true, None::<&str>)

@@ -74,7 +74,7 @@ use tauri_commands::tray::{
     get_dropped_files, is_clipboard_watch_enabled, is_tray_popover_visible, open_tray_popover,
     paste_dropped_files, quit_app, remove_dropped_file, resize_tray_popover,
     set_clipboard_watch_enabled, set_supported_drop_extensions, set_tray_icon_enabled,
-    set_tray_popover_pinned,
+    set_tray_popover_pinned, set_tray_progress_color,
 };
 
 #[cfg(any(windows, target_os = "linux"))]
@@ -504,6 +504,8 @@ async fn main() {
             set_supported_drop_extensions,
             #[cfg(any(target_os = "macos", windows))]
             set_tray_popover_pinned,
+            #[cfg(any(target_os = "macos", windows))]
+            set_tray_progress_color,
             #[cfg(any(target_os = "macos", windows))]
             set_auto_compress_enabled,
             #[cfg(any(target_os = "macos", windows))]

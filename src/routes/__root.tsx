@@ -10,11 +10,16 @@ import { useAutoCompressSync } from '@/hooks/useAutoCompressSync'
 import { useClipboardWatchSync } from '@/hooks/useClipboardWatchSync'
 import { useHardwareEncodingSync } from '@/hooks/useHardwareEncoding'
 import { useKeepAwakeSync } from '@/hooks/useKeepAwakeSync'
+import { watchPrimaryColor } from '@/hooks/usePrimaryColor'
 import { useWindowTint } from '@/hooks/useWindowTint'
 import { settingsStore } from '@/stores/settingsStore'
 import { checkForUpdates, setupUpdateListeners } from '@/stores/updateStore'
 import { takeOpenedAtLogin } from '@/tauri/commands/app'
-import { setTrayIconEnabled, TRAY_WINDOW_LABEL } from '@/tauri/commands/tray'
+import {
+  setTrayIconEnabled,
+  setTrayProgressColor,
+  TRAY_WINDOW_LABEL,
+} from '@/tauri/commands/tray'
 import { isWindowTintSupported } from '@/tauri/commands/window'
 import Titlebar from '@/tauri/components/Titlebar'
 import DropZoneIsland from '@/ui/DropZoneIsland'
@@ -96,6 +101,13 @@ function TrayRoot() {
   useKeepAwakeSync()
   // The menu bar's window compresses the drop zone's queue
   useDropQueueRunner()
+  // The Windows tray icon's progress ring fills with the accent color
+  useEffect(() => {
+    if (!isWindows) return
+    return watchPrimaryColor((color) => {
+      setTrayProgressColor(color).catch(() => {})
+    })
+  }, [])
   useEffect(() => {
     // The popover follows the system appearance (as its native material does), so its content
     // does too

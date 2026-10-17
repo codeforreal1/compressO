@@ -103,6 +103,11 @@ export function setTrayPopoverPinned(pinned: boolean) {
   return core.invoke<void>('set_tray_popover_pinned', { pinned })
 }
 
+/** The accent color (as `"255 132 0"`), which the Windows tray icon's progress ring fills with */
+export function setTrayProgressColor(color: string) {
+  return core.invoke<void>('set_tray_progress_color', { color })
+}
+
 export function quitApp() {
   return core.invoke<void>('quit_app')
 }
