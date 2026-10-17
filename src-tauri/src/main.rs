@@ -276,8 +276,6 @@ async fn main() {
     tauri::Builder::default()
         // First, so a second launch exits before anything else starts
         .plugin(tauri_plugin_single_instance::init(on_second_instance))
-        // Log files, so problems can be looked into (see `sys::logging`)
-        .plugin(sys::logging::plugin())
         // Opens the app at login when turned on (Settings -> General), telling it so
         .plugin(tauri_plugin_autostart::init(
             tauri_plugin_autostart::MacosLauncher::LaunchAgent,
@@ -300,6 +298,16 @@ async fn main() {
         )
         .plugin(tauri_plugin_updater::Builder::new().build())
         .setup(|app| {
+            // Log files, so problems can be looked into (see `sys::logging`); added here, as the
+            // log folder is the app's
+            match sys::logging::plugin(app.handle()) {
+                Ok(log_plugin) => {
+                    if let Err(e) = app.handle().plugin(log_plugin) {
+                        eprintln!("Failed to start logging: {}", e);
+                    }
+                }
+                Err(e) => eprintln!("Failed to start logging: {}", e),
+            }
             sys::logging::log_app_start(app.handle());
             app.manage(PendingFiles::new());
             app.manage(FrontendReady::new());
