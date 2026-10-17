@@ -18,8 +18,13 @@ cask "compresso@2.1.1" do
 
   depends_on macos: :ventura # macOS 13 or newer
 
-  postflight do
-    system "xattr -cr com.apple.quarantine #{appdir}/CompressO.app"
+  # Clears the quarantine flag macOS adds to downloaded apps
+  postflight_steps do
+    run "/usr/bin/xattr",
+        args:           ["-cr", "{{appdir}}/CompressO.app"],
+        must_succeed:   false,
+        writable_paths: ["CompressO.app"],
+        writable_base:  :appdir
   end
 
   app "CompressO.app"
