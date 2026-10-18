@@ -1,8 +1,7 @@
 use std::path::PathBuf;
 
 #[cfg(not(target_os = "linux"))]
-use clipboard_rs::common::RustImage;
-use clipboard_rs::{Clipboard, ClipboardContext};
+use clipboard_rs::{common::RustImage, Clipboard, ClipboardContext};
 use tauri::{AppHandle, Manager, Url};
 use tauri_plugin_fs::FsExt;
 
@@ -116,14 +115,27 @@ pub async fn delete_cache(app: tauri::AppHandle) -> Result<(), String> {
 }
 
 #[tauri::command]
-pub async fn copy_file_to_clipboard(_: tauri::AppHandle, file_path: &str) -> Result<(), String> {
-    let ctx = ClipboardContext::new().map_err(|err| err.to_string())?;
-    ctx.set_files(vec![file_path.to_owned()])
-        .map_err(|err| err.to_string())?;
-    // Not to be picked up as newly copied media
-    #[cfg(any(target_os = "macos", windows))]
-    crate::sys::clipboard_watch::ignore_current_change();
-    Ok(())
+pub async fn copy_file_to_clipboard(app: tauri::AppHandle, file_path: &str) -> Result<(), String> {
+    // Linux copies through GTK, which keeps handing the files out (see `sys/linux_clipboard.rs`)
+    #[cfg(target_os = "linux")]
+    {
+        let file_path = file_path.to_owned();
+        tauri::async_runtime::spawn_blocking(move || {
+            crate::sys::linux_clipboard::write_files(&app, vec![file_path])
+        })
+        .await
+        .map_err(|err| err.to_string())?
+    }
+    #[cfg(not(target_os = "linux"))]
+    {
+        let _ = app;
+        let ctx = ClipboardContext::new().map_err(|err| err.to_string())?;
+        ctx.set_files(vec![file_path.to_owned()])
+            .map_err(|err| err.to_string())?;
+        // Not to be picked up as newly copied media
+        crate::sys::clipboard_watch::ignore_current_change();
+        Ok(())
+    }
 }
 
 #[derive(serde::Deserialize)]
@@ -154,12 +166,23 @@ pub async fn copy_files_to_clipboard(
         }
     }
 
-    let ctx = ClipboardContext::new().map_err(|err| err.to_string())?;
-    ctx.set_files(file_paths).map_err(|err| err.to_string())?;
-    // Not to be picked up as newly copied media
-    #[cfg(any(target_os = "macos", windows))]
-    crate::sys::clipboard_watch::ignore_current_change();
-    Ok(())
+    // Linux copies through GTK, which keeps handing the files out (see `sys/linux_clipboard.rs`)
+    #[cfg(target_os = "linux")]
+    {
+        tauri::async_runtime::spawn_blocking(move || {
+            crate::sys::linux_clipboard::write_files(&app, file_paths)
+        })
+        .await
+        .map_err(|err| err.to_string())?
+    }
+    #[cfg(not(target_os = "linux"))]
+    {
+        let ctx = ClipboardContext::new().map_err(|err| err.to_string())?;
+        ctx.set_files(file_paths).map_err(|err| err.to_string())?;
+        // Not to be picked up as newly copied media
+        crate::sys::clipboard_watch::ignore_current_change();
+        Ok(())
+    }
 }
 
 #[tauri::command]

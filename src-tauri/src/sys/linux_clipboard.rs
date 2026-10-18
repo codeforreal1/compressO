@@ -74,3 +74,47 @@ fn paths_in_text(text: &str) -> Vec<String> {
     }
     paths
 }
+
+/// Copies files to the clipboard as file managers do, so they can be pasted there (or in other
+/// apps): as file URLs, as GNOME's copied files & as their paths. GTK hands them out while the app
+/// runs, and to the clipboard manager (if any), which keeps them after it quits.
+pub fn write_files(app_handle: &AppHandle, paths: Vec<String>) -> Result<(), String> {
+    let uris: Vec<String> = paths
+        .iter()
+        .map(|path| {
+            tauri::Url::from_file_path(path)
+                .map(|url| url.to_string())
+                .map_err(|_| format!("Invalid path: {path}"))
+        })
+        .collect::<Result<_, _>>()?;
+    let (sender, receiver) = mpsc::channel();
+    app_handle
+        .run_on_main_thread(move || {
+            let clipboard = gtk::Clipboard::get(&gtk::gdk::SELECTION_CLIPBOARD);
+            let targets = [
+                gtk::TargetEntry::new("x-special/gnome-copied-files", gtk::TargetFlags::empty(), 0),
+                gtk::TargetEntry::new("text/uri-list", gtk::TargetFlags::empty(), 1),
+                gtk::TargetEntry::new("UTF8_STRING", gtk::TargetFlags::empty(), 2),
+                gtk::TargetEntry::new("text/plain;charset=utf-8", gtk::TargetFlags::empty(), 2),
+                gtk::TargetEntry::new("text/plain", gtk::TargetFlags::empty(), 2),
+            ];
+            let is_set = clipboard.set_with_data(&targets, move |_, selection, info| {
+                let data = match info {
+                    0 => format!("copy\n{}", uris.join("\n")),
+                    1 => format!("{}\r\n", uris.join("\r\n")),
+                    _ => paths.join("\n"),
+                };
+                selection.set(&selection.target(), 8, data.as_bytes());
+            });
+            if is_set {
+                // Kept by the clipboard manager, also once the app quits
+                clipboard.store();
+            }
+            let _ = sender.send(is_set);
+        })
+        .map_err(|err| err.to_string())?;
+    match receiver.recv_timeout(READ_TIMEOUT) {
+        Ok(true) => Ok(()),
+        _ => Err("The files could not be copied".to_string()),
+    }
+}
