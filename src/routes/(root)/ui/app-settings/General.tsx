@@ -29,10 +29,7 @@ import { playCompletionSound as playSound } from '@/tauri/commands/sound'
 import { getPlatform } from '@/utils/fs'
 import { cn } from '@/utils/tailwind'
 import { hasTray, TRAY_CONTEXT } from '@/utils/tray'
-import {
-  isVideoPreviewAvailable,
-  LINUX_VIDEO_PREVIEWS_SUPPORTED,
-} from '@/utils/video'
+import { isVideoPreviewAvailable } from '@/utils/video'
 import { SettingsRow, SettingsSection } from './SettingsLayout'
 
 const { isLinux } = getPlatform()
@@ -277,7 +274,7 @@ function General() {
           </SettingsRow>
         </SettingsSection>
       ) : null}
-      {isLinux && LINUX_VIDEO_PREVIEWS_SUPPORTED ? (
+      {isLinux ? (
         <SettingsSection title={t('settings.general.preview.title')}>
           <SettingsRow
             title={t('settings.general.preview.videoPreviews.title')}
