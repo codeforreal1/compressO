@@ -130,6 +130,7 @@ pub fn init(app_handle: &AppHandle) {
         if paths.is_empty() {
             continue;
         }
+        log::info!("[clipboard-watch] Copied {} media: {:?}", paths.len(), paths);
         // Unsupported files are skipped
         let _ = crate::tauri_commands::tray::add_dropped_files(app_handle.clone(), paths);
     });

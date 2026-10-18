@@ -896,7 +896,8 @@ impl ImageCompressor {
         let svg_content =
             svgcleaner::cleaner::load_file(input_path).map_err(|err| err.to_string())?;
 
-        let tree = usvg::Tree::from_str(&svg_content, &usvg::Options::default()).unwrap();
+        let tree = usvg::Tree::from_str(&svg_content, &usvg::Options::default())
+            .map_err(|err| err.to_string())?;
         let normalized_svg = tree.to_string(&usvg::WriteOptions::default());
 
         let mut doc =

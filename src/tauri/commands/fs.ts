@@ -2,6 +2,17 @@ import { core } from '@tauri-apps/api'
 
 import { CollectedFile, FileMetadata } from '@/types/fs'
 
+/**
+ * Starts the error of a file the system does not allow the app to read (e.g. macOS, when access to
+ * the folder was denied), see `PERMISSION_DENIED_ERROR` in `src-tauri/src/sys/fs.rs`
+ */
+const PERMISSION_DENIED_ERROR = 'PERMISSION_DENIED'
+
+/** Whether a command failed because the system denied access to the file */
+export function isPermissionDeniedError(error: unknown) {
+  return String(error).startsWith(PERMISSION_DENIED_ERROR)
+}
+
 export function getFileMetadata(filePath: string): Promise<FileMetadata> {
   return core.invoke('get_file_metadata', { filePath })
 }

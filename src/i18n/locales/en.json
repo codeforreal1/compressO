@@ -373,7 +373,8 @@
     "collapse": "Collapse",
     "showDropZone": "Show the drop zone",
     "filesCompressed_one": "{{count}} file compressed",
-    "filesCompressed_other": "{{count}} files compressed"
+    "filesCompressed_other": "{{count}} files compressed",
+    "accessDenied": "Not allowed to open this file. Allow access in your system settings."
   },
   "subtitles": {
     "unknownLanguage": "Unknown",
@@ -680,7 +681,10 @@
     "corrupted": "The file appears to be corrupted or invalid.",
     "selectTitle": "Select images, videos or audio to compress.",
     "selectFailed": "Could not select media.",
-    "invalidFiles": "Invalid files/folders"
+    "invalidFiles": "Invalid files/folders",
+    "accessDenied_one": "CompressO is not allowed to open this file. Allow access to its folder in your system settings, then add it again.",
+    "accessDenied_other": "CompressO is not allowed to open {{count}} files. Allow access to their folder in your system settings, then add them again.",
+    "openSettings": "Open Settings"
   },
   "save": {
     "partiallySaved_one": "Saved {{saved}} of {{count}} file. {{failed}} could not be saved. Use Save Media to choose another location.",

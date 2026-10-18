@@ -64,28 +64,47 @@ pub fn link_file_with_name(dir: &Path, file_path: &str, file_name: &str) -> Resu
     Ok(target_path)
 }
 
-/// Get metadata of a file from it's full path
-pub fn get_file_metadata(path: &str) -> Result<FileMetadata, String> {
-    let metadata_ref = fs::metadata(path);
+/// Starts the error of a file the system does not allow the app to read (e.g. macOS, when access to
+/// the folder was denied), so the interface can say so
+pub const PERMISSION_DENIED_ERROR: &str = "PERMISSION_DENIED";
 
-    if metadata_ref.is_err() {
-        return Err(String::from("File does not exist in the given path."));
+/// The error of a failed file operation: `PERMISSION_DENIED: ...` when the system denied access
+pub fn file_error(err: &std::io::Error) -> String {
+    if err.kind() == std::io::ErrorKind::PermissionDenied {
+        format!("{}: {}", PERMISSION_DENIED_ERROR, err)
+    } else {
+        err.to_string()
     }
+}
 
-    let metadata = metadata_ref.unwrap();
+/// Get metadata of a file from it's full path. Fails (never panics) when the file cannot be read,
+/// e.g. when the system denies access to it.
+pub fn get_file_metadata(path: &str) -> Result<FileMetadata, String> {
+    let metadata = fs::metadata(path).map_err(|err| file_error(&err))?;
     let file_path = Path::new(path);
     let mut file_type_matcher = infer::Infer::new();
     file_type_matcher.add("video/mp2t", "ts", is_mpeg_ts);
-    let mime_type = file_type_matcher.get_from_path(path).unwrap();
+    // Reads the start of the file, which the system can deny even when its size can be read
+    let mime_type = file_type_matcher
+        .get_from_path(path)
+        .map_err(|err| file_error(&err))?;
 
     Ok(FileMetadata {
         path: String::from(path),
-        file_name: String::from(file_path.file_name().unwrap_or_default().to_str().unwrap()),
+        file_name: file_path
+            .file_name()
+            .unwrap_or_default()
+            .to_string_lossy()
+            .to_string(),
         mime_type: match mime_type {
             Some(m) => m.to_string(),
             None => String::from(""),
         },
-        extension: String::from(file_path.extension().unwrap_or_default().to_str().unwrap()),
+        extension: file_path
+            .extension()
+            .unwrap_or_default()
+            .to_string_lossy()
+            .to_string(),
         size: metadata.len(),
     })
 }

@@ -379,7 +379,8 @@
     "showDropZone": "Mostrar a área de soltar",
     "filesCompressed_one": "{{count}} arquivo comprimido",
     "filesCompressed_many": "{{count}} arquivos comprimidos",
-    "filesCompressed_other": "{{count}} arquivos comprimidos"
+    "filesCompressed_other": "{{count}} arquivos comprimidos",
+    "accessDenied": "Não é permitido abrir este arquivo. Permita o acesso nos ajustes do sistema."
   },
   "subtitles": {
     "unknownLanguage": "Desconhecido",
@@ -688,7 +689,11 @@
     "corrupted": "O arquivo parece estar corrompido ou inválido.",
     "selectTitle": "Selecione imagens, vídeos ou áudios para comprimir.",
     "selectFailed": "Não foi possível selecionar as mídias.",
-    "invalidFiles": "Arquivos ou pastas inválidos"
+    "invalidFiles": "Arquivos ou pastas inválidos",
+    "accessDenied_one": "O CompressO não tem permissão para abrir este arquivo. Permita o acesso à pasta dele nos ajustes do sistema e adicione-o novamente.",
+    "accessDenied_many": "O CompressO não tem permissão para abrir {{count}} arquivos. Permita o acesso à pasta deles nos ajustes do sistema e adicione-os novamente.",
+    "accessDenied_other": "O CompressO não tem permissão para abrir {{count}} arquivos. Permita o acesso à pasta deles nos ajustes do sistema e adicione-os novamente.",
+    "openSettings": "Abrir ajustes"
   },
   "save": {
     "partiallySaved_one": "{{saved}} de {{count}} arquivo salvo. {{failed}} não puderam ser salvos. Use “Salvar mídias” para escolher outro local.",

@@ -373,7 +373,8 @@
     "collapse": "Daralt",
     "showDropZone": "Bırakma alanını göster",
     "filesCompressed_one": "{{count}} dosya sıkıştırıldı",
-    "filesCompressed_other": "{{count}} dosya sıkıştırıldı"
+    "filesCompressed_other": "{{count}} dosya sıkıştırıldı",
+    "accessDenied": "Bu dosyayı açma izni yok. Sistem ayarlarında erişime izin verin."
   },
   "subtitles": {
     "unknownLanguage": "Bilinmiyor",
@@ -680,7 +681,10 @@
     "corrupted": "Dosya bozuk veya geçersiz görünüyor.",
     "selectTitle": "Sıkıştırılacak görüntüleri, videoları veya sesleri seçin.",
     "selectFailed": "Medya seçilemedi.",
-    "invalidFiles": "Geçersiz dosyalar veya klasörler"
+    "invalidFiles": "Geçersiz dosyalar veya klasörler",
+    "accessDenied_one": "CompressO’nun bu dosyayı açma izni yok. Sistem ayarlarında klasörüne erişime izin verin ve dosyayı yeniden ekleyin.",
+    "accessDenied_other": "CompressO’nun {{count}} dosyayı açma izni yok. Sistem ayarlarında klasörlerine erişime izin verin ve dosyaları yeniden ekleyin.",
+    "openSettings": "Ayarları aç"
   },
   "save": {
     "partiallySaved_one": "{{count}} dosyadan {{saved}} tanesi kaydedildi. {{failed}} tanesi kaydedilemedi. Başka bir konum seçmek için “Medyayı Kaydet”i kullanın.",

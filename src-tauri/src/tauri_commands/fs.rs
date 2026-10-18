@@ -245,7 +245,8 @@ pub fn allow_asset_scopes(
             PathBuf::from(path)
         };
 
-        let files = collect_files(path_buf.to_str().unwrap()).map_err(|err| err.to_string())?;
+        let files = collect_files(&path_buf.to_string_lossy())
+            .map_err(|err| crate::sys::fs::file_error(&err))?;
 
         for file in &files {
             let _ = fs_scope.allow_file(&file.path);

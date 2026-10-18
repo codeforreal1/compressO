@@ -151,6 +151,20 @@ pub fn open_login_items_settings() -> Result<(), String> {
     Ok(())
 }
 
+/// Opens the system's privacy settings for files and folders, where access to a folder that was
+/// denied is allowed again
+#[tauri::command]
+pub fn open_files_access_settings() -> Result<(), String> {
+    #[cfg(target_os = "macos")]
+    {
+        std::process::Command::new("open")
+            .arg("x-apple.systempreferences:com.apple.preference.security?Privacy_FilesAndFolders")
+            .spawn()
+            .map_err(|err| err.to_string())?;
+    }
+    Ok(())
+}
+
 #[tauri::command]
 pub fn set_open_at_login(app: AppHandle, enabled: bool) -> Result<(), String> {
     let autolaunch = app.autolaunch();
@@ -160,6 +174,13 @@ pub fn set_open_at_login(app: AppHandle, enabled: bool) -> Result<(), String> {
         autolaunch.disable()
     }
     .map_err(|err| err.to_string())
+}
+
+/// Writes a failure the frontend handled to the log file (e.g. why a dropped media could not be
+/// compressed), so it can be found later
+#[tauri::command]
+pub fn log_error(message: String) {
+    log::error!("[frontend] {}", message);
 }
 
 /// The current log file, which "Show log files" (Settings -> About) shows in the file manager

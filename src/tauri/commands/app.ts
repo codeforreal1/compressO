@@ -40,6 +40,10 @@ export function getOpenAtLogin() {
 }
 
 /** Opens the system's login items (macOS), where a login item switched off there is allowed again */
+export function openFilesAccessSettings() {
+  return core.invoke<void>('open_files_access_settings')
+}
+
 export function openLoginItemsSettings() {
   return core.invoke<void>('open_login_items_settings')
 }
@@ -57,6 +61,15 @@ export function takeOpenedAtLogin() {
 }
 
 /** The current log file (Settings -> About -> Show log files) */
+/** Writes a failure to the log file, without failing itself */
+export function logError(message: string, error?: unknown) {
+  core
+    .invoke<void>('log_error', {
+      message: error === undefined ? message : `${message}: ${String(error)}`,
+    })
+    .catch(() => {})
+}
+
 export function getLogFilePath() {
   return core.invoke<string>('get_log_file_path')
 }

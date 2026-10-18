@@ -367,7 +367,8 @@
     "clearAll": "Bersihkan semua",
     "collapse": "Ciutkan",
     "showDropZone": "Tampilkan zona taruh",
-    "filesCompressed_other": "{{count}} file dikompresi"
+    "filesCompressed_other": "{{count}} file dikompresi",
+    "accessDenied": "Tidak diizinkan membuka file ini. Izinkan akses di pengaturan sistem."
   },
   "subtitles": {
     "unknownLanguage": "Tidak diketahui",
@@ -672,7 +673,9 @@
     "corrupted": "File tampaknya rusak atau tidak valid.",
     "selectTitle": "Pilih gambar, video, atau audio untuk dikompresi.",
     "selectFailed": "Media tidak dapat dipilih.",
-    "invalidFiles": "File atau folder tidak valid"
+    "invalidFiles": "File atau folder tidak valid",
+    "accessDenied_other": "CompressO tidak diizinkan membuka {{count}} file. Izinkan akses ke foldernya di pengaturan sistem, lalu tambahkan lagi.",
+    "openSettings": "Buka pengaturan"
   },
   "save": {
     "partiallySaved_other": "{{saved}} dari {{count}} file disimpan. {{failed}} tidak dapat disimpan. Gunakan “Simpan Media” untuk memilih lokasi lain.",

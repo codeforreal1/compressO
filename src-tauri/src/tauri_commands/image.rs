@@ -52,7 +52,7 @@ pub async fn convert_svg_to_png(
     .iter()
     .collect();
 
-    let output_path_str = output_path.to_str().unwrap();
+    let output_path_str = &*output_path.to_string_lossy();
 
     let _ = image_compressor.convert_svg_to_raster_img(
         &image_path,

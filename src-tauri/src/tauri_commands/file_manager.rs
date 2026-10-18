@@ -19,7 +19,7 @@ pub fn show_item_in_file_manager(path: String, dbus_state: State<DbusState>) -> 
             true => path,
             false => {
                 path_buf.pop();
-                path_buf.into_os_string().into_string().unwrap()
+                path_buf.to_string_lossy().to_string()
             }
         };
         Command::new("xdg-open")

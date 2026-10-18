@@ -7,9 +7,13 @@ import { useTranslation } from 'react-i18next'
 
 import Icon from '@/components/Icon'
 import { toast } from '@/components/Toast'
-import { readFilesFromPaths } from '@/tauri/commands/fs'
+import {
+  isPermissionDeniedError,
+  readFilesFromPaths,
+} from '@/tauri/commands/fs'
 import { CollectedFile } from '@/types/fs'
 import { zoomInTransition } from '@/utils/animation'
+import { showAccessDeniedToast } from '../-toasts'
 
 // Only this window's drops (a global listener also receives drops on the menu bar popover)
 const currentWindow = getCurrentWebviewWindow()
@@ -65,11 +69,19 @@ function DragAndDropFiles({
             toast.dismiss()
             const pathsPayload = evt?.payload?.paths
             const paths = multiple ? pathsPayload : pathsPayload.slice(0, 1)
-            const files = await readFilesFromPaths(paths)
-            if (Array.isArray(files)) {
-              onFile?.(files)
-            } else {
-              toast.error(t('media.invalidFiles'))
+            try {
+              const files = await readFilesFromPaths(paths)
+              if (Array.isArray(files)) {
+                onFile?.(files)
+              } else {
+                toast.error(t('media.invalidFiles'))
+              }
+            } catch (error) {
+              if (isPermissionDeniedError(error)) {
+                showAccessDeniedToast(paths.length)
+              } else {
+                toast.error(t('media.invalidFiles'))
+              }
             }
           }
         })

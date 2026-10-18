@@ -41,6 +41,8 @@ export type DropQueueItem = {
   outputPath: string | null
   /** Why it failed, or was not saved (e.g. larger than the original) */
   message: string | null
+  /** It failed as the system did not allow opening it (e.g. macOS privacy settings) */
+  isAccessDenied: boolean
 }
 
 export type DropQueueItemUpdate = Partial<
@@ -53,6 +55,7 @@ export type DropQueueItemUpdate = Partial<
     | 'savedPath'
     | 'outputPath'
     | 'message'
+    | 'isAccessDenied'
   >
 >
 

@@ -25,6 +25,7 @@ import {
   videoConfigInitialState,
 } from '@/routes/(root)/-state'
 import { settingsStore } from '@/stores/settingsStore'
+import { logError } from '@/tauri/commands/app'
 import { getCompressionStatus } from '@/tauri/commands/compression'
 import {
   type DropQueueItem,
@@ -40,6 +41,7 @@ import {
   getFileMetadata,
   getImageDimension,
   getSvgDimension,
+  isPermissionDeniedError,
 } from '@/tauri/commands/fs'
 import { compressMediaBatch } from '@/tauri/commands/media'
 import { playCompletionSound } from '@/tauri/commands/sound'
@@ -273,10 +275,15 @@ async function compressQueueItem(item: DropQueueItem) {
       })
     }
     return true
-  } catch {
+  } catch (error) {
+    logError(`[drop-queue] Could not compress ${item.path}`, error)
+    const isAccessDenied = isPermissionDeniedError(error)
     await update({
       status: 'failed',
-      message: t('queue.compressFailed'),
+      message: isAccessDenied
+        ? t('queue.accessDenied')
+        : t('queue.compressFailed'),
+      isAccessDenied,
     })
     return false
   } finally {

@@ -2,8 +2,12 @@ import { useEffect } from 'react'
 
 import { readFilesFromClipboard } from '@/tauri/commands/fs'
 import { CollectedFile } from '@/types/fs'
+import { withTimeout } from '@/utils/promise'
 import { canAddMedia } from '../-media'
 import { appProxy } from '../-state'
+
+/** Large pasted files are written to disk first, which can take a while */
+const CLIPBOARD_READ_TIMEOUT = 120_000
 
 type ReadFilesFromClipboardProps = {
   onFiles: (files: CollectedFile[]) => void | Promise<void>
@@ -31,7 +35,10 @@ function ReadFilesFromClipboard({ onFiles }: ReadFilesFromClipboardProps) {
         appProxy.state.isLoadingMediaFiles = true
       }
       try {
-        const files = await readFilesFromClipboard()
+        const files = await withTimeout(
+          readFilesFromClipboard(),
+          CLIPBOARD_READ_TIMEOUT,
+        )
         if (Array.isArray(files)) {
           await onFiles?.(files)
         }

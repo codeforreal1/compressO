@@ -84,6 +84,8 @@ pub struct DropQueueItem {
     pub output_path: Option<String>,
     /// Why it failed, or was not saved (e.g. larger than the original)
     pub message: Option<String>,
+    /// It failed as the system did not allow opening it (e.g. macOS privacy settings)
+    pub is_access_denied: bool,
 }
 
 /// Changes to an item, from the popover compressing it
@@ -97,6 +99,7 @@ pub struct DropQueueItemUpdate {
     pub saved_path: Option<String>,
     pub output_path: Option<String>,
     pub message: Option<String>,
+    pub is_access_denied: Option<bool>,
 }
 
 #[derive(Default)]
@@ -184,10 +187,12 @@ pub fn add_to_queue(app_handle: &AppHandle, paths: Vec<String>, is_supported: im
     let group_id = nanoid!();
     // The tray webview compresses the queue
     crate::tray_popover::ensure_tray_window(app_handle);
+    log::info!("[drop-queue] Adding {} media", files.len());
     update_queue(app_handle, |items| {
         let batch_id = active_batch_id(items).unwrap_or_else(|| nanoid!());
         for file in files {
             if !is_supported(&file.path) {
+                log::info!("[drop-queue] Skipped unsupported media: {}", file.path);
                 continue;
             }
             let is_queued = items.iter().any(|item| {
@@ -214,6 +219,7 @@ pub fn add_to_queue(app_handle: &AppHandle, paths: Vec<String>, is_supported: im
                 saved_path: None,
                 output_path: None,
                 message: None,
+                is_access_denied: false,
             });
         }
     });
@@ -264,6 +270,9 @@ pub fn update_drop_queue_item(app_handle: AppHandle, id: String, update: DropQue
         if update.message.is_some() {
             item.message = update.message;
         }
+        if let Some(is_access_denied) = update.is_access_denied {
+            item.is_access_denied = is_access_denied;
+        }
     });
 }
 
@@ -283,6 +292,7 @@ pub fn retry_drop_queue_item(app_handle: AppHandle, id: String) {
         item.output_size = None;
         item.saved_path = None;
         item.message = None;
+        item.is_access_denied = false;
         delete_unsaved_output(item);
     });
 }

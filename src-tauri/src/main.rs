@@ -27,7 +27,7 @@ use tauri_plugin_fs::FsExt;
 
 use tauri_commands::{
     app::{
-        get_log_file_path, get_open_at_login, open_login_items_settings, restart_app, set_keep_awake_settings,
+        get_log_file_path, get_open_at_login, log_error, open_files_access_settings, open_login_items_settings, restart_app, set_keep_awake_settings,
         set_native_texts,
         set_open_at_login, take_opened_at_login, OPENED_AT_LOGIN_ARG,
     },
@@ -468,7 +468,9 @@ async fn main() {
             get_open_at_login,
             set_open_at_login,
             open_login_items_settings,
+            open_files_access_settings,
             get_log_file_path,
+            log_error,
             set_native_texts,
             #[cfg(target_os = "linux")]
             start_video_server,

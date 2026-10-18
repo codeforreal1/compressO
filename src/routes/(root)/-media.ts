@@ -10,6 +10,7 @@ import {
   getFileMetadata,
   getImageDimension,
   getSvgDimension,
+  isPermissionDeniedError,
   readFilesFromPaths,
 } from '@/tauri/commands/fs'
 import { convertSvgToPng } from '@/tauri/commands/image'
@@ -23,6 +24,7 @@ import {
 } from '@/types/compression'
 import { CollectedFile } from '@/types/fs'
 import { formatBytes } from '@/utils/fs'
+import { withTimeout } from '@/utils/promise'
 import { isVideoPreviewAvailable } from '@/utils/video'
 import {
   applyDefaultPresetsToBatchConfig,
@@ -37,6 +39,15 @@ import {
   normalizeBatchMediaConfig,
   videoConfigInitialState,
 } from './-state'
+import { showAccessDeniedToast } from './-toasts'
+
+type MediaFile = (Video & { type: 'video' }) | (Image & { type: 'image' })
+
+/**
+ * How long one file may take to load (its information & thumbnail) before it is skipped, so a file
+ * the system never answers for cannot keep the loading screen up
+ */
+const FILE_LOAD_TIMEOUT = 60_000
 
 /**
  * A random id for a media, which its cached output (and thumbnail) is named after, so outputs never
@@ -126,222 +137,250 @@ export async function addMedia(selection: MediaSelection | MediaSelection[]) {
   appProxy.state.totalSelectedMediaCount =
     existingMediaCount + mediaPaths.length
 
-  let corruptedFilesCount = 0
-  for (const index in mediaPaths) {
-    const { path, relativeDir } = mediaPaths[index]
-    try {
-      const fileMetadata = await getFileMetadata(path)
-      // Audio by its extension, as the detected type is missing for some audio formats
-      const mediaType = isAudioFileExtension(path.split('.').pop())
-        ? 'audio'
-        : fileMetadata.mimeType.startsWith('video')
-          ? 'video'
-          : 'image'
+  /** Loads one file into its media state; `null` when it is not valid media */
+  const loadMediaFile = async (
+    path: string,
+    relativeDir: string,
+  ): Promise<MediaFile | null> => {
+    const fileMetadata = await getFileMetadata(path)
+    // Audio by its extension, as the detected type is missing for some audio formats
+    const mediaType = isAudioFileExtension(path.split('.').pop())
+      ? 'audio'
+      : fileMetadata.mimeType.startsWith('video')
+        ? 'video'
+        : 'image'
 
-      if (
-        !fileMetadata ||
-        (typeof fileMetadata?.size === 'number' && mediaType !== 'image'
-          ? fileMetadata?.size <= 1000
-          : fileMetadata?.size < 100)
-      ) {
-        corruptedFilesCount++
-        continue
-      }
+    if (
+      !fileMetadata ||
+      (typeof fileMetadata?.size === 'number' && mediaType !== 'image'
+        ? fileMetadata?.size <= 1000
+        : fileMetadata?.size < 100)
+    ) {
+      return null
+    }
 
-      if (mediaType === 'audio') {
-        const extension = fileMetadata?.extension?.toLowerCase?.()
-        const [audioInfo, coverArt] = await Promise.all([
-          getVideoBasicInfo(path),
-          // Its cover art, when it has one (a picture stored in the file)
-          generateVideoThumbnail(path, '00:00:00.00').catch(() => null),
-        ])
+    if (mediaType === 'audio') {
+      const extension = fileMetadata?.extension?.toLowerCase?.()
+      const [audioInfo, coverArt] = await Promise.all([
+        getVideoBasicInfo(path),
+        // Its cover art, when it has one (a picture stored in the file)
+        generateVideoThumbnail(path, '00:00:00.00').catch(() => null),
+      ])
 
-        const audioState: Video & { type: 'video' } = {
-          type: 'video',
-          isAudioFile: true,
-          id: coverArt?.id ?? createMediaId(),
-          pathRaw: path,
-          path: core.convertFileSrc(path),
-          relativeDir,
-          fileName: fileMetadata?.fileName,
-          mimeType: fileMetadata?.mimeType,
-          sizeInBytes: fileMetadata?.size,
-          size: formatBytes(fileMetadata?.size ?? 0),
-          extension,
-          // From the default audio preset (not the video one, made for videos): in its own
-          // format with "Same as input", or the closest one for formats that can only be read
-          config: getInitialAudioFileConfig(
-            {
-              ...cloneDeep(audioFileConfigInitialState),
-              convertToExtension: getAudioFileOutputExtension(extension),
-            },
-            { sourceExtension: extension },
-          ),
-          previewMode: isVideoPreviewAvailable ? 'video' : 'image',
-        }
-        if (audioInfo?.duration) {
-          audioState.videoDuration = audioInfo.duration
-        }
-        if (coverArt) {
-          audioState.thumbnailPathRaw = coverArt.filePath
-          audioState.thumbnailPath = core.convertFileSrc(coverArt.filePath)
-        }
-        appProxy.state.media.push(audioState)
-      } else if (mediaType === 'video') {
-        const [videoInfo, videoThumbnail] = await Promise.all([
-          getVideoBasicInfo(path),
-          generateVideoThumbnail(path),
-        ])
-
-        const videoState: Video & { type: 'video' } = {
-          type: 'video',
-          id: videoThumbnail?.id ?? createMediaId(),
-          pathRaw: path,
-          path: core.convertFileSrc(path),
-          relativeDir,
-          fileName: fileMetadata?.fileName,
-          mimeType: fileMetadata?.mimeType,
-          sizeInBytes: fileMetadata?.size,
-          size: formatBytes(fileMetadata?.size ?? 0),
-          extension: fileMetadata?.extension?.toLowerCase?.(),
-          config: cloneDeep(videoConfigInitialState),
-          // A thumbnail instead where videos cannot be played (Linux, with video previews off)
-          previewMode: isVideoPreviewAvailable ? 'video' : 'image',
-        }
-
-        // input-only formats stay "Same as input" since they aren't in the extension list
-        if (videoState.extension && videoState.extension in extensions.video) {
-          videoState.config.convertToExtension =
-            videoState.extension as keyof (typeof extensions)['video']
-        }
-
-        if (videoInfo) {
-          const dimensions = videoInfo.dimensions
-          if (
-            !Number.isNaN(videoInfo.dimensions?.[0]) &&
-            !Number.isNaN(videoInfo.dimensions?.[1])
-          ) {
-            videoState.dimensions = {
-              width: dimensions[0],
-              height: dimensions[1],
-            }
-          }
-
-          if (videoInfo.duration) {
-            videoState.videoDuration = videoInfo.duration
-          }
-
-          if (videoInfo.fps) {
-            videoState.fps = Math.ceil(videoInfo.fps)
-          }
-        }
-
-        // Settings from the default video preset
-        const { config: presetConfig, audioStreams } =
-          await getInitialVideoConfig(videoState.config, {
-            sourceExtension: videoState.extension,
-            path,
-            dimensions: videoState.dimensions,
-          })
-        videoState.config = presetConfig
-        if (audioStreams) {
-          videoState.videoInfoRaw = { audioStreams }
-        }
-
-        if (videoThumbnail) {
-          videoState.id = videoThumbnail?.id
-          videoState.thumbnailPathRaw = videoThumbnail?.filePath
-          videoState.thumbnailPath = core.convertFileSrc(
-            videoThumbnail?.filePath,
-          )
-        }
-        appProxy.state.media.push(videoState)
-      } else if (mediaType === 'image') {
-        const imageDimension = await (path.endsWith('.svg')
-          ? getSvgDimensionSilently(path)
-          : getImageDimension(path))
-        const imageState: Image & { type: 'image' } = {
-          type: 'image',
-          id: createMediaId(),
-          pathRaw: path,
-          path: core.convertFileSrc(path),
-          relativeDir,
-          thumbnailPathRaw: path,
-          thumbnailPath: core.convertFileSrc(path),
-          fileName: fileMetadata?.fileName,
-          mimeType: fileMetadata?.mimeType,
-          sizeInBytes: fileMetadata?.size,
-          size: formatBytes(fileMetadata?.size ?? 0),
-          extension: fileMetadata?.extension?.toLowerCase?.(),
-          config: cloneDeep(imageConfigInitialState),
-          dimensions: {
-            width: imageDimension?.[0] ?? 0,
-            height: imageDimension?.[1] ?? 0,
+      const audioState: Video & { type: 'video' } = {
+        type: 'video',
+        isAudioFile: true,
+        id: coverArt?.id ?? createMediaId(),
+        pathRaw: path,
+        path: core.convertFileSrc(path),
+        relativeDir,
+        fileName: fileMetadata?.fileName,
+        mimeType: fileMetadata?.mimeType,
+        sizeInBytes: fileMetadata?.size,
+        size: formatBytes(fileMetadata?.size ?? 0),
+        extension,
+        // From the default audio preset (not the video one, made for videos): in its own
+        // format with "Same as input", or the closest one for formats that can only be read
+        config: getInitialAudioFileConfig(
+          {
+            ...cloneDeep(audioFileConfigInitialState),
+            convertToExtension: getAudioFileOutputExtension(extension),
           },
-        }
-
-        // input-only formats can't be written back, so default to lossless png
-        if (
-          (inputOnlyExtensions.image as readonly string[]).includes(
-            imageState.extension ?? '',
-          )
-        ) {
-          imageState.config.convertToExtension = 'png'
-        }
-
-        // Settings from the default image preset
-        imageState.config = getInitialImageConfig(imageState.config, {
-          sourceExtension: imageState.extension,
-          dimensions: imageState.dimensions,
-        })
-
-        // create a static image thumbnail for gif due to performance reason,
-        // and for tiff since webviews other than Safari can't display it
-        const isTiff = ['tiff', 'tif'].includes(imageState.extension ?? '')
-        if (path.endsWith('.gif') || isTiff) {
-          try {
-            const thumbnail = await generateVideoThumbnail(
-              path,
-              // a still image has no frame at the default 1s timestamp
-              isTiff ? '00:00:00.00' : undefined,
-            )
-            imageState.thumbnailPathRaw = thumbnail.filePath
-            imageState.thumbnailPath = core.convertFileSrc(thumbnail.filePath)
-          } catch {}
-        }
-
-        // create a static image thumbnail for large svg due to performance reason
-        if (path.endsWith('.svg') && fileMetadata?.size >= 0.5 * 1024 * 1024) {
-          try {
-            const outputPngPath = await convertSvgToPng(path, imageState.id!)
-            imageState.thumbnailPathRaw = outputPngPath
-            imageState.thumbnailPath = core.convertFileSrc(outputPngPath)
-          } catch {}
-        }
-        appProxy.state.media.push(imageState)
-      } else {
-        throw new Error('Invalid media type.')
+          { sourceExtension: extension },
+        ),
+        previewMode: isVideoPreviewAvailable ? 'video' : 'image',
       }
-    } catch {
-      corruptedFilesCount++
+      if (audioInfo?.duration) {
+        audioState.videoDuration = audioInfo.duration
+      }
+      if (coverArt) {
+        audioState.thumbnailPathRaw = coverArt.filePath
+        audioState.thumbnailPath = core.convertFileSrc(coverArt.filePath)
+      }
+      return audioState
+    } else if (mediaType === 'video') {
+      const [videoInfo, videoThumbnail] = await Promise.all([
+        getVideoBasicInfo(path),
+        generateVideoThumbnail(path),
+      ])
+
+      const videoState: Video & { type: 'video' } = {
+        type: 'video',
+        id: videoThumbnail?.id ?? createMediaId(),
+        pathRaw: path,
+        path: core.convertFileSrc(path),
+        relativeDir,
+        fileName: fileMetadata?.fileName,
+        mimeType: fileMetadata?.mimeType,
+        sizeInBytes: fileMetadata?.size,
+        size: formatBytes(fileMetadata?.size ?? 0),
+        extension: fileMetadata?.extension?.toLowerCase?.(),
+        config: cloneDeep(videoConfigInitialState),
+        // A thumbnail instead where videos cannot be played (Linux, with video previews off)
+        previewMode: isVideoPreviewAvailable ? 'video' : 'image',
+      }
+
+      // input-only formats stay "Same as input" since they aren't in the extension list
+      if (videoState.extension && videoState.extension in extensions.video) {
+        videoState.config.convertToExtension =
+          videoState.extension as keyof (typeof extensions)['video']
+      }
+
+      if (videoInfo) {
+        const dimensions = videoInfo.dimensions
+        if (
+          !Number.isNaN(videoInfo.dimensions?.[0]) &&
+          !Number.isNaN(videoInfo.dimensions?.[1])
+        ) {
+          videoState.dimensions = {
+            width: dimensions[0],
+            height: dimensions[1],
+          }
+        }
+
+        if (videoInfo.duration) {
+          videoState.videoDuration = videoInfo.duration
+        }
+
+        if (videoInfo.fps) {
+          videoState.fps = Math.ceil(videoInfo.fps)
+        }
+      }
+
+      // Settings from the default video preset
+      const { config: presetConfig, audioStreams } =
+        await getInitialVideoConfig(videoState.config, {
+          sourceExtension: videoState.extension,
+          path,
+          dimensions: videoState.dimensions,
+        })
+      videoState.config = presetConfig
+      if (audioStreams) {
+        videoState.videoInfoRaw = { audioStreams }
+      }
+
+      if (videoThumbnail) {
+        videoState.id = videoThumbnail?.id
+        videoState.thumbnailPathRaw = videoThumbnail?.filePath
+        videoState.thumbnailPath = core.convertFileSrc(videoThumbnail?.filePath)
+      }
+      return videoState
+    } else if (mediaType === 'image') {
+      const imageDimension = await (path.endsWith('.svg')
+        ? getSvgDimensionSilently(path)
+        : getImageDimension(path))
+      const imageState: Image & { type: 'image' } = {
+        type: 'image',
+        id: createMediaId(),
+        pathRaw: path,
+        path: core.convertFileSrc(path),
+        relativeDir,
+        thumbnailPathRaw: path,
+        thumbnailPath: core.convertFileSrc(path),
+        fileName: fileMetadata?.fileName,
+        mimeType: fileMetadata?.mimeType,
+        sizeInBytes: fileMetadata?.size,
+        size: formatBytes(fileMetadata?.size ?? 0),
+        extension: fileMetadata?.extension?.toLowerCase?.(),
+        config: cloneDeep(imageConfigInitialState),
+        dimensions: {
+          width: imageDimension?.[0] ?? 0,
+          height: imageDimension?.[1] ?? 0,
+        },
+      }
+
+      // input-only formats can't be written back, so default to lossless png
+      if (
+        (inputOnlyExtensions.image as readonly string[]).includes(
+          imageState.extension ?? '',
+        )
+      ) {
+        imageState.config.convertToExtension = 'png'
+      }
+
+      // Settings from the default image preset
+      imageState.config = getInitialImageConfig(imageState.config, {
+        sourceExtension: imageState.extension,
+        dimensions: imageState.dimensions,
+      })
+
+      // create a static image thumbnail for gif due to performance reason,
+      // and for tiff since webviews other than Safari can't display it
+      const isTiff = ['tiff', 'tif'].includes(imageState.extension ?? '')
+      if (path.endsWith('.gif') || isTiff) {
+        try {
+          const thumbnail = await generateVideoThumbnail(
+            path,
+            // a still image has no frame at the default 1s timestamp
+            isTiff ? '00:00:00.00' : undefined,
+          )
+          imageState.thumbnailPathRaw = thumbnail.filePath
+          imageState.thumbnailPath = core.convertFileSrc(thumbnail.filePath)
+        } catch {}
+      }
+
+      // create a static image thumbnail for large svg due to performance reason
+      if (path.endsWith('.svg') && fileMetadata?.size >= 0.5 * 1024 * 1024) {
+        try {
+          const outputPngPath = await convertSvgToPng(path, imageState.id!)
+          imageState.thumbnailPathRaw = outputPngPath
+          imageState.thumbnailPath = core.convertFileSrc(outputPngPath)
+        } catch {}
+      }
+      return imageState
+    } else {
+      throw new Error('Invalid media type.')
     }
   }
-  appProxy.state.isLoadingMediaFiles = false
-  appProxy.state.isAppendingMedia = false
+
+  let corruptedFilesCount = 0
+  let deniedFilesCount = 0
+  try {
+    for (const { path, relativeDir } of mediaPaths) {
+      try {
+        // A file that never finishes loading (e.g. waiting on the system) is skipped
+        const mediaFile = await withTimeout(
+          loadMediaFile(path, relativeDir),
+          FILE_LOAD_TIMEOUT,
+        )
+        if (mediaFile) {
+          appProxy.state.media.push(mediaFile)
+        } else {
+          corruptedFilesCount++
+        }
+      } catch (error) {
+        if (isPermissionDeniedError(error)) {
+          deniedFilesCount++
+        } else {
+          corruptedFilesCount++
+        }
+      }
+    }
+  } finally {
+    // Loading always ends, whatever happened to the files
+    appProxy.state.isLoadingMediaFiles = false
+    appProxy.state.isAppendingMedia = false
+  }
 
   // Added media follows the batch settings (media with customized settings keeps them)
   if (existingMediaCount > 0) {
     normalizeBatchMediaConfig()
   }
 
+  if (deniedFilesCount > 0) {
+    showAccessDeniedToast(deniedFilesCount)
+  }
   if (corruptedFilesCount > 0) {
     toast.error(
       mediaPaths.length > 1 ? t('media.someCorrupted') : t('media.corrupted'),
     )
-    // Only start over when nothing was selected before
-    if (corruptedFilesCount === mediaPaths.length && existingMediaCount === 0) {
-      appProxy.resetProxy()
-    }
+  }
+  // Only start over when nothing was selected before
+  if (
+    corruptedFilesCount + deniedFilesCount === mediaPaths.length &&
+    existingMediaCount === 0
+  ) {
+    appProxy.resetProxy()
   }
 }
 
@@ -389,7 +428,11 @@ export async function openExternalMedia(paths: string[]) {
     // Folders are expanded into the media they contain
     const files = await readFilesFromPaths(paths)
     await addMedia(files)
-  } catch {
-    toast.error(t('media.invalidFiles'))
+  } catch (error) {
+    if (isPermissionDeniedError(error)) {
+      showAccessDeniedToast(paths.length)
+    } else {
+      toast.error(t('media.invalidFiles'))
+    }
   }
 }

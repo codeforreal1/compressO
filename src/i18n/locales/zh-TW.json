@@ -367,7 +367,8 @@
     "clearAll": "全部清除",
     "collapse": "收合",
     "showDropZone": "顯示拖放區",
-    "filesCompressed_other": "已壓縮 {{count}} 個檔案"
+    "filesCompressed_other": "已壓縮 {{count}} 個檔案",
+    "accessDenied": "無權開啟此檔案。請在系統設定中允許取用。"
   },
   "subtitles": {
     "unknownLanguage": "未知",
@@ -672,7 +673,9 @@
     "corrupted": "該檔案似乎已損毀或無效。",
     "selectTitle": "選擇要壓縮的影像、影片或音訊。",
     "selectFailed": "無法選擇媒體。",
-    "invalidFiles": "無效的檔案或資料夾"
+    "invalidFiles": "無效的檔案或資料夾",
+    "accessDenied_other": "CompressO 無權開啟 {{count}} 個檔案。請在系統設定中允許取用其所在資料夾，然後重新加入。",
+    "openSettings": "開啟設定"
   },
   "save": {
     "partiallySaved_other": "已儲存 {{count}} 個檔案中的 {{saved}} 個，{{failed}} 個無法儲存。請使用「儲存媒體」選擇其他位置。",

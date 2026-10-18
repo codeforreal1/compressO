@@ -379,7 +379,8 @@
     "showDropZone": "Mostrar la zona de arrastre",
     "filesCompressed_one": "{{count}} archivo comprimido",
     "filesCompressed_many": "{{count}} archivos comprimidos",
-    "filesCompressed_other": "{{count}} archivos comprimidos"
+    "filesCompressed_other": "{{count}} archivos comprimidos",
+    "accessDenied": "No se permite abrir este archivo. Permita el acceso en los ajustes del sistema."
   },
   "subtitles": {
     "unknownLanguage": "Desconocido",
@@ -688,7 +689,11 @@
     "corrupted": "El archivo parece estar dañado o no ser válido.",
     "selectTitle": "Seleccione imágenes, vídeos o audio para comprimir.",
     "selectFailed": "No se pudieron seleccionar los archivos.",
-    "invalidFiles": "Archivos o carpetas no válidos"
+    "invalidFiles": "Archivos o carpetas no válidos",
+    "accessDenied_one": "CompressO no tiene permiso para abrir este archivo. Permita el acceso a su carpeta en los ajustes del sistema y vuelva a añadirlo.",
+    "accessDenied_many": "CompressO no tiene permiso para abrir {{count}} archivos. Permita el acceso a su carpeta en los ajustes del sistema y vuelva a añadirlos.",
+    "accessDenied_other": "CompressO no tiene permiso para abrir {{count}} archivos. Permita el acceso a su carpeta en los ajustes del sistema y vuelva a añadirlos.",
+    "openSettings": "Abrir ajustes"
   },
   "save": {
     "partiallySaved_one": "Se ha guardado {{saved}} de {{count}} archivo. No se pudieron guardar {{failed}}. Use «Guardar archivos» para elegir otra ubicación.",

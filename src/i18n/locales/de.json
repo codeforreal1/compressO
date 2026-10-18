@@ -373,7 +373,8 @@
     "collapse": "Einklappen",
     "showDropZone": "Ablagezone anzeigen",
     "filesCompressed_one": "{{count}} Datei komprimiert",
-    "filesCompressed_other": "{{count}} Dateien komprimiert"
+    "filesCompressed_other": "{{count}} Dateien komprimiert",
+    "accessDenied": "Diese Datei darf nicht geöffnet werden. Erlauben Sie den Zugriff in den Systemeinstellungen."
   },
   "subtitles": {
     "unknownLanguage": "Unbekannt",
@@ -680,7 +681,10 @@
     "corrupted": "Die Datei scheint beschädigt oder ungültig zu sein.",
     "selectTitle": "Bilder, Videos oder Audiodateien zum Komprimieren auswählen.",
     "selectFailed": "Die Medien konnten nicht ausgewählt werden.",
-    "invalidFiles": "Ungültige Dateien oder Ordner"
+    "invalidFiles": "Ungültige Dateien oder Ordner",
+    "accessDenied_one": "CompressO darf diese Datei nicht öffnen. Erlauben Sie in den Systemeinstellungen den Zugriff auf ihren Ordner und fügen Sie sie erneut hinzu.",
+    "accessDenied_other": "CompressO darf {{count}} Dateien nicht öffnen. Erlauben Sie in den Systemeinstellungen den Zugriff auf ihren Ordner und fügen Sie sie erneut hinzu.",
+    "openSettings": "Einstellungen öffnen"
   },
   "save": {
     "partiallySaved_one": "{{saved}} von {{count}} Datei gespeichert. {{failed}} konnten nicht gespeichert werden. Verwenden Sie „Medien speichern“, um einen anderen Speicherort zu wählen.",

@@ -385,7 +385,8 @@
     "filesCompressed_one": "Skompresowano {{count}} plik",
     "filesCompressed_few": "Skompresowano {{count}} pliki",
     "filesCompressed_many": "Skompresowano {{count}} plików",
-    "filesCompressed_other": "Skompresowano {{count}} pliku"
+    "filesCompressed_other": "Skompresowano {{count}} pliku",
+    "accessDenied": "Brak uprawnień do otwarcia tego pliku. Zezwól na dostęp w ustawieniach systemu."
   },
   "subtitles": {
     "unknownLanguage": "Nieznany",
@@ -696,7 +697,12 @@
     "corrupted": "Plik wydaje się uszkodzony lub nieprawidłowy.",
     "selectTitle": "Wybierz obrazy, filmy lub audio do kompresji.",
     "selectFailed": "Nie udało się wybrać multimediów.",
-    "invalidFiles": "Nieprawidłowe pliki lub foldery"
+    "invalidFiles": "Nieprawidłowe pliki lub foldery",
+    "accessDenied_one": "CompressO nie ma uprawnień do otwarcia tego pliku. Zezwól na dostęp do jego folderu w ustawieniach systemu, a następnie dodaj go ponownie.",
+    "accessDenied_few": "CompressO nie ma uprawnień do otwarcia {{count}} plików. Zezwól na dostęp do ich folderu w ustawieniach systemu, a następnie dodaj je ponownie.",
+    "accessDenied_many": "CompressO nie ma uprawnień do otwarcia {{count}} plików. Zezwól na dostęp do ich folderu w ustawieniach systemu, a następnie dodaj je ponownie.",
+    "accessDenied_other": "CompressO nie ma uprawnień do otwarcia {{count}} pliku. Zezwól na dostęp do ich folderu w ustawieniach systemu, a następnie dodaj je ponownie.",
+    "openSettings": "Otwórz ustawienia"
   },
   "save": {
     "partiallySaved_one": "Zapisano {{saved}} z {{count}} pliku. Nie udało się zapisać: {{failed}}. Użyj opcji „Zapisz multimedia”, aby wybrać inną lokalizację.",

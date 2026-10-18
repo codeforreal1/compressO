@@ -367,7 +367,8 @@
     "clearAll": "全部清除",
     "collapse": "收起",
     "showDropZone": "显示拖放区",
-    "filesCompressed_other": "已压缩 {{count}} 个文件"
+    "filesCompressed_other": "已压缩 {{count}} 个文件",
+    "accessDenied": "无权打开此文件。请在系统设置中允许访问。"
   },
   "subtitles": {
     "unknownLanguage": "未知",
@@ -672,7 +673,9 @@
     "corrupted": "该文件似乎已损坏或无效。",
     "selectTitle": "选择要压缩的图像、视频或音频。",
     "selectFailed": "无法选择媒体。",
-    "invalidFiles": "无效的文件或文件夹"
+    "invalidFiles": "无效的文件或文件夹",
+    "accessDenied_other": "CompressO 无权打开 {{count}} 个文件。请在系统设置中允许访问其所在文件夹，然后重新添加。",
+    "openSettings": "打开设置"
   },
   "save": {
     "partiallySaved_other": "已保存 {{count}} 个文件中的 {{saved}} 个，{{failed}} 个无法保存。请使用“保存媒体”选择其他位置。",

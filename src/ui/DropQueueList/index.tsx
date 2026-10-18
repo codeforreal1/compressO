@@ -9,6 +9,7 @@ import ScrollShadow from '@/components/ScrollShadow'
 import Tooltip from '@/components/Tooltip'
 import { useDropQueuePaused } from '@/hooks/useDropQueue'
 import { t } from '@/i18n'
+import { openFilesAccessSettings } from '@/tauri/commands/app'
 import {
   cancelDropQueue,
   clearFinishedDropQueue,
@@ -18,8 +19,10 @@ import {
   setDropQueuePaused,
 } from '@/tauri/commands/dropQueue'
 import { showItemInFileManager } from '@/tauri/commands/fs'
-import { formatBytes } from '@/utils/fs'
+import { formatBytes, getPlatform } from '@/utils/fs'
 import { cn } from '@/utils/tailwind'
+
+const { isMacOS } = getPlatform()
 
 /** Name of a file from its path */
 function getName(path: string) {
@@ -145,6 +148,29 @@ function QueueItem({
             }}
           >
             <Icon name="fileExplorer" size={14} />
+          </Button>
+        </Tooltip>
+      ) : null}
+      {item.status === 'failed' && item.isAccessDenied && isMacOS ? (
+        <Tooltip
+          content={t('media.openSettings')}
+          aria-label={t('media.openSettings')}
+        >
+          <Button
+            isIconOnly
+            size="sm"
+            variant="light"
+            radius="full"
+            aria-label={t('media.openSettings')}
+            className={cn(
+              iconButtonClassName,
+              'text-zinc-500 dark:text-zinc-400',
+            )}
+            onPress={() => {
+              openFilesAccessSettings().catch(() => {})
+            }}
+          >
+            <Icon name="setting" size={14} />
           </Button>
         </Tooltip>
       ) : null}

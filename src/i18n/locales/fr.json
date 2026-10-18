@@ -379,7 +379,8 @@
     "showDropZone": "Afficher la zone de dépôt",
     "filesCompressed_one": "{{count}} fichier compressé",
     "filesCompressed_many": "{{count}} fichiers compressés",
-    "filesCompressed_other": "{{count}} fichiers compressés"
+    "filesCompressed_other": "{{count}} fichiers compressés",
+    "accessDenied": "L’ouverture de ce fichier n’est pas autorisée. Autorisez l’accès dans les réglages du système."
   },
   "subtitles": {
     "unknownLanguage": "Inconnue",
@@ -688,7 +689,11 @@
     "corrupted": "Le fichier semble endommagé ou invalide.",
     "selectTitle": "Sélectionnez des images, des vidéos ou de l’audio à compresser.",
     "selectFailed": "Les médias n’ont pas pu être sélectionnés.",
-    "invalidFiles": "Fichiers ou dossiers non valides"
+    "invalidFiles": "Fichiers ou dossiers non valides",
+    "accessDenied_one": "CompressO n’est pas autorisé à ouvrir ce fichier. Autorisez l’accès à son dossier dans les réglages du système, puis ajoutez-le à nouveau.",
+    "accessDenied_many": "CompressO n’est pas autorisé à ouvrir {{count}} fichiers. Autorisez l’accès à leur dossier dans les réglages du système, puis ajoutez-les à nouveau.",
+    "accessDenied_other": "CompressO n’est pas autorisé à ouvrir {{count}} fichiers. Autorisez l’accès à leur dossier dans les réglages du système, puis ajoutez-les à nouveau.",
+    "openSettings": "Ouvrir les réglages"
   },
   "save": {
     "partiallySaved_one": "{{saved}} fichier sur {{count}} enregistré. {{failed}} n’ont pas pu être enregistrés. Utilisez « Enregistrer les médias » pour choisir un autre emplacement.",

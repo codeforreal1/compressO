@@ -367,7 +367,8 @@
     "clearAll": "すべてクリア",
     "collapse": "折りたたむ",
     "showDropZone": "ドロップゾーンを表示",
-    "filesCompressed_other": "{{count}} 個のファイルを圧縮しました"
+    "filesCompressed_other": "{{count}} 個のファイルを圧縮しました",
+    "accessDenied": "このファイルを開く権限がありません。システム設定でアクセスを許可してください。"
   },
   "subtitles": {
     "unknownLanguage": "不明",
@@ -672,7 +673,9 @@
     "corrupted": "ファイルが破損しているか無効です。",
     "selectTitle": "圧縮する画像、ビデオ、またはオーディオを選択してください。",
     "selectFailed": "メディアを選択できませんでした。",
-    "invalidFiles": "無効なファイルまたはフォルダ"
+    "invalidFiles": "無効なファイルまたはフォルダ",
+    "accessDenied_other": "CompressO には {{count}} 個のファイルを開く権限がありません。システム設定でフォルダへのアクセスを許可してから、もう一度追加してください。",
+    "openSettings": "設定を開く"
   },
   "save": {
     "partiallySaved_other": "{{count}} 個中 {{saved}} 個のファイルを保存しました。{{failed}} 個は保存できませんでした。別の場所を選択するには「メディアを保存」を使用してください。",

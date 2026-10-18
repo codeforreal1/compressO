@@ -367,7 +367,8 @@
     "clearAll": "Xóa tất cả",
     "collapse": "Thu gọn",
     "showDropZone": "Hiển thị vùng thả",
-    "filesCompressed_other": "Đã nén {{count}} tệp"
+    "filesCompressed_other": "Đã nén {{count}} tệp",
+    "accessDenied": "Không được phép mở tệp này. Hãy cho phép truy cập trong cài đặt hệ thống."
   },
   "subtitles": {
     "unknownLanguage": "Không xác định",
@@ -672,7 +673,9 @@
     "corrupted": "Tệp có vẻ bị hỏng hoặc không hợp lệ.",
     "selectTitle": "Chọn hình ảnh, video hoặc âm thanh để nén.",
     "selectFailed": "Không thể chọn tệp phương tiện.",
-    "invalidFiles": "Tệp hoặc thư mục không hợp lệ"
+    "invalidFiles": "Tệp hoặc thư mục không hợp lệ",
+    "accessDenied_other": "CompressO không được phép mở {{count}} tệp. Hãy cho phép truy cập thư mục của tệp trong cài đặt hệ thống, rồi thêm lại.",
+    "openSettings": "Mở cài đặt"
   },
   "save": {
     "partiallySaved_other": "Đã lưu {{saved}}/{{count}} tệp. Không thể lưu {{failed}} tệp. Hãy dùng “Lưu tệp” để chọn vị trí khác.",
