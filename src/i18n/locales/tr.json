@@ -241,6 +241,11 @@
         "title": "{{version}} sürümündeki yenilikleri görün",
         "description": "Sürüm notları burada yüklenemedi.",
         "view": "Çevrimiçi görüntüle"
+      },
+      "changelog": {
+        "title": "Değişiklik günlüğü",
+        "description": "CompressO’nun her sürümündeki yenilikler.",
+        "view": "Değişiklik günlüğünü görüntüle"
       }
     },
     "credits": {

@@ -241,6 +241,11 @@
         "title": "バージョン {{version}} の新機能を見る",
         "description": "ここではリリースノートを読み込めませんでした。",
         "view": "オンラインで見る"
+      },
+      "changelog": {
+        "title": "変更履歴",
+        "description": "CompressO の各バージョンの新機能。",
+        "view": "変更履歴を見る"
       }
     },
     "credits": {

@@ -241,6 +241,11 @@
         "title": "Xem những điểm mới trong phiên bản {{version}}",
         "description": "Không thể tải ghi chú phát hành tại đây.",
         "view": "Xem trực tuyến"
+      },
+      "changelog": {
+        "title": "Nhật ký thay đổi",
+        "description": "Những điểm mới trong mỗi phiên bản CompressO.",
+        "view": "Xem nhật ký thay đổi"
       }
     },
     "credits": {

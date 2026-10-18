@@ -241,6 +241,11 @@
         "title": "버전 {{version}}의 새로운 기능 보기",
         "description": "여기에서 릴리스 노트를 불러올 수 없습니다.",
         "view": "온라인으로 보기"
+      },
+      "changelog": {
+        "title": "변경 내역",
+        "description": "CompressO 각 버전의 새로운 기능.",
+        "view": "변경 내역 보기"
       }
     },
     "credits": {

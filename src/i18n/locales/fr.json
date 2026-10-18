@@ -241,6 +241,11 @@
         "title": "Voir les nouveautés de la version {{version}}",
         "description": "Les notes de version n’ont pas pu être chargées ici.",
         "view": "Voir en ligne"
+      },
+      "changelog": {
+        "title": "Journal des modifications",
+        "description": "Les nouveautés de chaque version de CompressO.",
+        "view": "Voir le journal"
       }
     },
     "credits": {

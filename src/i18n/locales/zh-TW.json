@@ -241,6 +241,11 @@
         "title": "查看 {{version}} 版的新功能",
         "description": "無法在此載入版本資訊。",
         "view": "線上查看"
+      },
+      "changelog": {
+        "title": "更新紀錄",
+        "description": "CompressO 每個版本的新功能。",
+        "view": "查看更新紀錄"
       }
     },
     "credits": {

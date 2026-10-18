@@ -241,6 +241,11 @@
         "title": "Scopri le novità della versione {{version}}",
         "description": "Non è stato possibile caricare qui le note di rilascio.",
         "view": "Visualizza online"
+      },
+      "changelog": {
+        "title": "Registro delle modifiche",
+        "description": "Le novità di ogni versione di CompressO.",
+        "view": "Visualizza il registro"
       }
     },
     "credits": {

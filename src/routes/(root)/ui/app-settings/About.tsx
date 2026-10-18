@@ -14,6 +14,8 @@ import {
 import Link from '@/tauri/components/Link'
 import { SettingsRow, SettingsSection } from './SettingsLayout'
 
+/** Every version's changelog, on the website */
+const CHANGELOG_URL = 'https://compresso.codeforreal.com/changelog'
 /** The releases on GitHub, each with its changelog */
 const RELEASES_URL = 'https://github.com/codeforreal1/compressO/releases/tag'
 
@@ -86,6 +88,19 @@ function About() {
               {t('settings.about.checkForUpdates')}
             </Button>
           )}
+        </SettingsRow>
+        <SettingsRow
+          title={t('settings.about.changelog.title')}
+          description={t('settings.about.changelog.description')}
+        >
+          <Button
+            size="sm"
+            onPress={() => {
+              open(CHANGELOG_URL).catch(() => {})
+            }}
+          >
+            {t('settings.about.changelog.view')}
+          </Button>
         </SettingsRow>
         <SettingsRow
           title={t('settings.about.website.title')}

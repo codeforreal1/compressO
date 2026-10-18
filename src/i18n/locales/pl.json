@@ -241,6 +241,11 @@
         "title": "Zobacz nowości w wersji {{version}}",
         "description": "Nie udało się tutaj wczytać informacji o wydaniu.",
         "view": "Zobacz online"
+      },
+      "changelog": {
+        "title": "Lista zmian",
+        "description": "Nowości w każdej wersji CompressO.",
+        "view": "Zobacz listę zmian"
       }
     },
     "credits": {

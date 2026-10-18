@@ -241,6 +241,11 @@
         "title": "See what is new in version {{version}}",
         "description": "The release notes could not be loaded here.",
         "view": "View online"
+      },
+      "changelog": {
+        "title": "Changelog",
+        "description": "What is new in every version of CompressO.",
+        "view": "View changelog"
       }
     },
     "credits": {
