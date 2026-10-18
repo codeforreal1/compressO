@@ -3,6 +3,7 @@ import {
   type CSSProperties,
   forwardRef,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
 } from 'react'
@@ -312,54 +313,82 @@ function Transformer({
     }
   }
 
+  /** Saves the cropper's current crop, rotation, flips & shape, with its preview */
+  const saveChange = async (cropper: CropperRef) => {
+    const cropperState = cropper.getState()
+    if (cropperState) {
+      const canvas = cropper.getCanvas()!
+      const blob = await new Promise<Blob | null>((resolve) =>
+        canvas.toBlob(resolve, 'image/png'),
+      )
+      const coordinates = cropperState.coordinates
+      const transforms = cropperState.transforms
+
+      const newTransforms: MediaTransforms = {
+        crop: {
+          top: coordinates?.top!,
+          left: coordinates?.left!,
+          width: coordinates?.width!,
+          height: coordinates?.height!,
+        },
+        rotate: transforms.rotate,
+        flip: {
+          horizontal: transforms.flip.horizontal,
+          vertical: transforms.flip.vertical,
+        },
+      }
+
+      // Check if crop changed and record history
+      const prevCrop = initialTransforms?.crop
+      if (
+        !prevCrop ||
+        JSON.stringify(prevCrop) !== JSON.stringify(newTransforms.crop)
+      ) {
+        onTransformHistoryChange({
+          type: 'crop',
+          value: newTransforms.crop,
+        })
+      }
+
+      onTransformChange(
+        newTransforms,
+        URL.createObjectURL(blob!),
+        aspectRatioRef.current,
+      )
+    }
+  }
+  // Read when the editor closes, with the latest props
+  const saveChangeRef = useRef(saveChange)
+  const openedAspectRatioRef = useRef(initialAspectRatio)
+  saveChangeRef.current = saveChange
+
   const onChange = (cropper: CropperRef) => {
     if (debouncedRef.current) {
       clearTimeout(debouncedRef.current)
     }
-    debouncedRef.current = setTimeout(async () => {
-      const cropperState = cropper.getState()
-      if (cropperState) {
-        const canvas = cropper.getCanvas()!
-        const blob = await new Promise<Blob | null>((resolve) =>
-          canvas.toBlob(resolve, 'image/png'),
-        )
-        const coordinates = cropperState.coordinates
-        const transforms = cropperState.transforms
-
-        const newTransforms: MediaTransforms = {
-          crop: {
-            top: coordinates?.top!,
-            left: coordinates?.left!,
-            width: coordinates?.width!,
-            height: coordinates?.height!,
-          },
-          rotate: transforms.rotate,
-          flip: {
-            horizontal: transforms.flip.horizontal,
-            vertical: transforms.flip.vertical,
-          },
-        }
-
-        // Check if crop changed and record history
-        const prevCrop = initialTransforms?.crop
-        if (
-          !prevCrop ||
-          JSON.stringify(prevCrop) !== JSON.stringify(newTransforms.crop)
-        ) {
-          onTransformHistoryChange({
-            type: 'crop',
-            value: newTransforms.crop,
-          })
-        }
-
-        onTransformChange(
-          newTransforms,
-          URL.createObjectURL(blob!),
-          aspectRatioRef.current,
-        )
-      }
+    debouncedRef.current = setTimeout(() => {
+      debouncedRef.current = null
+      saveChange(cropper)
     }, 500)
   }
+
+  // A change still waiting when the editor closes (e.g. Save pressed right after picking a shape),
+  // or a shape picked that did not move the crop, is saved at once, not lost. A layout effect, so
+  // the cropper is still there.
+  useLayoutEffect(
+    () => () => {
+      const isPending = !!debouncedRef.current
+      if (debouncedRef.current) clearTimeout(debouncedRef.current)
+      debouncedRef.current = null
+      if (
+        cropperRef.current &&
+        (isPending || aspectRatioRef.current !== openedAspectRatioRef.current)
+      ) {
+        saveChangeRef.current(cropperRef.current)
+      }
+    },
+    [],
+  )
 
   return (
     <>
