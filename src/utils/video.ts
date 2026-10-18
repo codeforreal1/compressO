@@ -5,13 +5,20 @@ import { MediaTransformHistory } from '@/types/compression'
 import { getPlatform } from './fs'
 
 /**
+ * Whether Linux can play videos in the app at all. Off for now: WebKitGTK does not play them
+ * reliably, so Linux shows the video's thumbnail instead, and its video previews setting is hidden.
+ */
+export const LINUX_VIDEO_PREVIEWS_SUPPORTED = false
+
+/**
  * Whether videos (and extracted audio) are played in the app. Always on macOS & Windows. On Linux
  * they are played through a local server, only started with video previews on (Settings ->
  * General); the setting is read once, when the app starts, so a change applies after a restart.
  */
 export const isVideoPreviewAvailable =
   !getPlatform().isLinux ||
-  localStorage.getItem(constants.enableVideoPreviews) === 'true'
+  (LINUX_VIDEO_PREVIEWS_SUPPORTED &&
+    localStorage.getItem(constants.enableVideoPreviews) === 'true')
 
 /** Starts Linux's video server (with video previews on) and returns its URL */
 export async function getServerUrl(): Promise<string | null> {
