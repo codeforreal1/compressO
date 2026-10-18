@@ -236,7 +236,12 @@
         "license": "Berlisensi AGPL-3.0"
       },
       "madeBy": "Dibuat dengan <heart></heart> secara terbuka oleh <link>Code For Real⚡</link>",
-      "releaseNotes": "Catatan rilis"
+      "releaseNotes": "Catatan rilis",
+      "releaseNotesOnline": {
+        "title": "Lihat yang baru di versi {{version}}",
+        "description": "Catatan rilis tidak dapat dimuat di sini.",
+        "view": "Lihat secara daring"
+      }
     },
     "credits": {
       "tools": {

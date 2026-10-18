@@ -236,7 +236,12 @@
         "license": "AGPL-3.0 ライセンス"
       },
       "madeBy": "<link>Code For Real⚡</link> が <heart></heart> を込めて公開開発",
-      "releaseNotes": "リリースノート"
+      "releaseNotes": "リリースノート",
+      "releaseNotesOnline": {
+        "title": "バージョン {{version}} の新機能を見る",
+        "description": "ここではリリースノートを読み込めませんでした。",
+        "view": "オンラインで見る"
+      }
     },
     "credits": {
       "tools": {

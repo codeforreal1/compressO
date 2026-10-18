@@ -1,3 +1,4 @@
+import { open } from '@tauri-apps/plugin-shell'
 import { Trans, useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
@@ -12,6 +13,9 @@ import {
 } from '@/stores/updateStore'
 import Link from '@/tauri/components/Link'
 import { SettingsRow, SettingsSection } from './SettingsLayout'
+
+/** The releases on GitHub, each with its changelog */
+const RELEASES_URL = 'https://github.com/codeforreal1/compressO/releases/tag'
 
 function About() {
   const { t } = useTranslation()
@@ -125,11 +129,30 @@ function About() {
         />
       </SettingsSection>
 
-      {hasNewVersion && body ? (
+      {hasNewVersion ? (
         <SettingsSection title={t('settings.about.releaseNotes')}>
-          <div className="pt-1">
-            <Markdown content={body} className="text-sm" />
-          </div>
+          {body ? (
+            <div className="pt-1">
+              <Markdown content={body} className="text-sm" />
+            </div>
+          ) : (
+            // Loaded from GitHub, so not without a connection to it
+            <SettingsRow
+              title={t('settings.about.releaseNotesOnline.title', {
+                version: latestVersion,
+              })}
+              description={t('settings.about.releaseNotesOnline.description')}
+            >
+              <Button
+                size="sm"
+                onPress={() => {
+                  open(`${RELEASES_URL}/${latestVersion}`).catch(() => {})
+                }}
+              >
+                {t('settings.about.releaseNotesOnline.view')}
+              </Button>
+            </SettingsRow>
+          )}
         </SettingsSection>
       ) : null}
     </>

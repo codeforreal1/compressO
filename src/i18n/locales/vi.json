@@ -236,7 +236,12 @@
         "license": "Cấp phép theo AGPL-3.0"
       },
       "madeBy": "Được <link>Code For Real⚡</link> phát triển công khai bằng cả <heart></heart>",
-      "releaseNotes": "Ghi chú phát hành"
+      "releaseNotes": "Ghi chú phát hành",
+      "releaseNotesOnline": {
+        "title": "Xem những điểm mới trong phiên bản {{version}}",
+        "description": "Không thể tải ghi chú phát hành tại đây.",
+        "view": "Xem trực tuyến"
+      }
     },
     "credits": {
       "tools": {

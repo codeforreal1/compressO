@@ -236,7 +236,12 @@
         "license": "Licenciado sob AGPL-3.0"
       },
       "madeBy": "Feito com <heart></heart> em público por <link>Code For Real⚡</link>",
-      "releaseNotes": "Notas da versão"
+      "releaseNotes": "Notas da versão",
+      "releaseNotesOnline": {
+        "title": "Veja as novidades da versão {{version}}",
+        "description": "Não foi possível carregar as notas da versão aqui.",
+        "view": "Ver online"
+      }
     },
     "credits": {
       "tools": {

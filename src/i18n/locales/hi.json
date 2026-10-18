@@ -236,7 +236,12 @@
         "license": "AGPL-3.0 के अंतर्गत लाइसेंस प्राप्त"
       },
       "madeBy": "<link>Code For Real⚡</link> द्वारा सार्वजनिक रूप से <heart></heart> के साथ बनाया गया",
-      "releaseNotes": "रिलीज़ नोट्स"
+      "releaseNotes": "रिलीज़ नोट्स",
+      "releaseNotesOnline": {
+        "title": "संस्करण {{version}} में नया क्या है देखें",
+        "description": "रिलीज़ नोट्स यहाँ लोड नहीं हो सके।",
+        "view": "ऑनलाइन देखें"
+      }
     },
     "credits": {
       "tools": {

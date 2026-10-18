@@ -236,7 +236,12 @@
         "license": "採用 AGPL-3.0 授權"
       },
       "madeBy": "由 <link>Code For Real⚡</link> 公開開發，用心 <heart></heart> 打造",
-      "releaseNotes": "版本說明"
+      "releaseNotes": "版本說明",
+      "releaseNotesOnline": {
+        "title": "查看 {{version}} 版的新功能",
+        "description": "無法在此載入版本資訊。",
+        "view": "線上查看"
+      }
     },
     "credits": {
       "tools": {

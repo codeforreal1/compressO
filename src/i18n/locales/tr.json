@@ -236,7 +236,12 @@
         "license": "AGPL-3.0 ile lisanslanmıştır"
       },
       "madeBy": "<link>Code For Real⚡</link> tarafından herkese açık olarak <heart></heart> ile yapıldı",
-      "releaseNotes": "Sürüm notları"
+      "releaseNotes": "Sürüm notları",
+      "releaseNotesOnline": {
+        "title": "{{version}} sürümündeki yenilikleri görün",
+        "description": "Sürüm notları burada yüklenemedi.",
+        "view": "Çevrimiçi görüntüle"
+      }
     },
     "credits": {
       "tools": {
