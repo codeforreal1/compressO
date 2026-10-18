@@ -1,6 +1,8 @@
 use std::path::PathBuf;
 
-use clipboard_rs::{common::RustImage, Clipboard, ClipboardContext};
+#[cfg(not(target_os = "linux"))]
+use clipboard_rs::common::RustImage;
+use clipboard_rs::{Clipboard, ClipboardContext};
 use tauri::{AppHandle, Manager, Url};
 use tauri_plugin_fs::FsExt;
 
@@ -164,29 +166,73 @@ pub async fn copy_files_to_clipboard(
 pub async fn read_files_from_clipboard(
     app_handle: tauri::AppHandle,
 ) -> Result<Vec<CollectedFile>, String> {
-    let ctx = ClipboardContext::new().map_err(|err| err.to_string())?;
-
-    let files_result = ctx.get_files();
-
-    if let Ok(paths) = files_result {
-        if !paths.is_empty() {
-            return Ok(allow_asset_scopes(&app_handle, paths)?);
+    // Linux reads the clipboard through GTK, as the desktop serves it (Wayland or X11)
+    #[cfg(target_os = "linux")]
+    {
+        let app = app_handle.clone();
+        let paths = tauri::async_runtime::spawn_blocking(move || {
+            crate::sys::linux_clipboard::read_clipboard_media(&app)
+        })
+        .await
+        .map_err(|err| err.to_string())??;
+        if paths.is_empty() {
+            return Err("No files or images found in clipboard".to_string());
         }
+        return allow_asset_scopes(&app_handle, paths);
     }
 
-    // If no files found, try to get image from clipboard
-    if let Some(image_path) = save_clipboard_image(&app_handle, &ctx)? {
-        return Ok(vec![CollectedFile {
-            path: image_path,
-            relative_dir: String::new(),
-        }]);
-    }
+    #[cfg(not(target_os = "linux"))]
+    {
+        let ctx = ClipboardContext::new().map_err(|err| err.to_string())?;
 
-    Err("No files or images found in clipboard".to_string())
+        let paths = clipboard_file_paths(&ctx);
+        if !paths.is_empty() {
+            return allow_asset_scopes(&app_handle, paths);
+        }
+
+        // If no files found, try to get image from clipboard
+        if let Some(image_path) = save_clipboard_image(&app_handle, &ctx)? {
+            return Ok(vec![CollectedFile {
+                path: image_path,
+                relative_dir: String::new(),
+            }]);
+        }
+
+        Err("No files or images found in clipboard".to_string())
+    }
+}
+
+/// The files copied to the clipboard (e.g. in a file manager) as paths. macOS & Windows give
+/// paths; file URLs (`file:///home/me/My%20Clip.mp4`) are turned into paths too.
+#[cfg(not(target_os = "linux"))]
+pub fn clipboard_file_paths(ctx: &ClipboardContext) -> Vec<String> {
+    ctx.get_files()
+        .unwrap_or_default()
+        .iter()
+        .filter_map(|file| clipboard_entry_to_path(file))
+        .collect()
+}
+
+/// A path from a clipboard entry: a file URL (`file:///home/me/My%20Clip.mp4`) or a path, without
+/// the line break around it. `None` for an empty one.
+pub fn clipboard_entry_to_path(entry: &str) -> Option<String> {
+    let entry = entry.trim();
+    if entry.is_empty() {
+        return None;
+    }
+    Some(
+        Url::parse(entry)
+            .ok()
+            .filter(|url| url.scheme() == "file")
+            .and_then(|url| url.to_file_path().ok())
+            .map(|path| path.to_string_lossy().to_string())
+            .unwrap_or_else(|| entry.to_string()),
+    )
 }
 
 /// Saves a copied image that is not a file (e.g. an image copied in a browser) as a PNG in the app's
 /// assets, so it can be added like a file. Returns its path, or `None` without an image.
+#[cfg(not(target_os = "linux"))]
 pub fn save_clipboard_image(
     app_handle: &AppHandle,
     ctx: &ClipboardContext,

@@ -53,6 +53,8 @@ time = "0.3"
 
 [target.'cfg(target_os = "linux")'.dependencies]
 dbus = "0.9"
+# The clipboard, read as the desktop serves it (Wayland or X11), see `sys/linux_clipboard.rs`
+gtk = "0.18"
 axum = "0.7"
 tower = "0.5"
 tower-http = { version = "0.5", features = ["cors", "fs"] }

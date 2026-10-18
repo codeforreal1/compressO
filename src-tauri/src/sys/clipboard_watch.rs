@@ -9,7 +9,7 @@ use std::sync::atomic::{AtomicBool, AtomicIsize, Ordering};
 use std::sync::Mutex;
 use std::time::Duration;
 
-use clipboard_rs::{Clipboard, ClipboardContext};
+use clipboard_rs::ClipboardContext;
 use tauri::{AppHandle, Emitter};
 
 static IS_ENABLED: AtomicBool = AtomicBool::new(false);
@@ -74,19 +74,9 @@ pub fn read_clipboard_media(app_handle: &AppHandle) -> Vec<String> {
     let Ok(ctx) = ClipboardContext::new() else {
         return Vec::new();
     };
-    if let Ok(files) = ctx.get_files() {
-        if !files.is_empty() {
-            return files
-                .into_iter()
-                .map(|file| {
-                    tauri::Url::parse(&file)
-                        .ok()
-                        .and_then(|url| url.to_file_path().ok())
-                        .map(|path| path.to_string_lossy().to_string())
-                        .unwrap_or(file)
-                })
-                .collect();
-        }
+    let files = crate::tauri_commands::fs::clipboard_file_paths(&ctx);
+    if !files.is_empty() {
+        return files;
     }
 
     let change_count = pasteboard_change_count();
