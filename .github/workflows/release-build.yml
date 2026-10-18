@@ -1,0 +1,254 @@
+# Builds CompressO for Apple Silicon & Intel Macs, Windows & Linux, signs the updater files and
+# uploads everything to a draft release of the version in package.json, with the latest.json the
+# app's updater reads. Test the installers from the draft, then publish it (Releases -> Edit ->
+# Publish release): drafts are only visible to the repository's maintainers & never the latest
+# release, so the updater only offers the version once it is published. Run it from the Actions tab
+# (Release build -> Run workflow). Running it again for the same version replaces the draft.
+#
+# The updater files are signed with the key of the updater's public key (tauri.conf.json), kept as
+# repository secrets (Settings -> Secrets and variables -> Actions): TAURI_SIGNING_PRIVATE_KEY (the
+# content of the .key file) & TAURI_SIGNING_PRIVATE_KEY_PASSWORD.
+name: Release build
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  draft:
+    name: Create the draft release
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: version
+        name: Read the version
+        run: |
+          version=$(jq -r .version package.json)
+          app_version=$(jq -r .version src-tauri/tauri.conf.json)
+          if [ "$version" != "$app_version" ]; then
+            echo "::error::package.json ($version) and src-tauri/tauri.conf.json ($app_version) have different versions."
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      # A published release of the version is never replaced (the version must be raised first); an
+      # earlier draft of it is
+      - name: Create the draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          existing=$(gh api "repos/$GITHUB_REPOSITORY/releases?per_page=100" \
+            --jq "[.[] | select(.tag_name == \"$VERSION\")]")
+          if echo "$existing" | jq -e 'any(.draft == false)' > /dev/null; then
+            echo "::error::Version $VERSION is already released. Raise the version in package.json & src-tauri/tauri.conf.json (and add it to CHANGELOG.md) first."
+            exit 1
+          fi
+          for id in $(echo "$existing" | jq -r '.[].id'); do
+            gh api -X DELETE "repos/$GITHUB_REPOSITORY/releases/$id"
+          done
+          # The release text: .github/release-template.md, with the version and its CHANGELOG.md
+          # section (as in latest.json, see scripts/generate-latest-json.mts) filled in
+          body=$(python3 - <<'PY'
+          import os
+          version = os.environ['VERSION']
+          lines = open('CHANGELOG.md', encoding='utf-8').read().split('\n')
+          start = next((i for i, line in enumerate(lines) if line.strip().startswith(f'### {version}')), None)
+          section = []
+          if start is not None:
+              for line in lines[start + 1:]:
+                  if line.startswith('###') and not line.startswith('####'):
+                      break
+                  section.append(line)
+          changelog = '\n'.join(section).strip() or 'No changelog available'
+          template = open('.github/release-template.md', encoding='utf-8').read()
+          print(template.replace('{{version}}', version).replace('{{changelog}}', changelog))
+          PY
+          )
+          gh api -X POST "repos/$GITHUB_REPOSITORY/releases" \
+            -f tag_name="$VERSION" -f target_commitish="$GITHUB_SHA" -f name="$VERSION" \
+            -f body="$body" -F draft=true > /dev/null
+
+  build:
+    name: Build (${{ matrix.name }})
+    needs: draft
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: macOS, Apple Silicon
+            os: macos-latest
+            target: aarch64-apple-darwin
+          # Built on Apple Silicon too (see `swift_build_command` in src-tauri/build.rs)
+          - name: macOS, Intel
+            os: macos-latest
+            target: x86_64-apple-darwin
+          - name: Windows
+            os: windows-latest
+            target: x86_64-pc-windows-msvc
+          # The oldest supported Ubuntu, so the AppImage & .deb run on older Linux too
+          - name: Linux
+            os: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+    env:
+      VERSION: ${{ needs.draft.outputs.version }}
+      TARGET: ${{ matrix.target }}
+    steps:
+      - name: Check the signing key
+        shell: bash
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+        run: |
+          if [ -z "$TAURI_SIGNING_PRIVATE_KEY" ]; then
+            echo "::error::The TAURI_SIGNING_PRIVATE_KEY secret is missing (see the top of this workflow)."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v4
+
+      - name: Install the Linux libraries
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev \
+            libxdo-dev libssl-dev libasound2-dev libdbus-1-dev patchelf
+          # Bundled in the AppImage (`bundleMediaFramework`), which plays videos with its own
+          # GStreamer: without them it has no plugins and its webview crashes on a video
+          sudo apt-get install -y gstreamer1.0-plugins-base gstreamer1.0-plugins-good \
+            gstreamer1.0-plugins-bad gstreamer1.0-libav
+
+      # The Swift code is built with `swift build --build-system native` (Swift 6.2 / Xcode 26 or newer)
+      - name: Use the newest Xcode
+        if: runner.os == 'macOS'
+        run: |
+          xcode=$(ls -d /Applications/Xcode_*.app | sort -V | tail -n 1)
+          sudo xcode-select -s "$xcode"
+          swift --version
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+          key: ${{ matrix.target }}
+
+      # `pnpm install` runs `fnm use` first (pnpm:devPreinstall); Node is already set up here
+      - name: Stand in for fnm
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/fnm"
+          printf '#!/bin/sh\nexit 0\n' > "$RUNNER_TEMP/fnm/fnm"
+          chmod +x "$RUNNER_TEMP/fnm/fnm"
+          printf '@exit /b 0\r\n' > "$RUNNER_TEMP/fnm/fnm.cmd"
+          echo "$RUNNER_TEMP/fnm" >> "$GITHUB_PATH"
+
+      - run: pnpm install --frozen-lockfile
+
+      # Signs the updater files (`createUpdaterArtifacts`), giving each a .sig
+      - name: Build
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: pnpm tauri build --target ${{ matrix.target }}
+
+      # Named as in earlier releases & latest.json (see scripts/generate-latest-json.mts)
+      - name: Collect the release files
+        shell: bash
+        run: |
+          bundle="src-tauri/target/$TARGET/release/bundle"
+          mkdir release-files
+          case "$TARGET" in
+            *-apple-darwin)
+              arch=$([ "$TARGET" = aarch64-apple-darwin ] && echo aarch64 || echo x64)
+              cp "$bundle/dmg/CompressO_${VERSION}_${arch}.dmg" release-files/
+              cp "$bundle/macos/CompressO.app.tar.gz" "release-files/CompressO_${VERSION}_${arch}.app.tar.gz"
+              cp "$bundle/macos/CompressO.app.tar.gz.sig" "release-files/CompressO_${VERSION}_${arch}.app.tar.gz.sig"
+              ;;
+            *-windows-*)
+              cp "$bundle/nsis/CompressO_${VERSION}_x64-setup.exe" "release-files/CompressO_${VERSION}_x64.exe"
+              cp "$bundle/nsis/CompressO_${VERSION}_x64-setup.exe.sig" "release-files/CompressO_${VERSION}_x64.exe.sig"
+              ;;
+            *-linux-*)
+              cp "$bundle/deb/CompressO_${VERSION}_amd64.deb"* release-files/
+              cp "$bundle/appimage/CompressO_${VERSION}_amd64.AppImage"* release-files/
+              ;;
+          esac
+          ls -l release-files
+
+      - name: Upload to the draft release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "$VERSION" release-files/* --clobber
+
+      # For latest.json, made once every platform is built
+      - uses: actions/upload-artifact@v4
+        with:
+          name: signatures-${{ matrix.target }}
+          path: release-files/*.sig
+
+  latest-json:
+    name: Create latest.json
+    needs: [draft, build]
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.draft.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # Runs the TypeScript script directly
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: signatures-*
+          path: signatures
+          merge-multiple: true
+
+      # Where scripts/generate-latest-json.mts reads them, as after building on each platform
+      - name: Put the signatures where the script reads them
+        run: |
+          target=src-tauri/target
+          for arch in aarch64 x86_64; do
+            name=$([ "$arch" = aarch64 ] && echo aarch64 || echo x64)
+            mkdir -p "$target/$arch-apple-darwin/release/bundle/macos"
+            cp "signatures/CompressO_${VERSION}_${name}.app.tar.gz.sig" \
+              "$target/$arch-apple-darwin/release/bundle/macos/CompressO.app.tar.gz.sig"
+          done
+          mkdir -p "$target/release/bundle/nsis" "$target/release/bundle/appimage" "$target/release/bundle/deb"
+          cp "signatures/CompressO_${VERSION}_x64.exe.sig" \
+            "$target/release/bundle/nsis/CompressO_${VERSION}_x64-setup.exe.sig"
+          cp "signatures/CompressO_${VERSION}_amd64.AppImage.sig" "$target/release/bundle/appimage/"
+          cp "signatures/CompressO_${VERSION}_amd64.deb.sig" "$target/release/bundle/deb/"
+
+      - name: Create latest.json
+        run: |
+          node scripts/generate-latest-json.mts
+          # Every platform needs its signature, or the updater refuses the update
+          jq -e '[.platforms[].signature] | all(. != null)' latest.json > /dev/null
+          cat latest.json
+
+      # Uploaded last, once every installer & signature is in the release
+      - name: Upload latest.json
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "$VERSION" latest.json --clobber
