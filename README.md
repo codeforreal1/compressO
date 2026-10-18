@@ -33,7 +33,7 @@
 </div>
 
 ### Install
-Download installers📦 for the specific platform can be accessed from the [releases](https://github.com/codeforreal1/compressO/releases) page.
+Download installers📦 for the specific platform can be accessed from the [releases](https://github.com/codeforreal1/compressO/releases)  page.
 
 <strong>Installer Info:</strong>
 
@@ -84,6 +84,40 @@ Production Build:
 ```
 pnpm tauri:build
 ```
+
+### GitHub releases
+
+The `Release desktop app` workflow builds Linux x64 (`.deb`, `.AppImage`),
+Windows x64 (NSIS `.exe`), and macOS Intel and Apple Silicon (`.dmg`) installers.
+It publishes the release immediately and attaches installers as each platform
+build finishes. If a build fails, the release stays public with the assets
+already uploaded; rerun the failed jobs to finish uploading the installers.
+Checksums and the download table are added once all four builds succeed.
+The GitHub Pages workflow continues to deploy the website separately.
+
+Set the same version in `package.json` and `src-tauri/tauri.conf.json`, then push
+an annotated tag matching that version:
+
+```bash
+git tag -a v3.0.0 -m "Release v3.0.0"
+git push origin v3.0.0
+```
+
+Alternatively, run `Release desktop app` from the Actions tab on the desired
+branch. Each manual run increments the patch version, commits both version
+files, and pushes a matching tag: `v3.0.1`, `v3.0.2`, `v3.0.3`, and so on.
+It skips patch numbers already present in tags for the current major/minor
+version. All builds use the resulting release commit. The workflow needs
+permission to push to the selected branch; branch protection rules still apply.
+Pushing an explicit tag builds that exact version without incrementing it.
+
+No repository secrets are required for unsigned installers. To generate signed
+updater artifacts and `latest.json`, configure `TAURI_SIGNING_PRIVATE_KEY` and,
+if needed, `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` in repository Actions secrets.
+The private key must match the updater public key in `tauri.conf.json`. These
+secrets sign app updates; they do not provide Apple or Windows code signing.
+For a fork, change the updater endpoint in `tauri.conf.json` to your repository
+before distributing builds with automatic updates.
 
 ### Screenshots
 <details>

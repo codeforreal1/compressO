@@ -16,7 +16,7 @@ import heroImage from "../assets/hero.jpg";
 import HeroAnimatedContent from "../components/HeroAnimatedContent";
 
 const latestRelease = await getLatestRelease();
-const downloads = getDownloadAssets(latestRelease.tag_name);
+const downloads = getDownloadAssets(latestRelease);
 const githubStars = await fetchGitHubStars();
 ---
 
@@ -349,7 +349,7 @@ const githubStars = await fetchGitHubStars();
               <li>No hidden costs or premium tiers</li>
             </ul>
             <a
-              href="https://github.com/codeforreal1/compressO"
+              href="https://github.com/rajibdpi/compressO"
               class="github-link"
               style="margin-top: 20px;"
             >
