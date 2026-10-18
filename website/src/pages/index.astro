@@ -600,8 +600,8 @@ const privacyPoints: { icon: IconName; title: string; description: string }[] = 
         flex-shrink: 0;
         width: min(1720px, 112vw);
         margin-top: 72px;
-        /* Only the top of the app shows, fading into the page */
-        mask-image: linear-gradient(to bottom, black 55%, transparent 98%);
+        /* The app fades into the page at its bottom, where the scan line ends */
+        mask-image: linear-gradient(to bottom, black 75%, transparent 100%);
       }
       :global(.hero-shot) {
         padding: 8px;
@@ -615,73 +615,234 @@ const privacyPoints: { icon: IconName; title: string; description: string }[] = 
       :global(.hero-shot) {
         position: relative;
       }
-      :global(.hero-shot img) {
-        display: block;
-        width: 100%;
+      /* The screenshot, twice: dim & grey (not compressed yet) under the full colour one, which is
+       * shown down to the scan line (see HeroShot.tsx) */
+      :global(.hero-shot-media) {
+        position: relative;
+        overflow: hidden;
         border-radius: 17px;
       }
-      /* The compression progress on the screenshot, following the scroll (see HeroShot.tsx) */
-      :global(.compress-badge) {
+      :global(.hero-shot-media img) {
+        display: block;
+        width: 100%;
+      }
+      :global(.hero-shot-pending) {
+        filter: grayscale(1) brightness(0.42) contrast(0.9);
+      }
+      :global(.hero-shot-done) {
         position: absolute;
-        top: 30%;
+        inset: 0;
+        height: 100%;
+        object-fit: cover;
+      }
+      /* The scan line: a thin bright line with an orange glow trailing above it */
+      :global(.scan-line) {
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: 2px;
+        translate: 0 -1px;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          #ffd2a1 18%,
+          #fff 50%,
+          #ffd2a1 82%,
+          transparent
+        );
+        box-shadow:
+          0 0 12px 2px rgba(255, 132, 0, 0.9),
+          0 0 48px 8px rgba(255, 132, 0, 0.45);
+        pointer-events: none;
+      }
+      :global(.scan-line)::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 100%;
+        height: 140px;
+        background: linear-gradient(to top, rgba(255, 132, 0, 0.22), transparent);
+      }
+      /* The compression card, over the screenshot: a ring filling up, & the size counting down */
+      :global(.compress-card) {
+        position: absolute;
+        top: 16%;
         left: 50%;
         translate: -50% 0;
         display: flex;
         align-items: center;
-        gap: 12px;
-        min-width: 210px;
-        padding: 10px 18px 10px 10px;
+        gap: 18px;
+        padding: 16px 22px 16px 16px;
         border-radius: 999px;
-        border: 1px solid rgba(255, 255, 255, 0.18);
-        background: rgba(18, 17, 16, 0.55);
-        backdrop-filter: blur(18px) saturate(160%);
-        -webkit-backdrop-filter: blur(18px) saturate(160%);
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        background: rgba(14, 13, 12, 0.62);
+        backdrop-filter: blur(22px) saturate(160%);
+        -webkit-backdrop-filter: blur(22px) saturate(160%);
         box-shadow:
-          inset 0 1px 0 rgba(255, 255, 255, 0.12),
-          0 20px 50px rgba(0, 0, 0, 0.55);
+          inset 0 1px 0 rgba(255, 255, 255, 0.1),
+          0 30px 80px rgba(0, 0, 0, 0.6);
+        text-align: left;
+        white-space: nowrap;
+        transition:
+          border-color 0.4s ease,
+          box-shadow 0.4s ease;
+      }
+      :global(.compress-card.is-done) {
+        border-color: var(--brand-line);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.1),
+          0 30px 80px rgba(0, 0, 0, 0.6),
+          0 0 60px rgba(255, 132, 0, 0.28);
       }
       :global(.compress-ring) {
         position: relative;
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 38px;
-        height: 38px;
+        width: 76px;
+        height: 76px;
         flex-shrink: 0;
       }
-      :global(.compress-ring svg:first-child) {
+      :global(.compress-ring > svg:first-child) {
+        position: absolute;
+        inset: 0;
         transform: rotate(-90deg);
+        overflow: visible;
       }
       :global(.compress-ring-track) {
         fill: none;
-        stroke: rgba(255, 255, 255, 0.12);
-        stroke-width: 3;
+        stroke: rgba(255, 255, 255, 0.1);
+        stroke-width: 6;
       }
       :global(.compress-ring-fill) {
         fill: none;
         stroke: var(--brand);
-        stroke-width: 3;
+        stroke-width: 6;
         stroke-linecap: round;
+        filter: drop-shadow(0 0 6px rgba(255, 132, 0, 0.7));
       }
-      :global(.compress-check) {
-        position: absolute;
-        color: var(--brand);
-      }
-      :global(.compress-text) {
-        display: flex;
-        flex-direction: column;
-        line-height: 1.25;
-        text-align: left;
-      }
-      :global(.compress-label) {
-        font-size: 13px;
-        color: var(--text-muted);
-      }
-      :global(.compress-value) {
+      :global(.compress-ring-percent) {
         font-size: 17px;
         font-weight: 600;
         color: var(--text);
         font-variant-numeric: tabular-nums;
+      }
+      :global(.compress-ring-check) {
+        width: 28px;
+        height: 28px;
+        color: var(--brand);
+      }
+      :global(.compress-card-text) {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      :global(.compress-card-status) {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: var(--text-muted);
+      }
+      :global(.compress-card.is-done .compress-card-status) {
+        color: var(--brand);
+      }
+      :global(.compress-card-pulse) {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: var(--brand);
+        box-shadow: 0 0 0 0 rgba(255, 132, 0, 0.6);
+        animation: compress-pulse 1.4s ease-out infinite;
+      }
+      @keyframes compress-pulse {
+        to {
+          box-shadow: 0 0 0 10px rgba(255, 132, 0, 0);
+        }
+      }
+      :global(.compress-card-size) {
+        font-size: 34px;
+        font-weight: 600;
+        letter-spacing: -0.03em;
+        line-height: 1;
+        color: var(--text);
+        font-variant-numeric: tabular-nums;
+      }
+      :global(.compress-card-size span) {
+        margin-left: 5px;
+        font-size: 15px;
+        font-weight: 500;
+        letter-spacing: 0;
+        color: var(--text-faint);
+      }
+      :global(.compress-card-from) {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        color: var(--text-faint);
+        font-variant-numeric: tabular-nums;
+      }
+      :global(.compress-card-saved) {
+        padding: 1px 7px;
+        border-radius: 999px;
+        background: var(--brand-soft);
+        color: var(--brand);
+        font-weight: 600;
+      }
+      /* Small screens: a compact card, so it does not cover the screenshot */
+      @media (max-width: 720px) {
+        :global(.compress-card) {
+          top: 7%;
+          gap: 8px;
+          padding: 5px 12px 5px 5px;
+        }
+        :global(.compress-ring) {
+          width: 34px;
+          height: 34px;
+        }
+        :global(.compress-ring-track),
+        :global(.compress-ring-fill) {
+          stroke-width: 8;
+        }
+        :global(.compress-ring-fill) {
+          filter: none;
+        }
+        :global(.compress-ring-percent) {
+          font-size: 9px;
+        }
+        :global(.compress-ring-check) {
+          width: 14px;
+          height: 14px;
+        }
+        :global(.compress-card-text) {
+          gap: 1px;
+        }
+        :global(.compress-card-status) {
+          gap: 5px;
+          font-size: 10px;
+        }
+        :global(.compress-card-pulse) {
+          width: 5px;
+          height: 5px;
+        }
+        :global(.compress-card-detail),
+        :global(.compress-card-from) {
+          display: none;
+        }
+        :global(.compress-card-size) {
+          font-size: 15px;
+        }
+        :global(.compress-card-size span) {
+          margin-left: 3px;
+          font-size: 10px;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        :global(.compress-card-pulse) {
+          animation: none;
+        }
       }
 
       /* Formats */

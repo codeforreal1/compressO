@@ -14,14 +14,16 @@ type HeroShotProps = {
   alt: string;
 };
 
-/** The ring of the progress badge: its radius & circumference */
-const RING_RADIUS = 15;
-const RING_LENGTH = 2 * Math.PI * RING_RADIUS;
+/** The file being compressed in the hero, in MB */
+const ORIGINAL_SIZE = 26.2;
+const COMPRESSED_SIZE = 5.1;
+const SAVED_PERCENT = Math.round((1 - COMPRESSED_SIZE / ORIGINAL_SIZE) * 100);
 
 /**
  * The app's screenshot under the hero. It starts tilted back & slightly smaller, then straightens
  * and settles flat as the page scrolls, like a laptop lid opening (scrolling back reverses it).
- * A badge on it mimics the app compressing, its progress following the scroll, until "Compressed".
+ * Meanwhile a glowing scan line sweeps down it: the app is dim & grey below the line and in full
+ * colour above it, while a card counts the file's size down, until "Compressed".
  */
 function HeroShot({ src, alt }: HeroShotProps) {
   const ref = useRef<HTMLDivElement>(null);
@@ -48,16 +50,39 @@ function HeroShot({ src, alt }: HeroShotProps) {
     ],
   );
 
-  // The badge: 0 to 100% over the scroll, done a little before the image is fully flat
-  const percent = useTransform(progress, [0.05, 0.95], [0, 100], {
-    clamp: true,
+  // The compression: 0 to 100% from when the screenshot's top reaches 70% down the screen until
+  // its bottom does, so the scan line stays about there while the screenshot scrolls under it,
+  // from its top edge to its bottom edge
+  const { scrollYProgress: scanProgress } = useScroll({
+    target: ref,
+    offset: ["start 70%", "end 70%"],
   });
-  const ringOffset = useTransform(percent, [0, 100], [RING_LENGTH, 0]);
+  const percent = useTransform(
+    useSpring(scanProgress, { stiffness: 140, damping: 30, mass: 0.4 }),
+    [0, 1],
+    [0, 100],
+    { clamp: true },
+  );
+  // The line sweeps the whole screenshot; the part above it is in full colour
+  const scanTop = useTransform(percent, (value) => `${value}%`);
+  const doneClip = useTransform(percent, (value) =>
+    value >= 100 ? "none" : `inset(0 0 ${100 - value}% 0)`,
+  );
+  const scanOpacity = useTransform(percent, [0, 2, 96, 100], [0, 1, 1, 0]);
+  // The ring fills as it compresses (its length is 100, see `pathLength`)
+  const ringOffset = useTransform(percent, (value) => 100 - value);
+
   const [shownPercent, setShownPercent] = useState(0);
   useMotionValueEvent(percent, "change", (value) => {
     setShownPercent(Math.round(value));
   });
   const isDone = reduceMotion || shownPercent >= 100;
+  const size = reduceMotion
+    ? COMPRESSED_SIZE
+    : ORIGINAL_SIZE - ((ORIGINAL_SIZE - COMPRESSED_SIZE) * shownPercent) / 100;
+  const saved = reduceMotion
+    ? SAVED_PERCENT
+    : Math.round((SAVED_PERCENT * shownPercent) / 100);
 
   return (
     <div ref={ref} className="hero-shot-stage">
@@ -75,60 +100,102 @@ function HeroShot({ src, alt }: HeroShotProps) {
               }
         }
       >
-        <img src={src} alt={alt} loading="eager" />
+        <div className="hero-shot-media">
+          {/* Not compressed yet: dim & grey */}
+          <img
+            src={src}
+            alt={alt}
+            loading="eager"
+            className="hero-shot-pending"
+          />
+          {/* Compressed: in full colour, down to the scan line */}
+          <motion.img
+            src={src}
+            alt=""
+            aria-hidden="true"
+            loading="eager"
+            className="hero-shot-done"
+            style={{ clipPath: reduceMotion ? "none" : doneClip }}
+          />
+          {reduceMotion ? null : (
+            <motion.div
+              className="scan-line"
+              style={{ top: scanTop, opacity: scanOpacity }}
+              aria-hidden="true"
+            />
+          )}
+        </div>
 
         <motion.div
-          className="compress-badge"
-          animate={isDone ? { scale: [1, 1.06, 1] } : { scale: 1 }}
-          transition={{ duration: 0.45, ease: "easeOut" }}
+          className={isDone ? "compress-card is-done" : "compress-card"}
+          animate={isDone ? { scale: [1, 1.05, 1] } : { scale: 1 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
           aria-hidden="true"
         >
           <span className="compress-ring">
-            <svg width="38" height="38" viewBox="0 0 38 38">
-              <circle
-                cx="19"
-                cy="19"
-                r={RING_RADIUS}
-                className="compress-ring-track"
-              />
+            <svg viewBox="0 0 80 80">
+              <circle cx="40" cy="40" r="34" className="compress-ring-track" />
               <motion.circle
-                cx="19"
-                cy="19"
-                r={RING_RADIUS}
+                cx="40"
+                cy="40"
+                r="34"
+                pathLength={100}
+                strokeDasharray="100"
                 className="compress-ring-fill"
-                strokeDasharray={RING_LENGTH}
                 style={{ strokeDashoffset: reduceMotion ? 0 : ringOffset }}
               />
             </svg>
-            <AnimatePresence initial={false}>
+            <AnimatePresence mode="wait" initial={false}>
               {isDone ? (
                 <motion.svg
                   key="check"
-                  className="compress-check"
-                  width="16"
-                  height="16"
+                  className="compress-ring-check"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="3"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  initial={{ opacity: 0, scale: 0.5 }}
+                  initial={{ opacity: 0, scale: 0.4 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.5 }}
+                  exit={{ opacity: 0, scale: 0.4 }}
                   transition={{ duration: 0.25 }}
                 >
                   <path d="m5 12.5 4.5 4.5L19 7.5" />
                 </motion.svg>
-              ) : null}
+              ) : (
+                <motion.span
+                  key="percent"
+                  className="compress-ring-percent"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  {shownPercent}%
+                </motion.span>
+              )}
             </AnimatePresence>
           </span>
-          <span className="compress-text">
-            <span className="compress-label">
-              {isDone ? "Compressed" : "Compressing"}
+          <span className="compress-card-text">
+            <span className="compress-card-status">
+              {isDone ? null : <span className="compress-card-pulse" />}
+              {isDone ? (
+                "Compressed"
+              ) : (
+                <>
+                  Compressing
+                  <span className="compress-card-detail"> 4K video</span>
+                </>
+              )}
             </span>
-            <span className="compress-value">
-              {isDone ? "231 MB saved" : `${shownPercent}%`}
+            <span className="compress-card-size">
+              {size.toFixed(1)}
+              <span>MB</span>
+            </span>
+            <span className="compress-card-from">
+              from {ORIGINAL_SIZE} MB
+              <span className="compress-card-saved">−{saved}%</span>
             </span>
           </span>
         </motion.div>
