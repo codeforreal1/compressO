@@ -586,7 +586,6 @@
     "videoUnplayable": "Bu video gelişmiş codec’ler veya yapılandırmalar içerdiğinden bu uygulama tarafından oynatılamıyor. Bu tür videolar VLC gibi özel oynatıcılar gerektirir.",
     "previewsOff": "Video önizlemeleri kapalı. Ayarlar’da Genel altından açılabilir.",
     "stillCompressible": "Yine de çıktı ayarlarını uygulayabilir ve tüm dönüştürmeleri gerçekleştirebilirsiniz.",
-    "regenerate": "Küçük Resmi Yeniden Oluştur",
     "enlarge": "Görüntüyü büyüt",
     "select": "Küçük resim görüntüsünü seçin.",
     "selectFailed": "Küçük resim görüntüsü seçilemedi.",

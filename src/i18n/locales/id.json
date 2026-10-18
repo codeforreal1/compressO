@@ -580,7 +580,6 @@
     "videoUnplayable": "Video ini tidak dapat diputar oleh aplikasi ini karena berisi codec atau konfigurasi lanjutan. Video seperti ini memerlukan pemutar khusus seperti VLC.",
     "previewsOff": "Pratinjau video dinonaktifkan. Pratinjau dapat diaktifkan di Pengaturan, pada Umum.",
     "stillCompressible": "Anda tetap dapat menerapkan pengaturan output dan melakukan semua konversi.",
-    "regenerate": "Buat Ulang Thumbnail",
     "enlarge": "Perbesar gambar",
     "select": "Pilih gambar thumbnail.",
     "selectFailed": "Gambar thumbnail tidak dapat dipilih.",

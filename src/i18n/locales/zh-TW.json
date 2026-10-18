@@ -580,7 +580,6 @@
     "videoUnplayable": "此影片包含進階的編解碼器或設定，本 App 無法播放。此類影片需要使用 VLC 等專用播放器。",
     "previewsOff": "影片預覽已關閉。可在「設定」的「一般」中開啟。",
     "stillCompressible": "您仍可套用輸出設定並執行所有轉換。",
-    "regenerate": "重新產生縮圖",
     "enlarge": "放大影像",
     "select": "選擇縮圖影像。",
     "selectFailed": "無法選擇縮圖影像。",

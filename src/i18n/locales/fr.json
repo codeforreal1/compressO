@@ -592,7 +592,6 @@
     "videoUnplayable": "Cette vidéo ne peut pas être lue par cette app, car elle utilise des codecs ou des configurations avancés. Ces vidéos nécessitent un lecteur dédié tel que VLC.",
     "previewsOff": "Les aperçus vidéo sont désactivés. Ils peuvent être activés dans les Réglages, sous Général.",
     "stillCompressible": "Vous pouvez néanmoins appliquer les réglages de sortie et effectuer toutes les conversions.",
-    "regenerate": "Régénérer la vignette",
     "enlarge": "Agrandir l’image",
     "select": "Sélectionner une image de vignette.",
     "selectFailed": "L’image de vignette n’a pas pu être sélectionnée.",

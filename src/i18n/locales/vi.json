@@ -580,7 +580,6 @@
     "videoUnplayable": "Ứng dụng này không thể phát video vì video chứa codec hoặc cấu hình nâng cao. Những video như vậy cần trình phát chuyên dụng như VLC.",
     "previewsOff": "Xem trước video đang tắt. Có thể bật trong Cài đặt, mục Chung.",
     "stillCompressible": "Bạn vẫn có thể áp dụng cài đặt đầu ra và thực hiện mọi chuyển đổi.",
-    "regenerate": "Tạo lại ảnh thu nhỏ",
     "enlarge": "Phóng to hình ảnh",
     "select": "Chọn hình ảnh làm ảnh thu nhỏ.",
     "selectFailed": "Không thể chọn hình ảnh làm ảnh thu nhỏ.",

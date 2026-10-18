@@ -31,17 +31,6 @@ import { constructVideoUrl, isVideoPreviewAvailable } from '@/utils/video'
 import MediaTransformer from './MediaTransformer'
 import { appProxy } from '../-state'
 
-function pickRandomTimestamp(durationMs: number): string {
-  const durationSeconds = durationMs / 1000
-  // Avoid the first 5% and last 5% of the video to get more interesting frames
-  const minSeconds = durationSeconds * 0.05
-  const maxSeconds = durationSeconds * 0.95
-
-  const randomSeconds = minSeconds + Math.random() * (maxSeconds - minSeconds)
-
-  return formatDuration(randomSeconds)
-}
-
 type MediaThumbnailProps = {
   mediaIndex: number
   /** Shows the media without its transforms (crop, rotation, flip), e.g. to compare */
@@ -77,7 +66,6 @@ function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
   const playerRef = useRef<VideoPlayerRef | null>(null)
   const trimmerRef = useRef<VideoTrimmerTimelineRef | null>(null)
   const trimConfigSetDebounceRef = useRef<NodeJS.Timeout | null>(null)
-  const [isThumbnailRegenerating, setIsThumbnailRegenerating] = useState(false)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const [isAudioPlaying, setIsAudioPlaying] = useState(false)
   const thumbnailCacheRef = useRef<Record<string, string>>({})
@@ -118,41 +106,6 @@ function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
       setIsCopyingFrame(false)
     }
   }, [mediaPathRaw, mediaIndex, t])
-
-  const handleRegenerateThumbnail = useCallback(
-    async (timeStamp?: string, retries = 2, forced = false) => {
-      const targetMedia = appProxy.state.media[mediaIndex]
-
-      if (
-        !targetMedia ||
-        targetMedia.type !== 'video' ||
-        !targetMedia.videoDuration ||
-        !mediaPathRaw ||
-        (forced ? false : isThumbnailRegenerating)
-      )
-        return
-
-      setIsThumbnailRegenerating(true)
-      try {
-        const videoDuration = targetMedia.videoDuration
-        const result = await generateVideoThumbnail(
-          mediaPathRaw,
-          timeStamp ?? pickRandomTimestamp(videoDuration * 1000),
-        )
-        appProxy.state.media[mediaIndex].thumbnailPathRaw = result.filePath
-        appProxy.state.media[mediaIndex].thumbnailPath = core.convertFileSrc(
-          result.filePath,
-        )
-      } catch {
-        if (retries > 0) {
-          handleRegenerateThumbnail('00:00:01.00', retries - 1)
-        }
-      } finally {
-        setIsThumbnailRegenerating(false)
-      }
-    },
-    [mediaPathRaw, mediaIndex, isThumbnailRegenerating],
-  )
 
   const seekPlayerTo = useCallback((time: number, onPausedOnly = true) => {
     if (playerRef.current?.playerRef) {
@@ -654,11 +607,6 @@ function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
                   alt={t('preview.mediaToCompress')}
                   src={imageToRenderSrc}
                   className="object-contain rounded-3xl max-h-[60vh] border-1 border-zinc-200 dark:border-zinc-900 min-w-[100px] min-h-[100px]"
-                  onError={() => {
-                    if (!isProcessCompleted) {
-                      handleRegenerateThumbnail('00:00:01.00', 0, true)
-                    }
-                  }}
                 />
               )}
               {!showTransformerLayout ? (
@@ -691,30 +639,6 @@ function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
                         </div>
                       </PopoverContent>
                     </Popover>
-                  ) : null}
-                  {mediaFile?.type === 'video' &&
-                  mediaFile.videoDuration &&
-                  !isProcessCompleted ? (
-                    <>
-                      <Button
-                        size="sm"
-                        variant="light"
-                        isIconOnly
-                        onPress={() => {
-                          handleRegenerateThumbnail()
-                        }}
-                        isDisabled={isThumbnailRegenerating}
-                        isLoading={isThumbnailRegenerating}
-                        className="!p-0 !min-h-0 !py-2 !w-[unset] !min-w-[unset] !h-0 "
-                      >
-                        <Tooltip
-                          content={t('thumbnail.regenerate')}
-                          className="w-0! h-0!"
-                        >
-                          <Icon name="image" size={20} />
-                        </Tooltip>
-                      </Button>
-                    </>
                   ) : null}
 
                   <ImageViewer

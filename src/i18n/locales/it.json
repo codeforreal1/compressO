@@ -592,7 +592,6 @@
     "videoUnplayable": "Questa app non può riprodurre questo video perché contiene codec o configurazioni avanzati. Questi video richiedono lettori dedicati come VLC.",
     "previewsOff": "Le anteprime video sono disattivate. Possono essere attivate in Impostazioni, in Generali.",
     "stillCompressible": "Può comunque applicare le impostazioni di output ed eseguire tutte le conversioni.",
-    "regenerate": "Rigenera la miniatura",
     "enlarge": "Ingrandisci l’immagine",
     "select": "Selezioni l’immagine della miniatura.",
     "selectFailed": "Non è stato possibile selezionare l’immagine della miniatura.",

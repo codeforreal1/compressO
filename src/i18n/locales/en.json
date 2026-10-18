@@ -586,7 +586,6 @@
     "videoUnplayable": "This video is unable to play by this app because it contains advanced codec/configurations. Such videos require dedicated media players like VLC.",
     "previewsOff": "Video previews are turned off. They can be turned on in Settings, under General.",
     "stillCompressible": "Rest assured, you can still apply the output settings and perform all the conversions.",
-    "regenerate": "Regenerate Thumbnail",
     "enlarge": "Enlarge image",
     "select": "Select thumbnail image.",
     "selectFailed": "Could not select thumbnail image.",

@@ -580,7 +580,6 @@
     "videoUnplayable": "此视频包含高级编解码器或配置，本应用无法播放。此类视频需要使用 VLC 等专用播放器。",
     "previewsOff": "视频预览已关闭。可在“设置”的“通用”中打开。",
     "stillCompressible": "您仍可应用输出设置并执行所有转换。",
-    "regenerate": "重新生成缩略图",
     "enlarge": "放大图像",
     "select": "选择缩略图图像。",
     "selectFailed": "无法选择缩略图图像。",

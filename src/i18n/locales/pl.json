@@ -598,7 +598,6 @@
     "videoUnplayable": "Ta aplikacja nie może odtworzyć tego filmu, ponieważ zawiera on zaawansowane kodeki lub konfiguracje. Takie filmy wymagają specjalnych odtwarzaczy, np. VLC.",
     "previewsOff": "Podgląd wideo jest wyłączony. Można go włączyć w Ustawieniach, w sekcji Ogólne.",
     "stillCompressible": "Mimo to można zastosować ustawienia wyjściowe i wykonać wszystkie konwersje.",
-    "regenerate": "Wygeneruj miniaturę ponownie",
     "enlarge": "Powiększ obraz",
     "select": "Wybierz obraz miniatury.",
     "selectFailed": "Nie udało się wybrać obrazu miniatury.",

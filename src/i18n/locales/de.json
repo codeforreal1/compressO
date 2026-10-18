@@ -586,7 +586,6 @@
     "videoUnplayable": "Dieses Video kann von dieser App nicht abgespielt werden, da es erweiterte Codecs oder Konfigurationen enthält. Solche Videos erfordern spezielle Mediaplayer wie VLC.",
     "previewsOff": "Die Videovorschau ist ausgeschaltet. Sie kann in den Einstellungen unter „Allgemein“ eingeschaltet werden.",
     "stillCompressible": "Sie können die Ausgabeeinstellungen dennoch anwenden und alle Konvertierungen durchführen.",
-    "regenerate": "Vorschaubild neu erzeugen",
     "enlarge": "Bild vergrößern",
     "select": "Vorschaubild auswählen.",
     "selectFailed": "Das Vorschaubild konnte nicht ausgewählt werden.",

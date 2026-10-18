@@ -592,7 +592,6 @@
     "videoUnplayable": "Esta app no puede reproducir este vídeo porque contiene códecs o configuraciones avanzados. Estos vídeos requieren reproductores específicos como VLC.",
     "previewsOff": "La vista previa de vídeos está desactivada. Se puede activar en Ajustes, en General.",
     "stillCompressible": "No obstante, puede aplicar la configuración de salida y realizar todas las conversiones.",
-    "regenerate": "Regenerar miniatura",
     "enlarge": "Ampliar imagen",
     "select": "Seleccione la imagen de la miniatura.",
     "selectFailed": "No se pudo seleccionar la imagen de la miniatura.",
