@@ -377,3 +377,19 @@ a[href] *,
   border-left: 1px solid var(--thread-color);
   pointer-events: none;
 }
+
+/*
+ * The dashed outline of a drop area (`DashedBorder`), while the area (`.group`) is hovered: its dashes
+ * flow around it. Still with reduced motion.
+ */
+@keyframes dashed-border-flow {
+  to {
+    /* Two dash lengths (6 + 5), so it loops without a jump */
+    stroke-dashoffset: -22;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .group:hover .dashed-border-flow {
+    animation: dashed-border-flow 2.5s linear infinite;
+  }
+}

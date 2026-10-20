@@ -76,10 +76,11 @@ function Root() {
       >
         <div
           className={cn(
-            'relative flex flex-col justify-center items-center py-16 px-20 rounded-3xl',
+            'group relative flex flex-col justify-center items-center py-16 px-20 rounded-3xl',
           )}
         >
-          <DashedBorder radius={24} />
+          {/* Brightens a little & drifts while hovered, as it opens the media picker when clicked */}
+          <DashedBorder radius={24} isInteractive />
           <Icon name="addMedia" className="text-primary" size={60} />
           <p className="text-sm mt-4 text-gray-600 dark:text-gray-400 text-center">
             {t('home.dragAndDrop')}
