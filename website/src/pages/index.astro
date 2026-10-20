@@ -600,7 +600,7 @@ const privacyPoints: { icon: IconName; title: string; description: string }[] = 
         flex-shrink: 0;
         width: min(1720px, 112vw);
         margin-top: 72px;
-        /* The app fades into the page at its bottom, where the scan line ends */
+        /* The app fades into the page at its bottom */
         mask-image: linear-gradient(to bottom, black 75%, transparent 100%);
       }
       :global(.hero-shot) {
@@ -615,8 +615,6 @@ const privacyPoints: { icon: IconName; title: string; description: string }[] = 
       :global(.hero-shot) {
         position: relative;
       }
-      /* The screenshot, twice: dim & grey (not compressed yet) under the full colour one, which is
-       * shown down to the scan line (see HeroShot.tsx) */
       :global(.hero-shot-media) {
         position: relative;
         overflow: hidden;
@@ -625,44 +623,6 @@ const privacyPoints: { icon: IconName; title: string; description: string }[] = 
       :global(.hero-shot-media img) {
         display: block;
         width: 100%;
-      }
-      :global(.hero-shot-pending) {
-        filter: grayscale(1) brightness(0.42) contrast(0.9);
-      }
-      :global(.hero-shot-done) {
-        position: absolute;
-        inset: 0;
-        height: 100%;
-        object-fit: cover;
-      }
-      /* The scan line: a thin bright line with an orange glow trailing above it */
-      :global(.scan-line) {
-        position: absolute;
-        left: 0;
-        right: 0;
-        height: 2px;
-        translate: 0 -1px;
-        background: linear-gradient(
-          90deg,
-          transparent,
-          #ffd2a1 18%,
-          #fff 50%,
-          #ffd2a1 82%,
-          transparent
-        );
-        box-shadow:
-          0 0 12px 2px rgba(255, 132, 0, 0.9),
-          0 0 48px 8px rgba(255, 132, 0, 0.45);
-        pointer-events: none;
-      }
-      :global(.scan-line)::before {
-        content: "";
-        position: absolute;
-        left: 0;
-        right: 0;
-        bottom: 100%;
-        height: 140px;
-        background: linear-gradient(to top, rgba(255, 132, 0, 0.22), transparent);
       }
       /* The compression card, over the screenshot: a ring filling up, & the size counting down */
       :global(.compress-card) {
@@ -720,7 +680,6 @@ const privacyPoints: { icon: IconName; title: string; description: string }[] = 
         stroke: var(--brand);
         stroke-width: 6;
         stroke-linecap: round;
-        filter: drop-shadow(0 0 6px rgba(255, 132, 0, 0.7));
       }
       :global(.compress-ring-percent) {
         font-size: 17px;

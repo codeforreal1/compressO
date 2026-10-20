@@ -15,15 +15,14 @@ type HeroShotProps = {
 };
 
 /** The file being compressed in the hero, in MB */
-const ORIGINAL_SIZE = 26.2;
+const ORIGINAL_SIZE = 96.2;
 const COMPRESSED_SIZE = 5.1;
 const SAVED_PERCENT = Math.round((1 - COMPRESSED_SIZE / ORIGINAL_SIZE) * 100);
 
 /**
  * The app's screenshot under the hero. It starts tilted back & slightly smaller, then straightens
  * and settles flat as the page scrolls, like a laptop lid opening (scrolling back reverses it).
- * Meanwhile a glowing scan line sweeps down it: the app is dim & grey below the line and in full
- * colour above it, while a card counts the file's size down, until "Compressed".
+ * Meanwhile a card on it counts the file's size down as the page scrolls, until "Compressed".
  */
 function HeroShot({ src, alt }: HeroShotProps) {
   const ref = useRef<HTMLDivElement>(null);
@@ -51,24 +50,17 @@ function HeroShot({ src, alt }: HeroShotProps) {
   );
 
   // The compression: 0 to 100% from when the screenshot's top reaches 70% down the screen until
-  // its bottom does, so the scan line stays about there while the screenshot scrolls under it,
-  // from its top edge to its bottom edge
-  const { scrollYProgress: scanProgress } = useScroll({
+  // its bottom does
+  const { scrollYProgress: compressProgress } = useScroll({
     target: ref,
-    offset: ["start 70%", "end 70%"],
+    offset: ["start 90%", "end 90%"],
   });
   const percent = useTransform(
-    useSpring(scanProgress, { stiffness: 140, damping: 30, mass: 0.4 }),
+    useSpring(compressProgress, { stiffness: 140, damping: 30, mass: 0.4 }),
     [0, 1],
     [0, 100],
     { clamp: true },
   );
-  // The line sweeps the whole screenshot; the part above it is in full colour
-  const scanTop = useTransform(percent, (value) => `${value}%`);
-  const doneClip = useTransform(percent, (value) =>
-    value >= 100 ? "none" : `inset(0 0 ${100 - value}% 0)`,
-  );
-  const scanOpacity = useTransform(percent, [0, 2, 96, 100], [0, 1, 1, 0]);
   // The ring fills as it compresses (its length is 100, see `pathLength`)
   const ringOffset = useTransform(percent, (value) => 100 - value);
 
@@ -101,29 +93,7 @@ function HeroShot({ src, alt }: HeroShotProps) {
         }
       >
         <div className="hero-shot-media">
-          {/* Not compressed yet: dim & grey */}
-          <img
-            src={src}
-            alt={alt}
-            loading="eager"
-            className="hero-shot-pending"
-          />
-          {/* Compressed: in full colour, down to the scan line */}
-          <motion.img
-            src={src}
-            alt=""
-            aria-hidden="true"
-            loading="eager"
-            className="hero-shot-done"
-            style={{ clipPath: reduceMotion ? "none" : doneClip }}
-          />
-          {reduceMotion ? null : (
-            <motion.div
-              className="scan-line"
-              style={{ top: scanTop, opacity: scanOpacity }}
-              aria-hidden="true"
-            />
-          )}
+          <img src={src} alt={alt} loading="eager" />
         </div>
 
         <motion.div
@@ -179,7 +149,6 @@ function HeroShot({ src, alt }: HeroShotProps) {
           </span>
           <span className="compress-card-text">
             <span className="compress-card-status">
-              {isDone ? null : <span className="compress-card-pulse" />}
               {isDone ? (
                 "Compressed"
               ) : (
