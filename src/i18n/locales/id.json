@@ -240,7 +240,8 @@
       "dropZone": "Zona Taruh",
       "about": "Tentang",
       "credits": "Kredit",
-      "watchedFolders": "Folder yang dipantau"
+      "watchedFolders": "Pantau folder",
+      "history": "Riwayat"
     },
     "about": {
       "updateAvailable": "Pembaruan tersedia",
@@ -287,6 +288,31 @@
     "watchedFolders": {
       "folders": "Folder",
       "openFailed": "Folder tidak dapat dibuka. Folder mungkin telah dipindahkan atau dihapus."
+    },
+    "history": {
+      "clear": "Hapus riwayat",
+      "clearConfirm": "Hapus semua entri",
+      "clearFailed": "Riwayat tidak dapat dihapus.",
+      "search": "Cari berdasarkan nama, folder, atau preset",
+      "empty": "Media yang dikompres akan tercantum di sini.",
+      "noResults": "Tidak ada kompresi yang cocok dengan pencarian.",
+      "source_main": "Jendela utama",
+      "source_dropZone": "Zona letak",
+      "source_watchedFolder": "Folder yang dipantau {{name}}",
+      "original": "Asli",
+      "output": "Hasil",
+      "missing": "File ini telah dipindahkan atau dihapus.",
+      "notSaved": "Hasil ini tidak disimpan.",
+      "fileCount": "File: {{count}}",
+      "showFiles": "Tampilkan file di {{name}}",
+      "hideFiles": "Sembunyikan file di {{name}}",
+      "stats": {
+        "saved": "Ruang yang dihemat",
+        "files": "File yang dikompres",
+        "original": "Ukuran asli",
+        "output": "Ukuran terkompresi",
+        "reduction": "Rata-rata pengurangan"
+      }
     }
   },
   "common": {

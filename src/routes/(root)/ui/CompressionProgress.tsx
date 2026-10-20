@@ -144,7 +144,7 @@ function CompressionProgress() {
                   appProxy.state.media[targetMediaIndex].isCompressing = false
                   appProxy.state.media[targetMediaIndex].compressionProgress =
                     100
-                  appProxy.state.media[targetMediaIndex].compressedFile = {
+                  const lateFile = {
                     isSuccessful: true,
                     fileName: fileMetadata?.fileName,
                     // This event can arrive after the final results, so it must name the file the
@@ -167,6 +167,15 @@ function CompressionProgress() {
                         : null,
                     ),
                   }
+                  // Arriving after the final results, it keeps what they set since (e.g. its entry
+                  // in the history, where it was saved, another output chosen)
+                  const existingFile =
+                    snapshot(appProxy).state.media[targetMediaIndex]
+                      .compressedFile
+                  appProxy.state.media[targetMediaIndex].compressedFile =
+                    existingFile?.isSuccessful
+                      ? { ...lateFile, ...existingFile }
+                      : lateFile
                   if (appProxy.state.media.length > 1) {
                     appProxy.takeSnapshot('batchCompressionStep')
                   }

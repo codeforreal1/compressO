@@ -240,7 +240,8 @@
       "dropZone": "ドロップゾーン",
       "about": "情報",
       "credits": "クレジット",
-      "watchedFolders": "監視フォルダ"
+      "watchedFolders": "フォルダ監視",
+      "history": "履歴"
     },
     "about": {
       "updateAvailable": "アップデートがあります",
@@ -287,6 +288,31 @@
     "watchedFolders": {
       "folders": "フォルダ",
       "openFailed": "フォルダを開けませんでした。移動または削除された可能性があります。"
+    },
+    "history": {
+      "clear": "履歴を消去",
+      "clearConfirm": "すべての記録を消去",
+      "clearFailed": "履歴を消去できませんでした。",
+      "search": "名前、フォルダ、プリセットで検索",
+      "empty": "圧縮したメディアがここに表示されます。",
+      "noResults": "検索に一致する圧縮はありません。",
+      "source_main": "メインウインドウ",
+      "source_dropZone": "ドロップゾーン",
+      "source_watchedFolder": "監視フォルダ {{name}}",
+      "original": "元のファイル",
+      "output": "出力",
+      "missing": "このファイルは移動または削除されました。",
+      "notSaved": "この出力は保存されていません。",
+      "fileCount": "ファイル：{{count}}",
+      "showFiles": "{{name}} のファイルを表示",
+      "hideFiles": "{{name}} のファイルを隠す",
+      "stats": {
+        "saved": "節約した容量",
+        "files": "圧縮したファイル",
+        "original": "元のサイズ",
+        "output": "圧縮後のサイズ",
+        "reduction": "平均削減率"
+      }
     }
   },
   "common": {

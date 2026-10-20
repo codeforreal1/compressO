@@ -10,6 +10,7 @@ import {
   getOutputDuration,
   MediaFile,
 } from '@/routes/(root)/-compression'
+import { recordQueueHistory } from '@/routes/(root)/-history'
 import {
   applyAudioPresetToConfig,
   applyImagePresetToConfig,
@@ -264,6 +265,23 @@ async function compressQueueItem(item: DropQueueItem) {
       },
       { groupKey: item.groupId, topFolders },
     )
+    recordQueueHistory({
+      id: item.id,
+      groupId: item.groupId,
+      relativeDir: item.relativeDir,
+      watchFolderName: item.watchFolderName,
+      originalPath: item.path,
+      originalSize: media.sizeInBytes ?? null,
+      outputPath: 'savedPath' in saved ? saved.savedPath : null,
+      outputSize: outputMetadata.size,
+      mediaType:
+        media.type === 'image'
+          ? 'image'
+          : media.isAudioFile
+            ? 'audio'
+            : 'video',
+      presetId: media.config?.presetId,
+    })
     if ('savedPath' in saved) {
       await update({
         status: 'done',

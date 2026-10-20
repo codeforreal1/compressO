@@ -14,6 +14,7 @@ import {
 import { Image, Video } from '@/types/app'
 import { formatBytes, getParentDirectory } from '@/utils/fs'
 import { getPresetOutput, savesAutomatically } from '@/utils/presetOutput'
+import { recordSavedOutput } from './-history'
 import { appProxy } from './-state'
 
 type Media = (Video & { type: 'video' }) | (Image & { type: 'image' })
@@ -103,6 +104,10 @@ async function saveCompressedMedia(
         isSaving: false,
         isSaved: true,
       }
+      recordSavedOutput(
+        snapshot(appProxy).state.media[i].compressedFile ?? {},
+        mediaFile.id,
+      )
     } catch (_) {
       failedCount++
       appProxy.state.media[i].compressedFile = {
@@ -178,6 +183,8 @@ export async function chooseOutputOption(
     try {
       const newSavedPath = await moveFile(option.pathRaw, savedPath)
       Object.assign(file, chosen, { savedPath: newSavedPath })
+      // The output saved is now this one (its size)
+      recordSavedOutput(file, mediaFile.id)
       if (appProxy.state.media.length === 1) {
         appProxy.state.savedPath = newSavedPath
       }
@@ -231,6 +238,10 @@ export async function saveCompressedMediaWithPrompt() {
       savedPath,
       isSaved: true,
     }
+    recordSavedOutput(
+      snapshot(appProxy).state.media[0].compressedFile ?? {},
+      mediaFile.id,
+    )
     appProxy.state.isSaved = true
   } catch (_) {
     toast.error(t('save.failed'))

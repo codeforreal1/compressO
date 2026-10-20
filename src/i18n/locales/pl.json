@@ -240,7 +240,8 @@
       "dropZone": "Strefa upuszczania",
       "about": "Informacje",
       "credits": "Podziękowania",
-      "watchedFolders": "Obserwowane foldery"
+      "watchedFolders": "Obserwowanie folderów",
+      "history": "Historia"
     },
     "about": {
       "updateAvailable": "Dostępna aktualizacja",
@@ -287,6 +288,31 @@
     "watchedFolders": {
       "folders": "Foldery",
       "openFailed": "Nie udało się otworzyć folderu. Mógł zostać przeniesiony lub usunięty."
+    },
+    "history": {
+      "clear": "Wyczyść historię",
+      "clearConfirm": "Usuń wszystkie wpisy",
+      "clearFailed": "Nie udało się wyczyścić historii.",
+      "search": "Szukaj według nazwy, folderu lub ustawienia",
+      "empty": "Skompresowane multimedia pojawią się tutaj.",
+      "noResults": "Żadna kompresja nie pasuje do wyszukiwania.",
+      "source_main": "Okno główne",
+      "source_dropZone": "Strefa upuszczania",
+      "source_watchedFolder": "Obserwowany folder {{name}}",
+      "original": "Oryginał",
+      "output": "Wynik",
+      "missing": "Ten plik został przeniesiony lub usunięty.",
+      "notSaved": "Ten wynik nie został zapisany.",
+      "fileCount": "Pliki: {{count}}",
+      "showFiles": "Pokaż pliki z {{name}}",
+      "hideFiles": "Ukryj pliki z {{name}}",
+      "stats": {
+        "saved": "Zaoszczędzone miejsce",
+        "files": "Skompresowane pliki",
+        "original": "Rozmiar oryginalny",
+        "output": "Rozmiar po kompresji",
+        "reduction": "Średnie zmniejszenie"
+      }
     }
   },
   "common": {

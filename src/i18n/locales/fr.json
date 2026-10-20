@@ -240,7 +240,8 @@
       "dropZone": "Zone de dépôt",
       "about": "À propos",
       "credits": "Remerciements",
-      "watchedFolders": "Dossiers surveillés"
+      "watchedFolders": "Surveillance de dossiers",
+      "history": "Historique"
     },
     "about": {
       "updateAvailable": "Mise à jour disponible",
@@ -287,6 +288,31 @@
     "watchedFolders": {
       "folders": "Dossiers",
       "openFailed": "Le dossier n’a pas pu être ouvert. Il a peut-être été déplacé ou supprimé."
+    },
+    "history": {
+      "clear": "Effacer l’historique",
+      "clearConfirm": "Effacer toutes les entrées",
+      "clearFailed": "L’historique n’a pas pu être effacé.",
+      "search": "Rechercher par nom, dossier ou préréglage",
+      "empty": "Les médias compressés apparaîtront ici.",
+      "noResults": "Aucune compression ne correspond à la recherche.",
+      "source_main": "Fenêtre principale",
+      "source_dropZone": "Zone de dépôt",
+      "source_watchedFolder": "Dossier surveillé {{name}}",
+      "original": "Original",
+      "output": "Résultat",
+      "missing": "Ce fichier a été déplacé ou supprimé.",
+      "notSaved": "Ce résultat n’a pas été enregistré.",
+      "fileCount": "Fichiers : {{count}}",
+      "showFiles": "Afficher les fichiers de {{name}}",
+      "hideFiles": "Masquer les fichiers de {{name}}",
+      "stats": {
+        "saved": "Espace gagné",
+        "files": "Fichiers compressés",
+        "original": "Taille d’origine",
+        "output": "Taille compressée",
+        "reduction": "Réduction moyenne"
+      }
     }
   },
   "common": {

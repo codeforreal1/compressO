@@ -240,7 +240,8 @@
       "dropZone": "Drop Zone",
       "about": "About",
       "credits": "Credits",
-      "watchedFolders": "Watched Folders"
+      "watchedFolders": "Watch Folder",
+      "history": "History"
     },
     "about": {
       "updateAvailable": "Update available",
@@ -287,6 +288,31 @@
     "watchedFolders": {
       "folders": "Folders",
       "openFailed": "The folder could not be opened. It may have been moved or deleted."
+    },
+    "history": {
+      "clear": "Clear history",
+      "clearConfirm": "Clear all entries",
+      "clearFailed": "The history could not be cleared.",
+      "search": "Search by name, folder or preset",
+      "empty": "Compressed media will be listed here.",
+      "noResults": "No compressions match your search.",
+      "source_main": "Main window",
+      "source_dropZone": "Drop zone",
+      "source_watchedFolder": "Watched folder {{name}}",
+      "original": "Original",
+      "output": "Output",
+      "missing": "This file was moved or deleted.",
+      "notSaved": "This output was not saved.",
+      "fileCount": "Files: {{count}}",
+      "showFiles": "Show the files of {{name}}",
+      "hideFiles": "Hide the files of {{name}}",
+      "stats": {
+        "saved": "Space saved",
+        "files": "Files compressed",
+        "original": "Original size",
+        "output": "Compressed size",
+        "reduction": "Average reduction"
+      }
     }
   },
   "common": {

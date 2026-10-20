@@ -157,6 +157,8 @@ export type Video = {
     isSaving?: boolean
     isSaved?: boolean
     savedPath?: string
+    /** Its entry in the history (see `-history.ts`), updated when it is saved */
+    historyId?: string
     /**
      * Compressed to a target size: every output made for it (by size, the one used among them),
      * any of which can be used instead (see `chooseOutputOption`)
@@ -246,6 +248,8 @@ export type Image = {
     isSaving?: boolean
     isSaved?: boolean
     savedPath?: string
+    /** Its entry in the history (see `-history.ts`), updated when it is saved */
+    historyId?: string
   } | null
   compressionProgress?: number
   config: ImageConfig

@@ -240,7 +240,8 @@
       "dropZone": "Zona de arrastre",
       "about": "Acerca de",
       "credits": "Créditos",
-      "watchedFolders": "Carpetas vigiladas"
+      "watchedFolders": "Vigilar carpetas",
+      "history": "Historial"
     },
     "about": {
       "updateAvailable": "Actualización disponible",
@@ -287,6 +288,31 @@
     "watchedFolders": {
       "folders": "Carpetas",
       "openFailed": "No se pudo abrir la carpeta. Puede que se haya movido o eliminado."
+    },
+    "history": {
+      "clear": "Borrar historial",
+      "clearConfirm": "Borrar todas las entradas",
+      "clearFailed": "No se pudo borrar el historial.",
+      "search": "Buscar por nombre, carpeta o ajuste preestablecido",
+      "empty": "Los archivos comprimidos aparecerán aquí.",
+      "noResults": "Ninguna compresión coincide con la búsqueda.",
+      "source_main": "Ventana principal",
+      "source_dropZone": "Zona de soltar",
+      "source_watchedFolder": "Carpeta vigilada {{name}}",
+      "original": "Original",
+      "output": "Resultado",
+      "missing": "Este archivo se movió o eliminó.",
+      "notSaved": "Este resultado no se guardó.",
+      "fileCount": "Archivos: {{count}}",
+      "showFiles": "Mostrar los archivos de {{name}}",
+      "hideFiles": "Ocultar los archivos de {{name}}",
+      "stats": {
+        "saved": "Espacio ahorrado",
+        "files": "Archivos comprimidos",
+        "original": "Tamaño original",
+        "output": "Tamaño comprimido",
+        "reduction": "Reducción media"
+      }
     }
   },
   "common": {

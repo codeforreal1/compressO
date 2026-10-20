@@ -31,6 +31,7 @@ import {
   type MediaFile,
   waitForDropZone,
 } from '../-compression'
+import { recordMainWindowHistory } from '../-history'
 import {
   autoCopyCompressedMediaToClipboard,
   autoSaveCompressedMedia,
@@ -304,6 +305,8 @@ function StartCompression() {
 
       // Saves right away when a save location is set in Settings (Output -> Save location)
       await autoSaveCompressedMedia()
+      // Once saved automatically, so the saved outputs are recorded where they were saved
+      recordMainWindowHistory(batchId)
       await autoCopyCompressedMediaToClipboard()
     } catch (error) {
       if (error !== 'CANCELLED') {

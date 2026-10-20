@@ -5,6 +5,14 @@
       "name": "website",
       "url": "http://localhost:4322",
       "port": 4322
+    },
+    {
+      "name": "app-web",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "vite:dev"
+      ],
+      "port": 3001
     }
   ]
 }

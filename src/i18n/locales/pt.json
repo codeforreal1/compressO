@@ -240,7 +240,8 @@
       "dropZone": "Área de soltar",
       "about": "Sobre",
       "credits": "Créditos",
-      "watchedFolders": "Pastas monitoradas"
+      "watchedFolders": "Monitorar pastas",
+      "history": "Histórico"
     },
     "about": {
       "updateAvailable": "Atualização disponível",
@@ -287,6 +288,31 @@
     "watchedFolders": {
       "folders": "Pastas",
       "openFailed": "Não foi possível abrir a pasta. Ela pode ter sido movida ou excluída."
+    },
+    "history": {
+      "clear": "Limpar histórico",
+      "clearConfirm": "Limpar todas as entradas",
+      "clearFailed": "Não foi possível limpar o histórico.",
+      "search": "Pesquisar por nome, pasta ou predefinição",
+      "empty": "As mídias comprimidas serão listadas aqui.",
+      "noResults": "Nenhuma compressão corresponde à pesquisa.",
+      "source_main": "Janela principal",
+      "source_dropZone": "Zona de soltar",
+      "source_watchedFolder": "Pasta monitorada {{name}}",
+      "original": "Original",
+      "output": "Resultado",
+      "missing": "Este arquivo foi movido ou excluído.",
+      "notSaved": "Este resultado não foi salvo.",
+      "fileCount": "Arquivos: {{count}}",
+      "showFiles": "Mostrar os arquivos de {{name}}",
+      "hideFiles": "Ocultar os arquivos de {{name}}",
+      "stats": {
+        "saved": "Espaço economizado",
+        "files": "Arquivos comprimidos",
+        "original": "Tamanho original",
+        "output": "Tamanho comprimido",
+        "reduction": "Redução média"
+      }
     }
   },
   "common": {

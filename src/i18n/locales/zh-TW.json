@@ -240,7 +240,8 @@
       "dropZone": "拖放區",
       "about": "關於",
       "credits": "致謝",
-      "watchedFolders": "監看的資料夾"
+      "watchedFolders": "監看資料夾",
+      "history": "歷史記錄"
     },
     "about": {
       "updateAvailable": "有可用的更新",
@@ -287,6 +288,31 @@
     "watchedFolders": {
       "folders": "資料夾",
       "openFailed": "無法開啟該資料夾。它可能已被移動或刪除。"
+    },
+    "history": {
+      "clear": "清除歷史記錄",
+      "clearConfirm": "清除所有記錄",
+      "clearFailed": "無法清除歷史記錄。",
+      "search": "依名稱、資料夾或預設搜尋",
+      "empty": "壓縮過的媒體將列在這裡。",
+      "noResults": "沒有與搜尋相符的壓縮記錄。",
+      "source_main": "主視窗",
+      "source_dropZone": "投放區",
+      "source_watchedFolder": "監看的資料夾 {{name}}",
+      "original": "原始檔案",
+      "output": "輸出檔案",
+      "missing": "此檔案已被移動或刪除。",
+      "notSaved": "此輸出未儲存。",
+      "fileCount": "檔案：{{count}}",
+      "showFiles": "顯示 {{name}} 中的檔案",
+      "hideFiles": "隱藏 {{name}} 中的檔案",
+      "stats": {
+        "saved": "節省的空間",
+        "files": "已壓縮的檔案",
+        "original": "原始大小",
+        "output": "壓縮後大小",
+        "reduction": "平均縮減"
+      }
     }
   },
   "common": {

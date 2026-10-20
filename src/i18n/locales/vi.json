@@ -240,7 +240,8 @@
       "dropZone": "Vùng thả",
       "about": "Giới thiệu",
       "credits": "Ghi công",
-      "watchedFolders": "Thư mục theo dõi"
+      "watchedFolders": "Theo dõi thư mục",
+      "history": "Lịch sử"
     },
     "about": {
       "updateAvailable": "Có bản cập nhật",
@@ -287,6 +288,31 @@
     "watchedFolders": {
       "folders": "Thư mục",
       "openFailed": "Không thể mở thư mục. Có thể thư mục đã bị di chuyển hoặc xóa."
+    },
+    "history": {
+      "clear": "Xóa lịch sử",
+      "clearConfirm": "Xóa tất cả mục",
+      "clearFailed": "Không thể xóa lịch sử.",
+      "search": "Tìm theo tên, thư mục hoặc cài đặt sẵn",
+      "empty": "Phương tiện đã nén sẽ được liệt kê ở đây.",
+      "noResults": "Không có lần nén nào khớp với tìm kiếm.",
+      "source_main": "Cửa sổ chính",
+      "source_dropZone": "Vùng thả",
+      "source_watchedFolder": "Thư mục theo dõi {{name}}",
+      "original": "Gốc",
+      "output": "Đầu ra",
+      "missing": "Tệp này đã bị di chuyển hoặc xóa.",
+      "notSaved": "Đầu ra này chưa được lưu.",
+      "fileCount": "Tệp: {{count}}",
+      "showFiles": "Hiện các tệp của {{name}}",
+      "hideFiles": "Ẩn các tệp của {{name}}",
+      "stats": {
+        "saved": "Dung lượng tiết kiệm",
+        "files": "Tệp đã nén",
+        "original": "Kích thước gốc",
+        "output": "Kích thước sau nén",
+        "reduction": "Mức giảm trung bình"
+      }
     }
   },
   "common": {

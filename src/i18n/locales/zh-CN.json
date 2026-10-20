@@ -240,7 +240,8 @@
       "dropZone": "拖放区",
       "about": "关于",
       "credits": "致谢",
-      "watchedFolders": "监视的文件夹"
+      "watchedFolders": "监视文件夹",
+      "history": "历史记录"
     },
     "about": {
       "updateAvailable": "有可用更新",
@@ -287,6 +288,31 @@
     "watchedFolders": {
       "folders": "文件夹",
       "openFailed": "无法打开该文件夹。它可能已被移动或删除。"
+    },
+    "history": {
+      "clear": "清除历史记录",
+      "clearConfirm": "清除所有记录",
+      "clearFailed": "无法清除历史记录。",
+      "search": "按名称、文件夹或预设搜索",
+      "empty": "压缩过的媒体将列在这里。",
+      "noResults": "没有与搜索匹配的压缩记录。",
+      "source_main": "主窗口",
+      "source_dropZone": "投放区",
+      "source_watchedFolder": "监视的文件夹 {{name}}",
+      "original": "原始文件",
+      "output": "输出文件",
+      "missing": "此文件已被移动或删除。",
+      "notSaved": "此输出未保存。",
+      "fileCount": "文件：{{count}}",
+      "showFiles": "显示 {{name}} 中的文件",
+      "hideFiles": "隐藏 {{name}} 中的文件",
+      "stats": {
+        "saved": "节省的空间",
+        "files": "已压缩的文件",
+        "original": "原始大小",
+        "output": "压缩后大小",
+        "reduction": "平均缩减"
+      }
     }
   },
   "common": {

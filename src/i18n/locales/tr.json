@@ -240,7 +240,8 @@
       "dropZone": "Bırakma Alanı",
       "about": "Hakkında",
       "credits": "Teşekkürler",
-      "watchedFolders": "İzlenen klasörler"
+      "watchedFolders": "Klasör izleme",
+      "history": "Geçmiş"
     },
     "about": {
       "updateAvailable": "Güncelleme mevcut",
@@ -287,6 +288,31 @@
     "watchedFolders": {
       "folders": "Klasörler",
       "openFailed": "Klasör açılamadı. Taşınmış veya silinmiş olabilir."
+    },
+    "history": {
+      "clear": "Geçmişi temizle",
+      "clearConfirm": "Tüm kayıtları temizle",
+      "clearFailed": "Geçmiş temizlenemedi.",
+      "search": "Ada, klasöre veya ön ayara göre ara",
+      "empty": "Sıkıştırılan medya burada listelenecek.",
+      "noResults": "Aramayla eşleşen sıkıştırma yok.",
+      "source_main": "Ana pencere",
+      "source_dropZone": "Bırakma alanı",
+      "source_watchedFolder": "İzlenen klasör {{name}}",
+      "original": "Orijinal",
+      "output": "Çıktı",
+      "missing": "Bu dosya taşındı veya silindi.",
+      "notSaved": "Bu çıktı kaydedilmedi.",
+      "fileCount": "Dosyalar: {{count}}",
+      "showFiles": "{{name}} dosyalarını göster",
+      "hideFiles": "{{name}} dosyalarını gizle",
+      "stats": {
+        "saved": "Kazanılan alan",
+        "files": "Sıkıştırılan dosyalar",
+        "original": "Orijinal boyut",
+        "output": "Sıkıştırılmış boyut",
+        "reduction": "Ortalama küçülme"
+      }
     }
   },
   "common": {

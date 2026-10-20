@@ -240,7 +240,8 @@
       "dropZone": "Zona di rilascio",
       "about": "Informazioni",
       "credits": "Riconoscimenti",
-      "watchedFolders": "Cartelle monitorate"
+      "watchedFolders": "Monitoraggio cartelle",
+      "history": "Cronologia"
     },
     "about": {
       "updateAvailable": "Aggiornamento disponibile",
@@ -287,6 +288,31 @@
     "watchedFolders": {
       "folders": "Cartelle",
       "openFailed": "Impossibile aprire la cartella. Potrebbe essere stata spostata o eliminata."
+    },
+    "history": {
+      "clear": "Cancella cronologia",
+      "clearConfirm": "Cancella tutte le voci",
+      "clearFailed": "Impossibile cancellare la cronologia.",
+      "search": "Cerca per nome, cartella o preimpostazione",
+      "empty": "I file compressi verranno elencati qui.",
+      "noResults": "Nessuna compressione corrisponde alla ricerca.",
+      "source_main": "Finestra principale",
+      "source_dropZone": "Zona di rilascio",
+      "source_watchedFolder": "Cartella monitorata {{name}}",
+      "original": "Originale",
+      "output": "Risultato",
+      "missing": "Questo file è stato spostato o eliminato.",
+      "notSaved": "Questo risultato non è stato salvato.",
+      "fileCount": "File: {{count}}",
+      "showFiles": "Mostra i file di {{name}}",
+      "hideFiles": "Nascondi i file di {{name}}",
+      "stats": {
+        "saved": "Spazio risparmiato",
+        "files": "File compressi",
+        "original": "Dimensione originale",
+        "output": "Dimensione compressa",
+        "reduction": "Riduzione media"
+      }
     }
   },
   "common": {

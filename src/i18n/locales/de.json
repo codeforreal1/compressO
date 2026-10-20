@@ -240,7 +240,8 @@
       "dropZone": "Ablagezone",
       "about": "Über",
       "credits": "Danksagungen",
-      "watchedFolders": "Überwachte Ordner"
+      "watchedFolders": "Ordnerüberwachung",
+      "history": "Verlauf"
     },
     "about": {
       "updateAvailable": "Update verfügbar",
@@ -287,6 +288,31 @@
     "watchedFolders": {
       "folders": "Ordner",
       "openFailed": "Der Ordner konnte nicht geöffnet werden. Er wurde möglicherweise verschoben oder gelöscht."
+    },
+    "history": {
+      "clear": "Verlauf löschen",
+      "clearConfirm": "Alle Einträge löschen",
+      "clearFailed": "Der Verlauf konnte nicht gelöscht werden.",
+      "search": "Nach Name, Ordner oder Voreinstellung suchen",
+      "empty": "Komprimierte Medien werden hier aufgeführt.",
+      "noResults": "Keine Komprimierung entspricht der Suche.",
+      "source_main": "Hauptfenster",
+      "source_dropZone": "Ablagezone",
+      "source_watchedFolder": "Überwachter Ordner {{name}}",
+      "original": "Original",
+      "output": "Ausgabe",
+      "missing": "Diese Datei wurde verschoben oder gelöscht.",
+      "notSaved": "Diese Ausgabe wurde nicht gespeichert.",
+      "fileCount": "Dateien: {{count}}",
+      "showFiles": "Dateien von {{name}} anzeigen",
+      "hideFiles": "Dateien von {{name}} ausblenden",
+      "stats": {
+        "saved": "Gesparter Speicherplatz",
+        "files": "Komprimierte Dateien",
+        "original": "Originalgröße",
+        "output": "Komprimierte Größe",
+        "reduction": "Durchschnittliche Verkleinerung"
+      }
     }
   },
   "common": {

@@ -19,6 +19,7 @@ import About from './About'
 import Credits from './Credits'
 import DropZone from './DropZone'
 import General from './General'
+import History from './History'
 import Output from './Output'
 import Presets from './Presets'
 import WatchedFolders from './WatchedFolders'
@@ -28,6 +29,8 @@ type SettingsPage = {
   // TODO: replace with dedicated icons
   icon: IconProps['name']
   Component: React.ComponentType
+  /** Fills the page's height instead of scrolling as a whole (e.g. a table that scrolls itself) */
+  fillsHeight?: boolean
 }
 
 const { isMacOS } = getPlatform()
@@ -70,6 +73,12 @@ const SETTINGS_GROUPS: {
         id: 'watchedFolders',
         icon: 'watchedFolder',
         Component: WatchedFolders,
+      },
+      {
+        id: 'history',
+        icon: 'clock',
+        Component: History,
+        fillsHeight: true,
       },
     ],
   },
@@ -247,9 +256,15 @@ function SettingsDialog({ onClose, hasNewVersion }: SettingsDialogProps) {
         </ScrollShadow>
       </aside>
 
-      <ScrollShadow className="flex-1 px-10 py-12" hideScrollBar>
-        <selectedPage.Component />
-      </ScrollShadow>
+      {selectedPage.fillsHeight ? (
+        <div className="flex min-h-0 flex-1 flex-col px-10 py-12">
+          <selectedPage.Component />
+        </div>
+      ) : (
+        <ScrollShadow className="flex-1 px-10 py-12" hideScrollBar>
+          <selectedPage.Component />
+        </ScrollShadow>
+      )}
     </div>
   )
 }
