@@ -105,12 +105,12 @@
       "moveDown": "Bajar",
       "duplicate": "Duplicar",
       "delete": "Eliminar ajuste preestablecido",
-      "title_video": "Ajustes preestablecidos de vídeo",
-      "title_image": "Ajustes preestablecidos de imagen",
-      "title_audio": "Ajustes preestablecidos de audio",
       "empty_video": "Aún no hay ajustes preestablecidos de vídeo. Ajuste la configuración de un vídeo y seleccione el botón más junto al menú Ajuste preestablecido para guardarla como ajuste preestablecido.",
       "empty_image": "Aún no hay ajustes preestablecidos de imagen. Ajuste la configuración de una imagen y seleccione el botón más junto al menú Ajuste preestablecido para guardarla como ajuste preestablecido.",
-      "empty_audio": "Aún no hay ajustes preestablecidos de audio. Ajuste la configuración de un archivo de audio y seleccione el botón más junto al menú Ajuste preestablecido para guardarla como ajuste preestablecido."
+      "empty_audio": "Aún no hay ajustes preestablecidos de audio. Ajuste la configuración de un archivo de audio y seleccione el botón más junto al menú Ajuste preestablecido para guardarla como ajuste preestablecido.",
+      "mediaType": "Tipo de archivo",
+      "standardOutput": "Su ubicación de guardado y su prefijo de nombre de archivo se configuran en Salida.",
+      "cannotDeleteStandard": "El ajuste preestablecido Estándar no se puede eliminar."
     },
     "dropZone": {
       "needsTrayIcon_macos": "La zona de arrastre está en la barra de menús, por lo que solo funciona cuando «Mostrar icono en la barra de menús» está activado en General.",
@@ -122,7 +122,7 @@
         "autoCompress": {
           "title": "Comprimir automáticamente",
           "description": "Comprime los archivos en cuanto se añaden a la zona de soltar, uno a uno, y los guarda en la ubicación de su ajuste preestablecido.",
-          "needsSaveLocation": "En Ajustes preestablecidos, elija para un ajuste de la zona de soltar una ubicación distinta de Preguntar cada vez, para que los archivos comprimidos se guarden sin preguntar."
+          "needsSaveLocation": "Elija una ubicación distinta de Preguntar cada vez, en Salida o en un ajuste preestablecido de la zona de soltar, para que los archivos comprimidos se guarden sin preguntar."
         }
       },
       "preset": {
@@ -140,6 +140,21 @@
           "description_macos": "Añadir los archivos multimedia que copie, como archivos o imágenes de un navegador, a la zona de arrastre de la barra de menús.",
           "description_windows": "Añadir los archivos multimedia que copie, como archivos o imágenes de un navegador, a la zona de arrastre de la bandeja del sistema."
         }
+      },
+      "watchedFolders": {
+        "add": {
+          "title": "Vigilar una carpeta",
+          "description": "Los archivos nuevos añadidos a estas carpetas, como grabaciones de pantalla o descargas, se comprimen automáticamente.",
+          "button": "Añadir carpeta",
+          "dialogTitle": "Elija una carpeta para vigilar.",
+          "alreadyWatched": "Esta carpeta ya está vigilada.",
+          "description_linux": "Los archivos nuevos añadidos a estas carpetas, como grabaciones de pantalla o descargas, se comprimen automáticamente mientras CompressO está abierto."
+        },
+        "watch": "Vigilar {{name}}",
+        "remove": "Dejar de vigilar",
+        "preset_video": "Vídeos",
+        "preset_image": "Imágenes",
+        "preset_audio": "Audio"
       }
     },
     "output": {
@@ -148,12 +163,17 @@
         "location": {
           "option_ask": "Preguntar cada vez",
           "option_fixedFolder": "Carpeta fija",
-          "option_sameFolder": "Misma carpeta que el original"
+          "option_sameFolder": "Misma carpeta que el original",
+          "title": "Ubicación de guardado",
+          "description_ask": "Elegir dónde guardar después de cada compresión.",
+          "description_fixedFolder": "Guardar automáticamente en la carpeta elegida después de cada compresión.",
+          "description_sameFolder": "Guardar automáticamente junto al archivo original, en la misma carpeta."
         },
         "folder": {
           "none": "No se ha elegido ninguna carpeta",
           "change": "Cambiar",
-          "dialogTitle": "Elija una carpeta en la que guardar los archivos comprimidos."
+          "dialogTitle": "Elija una carpeta en la que guardar los archivos comprimidos.",
+          "title": "Carpeta"
         },
         "preserveFolders": {
           "title": "Conservar la estructura de carpetas",
@@ -165,8 +185,10 @@
         },
         "prefix": {
           "title": "Prefijo del nombre de archivo",
-          "placeholder": "Sin prefijo"
-        }
+          "placeholder": "Sin prefijo",
+          "description": "Texto añadido al principio de los nombres de los archivos guardados. Déjelo vacío para conservar los nombres originales."
+        },
+        "appliesTo": "Se aplican solo al ajuste preestablecido Estándar."
       },
       "clipboard": {
         "title": "Portapapeles",
@@ -201,6 +223,9 @@
           "cleared": "Se ha borrado toda la caché.",
           "failed": "Se ha producido un problema al borrar la caché."
         }
+      },
+      "savedFiles": {
+        "title": "Archivos guardados"
       }
     },
     "open": "Abrir Ajustes",
@@ -214,7 +239,8 @@
       "presets": "Ajustes preestablecidos",
       "dropZone": "Zona de arrastre",
       "about": "Acerca de",
-      "credits": "Créditos"
+      "credits": "Créditos",
+      "watchedFolders": "Carpetas vigiladas"
     },
     "about": {
       "updateAvailable": "Actualización disponible",
@@ -257,6 +283,10 @@
         "description": "Avisos y licencias completos de terceros.",
         "view": "Ver"
       }
+    },
+    "watchedFolders": {
+      "folders": "Carpetas",
+      "openFailed": "No se pudo abrir la carpeta. Puede que se haya movido o eliminado."
     }
   },
   "common": {
@@ -346,7 +376,7 @@
     "remove": "Quitar {{name}}",
     "storedBusy": "Guardados. Abra la app para comprimirlos después de los archivos actuales.",
     "storedIdle": "Arrastre más archivos o abra la app para iniciar la compresión.",
-    "needsSaveLocation": "En Ajustes, en Ajustes preestablecidos, elija una ubicación de guardado para un ajuste de la zona de soltar, para que los archivos comprimidos se guarden sin preguntar."
+    "needsSaveLocation": "Elija una ubicación de guardado en Ajustes, en Salida o en un ajuste preestablecido de la zona de soltar, para que los archivos comprimidos se guarden sin preguntar."
   },
   "queue": {
     "notSavedLarger": "No se ha guardado, ya que es más grande que el original.",
@@ -395,7 +425,10 @@
     "filesCompressed_one": "{{count}} archivo comprimido",
     "filesCompressed_many": "{{count}} archivos comprimidos",
     "filesCompressed_other": "{{count}} archivos comprimidos",
-    "accessDenied": "No se permite abrir este archivo. Permita el acceso en los ajustes del sistema."
+    "accessDenied": "No se permite abrir este archivo. Permita el acceso en los ajustes del sistema.",
+    "fromWatchedFolder": "De la carpeta vigilada {{name}}",
+    "compressAgain": "Comprimir de nuevo",
+    "compressNameAgain": "Comprimir {{name}} de nuevo"
   },
   "subtitles": {
     "unknownLanguage": "Desconocido",

@@ -110,7 +110,7 @@ fn update_dropped_files(app_handle: &AppHandle, update: impl FnOnce(&mut Vec<Str
 
 /// Whether a dropped path can be added: a folder (its media is picked when opened) or a file with a
 /// supported extension
-fn is_supported_drop(app_handle: &AppHandle, path: &str) -> bool {
+pub fn is_supported_drop(app_handle: &AppHandle, path: &str) -> bool {
     let path = std::path::Path::new(path);
     if path.is_dir() {
         return true;

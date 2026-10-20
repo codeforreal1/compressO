@@ -105,12 +105,12 @@
       "moveDown": "Di chuyển xuống",
       "duplicate": "Nhân bản",
       "delete": "Xóa cài đặt sẵn",
-      "title_video": "Cài đặt sẵn cho video",
-      "title_image": "Cài đặt sẵn cho hình ảnh",
-      "title_audio": "Cài đặt sẵn cho âm thanh",
       "empty_video": "Chưa có cài đặt sẵn cho video. Hãy điều chỉnh cài đặt của một video và chọn nút dấu cộng bên cạnh menu Cài đặt sẵn để lưu thành cài đặt sẵn.",
       "empty_image": "Chưa có cài đặt sẵn cho hình ảnh. Hãy điều chỉnh cài đặt của một hình ảnh và chọn nút dấu cộng bên cạnh menu Cài đặt sẵn để lưu thành cài đặt sẵn.",
-      "empty_audio": "Chưa có cài đặt sẵn cho âm thanh. Hãy điều chỉnh cài đặt của một tệp âm thanh và chọn nút dấu cộng bên cạnh menu Cài đặt sẵn để lưu thành cài đặt sẵn."
+      "empty_audio": "Chưa có cài đặt sẵn cho âm thanh. Hãy điều chỉnh cài đặt của một tệp âm thanh và chọn nút dấu cộng bên cạnh menu Cài đặt sẵn để lưu thành cài đặt sẵn.",
+      "mediaType": "Loại phương tiện",
+      "standardOutput": "Vị trí lưu và tiền tố tên tệp của nó được đặt trong Đầu ra.",
+      "cannotDeleteStandard": "Không thể xóa cài đặt sẵn Tiêu chuẩn."
     },
     "dropZone": {
       "needsTrayIcon_macos": "Vùng thả nằm trên thanh menu, nên chỉ hoạt động khi “Hiển thị biểu tượng trên thanh menu” được bật trong Chung.",
@@ -122,7 +122,7 @@
         "autoCompress": {
           "title": "Tự động nén",
           "description": "Nén phương tiện ngay khi được thêm vào vùng thả, lần lượt từng tệp, và lưu vào vị trí lưu của cài đặt sẵn tương ứng.",
-          "needsSaveLocation": "Trong Cài đặt sẵn, hãy chọn cho một cài đặt sẵn của vùng thả vị trí lưu khác Hỏi mỗi lần, để phương tiện đã nén được lưu mà không cần hỏi."
+          "needsSaveLocation": "Hãy chọn vị trí lưu khác Hỏi mỗi lần, trong Đầu ra hoặc trong một cài đặt sẵn của vùng thả, để phương tiện đã nén được lưu mà không cần hỏi."
         }
       },
       "preset": {
@@ -140,6 +140,21 @@
           "description_macos": "Thêm tệp phương tiện bạn sao chép, chẳng hạn tệp hoặc hình ảnh từ trình duyệt, vào vùng thả trên thanh menu.",
           "description_windows": "Thêm tệp phương tiện bạn sao chép, chẳng hạn tệp hoặc hình ảnh từ trình duyệt, vào vùng thả trong khay hệ thống."
         }
+      },
+      "watchedFolders": {
+        "add": {
+          "title": "Theo dõi thư mục",
+          "description": "Phương tiện mới được thêm vào các thư mục này, như bản ghi màn hình hoặc tệp tải xuống, sẽ được nén tự động.",
+          "button": "Thêm thư mục",
+          "dialogTitle": "Chọn thư mục để theo dõi.",
+          "alreadyWatched": "Thư mục này đã được theo dõi.",
+          "description_linux": "Phương tiện mới được thêm vào các thư mục này, như bản ghi màn hình hoặc tệp tải xuống, sẽ được nén tự động khi CompressO đang mở."
+        },
+        "watch": "Theo dõi {{name}}",
+        "remove": "Ngừng theo dõi",
+        "preset_video": "Video",
+        "preset_image": "Hình ảnh",
+        "preset_audio": "Âm thanh"
       }
     },
     "output": {
@@ -148,12 +163,17 @@
         "location": {
           "option_ask": "Hỏi mỗi lần",
           "option_fixedFolder": "Thư mục cố định",
-          "option_sameFolder": "Cùng thư mục với tệp gốc"
+          "option_sameFolder": "Cùng thư mục với tệp gốc",
+          "title": "Vị trí lưu",
+          "description_ask": "Chọn nơi lưu sau mỗi lần nén.",
+          "description_fixedFolder": "Tự động lưu vào thư mục đã chọn sau mỗi lần nén.",
+          "description_sameFolder": "Tự động lưu bên cạnh tệp gốc, trong cùng thư mục."
         },
         "folder": {
           "none": "Chưa chọn thư mục",
           "change": "Thay đổi",
-          "dialogTitle": "Chọn thư mục để lưu tệp phương tiện đã nén."
+          "dialogTitle": "Chọn thư mục để lưu tệp phương tiện đã nén.",
+          "title": "Thư mục"
         },
         "preserveFolders": {
           "title": "Giữ nguyên cấu trúc thư mục",
@@ -165,8 +185,10 @@
         },
         "prefix": {
           "title": "Tiền tố tên tệp",
-          "placeholder": "Không có tiền tố"
-        }
+          "placeholder": "Không có tiền tố",
+          "description": "Văn bản thêm vào đầu tên tệp được lưu. Để trống để giữ tên gốc."
+        },
+        "appliesTo": "Chỉ áp dụng cho cài đặt sẵn Tiêu chuẩn."
       },
       "clipboard": {
         "title": "Bảng nhớ tạm",
@@ -201,6 +223,9 @@
           "cleared": "Đã xóa toàn bộ bộ nhớ đệm.",
           "failed": "Đã xảy ra sự cố khi xóa bộ nhớ đệm."
         }
+      },
+      "savedFiles": {
+        "title": "Tệp đã lưu"
       }
     },
     "open": "Mở Cài đặt",
@@ -214,7 +239,8 @@
       "presets": "Cài đặt sẵn",
       "dropZone": "Vùng thả",
       "about": "Giới thiệu",
-      "credits": "Ghi công"
+      "credits": "Ghi công",
+      "watchedFolders": "Thư mục theo dõi"
     },
     "about": {
       "updateAvailable": "Có bản cập nhật",
@@ -257,6 +283,10 @@
         "description": "Toàn bộ thông báo và giấy phép của bên thứ ba.",
         "view": "Xem"
       }
+    },
+    "watchedFolders": {
+      "folders": "Thư mục",
+      "openFailed": "Không thể mở thư mục. Có thể thư mục đã bị di chuyển hoặc xóa."
     }
   },
   "common": {
@@ -344,7 +374,7 @@
     "remove": "Xóa {{name}}",
     "storedBusy": "Đã lưu tạm. Mở ứng dụng để nén các tệp này sau tệp phương tiện hiện tại.",
     "storedIdle": "Thả thêm tệp phương tiện hoặc mở ứng dụng để bắt đầu nén.",
-    "needsSaveLocation": "Trong Cài đặt, ở mục Cài đặt sẵn, hãy chọn vị trí lưu cho một cài đặt sẵn của vùng thả, để phương tiện đã nén được lưu mà không cần hỏi."
+    "needsSaveLocation": "Hãy chọn vị trí lưu trong Cài đặt, ở Đầu ra hoặc trong một cài đặt sẵn của vùng thả, để phương tiện đã nén được lưu mà không cần hỏi."
   },
   "queue": {
     "notSavedLarger": "Không được lưu vì lớn hơn tệp gốc.",
@@ -383,7 +413,10 @@
     "collapse": "Thu gọn",
     "showDropZone": "Hiển thị vùng thả",
     "filesCompressed_other": "Đã nén {{count}} tệp",
-    "accessDenied": "Không được phép mở tệp này. Hãy cho phép truy cập trong cài đặt hệ thống."
+    "accessDenied": "Không được phép mở tệp này. Hãy cho phép truy cập trong cài đặt hệ thống.",
+    "fromWatchedFolder": "Từ thư mục theo dõi {{name}}",
+    "compressAgain": "Nén lại",
+    "compressNameAgain": "Nén lại {{name}}"
   },
   "subtitles": {
     "unknownLanguage": "Không xác định",

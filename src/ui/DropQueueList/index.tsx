@@ -87,12 +87,25 @@ function QueueItem({
       )}
     >
       <div className="flex-1 min-w-0">
-        <p
-          className={cn('truncate', isCompact ? 'text-xs' : 'text-sm')}
-          title={item.path}
-        >
-          {name}
-        </p>
+        <div className="flex min-w-0 items-center gap-1.5">
+          <p
+            className={cn('truncate', isCompact ? 'text-xs' : 'text-sm')}
+            title={item.path}
+          >
+            {name}
+          </p>
+          {/* From a watched folder (compressed after the media dropped), with its name */}
+          {item.watchFolderName ? (
+            <span
+              className="shrink-0 max-w-[45%] truncate rounded px-1 text-[9px] leading-4 text-zinc-600 bg-zinc-500/15 dark:text-zinc-300 dark:bg-white/10"
+              title={t('queue.fromWatchedFolder', {
+                name: item.watchFolderName,
+              })}
+            >
+              {item.watchFolderName}
+            </span>
+          ) : null}
+        </div>
         {item.status === 'compressing' ? (
           <Progress
             aria-label={t('queue.compressingName', { name })}
@@ -174,14 +187,33 @@ function QueueItem({
           </Button>
         </Tooltip>
       ) : null}
-      {item.status === 'failed' || item.status === 'cancelled' ? (
-        <Tooltip content={t('queue.tryAgain')} aria-label={t('queue.tryAgain')}>
+      {/* Failed or stopped: tried again; done: compressed again from the original (e.g. after
+          changing its preset), keeping the output saved before */}
+      {item.status === 'failed' ||
+      item.status === 'cancelled' ||
+      item.status === 'done' ? (
+        <Tooltip
+          content={
+            item.status === 'done'
+              ? t('queue.compressAgain')
+              : t('queue.tryAgain')
+          }
+          aria-label={
+            item.status === 'done'
+              ? t('queue.compressAgain')
+              : t('queue.tryAgain')
+          }
+        >
           <Button
             isIconOnly
             size="sm"
             variant="light"
             radius="full"
-            aria-label={t('queue.tryNameAgain', { name })}
+            aria-label={
+              item.status === 'done'
+                ? t('queue.compressNameAgain', { name })
+                : t('queue.tryNameAgain', { name })
+            }
             className={cn(
               iconButtonClassName,
               'text-zinc-500 dark:text-zinc-400',

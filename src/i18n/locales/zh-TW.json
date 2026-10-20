@@ -105,12 +105,12 @@
       "moveDown": "下移",
       "duplicate": "複製",
       "delete": "刪除預設",
-      "title_video": "影片預設",
-      "title_image": "影像預設",
-      "title_audio": "音訊預設",
       "empty_video": "尚無影片預設。調整某部影片的設定，然後選擇「預設」選單旁的加號按鈕，即可儲存為預設。",
       "empty_image": "尚無影像預設。調整某張影像的設定，然後選擇「預設」選單旁的加號按鈕，即可儲存為預設。",
-      "empty_audio": "尚無音訊預設。調整某個音訊檔案的設定，然後選擇「預設」選單旁的加號按鈕，即可儲存為預設。"
+      "empty_audio": "尚無音訊預設。調整某個音訊檔案的設定，然後選擇「預設」選單旁的加號按鈕，即可儲存為預設。",
+      "mediaType": "媒體類型",
+      "standardOutput": "其儲存位置和檔名前綴在「輸出」中設定。",
+      "cannotDeleteStandard": "無法刪除標準預設。"
     },
     "dropZone": {
       "needsTrayIcon_macos": "拖放區位於選單列中，因此只有在「一般」中開啟「顯示選單列圖示」後才能使用。",
@@ -122,7 +122,7 @@
         "autoCompress": {
           "title": "自動壓縮",
           "description": "媒體加入投放區後立即逐一壓縮，並儲存到其預設的儲存位置。",
-          "needsSaveLocation": "請在「預設」中為投放區的預設選擇「每次詢問」以外的儲存位置，以便無需詢問即可儲存壓縮後的媒體。"
+          "needsSaveLocation": "請在「輸出」或投放區的預設中選擇「每次詢問」以外的儲存位置，以便無需詢問即可儲存壓縮後的媒體。"
         }
       },
       "preset": {
@@ -140,6 +140,21 @@
           "description_macos": "將您拷貝的媒體（例如檔案或瀏覽器中的影像）加入選單列中的拖放區。",
           "description_windows": "將您複製的媒體（例如檔案或瀏覽器中的影像）加入系統匣中的拖放區。"
         }
+      },
+      "watchedFolders": {
+        "add": {
+          "title": "監看資料夾",
+          "description": "加入這些資料夾的新媒體（例如螢幕錄影或下載內容）會被自動壓縮。",
+          "button": "新增資料夾",
+          "dialogTitle": "選擇要監看的資料夾。",
+          "alreadyWatched": "此資料夾已在監看中。",
+          "description_linux": "在 CompressO 開啟時，加入這些資料夾的新媒體（例如螢幕錄影或下載內容）會被自動壓縮。"
+        },
+        "watch": "監看 {{name}}",
+        "remove": "停止監看",
+        "preset_video": "影片",
+        "preset_image": "圖片",
+        "preset_audio": "音訊"
       }
     },
     "output": {
@@ -148,12 +163,17 @@
         "location": {
           "option_ask": "每次詢問",
           "option_fixedFolder": "固定資料夾",
-          "option_sameFolder": "與原始檔案相同的資料夾"
+          "option_sameFolder": "與原始檔案相同的資料夾",
+          "title": "儲存位置",
+          "description_ask": "每次壓縮後選擇儲存位置。",
+          "description_fixedFolder": "每次壓縮後自動儲存到所選資料夾。",
+          "description_sameFolder": "自動儲存在原始檔案旁邊的同一資料夾中。"
         },
         "folder": {
           "none": "未選擇資料夾",
           "change": "變更",
-          "dialogTitle": "選擇用來儲存壓縮媒體的資料夾。"
+          "dialogTitle": "選擇用來儲存壓縮媒體的資料夾。",
+          "title": "資料夾"
         },
         "preserveFolders": {
           "title": "保留資料夾結構",
@@ -165,8 +185,10 @@
         },
         "prefix": {
           "title": "檔名前綴",
-          "placeholder": "無前綴"
-        }
+          "placeholder": "無前綴",
+          "description": "加在儲存檔名開頭的文字。留空則保留原始檔名。"
+        },
+        "appliesTo": "這些設定僅適用於標準預設。"
       },
       "clipboard": {
         "title": "剪貼簿",
@@ -201,6 +223,9 @@
           "cleared": "已清除所有快取。",
           "failed": "清除快取時發生問題。"
         }
+      },
+      "savedFiles": {
+        "title": "已儲存的檔案"
       }
     },
     "open": "打開設定",
@@ -214,7 +239,8 @@
       "presets": "預設",
       "dropZone": "拖放區",
       "about": "關於",
-      "credits": "致謝"
+      "credits": "致謝",
+      "watchedFolders": "監看的資料夾"
     },
     "about": {
       "updateAvailable": "有可用的更新",
@@ -257,6 +283,10 @@
         "description": "完整的第三方聲明和授權條款。",
         "view": "檢視"
       }
+    },
+    "watchedFolders": {
+      "folders": "資料夾",
+      "openFailed": "無法開啟該資料夾。它可能已被移動或刪除。"
     }
   },
   "common": {
@@ -344,7 +374,7 @@
     "remove": "移除 {{name}}",
     "storedBusy": "已暫存。開啟 App，即可在目前的媒體之後壓縮它們。",
     "storedIdle": "拖入更多媒體，或開啟 App 開始壓縮。",
-    "needsSaveLocation": "請在「設定」的「預設」中為投放區的預設選擇儲存位置，以便無需詢問即可儲存壓縮後的媒體。"
+    "needsSaveLocation": "請在「設定」的「輸出」或投放區的預設中選擇儲存位置，以便無需詢問即可儲存壓縮後的媒體。"
   },
   "queue": {
     "notSavedLarger": "未儲存，因為比原始檔案大。",
@@ -383,7 +413,10 @@
     "collapse": "收合",
     "showDropZone": "顯示拖放區",
     "filesCompressed_other": "已壓縮 {{count}} 個檔案",
-    "accessDenied": "無權開啟此檔案。請在系統設定中允許取用。"
+    "accessDenied": "無權開啟此檔案。請在系統設定中允許取用。",
+    "fromWatchedFolder": "來自監看的資料夾 {{name}}",
+    "compressAgain": "再次壓縮",
+    "compressNameAgain": "再次壓縮 {{name}}"
   },
   "subtitles": {
     "unknownLanguage": "未知",

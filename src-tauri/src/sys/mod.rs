@@ -6,4 +6,6 @@ pub mod keep_awake;
 pub mod linux_clipboard;
 pub mod logging;
 pub mod native_text;
+pub mod output_registry;
 pub mod quit;
+pub mod watch_folders;

@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
 import Button from '@/components/Button'
+import DashedBorder from '@/components/DashedBorder'
 import Icon from '@/components/Icon'
 import InfoTooltip from '@/components/InfoTooltip'
 import ScrollShadow from '@/components/ScrollShadow'
@@ -286,6 +287,8 @@ function TrayWindow() {
           isWindows ? 'px-3 pt-2' : 'px-6 pt-5',
         )}
       >
+        {/* The queue: of the media dropped with "Compress automatically", & of the watched folders
+            (queued whether or not it is on); media dropped without it is listed first */}
         {isAutoCompressing && queueItems.length > 0 ? (
           <DropQueue items={queueItems} isDragging={isDragging} />
         ) : droppedFiles.length > 0 ? (
@@ -294,6 +297,8 @@ function TrayWindow() {
             isDragging={isDragging}
             isMainWindowBusy={isMainWindowBusy}
           />
+        ) : queueItems.length > 0 ? (
+          <DropQueue items={queueItems} isDragging={isDragging} />
         ) : (
           <DropZone
             isDragging={isDragging}
@@ -364,13 +369,12 @@ function DropZone({
   return (
     <div
       className={cn(
-        'w-full flex-1 my-2 flex flex-col items-center justify-center gap-2 border-2 border-dashed transition-colors',
+        'relative w-full flex-1 my-2 flex flex-col items-center justify-center gap-2 transition-colors',
         isWindows ? 'rounded-lg' : 'rounded-2xl',
-        isDragging
-          ? 'border-primary bg-primary/10 text-primary'
-          : [SUBTLE_BORDER, MUTED_TEXT],
+        isDragging ? 'bg-primary/10 text-primary' : MUTED_TEXT,
       )}
     >
+      <DashedBorder radius={isWindows ? 8 : 16} isActive={isDragging} />
       <Icon name="dropzone" size={50} className="text-primary" />
       <p className="text-[13px] text-center px-8 my-[-5px]">
         {isDragging
@@ -409,10 +413,11 @@ function DropQueue({
   return (
     <div
       className={cn(
-        'w-full flex-1 my-2 flex flex-col min-h-0 rounded-2xl border-2 border-dashed transition-colors',
-        isDragging ? 'border-primary bg-primary/10' : SUBTLE_BORDER,
+        'relative w-full flex-1 my-2 flex flex-col min-h-0 rounded-2xl transition-colors',
+        isDragging && 'bg-primary/10',
       )}
     >
+      <DashedBorder radius={16} isActive={isDragging} />
       <DropQueueList items={items} isCompact className="flex-1" />
       <p
         className={cn(
@@ -511,10 +516,11 @@ function DroppedFiles({
   return (
     <div
       className={cn(
-        'w-full flex-1 my-2 flex flex-col min-h-0 rounded-2xl border-2 border-dashed transition-colors',
-        isDragging ? 'border-primary bg-primary/10' : SUBTLE_BORDER,
+        'relative w-full flex-1 my-2 flex flex-col min-h-0 rounded-2xl transition-colors',
+        isDragging && 'bg-primary/10',
       )}
     >
+      <DashedBorder radius={16} isActive={isDragging} />
       <div className="flex items-center justify-between gap-2 pl-3 pr-1.5 pt-2 pb-1">
         <p className="text-xs font-semibold">
           {t('dropZone.itemsReady', { count: files.length })}

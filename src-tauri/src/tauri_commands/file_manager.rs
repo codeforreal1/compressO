@@ -11,6 +11,10 @@ pub struct DbusState(pub Mutex<Option<dbus::blocking::SyncConnection>>);
 pub fn show_item_in_file_manager(path: String, dbus_state: State<DbusState>) -> Result<(), String> {
     use std::time::Duration;
 
+    // A folder is opened (like on macOS), not selected in the folder holding it
+    if std::path::Path::new(&path).is_dir() {
+        return open_containing_folder(&path);
+    }
     let dbus_guard = dbus_state.0.lock().map_err(|e| e.to_string())?;
     // Selects the item in the file manager (FileManager1, which most Linux file managers provide).
     // The path goes as a file URL, encoded (spaces, `#`, `%`...), or the file manager cannot find
@@ -63,10 +67,18 @@ pub fn show_item_in_file_manager(path: String) -> Result<(), String> {
         // Explorer only understands backslashes: with a forward slash (saved paths are joined with
         // `/`), it opens its default folder instead of selecting the file
         let path = path.replace('/', "\\");
-        Command::new("explorer")
-            .args(["/select,", &path])
-            .spawn()
-            .map_err(|e| e.to_string())?;
+        // A folder is opened (like on macOS), a file is selected in its folder
+        if PathBuf::from(&path).is_dir() {
+            Command::new("explorer")
+                .arg(&path)
+                .spawn()
+                .map_err(|e| e.to_string())?;
+        } else {
+            Command::new("explorer")
+                .args(["/select,", &path])
+                .spawn()
+                .map_err(|e| e.to_string())?;
+        }
     }
 
     #[cfg(target_os = "macos")]

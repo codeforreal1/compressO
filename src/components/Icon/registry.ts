@@ -45,6 +45,7 @@ import Tick from '@/assets/icons/tick.svg?react'
 import Trash from '@/assets/icons/trash.svg?react'
 import Video from '@/assets/icons/video.svg?react'
 import Warning from '@/assets/icons/warning.svg?react'
+import WatchedFolder from '@/assets/icons/watched-folder.svg?react'
 import Zoom from '@/assets/icons/zoom.svg?react'
 
 type SVGAsComponent = React.FunctionComponent<React.SVGProps<SVGSVGElement>>
@@ -101,6 +102,7 @@ const registry = asRegistry({
   pinFilled: PinFilled,
   plus: Plus,
   dropzone: Dropzone,
+  watchedFolder: WatchedFolder,
   compresso: Compresso,
 })
 

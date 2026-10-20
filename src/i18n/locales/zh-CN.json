@@ -105,12 +105,12 @@
       "moveDown": "下移",
       "duplicate": "复制",
       "delete": "删除预设",
-      "title_video": "视频预设",
-      "title_image": "图像预设",
-      "title_audio": "音频预设",
       "empty_video": "尚无视频预设。调整某个视频的设置，然后选择“预设”菜单旁的加号按钮，即可将其保存为预设。",
       "empty_image": "尚无图像预设。调整某个图像的设置，然后选择“预设”菜单旁的加号按钮，即可将其保存为预设。",
-      "empty_audio": "尚无音频预设。调整某个音频文件的设置，然后选择“预设”菜单旁的加号按钮，即可将其保存为预设。"
+      "empty_audio": "尚无音频预设。调整某个音频文件的设置，然后选择“预设”菜单旁的加号按钮，即可将其保存为预设。",
+      "mediaType": "媒体类型",
+      "standardOutput": "其保存位置和文件名前缀在“输出”中设置。",
+      "cannotDeleteStandard": "无法删除标准预设。"
     },
     "dropZone": {
       "needsTrayIcon_macos": "拖放区位于菜单栏中，因此只有在“通用”中打开“显示菜单栏图标”后才能使用。",
@@ -122,7 +122,7 @@
         "autoCompress": {
           "title": "自动压缩",
           "description": "媒体添加到投放区后立即逐个压缩，并保存到其预设的保存位置。",
-          "needsSaveLocation": "请在“预设”中为投放区的预设选择“每次询问”以外的保存位置，以便无需询问即可保存压缩后的媒体。"
+          "needsSaveLocation": "请在“输出”或投放区的预设中选择“每次询问”以外的保存位置，以便无需询问即可保存压缩后的媒体。"
         }
       },
       "preset": {
@@ -140,6 +140,21 @@
           "description_macos": "将您复制的媒体（如文件或浏览器中的图像）添加到菜单栏中的拖放区。",
           "description_windows": "将您复制的媒体（如文件或浏览器中的图像）添加到系统托盘中的拖放区。"
         }
+      },
+      "watchedFolders": {
+        "add": {
+          "title": "监视文件夹",
+          "description": "添加到这些文件夹的新媒体（例如屏幕录制或下载内容）会被自动压缩。",
+          "button": "添加文件夹",
+          "dialogTitle": "选择要监视的文件夹。",
+          "alreadyWatched": "此文件夹已在监视中。",
+          "description_linux": "在 CompressO 打开时，添加到这些文件夹的新媒体（例如屏幕录制或下载内容）会被自动压缩。"
+        },
+        "watch": "监视 {{name}}",
+        "remove": "停止监视",
+        "preset_video": "视频",
+        "preset_image": "图片",
+        "preset_audio": "音频"
       }
     },
     "output": {
@@ -148,12 +163,17 @@
         "location": {
           "option_ask": "每次询问",
           "option_fixedFolder": "固定文件夹",
-          "option_sameFolder": "与原文件相同的文件夹"
+          "option_sameFolder": "与原文件相同的文件夹",
+          "title": "保存位置",
+          "description_ask": "每次压缩后选择保存位置。",
+          "description_fixedFolder": "每次压缩后自动保存到所选文件夹。",
+          "description_sameFolder": "自动保存在原文件旁边的同一文件夹中。"
         },
         "folder": {
           "none": "未选择文件夹",
           "change": "更改",
-          "dialogTitle": "选择用于保存压缩媒体的文件夹。"
+          "dialogTitle": "选择用于保存压缩媒体的文件夹。",
+          "title": "文件夹"
         },
         "preserveFolders": {
           "title": "保留文件夹结构",
@@ -165,8 +185,10 @@
         },
         "prefix": {
           "title": "文件名前缀",
-          "placeholder": "无前缀"
-        }
+          "placeholder": "无前缀",
+          "description": "添加到保存文件名开头的文字。留空则保留原文件名。"
+        },
+        "appliesTo": "这些设置仅适用于标准预设。"
       },
       "clipboard": {
         "title": "剪贴板",
@@ -201,6 +223,9 @@
           "cleared": "已清除所有缓存。",
           "failed": "清除缓存时出现问题。"
         }
+      },
+      "savedFiles": {
+        "title": "已保存的文件"
       }
     },
     "open": "打开设置",
@@ -214,7 +239,8 @@
       "presets": "预设",
       "dropZone": "拖放区",
       "about": "关于",
-      "credits": "致谢"
+      "credits": "致谢",
+      "watchedFolders": "监视的文件夹"
     },
     "about": {
       "updateAvailable": "有可用更新",
@@ -257,6 +283,10 @@
         "description": "完整的第三方声明和许可证。",
         "view": "查看"
       }
+    },
+    "watchedFolders": {
+      "folders": "文件夹",
+      "openFailed": "无法打开该文件夹。它可能已被移动或删除。"
     }
   },
   "common": {
@@ -344,7 +374,7 @@
     "remove": "移除 {{name}}",
     "storedBusy": "已暂存。打开应用，可在当前媒体之后压缩它们。",
     "storedIdle": "拖入更多媒体，或打开应用开始压缩。",
-    "needsSaveLocation": "请在“设置”的“预设”中为投放区的预设选择保存位置，以便无需询问即可保存压缩后的媒体。"
+    "needsSaveLocation": "请在“设置”的“输出”或投放区的预设中选择保存位置，以便无需询问即可保存压缩后的媒体。"
   },
   "queue": {
     "notSavedLarger": "未保存，因为比原文件更大。",
@@ -383,7 +413,10 @@
     "collapse": "收起",
     "showDropZone": "显示拖放区",
     "filesCompressed_other": "已压缩 {{count}} 个文件",
-    "accessDenied": "无权打开此文件。请在系统设置中允许访问。"
+    "accessDenied": "无权打开此文件。请在系统设置中允许访问。",
+    "fromWatchedFolder": "来自监视的文件夹 {{name}}",
+    "compressAgain": "再次压缩",
+    "compressNameAgain": "再次压缩 {{name}}"
   },
   "subtitles": {
     "unknownLanguage": "未知",

@@ -105,12 +105,12 @@
       "moveDown": "Descendre",
       "duplicate": "Dupliquer",
       "delete": "Supprimer le préréglage",
-      "title_video": "Préréglages vidéo",
-      "title_image": "Préréglages d’image",
-      "title_audio": "Préréglages audio",
       "empty_video": "Il n’y a encore aucun préréglage vidéo. Ajustez les réglages d’une vidéo et sélectionnez le bouton plus à côté du menu Préréglage pour les enregistrer comme préréglage.",
       "empty_image": "Il n’y a encore aucun préréglage d’image. Ajustez les réglages d’une image et sélectionnez le bouton plus à côté du menu Préréglage pour les enregistrer comme préréglage.",
-      "empty_audio": "Il n’y a encore aucun préréglage audio. Ajustez les réglages d’un fichier audio et sélectionnez le bouton plus à côté du menu Préréglage pour les enregistrer comme préréglage."
+      "empty_audio": "Il n’y a encore aucun préréglage audio. Ajustez les réglages d’un fichier audio et sélectionnez le bouton plus à côté du menu Préréglage pour les enregistrer comme préréglage.",
+      "mediaType": "Type de média",
+      "standardOutput": "Son emplacement d’enregistrement et son préfixe de nom de fichier se règlent dans Sortie.",
+      "cannotDeleteStandard": "Le préréglage Standard ne peut pas être supprimé."
     },
     "dropZone": {
       "needsTrayIcon_macos": "La zone de dépôt se trouve dans la barre des menus ; elle ne fonctionne donc que si « Afficher l’icône dans la barre des menus » est activé dans Général.",
@@ -122,7 +122,7 @@
         "autoCompress": {
           "title": "Compresser automatiquement",
           "description": "Compresse les médias dès qu’ils sont ajoutés à la zone de dépôt, un par un, et les enregistre à l’emplacement de leur préréglage.",
-          "needsSaveLocation": "Dans Préréglages, choisissez pour un préréglage de la zone de dépôt un emplacement autre que Demander à chaque fois, afin que les médias compressés soient enregistrés sans demande."
+          "needsSaveLocation": "Choisissez un emplacement autre que Demander à chaque fois, dans Sortie ou dans un préréglage de la zone de dépôt, afin que les médias compressés soient enregistrés sans demande."
         }
       },
       "preset": {
@@ -140,6 +140,21 @@
           "description_macos": "Ajouter les médias que vous copiez, comme des fichiers ou des images d’un navigateur, à la zone de dépôt de la barre des menus.",
           "description_windows": "Ajouter les médias que vous copiez, comme des fichiers ou des images d’un navigateur, à la zone de dépôt de la zone de notification."
         }
+      },
+      "watchedFolders": {
+        "add": {
+          "title": "Surveiller un dossier",
+          "description": "Les nouveaux médias ajoutés à ces dossiers, comme les enregistrements d’écran ou les téléchargements, sont compressés automatiquement.",
+          "button": "Ajouter un dossier",
+          "dialogTitle": "Choisissez un dossier à surveiller.",
+          "alreadyWatched": "Ce dossier est déjà surveillé.",
+          "description_linux": "Les nouveaux médias ajoutés à ces dossiers, comme les enregistrements d’écran ou les téléchargements, sont compressés automatiquement tant que CompressO est ouvert."
+        },
+        "watch": "Surveiller {{name}}",
+        "remove": "Arrêter la surveillance",
+        "preset_video": "Vidéos",
+        "preset_image": "Images",
+        "preset_audio": "Audio"
       }
     },
     "output": {
@@ -148,12 +163,17 @@
         "location": {
           "option_ask": "Demander à chaque fois",
           "option_fixedFolder": "Dossier fixe",
-          "option_sameFolder": "Même dossier que l’original"
+          "option_sameFolder": "Même dossier que l’original",
+          "title": "Emplacement d’enregistrement",
+          "description_ask": "Choisir où enregistrer après chaque compression.",
+          "description_fixedFolder": "Enregistrer automatiquement dans le dossier choisi après chaque compression.",
+          "description_sameFolder": "Enregistrer automatiquement à côté du fichier original, dans le même dossier."
         },
         "folder": {
           "none": "Aucun dossier choisi",
           "change": "Modifier",
-          "dialogTitle": "Choisissez un dossier où enregistrer les médias compressés."
+          "dialogTitle": "Choisissez un dossier où enregistrer les médias compressés.",
+          "title": "Dossier"
         },
         "preserveFolders": {
           "title": "Conserver la structure des dossiers",
@@ -165,8 +185,10 @@
         },
         "prefix": {
           "title": "Préfixe du nom de fichier",
-          "placeholder": "Aucun préfixe"
-        }
+          "placeholder": "Aucun préfixe",
+          "description": "Texte ajouté au début du nom des fichiers enregistrés. Laissez vide pour conserver les noms d’origine."
+        },
+        "appliesTo": "Ces réglages s’appliquent uniquement au préréglage Standard."
       },
       "clipboard": {
         "title": "Presse-papiers",
@@ -201,6 +223,9 @@
           "cleared": "Tout le cache a été vidé.",
           "failed": "Un problème est survenu lors du vidage du cache."
         }
+      },
+      "savedFiles": {
+        "title": "Fichiers enregistrés"
       }
     },
     "open": "Ouvrir les réglages",
@@ -214,7 +239,8 @@
       "presets": "Préréglages",
       "dropZone": "Zone de dépôt",
       "about": "À propos",
-      "credits": "Remerciements"
+      "credits": "Remerciements",
+      "watchedFolders": "Dossiers surveillés"
     },
     "about": {
       "updateAvailable": "Mise à jour disponible",
@@ -257,6 +283,10 @@
         "description": "Mentions et licences complètes des tiers.",
         "view": "Afficher"
       }
+    },
+    "watchedFolders": {
+      "folders": "Dossiers",
+      "openFailed": "Le dossier n’a pas pu être ouvert. Il a peut-être été déplacé ou supprimé."
     }
   },
   "common": {
@@ -346,7 +376,7 @@
     "remove": "Retirer {{name}}",
     "storedBusy": "Conservés. Ouvrez l’app pour les compresser après les médias en cours.",
     "storedIdle": "Déposez d’autres médias, ou ouvrez l’app pour lancer la compression.",
-    "needsSaveLocation": "Dans les Réglages, sous Préréglages, choisissez un emplacement d’enregistrement pour un préréglage de la zone de dépôt, afin que les médias compressés soient enregistrés sans demande."
+    "needsSaveLocation": "Choisissez un emplacement d’enregistrement dans les Réglages, sous Sortie ou dans un préréglage de la zone de dépôt, afin que les médias compressés soient enregistrés sans demande."
   },
   "queue": {
     "notSavedLarger": "Non enregistré, car plus volumineux que l’original.",
@@ -395,7 +425,10 @@
     "filesCompressed_one": "{{count}} fichier compressé",
     "filesCompressed_many": "{{count}} fichiers compressés",
     "filesCompressed_other": "{{count}} fichiers compressés",
-    "accessDenied": "L’ouverture de ce fichier n’est pas autorisée. Autorisez l’accès dans les réglages du système."
+    "accessDenied": "L’ouverture de ce fichier n’est pas autorisée. Autorisez l’accès dans les réglages du système.",
+    "fromWatchedFolder": "Du dossier surveillé {{name}}",
+    "compressAgain": "Compresser à nouveau",
+    "compressNameAgain": "Compresser {{name}} à nouveau"
   },
   "subtitles": {
     "unknownLanguage": "Inconnue",

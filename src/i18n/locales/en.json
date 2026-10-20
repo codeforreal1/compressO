@@ -105,12 +105,12 @@
       "moveDown": "Move down",
       "duplicate": "Duplicate",
       "delete": "Delete preset",
-      "title_video": "Video Presets",
-      "title_image": "Image Presets",
-      "title_audio": "Audio Presets",
       "empty_video": "There are no video presets yet. Adjust the settings of a video and select the plus button next to the Preset menu to save them as a preset.",
       "empty_image": "There are no image presets yet. Adjust the settings of an image and select the plus button next to the Preset menu to save them as a preset.",
-      "empty_audio": "There are no audio presets yet. Adjust the settings of an audio file and select the plus button next to the Preset menu to save them as a preset."
+      "empty_audio": "There are no audio presets yet. Adjust the settings of an audio file and select the plus button next to the Preset menu to save them as a preset.",
+      "mediaType": "Media type",
+      "standardOutput": "Its save location and file name prefix are set in Output.",
+      "cannotDeleteStandard": "The Standard preset cannot be deleted."
     },
     "dropZone": {
       "needsTrayIcon_macos": "The drop zone is in the menu bar, so it only works when Show menu bar icon is turned on in General.",
@@ -122,7 +122,7 @@
         "autoCompress": {
           "title": "Compress automatically",
           "description": "Compress media as soon as it is added to the drop zone, one at a time, and save it to the save location of its preset.",
-          "needsSaveLocation": "In Presets, choose a save location other than Ask every time for a preset of the drop zone, so the compressed media can be saved without asking."
+          "needsSaveLocation": "Choose a save location other than Ask every time, in Output or in a preset of the drop zone, so the compressed media can be saved without asking."
         }
       },
       "preset": {
@@ -140,6 +140,21 @@
           "description_macos": "Add media you copy, such as files or images from a browser, to the drop zone in the menu bar.",
           "description_windows": "Add media you copy, such as files or images from a browser, to the drop zone in the system tray."
         }
+      },
+      "watchedFolders": {
+        "add": {
+          "title": "Watch a folder",
+          "description": "New media added to these folders, such as screen recordings or downloads, is compressed automatically.",
+          "button": "Add folder",
+          "dialogTitle": "Choose a folder to watch.",
+          "alreadyWatched": "This folder is already watched.",
+          "description_linux": "New media added to these folders, such as screen recordings or downloads, is compressed automatically while CompressO is open."
+        },
+        "watch": "Watch {{name}}",
+        "remove": "Stop watching",
+        "preset_video": "Videos",
+        "preset_image": "Images",
+        "preset_audio": "Audio"
       }
     },
     "output": {
@@ -148,12 +163,17 @@
         "location": {
           "option_ask": "Ask every time",
           "option_fixedFolder": "Fixed folder",
-          "option_sameFolder": "Same folder as original"
+          "option_sameFolder": "Same folder as original",
+          "title": "Save location",
+          "description_ask": "Choose where to save after each compression.",
+          "description_fixedFolder": "Save automatically to the chosen folder after each compression.",
+          "description_sameFolder": "Save automatically next to the original file, in the same folder."
         },
         "folder": {
           "none": "No folder chosen",
           "change": "Change",
-          "dialogTitle": "Choose a folder to save compressed media to."
+          "dialogTitle": "Choose a folder to save compressed media to.",
+          "title": "Folder"
         },
         "preserveFolders": {
           "title": "Preserve folder structure",
@@ -165,8 +185,10 @@
         },
         "prefix": {
           "title": "File name prefix",
-          "placeholder": "No prefix"
-        }
+          "placeholder": "No prefix",
+          "description": "Text added to the start of saved file names. Leave empty to keep the original names."
+        },
+        "appliesTo": "These apply to the Standard preset only."
       },
       "clipboard": {
         "title": "Clipboard",
@@ -201,6 +223,9 @@
           "cleared": "All cache was cleared.",
           "failed": "There was a problem clearing cache."
         }
+      },
+      "savedFiles": {
+        "title": "Saved files"
       }
     },
     "open": "Open Settings",
@@ -214,7 +239,8 @@
       "presets": "Presets",
       "dropZone": "Drop Zone",
       "about": "About",
-      "credits": "Credits"
+      "credits": "Credits",
+      "watchedFolders": "Watched Folders"
     },
     "about": {
       "updateAvailable": "Update available",
@@ -257,6 +283,10 @@
         "description": "Complete third-party notices and licenses.",
         "view": "View"
       }
+    },
+    "watchedFolders": {
+      "folders": "Folders",
+      "openFailed": "The folder could not be opened. It may have been moved or deleted."
     }
   },
   "common": {
@@ -345,7 +375,7 @@
     "remove": "Remove {{name}}",
     "storedBusy": "Stored. Open the app to compress them after the current media.",
     "storedIdle": "Drop more media, or open the app to start compression.",
-    "needsSaveLocation": "In Settings, under Presets, choose a save location for a preset of the drop zone, so the compressed media can be saved without asking."
+    "needsSaveLocation": "Choose a save location in Settings, under Output or in a preset of the drop zone, so the compressed media can be saved without asking."
   },
   "queue": {
     "notSavedLarger": "Not saved, as it is larger than the original.",
@@ -389,7 +419,10 @@
     "showDropZone": "Show the drop zone",
     "filesCompressed_one": "{{count}} file compressed",
     "filesCompressed_other": "{{count}} files compressed",
-    "accessDenied": "Not allowed to open this file. Allow access in your system settings."
+    "accessDenied": "Not allowed to open this file. Allow access in your system settings.",
+    "fromWatchedFolder": "From the watched folder {{name}}",
+    "compressAgain": "Compress again",
+    "compressNameAgain": "Compress {{name}} again"
   },
   "subtitles": {
     "unknownLanguage": "Unknown",

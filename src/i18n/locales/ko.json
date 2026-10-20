@@ -105,12 +105,12 @@
       "moveDown": "아래로 이동",
       "duplicate": "복제",
       "delete": "프리셋 삭제",
-      "title_video": "비디오 프리셋",
-      "title_image": "이미지 프리셋",
-      "title_audio": "오디오 프리셋",
       "empty_video": "아직 비디오 프리셋이 없습니다. 비디오의 설정을 조정한 다음 프리셋 메뉴 옆의 더하기 버튼을 선택하여 프리셋으로 저장하십시오.",
       "empty_image": "아직 이미지 프리셋이 없습니다. 이미지의 설정을 조정한 다음 프리셋 메뉴 옆의 더하기 버튼을 선택하여 프리셋으로 저장하십시오.",
-      "empty_audio": "아직 오디오 프리셋이 없습니다. 오디오 파일의 설정을 조정한 다음 프리셋 메뉴 옆의 더하기 버튼을 선택하여 프리셋으로 저장하십시오."
+      "empty_audio": "아직 오디오 프리셋이 없습니다. 오디오 파일의 설정을 조정한 다음 프리셋 메뉴 옆의 더하기 버튼을 선택하여 프리셋으로 저장하십시오.",
+      "mediaType": "미디어 유형",
+      "standardOutput": "저장 위치와 파일 이름 접두사는 [출력]에서 설정합니다.",
+      "cannotDeleteStandard": "표준 프리셋은 삭제할 수 없습니다."
     },
     "dropZone": {
       "needsTrayIcon_macos": "드롭 영역은 메뉴 막대에 있으므로 일반에서 '메뉴 막대 아이콘 표시'가 켜져 있을 때만 작동합니다.",
@@ -122,7 +122,7 @@
         "autoCompress": {
           "title": "자동으로 압축",
           "description": "드롭 존에 추가된 미디어를 바로 하나씩 압축하고, 해당 프리셋의 저장 위치에 저장합니다.",
-          "needsSaveLocation": "압축된 미디어를 묻지 않고 저장할 수 있도록 [프리셋]에서 드롭 존 프리셋의 저장 위치를 [매번 묻기] 이외의 위치로 선택하세요."
+          "needsSaveLocation": "압축된 미디어를 묻지 않고 저장할 수 있도록 [출력] 또는 드롭 존의 프리셋에서 [매번 묻기] 이외의 저장 위치를 선택하세요."
         }
       },
       "preset": {
@@ -140,6 +140,21 @@
           "description_macos": "복사한 미디어(파일 또는 브라우저의 이미지 등)를 메뉴 막대의 드롭 영역에 추가합니다.",
           "description_windows": "복사한 미디어(파일 또는 브라우저의 이미지 등)를 시스템 트레이의 드롭 영역에 추가합니다."
         }
+      },
+      "watchedFolders": {
+        "add": {
+          "title": "폴더 감시",
+          "description": "이 폴더에 추가된 새 미디어(화면 녹화, 다운로드 등)는 자동으로 압축됩니다.",
+          "button": "폴더 추가",
+          "dialogTitle": "감시할 폴더를 선택하세요.",
+          "alreadyWatched": "이미 감시 중인 폴더입니다.",
+          "description_linux": "CompressO가 열려 있는 동안 이 폴더에 추가된 새 미디어(화면 녹화, 다운로드 등)는 자동으로 압축됩니다."
+        },
+        "watch": "{{name}} 감시",
+        "remove": "감시 중지",
+        "preset_video": "비디오",
+        "preset_image": "이미지",
+        "preset_audio": "오디오"
       }
     },
     "output": {
@@ -148,12 +163,17 @@
         "location": {
           "option_ask": "매번 묻기",
           "option_fixedFolder": "고정 폴더",
-          "option_sameFolder": "원본과 같은 폴더"
+          "option_sameFolder": "원본과 같은 폴더",
+          "title": "저장 위치",
+          "description_ask": "압축할 때마다 저장 위치를 선택합니다.",
+          "description_fixedFolder": "압축할 때마다 선택한 폴더에 자동으로 저장합니다.",
+          "description_sameFolder": "원본 파일 옆의 같은 폴더에 자동으로 저장합니다."
         },
         "folder": {
           "none": "선택한 폴더 없음",
           "change": "변경",
-          "dialogTitle": "압축된 미디어를 저장할 폴더를 선택하십시오."
+          "dialogTitle": "압축된 미디어를 저장할 폴더를 선택하십시오.",
+          "title": "폴더"
         },
         "preserveFolders": {
           "title": "폴더 구조 유지",
@@ -165,8 +185,10 @@
         },
         "prefix": {
           "title": "파일 이름 접두사",
-          "placeholder": "접두사 없음"
-        }
+          "placeholder": "접두사 없음",
+          "description": "저장되는 파일 이름 앞에 추가되는 텍스트입니다. 원래 이름을 유지하려면 비워 두십시오."
+        },
+        "appliesTo": "이 설정은 표준 프리셋에만 적용됩니다."
       },
       "clipboard": {
         "title": "클립보드",
@@ -201,6 +223,9 @@
           "cleared": "모든 캐시를 지웠습니다.",
           "failed": "캐시를 지우는 중 문제가 발생했습니다."
         }
+      },
+      "savedFiles": {
+        "title": "저장된 파일"
       }
     },
     "open": "설정 열기",
@@ -214,7 +239,8 @@
       "presets": "프리셋",
       "dropZone": "드롭 영역",
       "about": "정보",
-      "credits": "크레딧"
+      "credits": "크레딧",
+      "watchedFolders": "감시 폴더"
     },
     "about": {
       "updateAvailable": "업데이트 사용 가능",
@@ -257,6 +283,10 @@
         "description": "타사 고지 및 라이선스 전문입니다.",
         "view": "보기"
       }
+    },
+    "watchedFolders": {
+      "folders": "폴더",
+      "openFailed": "폴더를 열 수 없습니다. 이동되었거나 삭제되었을 수 있습니다."
     }
   },
   "common": {
@@ -344,7 +374,7 @@
     "remove": "{{name}} 제거",
     "storedBusy": "보관했습니다. 앱을 열면 현재 미디어 다음에 압축합니다.",
     "storedIdle": "미디어를 더 드롭하거나 앱을 열어 압축을 시작하십시오.",
-    "needsSaveLocation": "압축된 미디어를 묻지 않고 저장할 수 있도록 설정의 [프리셋]에서 드롭 존 프리셋의 저장 위치를 선택하세요."
+    "needsSaveLocation": "압축된 미디어를 묻지 않고 저장할 수 있도록 설정의 [출력] 또는 드롭 존의 프리셋에서 저장 위치를 선택하세요."
   },
   "queue": {
     "notSavedLarger": "원본보다 크기 때문에 저장하지 않았습니다.",
@@ -383,7 +413,10 @@
     "collapse": "접기",
     "showDropZone": "드롭 영역 보기",
     "filesCompressed_other": "파일 {{count}}개 압축됨",
-    "accessDenied": "이 파일을 열 권한이 없습니다. 시스템 설정에서 접근을 허용하십시오."
+    "accessDenied": "이 파일을 열 권한이 없습니다. 시스템 설정에서 접근을 허용하십시오.",
+    "fromWatchedFolder": "감시 폴더 {{name}}에서",
+    "compressAgain": "다시 압축",
+    "compressNameAgain": "{{name}} 다시 압축"
   },
   "subtitles": {
     "unknownLanguage": "알 수 없음",

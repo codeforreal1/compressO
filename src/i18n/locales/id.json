@@ -105,12 +105,12 @@
       "moveDown": "Pindahkan ke bawah",
       "duplicate": "Duplikat",
       "delete": "Hapus preset",
-      "title_video": "Preset Video",
-      "title_image": "Preset Gambar",
-      "title_audio": "Preset Audio",
       "empty_video": "Belum ada preset video. Sesuaikan pengaturan sebuah video, lalu pilih tombol plus di samping menu Preset untuk menyimpannya sebagai preset.",
       "empty_image": "Belum ada preset gambar. Sesuaikan pengaturan sebuah gambar, lalu pilih tombol plus di samping menu Preset untuk menyimpannya sebagai preset.",
-      "empty_audio": "Belum ada preset audio. Sesuaikan pengaturan sebuah file audio, lalu pilih tombol plus di samping menu Preset untuk menyimpannya sebagai preset."
+      "empty_audio": "Belum ada preset audio. Sesuaikan pengaturan sebuah file audio, lalu pilih tombol plus di samping menu Preset untuk menyimpannya sebagai preset.",
+      "mediaType": "Jenis media",
+      "standardOutput": "Lokasi penyimpanan dan awalan nama filenya diatur di Keluaran.",
+      "cannotDeleteStandard": "Preset Standar tidak dapat dihapus."
     },
     "dropZone": {
       "needsTrayIcon_macos": "Zona taruh berada di bar menu, sehingga hanya berfungsi jika “Tampilkan ikon bar menu” diaktifkan di Umum.",
@@ -122,7 +122,7 @@
         "autoCompress": {
           "title": "Kompresi otomatis",
           "description": "Kompres media segera setelah ditambahkan ke zona letak, satu per satu, dan simpan ke lokasi penyimpanan presetnya.",
-          "needsSaveLocation": "Di Preset, pilih lokasi penyimpanan selain Tanyakan setiap kali untuk preset zona letak, agar media terkompresi dapat disimpan tanpa bertanya."
+          "needsSaveLocation": "Pilih lokasi penyimpanan selain Tanyakan setiap kali, di Keluaran atau di preset zona letak, agar media terkompresi dapat disimpan tanpa bertanya."
         }
       },
       "preset": {
@@ -140,6 +140,21 @@
           "description_macos": "Tambahkan media yang Anda salin, seperti file atau gambar dari browser, ke zona taruh di bar menu.",
           "description_windows": "Tambahkan media yang Anda salin, seperti file atau gambar dari browser, ke zona taruh di baki sistem."
         }
+      },
+      "watchedFolders": {
+        "add": {
+          "title": "Pantau folder",
+          "description": "Media baru yang ditambahkan ke folder ini, seperti rekaman layar atau unduhan, dikompres secara otomatis.",
+          "button": "Tambah folder",
+          "dialogTitle": "Pilih folder untuk dipantau.",
+          "alreadyWatched": "Folder ini sudah dipantau.",
+          "description_linux": "Media baru yang ditambahkan ke folder ini, seperti rekaman layar atau unduhan, dikompres secara otomatis selama CompressO terbuka."
+        },
+        "watch": "Pantau {{name}}",
+        "remove": "Berhenti memantau",
+        "preset_video": "Video",
+        "preset_image": "Gambar",
+        "preset_audio": "Audio"
       }
     },
     "output": {
@@ -148,12 +163,17 @@
         "location": {
           "option_ask": "Tanyakan setiap kali",
           "option_fixedFolder": "Folder tetap",
-          "option_sameFolder": "Folder yang sama dengan file asli"
+          "option_sameFolder": "Folder yang sama dengan file asli",
+          "title": "Lokasi penyimpanan",
+          "description_ask": "Pilih lokasi penyimpanan setelah setiap kompresi.",
+          "description_fixedFolder": "Simpan otomatis ke folder yang dipilih setelah setiap kompresi.",
+          "description_sameFolder": "Simpan otomatis di samping file asli, di folder yang sama."
         },
         "folder": {
           "none": "Tidak ada folder yang dipilih",
           "change": "Ubah",
-          "dialogTitle": "Pilih folder untuk menyimpan media yang dikompresi."
+          "dialogTitle": "Pilih folder untuk menyimpan media yang dikompresi.",
+          "title": "Folder"
         },
         "preserveFolders": {
           "title": "Pertahankan struktur folder",
@@ -165,8 +185,10 @@
         },
         "prefix": {
           "title": "Awalan nama file",
-          "placeholder": "Tanpa awalan"
-        }
+          "placeholder": "Tanpa awalan",
+          "description": "Teks yang ditambahkan di awal nama file yang disimpan. Biarkan kosong untuk mempertahankan nama asli."
+        },
+        "appliesTo": "Berlaku hanya untuk preset Standar."
       },
       "clipboard": {
         "title": "Papan klip",
@@ -201,6 +223,9 @@
           "cleared": "Semua cache telah dihapus.",
           "failed": "Terjadi masalah saat menghapus cache."
         }
+      },
+      "savedFiles": {
+        "title": "File tersimpan"
       }
     },
     "open": "Buka Pengaturan",
@@ -214,7 +239,8 @@
       "presets": "Preset",
       "dropZone": "Zona Taruh",
       "about": "Tentang",
-      "credits": "Kredit"
+      "credits": "Kredit",
+      "watchedFolders": "Folder yang dipantau"
     },
     "about": {
       "updateAvailable": "Pembaruan tersedia",
@@ -257,6 +283,10 @@
         "description": "Pemberitahuan dan lisensi pihak ketiga selengkapnya.",
         "view": "Lihat"
       }
+    },
+    "watchedFolders": {
+      "folders": "Folder",
+      "openFailed": "Folder tidak dapat dibuka. Folder mungkin telah dipindahkan atau dihapus."
     }
   },
   "common": {
@@ -344,7 +374,7 @@
     "remove": "Hapus {{name}}",
     "storedBusy": "Disimpan sementara. Buka aplikasi untuk mengompresinya setelah media saat ini.",
     "storedIdle": "Taruh media lainnya, atau buka aplikasi untuk memulai kompresi.",
-    "needsSaveLocation": "Di Pengaturan, pada Preset, pilih lokasi penyimpanan untuk preset zona letak, agar media terkompresi dapat disimpan tanpa bertanya."
+    "needsSaveLocation": "Pilih lokasi penyimpanan di Pengaturan, di Keluaran atau di preset zona letak, agar media terkompresi dapat disimpan tanpa bertanya."
   },
   "queue": {
     "notSavedLarger": "Tidak disimpan, karena ukurannya lebih besar dari aslinya.",
@@ -383,7 +413,10 @@
     "collapse": "Ciutkan",
     "showDropZone": "Tampilkan zona taruh",
     "filesCompressed_other": "{{count}} file dikompresi",
-    "accessDenied": "Tidak diizinkan membuka file ini. Izinkan akses di pengaturan sistem."
+    "accessDenied": "Tidak diizinkan membuka file ini. Izinkan akses di pengaturan sistem.",
+    "fromWatchedFolder": "Dari folder yang dipantau {{name}}",
+    "compressAgain": "Kompres lagi",
+    "compressNameAgain": "Kompres {{name}} lagi"
   },
   "subtitles": {
     "unknownLanguage": "Tidak diketahui",

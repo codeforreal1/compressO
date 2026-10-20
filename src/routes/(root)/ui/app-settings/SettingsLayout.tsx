@@ -8,17 +8,28 @@ type SettingsSectionProps = {
   title: string
   children: React.ReactNode
   className?: string
+  /** A short note beside the title, about this section only */
+  description?: React.ReactNode
 }
 
 /** A titled group of settings rows, e.g. "Appearance" */
 export function SettingsSection({
   title,
+  description,
   children,
   className,
 }: SettingsSectionProps) {
   return (
     <section className={cn(['mb-12 last:mb-0', className])}>
-      <h2 className="text-base font-semibold text-foreground mb-3">{title}</h2>
+      <h2 className="text-base font-semibold text-foreground mb-3">
+        {title}
+        {/* A note about this section only, beside its title (in brackets & italic) */}
+        {description ? (
+          <span className="ml-2 text-xs font-normal italic text-zinc-500 dark:text-zinc-400">
+            ({description})
+          </span>
+        ) : null}
+      </h2>
       <div className="divide-y divide-zinc-400 dark:divide-zinc-800">
         {children}
       </div>

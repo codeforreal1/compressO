@@ -1,3 +1,5 @@
+// The item must be HeroUI's own (not a wrapper) so the Select can build its collection
+import { SelectItem } from '@heroui/react'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
@@ -6,11 +8,18 @@ import AnimatedLabel from '@/components/AnimatedLabel'
 import Button from '@/components/Button'
 import Icon from '@/components/Icon'
 import InfoTooltip from '@/components/InfoTooltip'
+import Select from '@/components/Select'
 import Switch from '@/components/Switch'
+import TextInput from '@/components/TextInput'
 import { toast } from '@/components/Toast'
 import { useHardwareEncoders } from '@/hooks/useHardwareEncoding'
-import { settingsStore } from '@/stores/settingsStore'
+import {
+  type SaveLocation,
+  sanitizeFileNamePart,
+  settingsStore,
+} from '@/stores/settingsStore'
 import { deleteCache as invokeDeleteCache } from '@/tauri/commands/fs'
+import { pickSaveFolder, SAVE_LOCATION_OPTIONS } from './PresetOutputFields'
 import { SettingsRow, SettingsSection } from './SettingsLayout'
 import { appProxy } from '../../-state'
 
@@ -35,10 +44,22 @@ function Output() {
     useHardwareAcceleration,
     retryTargetSizeOnCpu,
   } = useSnapshot(settingsStore)
+  const { outputFilePrefix, saveLocation, saveFolder } =
+    useSnapshot(settingsStore)
   // `null` while hardware acceleration is being checked (when the app starts)
   const hardwareEncoders = useHardwareEncoders()
   const hasHardwareAcceleration =
     hardwareEncoders == null || hardwareEncoders.length > 0
+
+  const handleSaveLocationChange = async (location: SaveLocation) => {
+    // A fixed folder needs a folder; keep the previous option if none is chosen
+    if (location === 'fixedFolder' && !settingsStore.saveFolder) {
+      const folder = await pickSaveFolder()
+      if (!folder) return
+      settingsStore.saveFolder = folder
+    }
+    settingsStore.saveLocation = location
+  }
 
   // Read from the snapshot so the button updates if the screen changes while the dialog is open
   const {
@@ -62,9 +83,76 @@ function Output() {
 
   return (
     <>
-      {/* Where outputs are saved & their prefix are set per preset (the Standard one too), in
-          Presets; these apply to every preset */}
-      <SettingsSection title={t('settings.output.saving.title')}>
+      {/* The Standard preset's output (for videos, images & audio); other presets can have their
+          own, in Presets (see `getPresetOutput`) */}
+      <SettingsSection
+        title={t('settings.output.saving.title')}
+        description={t('settings.output.saving.appliesTo')}
+      >
+        <SettingsRow
+          title={t('settings.output.saving.location.title')}
+          description={t('settings.output.saving.location.description', {
+            context: saveLocation,
+          })}
+        >
+          <Select
+            aria-label={t('settings.output.saving.location.title')}
+            selectedKeys={[saveLocation]}
+            disallowEmptySelection
+            onSelectionChange={(keys) => {
+              const [key] = [...keys]
+              if (key) handleSaveLocationChange(key as SaveLocation)
+            }}
+            className="w-[220px]"
+            classNames={{ popoverContent: 'settings-dialog' }}
+          >
+            {SAVE_LOCATION_OPTIONS.map((option) => (
+              <SelectItem key={option}>
+                {t('settings.output.saving.location.option', {
+                  context: option,
+                })}
+              </SelectItem>
+            ))}
+          </Select>
+        </SettingsRow>
+        <SettingsRow
+          isVisible={saveLocation === 'fixedFolder'}
+          isNested
+          title={t('settings.output.saving.folder.title')}
+          description={
+            <span className="break-all">
+              {saveFolder ?? t('settings.output.saving.folder.none')}
+            </span>
+          }
+        >
+          <Button
+            size="sm"
+            onPress={async () => {
+              const folder = await pickSaveFolder()
+              if (folder) settingsStore.saveFolder = folder
+            }}
+          >
+            {t('settings.output.saving.folder.change')}
+          </Button>
+        </SettingsRow>
+        <SettingsRow
+          title={t('settings.output.saving.prefix.title')}
+          description={t('settings.output.saving.prefix.description')}
+        >
+          <TextInput
+            aria-label={t('settings.output.saving.prefix.title')}
+            placeholder={t('settings.output.saving.prefix.placeholder')}
+            value={outputFilePrefix}
+            onValueChange={(value) => {
+              settingsStore.outputFilePrefix = sanitizeFileNamePart(value)
+            }}
+            className="w-[180px]"
+          />
+        </SettingsRow>
+      </SettingsSection>
+
+      {/* How outputs are saved, for every preset */}
+      <SettingsSection title={t('settings.output.savedFiles.title')}>
         <SettingsRow
           title={t('settings.output.saving.preserveFolders.title')}
           description={t('settings.output.saving.preserveFolders.description')}

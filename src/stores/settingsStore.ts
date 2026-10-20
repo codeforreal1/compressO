@@ -1,8 +1,9 @@
+import isEqual from 'lodash/isEqual'
 import { proxy, subscribe } from 'valtio'
 
 import * as constants from '@/constants'
 import { isLanguageCode, type LanguageCode } from '@/i18n/languages'
-import { STANDARD_PRESET_ID } from '@/types/preset'
+import { type PresetMediaType, STANDARD_PRESET_ID } from '@/types/preset'
 
 export const DEFAULT_OUTPUT_FILE_PREFIX = 'compressO-'
 
@@ -27,6 +28,18 @@ function readTintOpacity(key: string, fallback: number) {
 }
 
 export type SaveLocation = keyof typeof saveLocations
+
+/**
+ * A folder whose new media is compressed through the drop zone's queue (see `watch_folders.rs`),
+ * with the Standard presets unless it has its own
+ */
+export type WatchedFolder = {
+  id: string
+  path: string
+  isEnabled: boolean
+  /** Its preset of each media type, or none for the Standard preset */
+  presetIds?: Partial<Record<PresetMediaType, string>>
+}
 
 export type SettingsState = {
   /** Added to the start of saved file names (not folders). Empty keeps the original names. */
@@ -71,6 +84,8 @@ export type SettingsState = {
   dropZoneVideoPresetId: string
   dropZoneImagePresetId: string
   dropZoneAudioPresetId: string
+  /** Folders whose new media the drop zone compresses (none by default) */
+  watchedFolders: WatchedFolder[]
   /**
    * Compress videos with hardware acceleration (the graphics card) when it can (off by default):
    * faster, with slightly larger files. Falls back to the CPU when it does not work (see
@@ -143,6 +158,7 @@ function readSettings(): SettingsState {
     dropZoneAudioPresetId:
       localStorage.getItem(constants.dropZoneAudioPresetId) ??
       STANDARD_PRESET_ID,
+    watchedFolders: readWatchedFolders(),
     useHardwareAcceleration:
       localStorage.getItem(constants.useHardwareAcceleration) === 'true',
     // Only an explicit opt-out turns it off
@@ -161,6 +177,25 @@ function readSettings(): SettingsState {
   }
 }
 
+/** The stored watched folders, dropping any that are not valid */
+function readWatchedFolders(): WatchedFolder[] {
+  try {
+    const stored = JSON.parse(
+      localStorage.getItem(constants.watchedFolders) ?? '[]',
+    )
+    return Array.isArray(stored)
+      ? stored.filter(
+          (folder): folder is WatchedFolder =>
+            typeof folder?.id === 'string' &&
+            typeof folder?.path === 'string' &&
+            typeof folder?.isEnabled === 'boolean',
+        )
+      : []
+  } catch {
+    return []
+  }
+}
+
 /** The stored language, or English when none (or an unknown one) is stored */
 function readLanguage(): LanguageCode {
   const stored = localStorage.getItem(constants.language)
@@ -174,7 +209,8 @@ window.addEventListener('storage', (evt) => {
   if (evt.storageArea !== localStorage) return
   const settings = readSettings()
   for (const key of Object.keys(settings) as (keyof SettingsState)[]) {
-    if (settingsStore[key] !== settings[key]) {
+    // Compared by value, as lists (e.g. the watched folders) are read anew
+    if (!isEqual(settingsStore[key], settings[key])) {
       ;(settingsStore as Record<string, unknown>)[key] = settings[key]
     }
   }
@@ -235,6 +271,10 @@ subscribe(settingsStore, () => {
   localStorage.setItem(
     constants.dropZoneAudioPresetId,
     settingsStore.dropZoneAudioPresetId,
+  )
+  localStorage.setItem(
+    constants.watchedFolders,
+    JSON.stringify(settingsStore.watchedFolders),
   )
   localStorage.setItem(
     constants.useHardwareAcceleration,

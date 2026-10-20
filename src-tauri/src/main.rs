@@ -63,7 +63,6 @@ use tauri_commands::server::{construct_video_url, start_video_server};
 #[cfg(target_os = "linux")]
 use tauri_commands::file_manager::DbusState;
 
-#[cfg(any(target_os = "macos", windows))]
 use tauri_commands::drop_queue::{
     cancel_drop_queue, clear_finished_drop_queue, is_drop_queue_paused, set_drop_queue_paused, get_drop_queue, remove_drop_queue_item, retry_drop_queue_item,
     set_auto_compress_enabled, update_drop_queue_item,
@@ -353,6 +352,12 @@ async fn main() {
             // The tray icon itself is added by the frontend, depending on the user's setting
             #[cfg(any(target_os = "macos", windows))]
             tray_popover::init(app);
+            // No tray on Linux: the main window compresses the watched folders' queue
+            #[cfg(target_os = "linux")]
+            {
+                app.manage(tauri_commands::drop_queue::DropQueueState::default());
+                sys::watch_folders::init(app.handle());
+            }
 
             // The window starts hidden (see `tauri.conf.json`) so the webview isn't shown before it
             // has painted, which flashed a blank background on launch
@@ -429,6 +434,7 @@ async fn main() {
             compress_images_batch,
             compress_media_batch,
             estimate_video_size,
+            sys::watch_folders::set_watched_folders,
             set_batch_paused,
             set_hardware_encoding_enabled,
             get_hardware_encoders,
@@ -511,23 +517,14 @@ async fn main() {
             set_tray_popover_pinned,
             #[cfg(any(target_os = "macos", windows))]
             set_tray_progress_color,
-            #[cfg(any(target_os = "macos", windows))]
             set_auto_compress_enabled,
-            #[cfg(any(target_os = "macos", windows))]
             get_drop_queue,
-            #[cfg(any(target_os = "macos", windows))]
             update_drop_queue_item,
-            #[cfg(any(target_os = "macos", windows))]
             retry_drop_queue_item,
-            #[cfg(any(target_os = "macos", windows))]
             remove_drop_queue_item,
-            #[cfg(any(target_os = "macos", windows))]
             clear_finished_drop_queue,
-            #[cfg(any(target_os = "macos", windows))]
             cancel_drop_queue,
-            #[cfg(any(target_os = "macos", windows))]
             set_drop_queue_paused,
-            #[cfg(any(target_os = "macos", windows))]
             is_drop_queue_paused,
             set_compression_status,
             get_compression_status

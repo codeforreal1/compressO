@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
+import DashedBorder from '@/components/DashedBorder'
 import Icon from '@/components/Icon'
 import Layout from '@/components/Layout'
 import Spinner from '@/components/Spinner'
@@ -75,9 +76,10 @@ function Root() {
       >
         <div
           className={cn(
-            'flex flex-col justify-center items-center py-16 px-20 border-2 border-dashed border-zinc-200 dark:border-zinc-800 rounded-3xl',
+            'relative flex flex-col justify-center items-center py-16 px-20 rounded-3xl',
           )}
         >
+          <DashedBorder radius={24} />
           <Icon name="addMedia" className="text-primary" size={60} />
           <p className="text-sm mt-4 text-gray-600 dark:text-gray-400 text-center">
             {t('home.dragAndDrop')}

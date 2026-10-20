@@ -197,6 +197,18 @@ function IslandTile({
         </div>
       )}
 
+      {/* From a watched folder (dropped media has no tag), with its name; hidden on hover, when
+          the actions show at the top */}
+      {item.watchFolderName ? (
+        <div
+          className="absolute top-1 left-1 max-w-[calc(100%-3.5rem)] flex items-center gap-0.5 rounded-full bg-black/60 px-1.5 py-0.5 text-[10px] text-white transition-opacity group-hover:opacity-0"
+          title={t('queue.fromWatchedFolder', { name: item.watchFolderName })}
+        >
+          <Icon name="fileExplorer" size={10} className="shrink-0 opacity-80" />
+          <span className="truncate">{item.watchFolderName}</span>
+        </div>
+      ) : null}
+
       {/* Actions, on hover */}
       <div className="absolute top-1 right-1 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
         {item.status === 'done' && item.savedPath ? (
@@ -218,16 +230,32 @@ function IslandTile({
             </Button>
           </Tooltip>
         ) : null}
-        {item.status === 'failed' || item.status === 'cancelled' ? (
+        {/* Failed or stopped: tried again; done: compressed again from the original (e.g. after
+            changing its preset), keeping the output saved before */}
+        {item.status === 'failed' ||
+        item.status === 'cancelled' ||
+        item.status === 'done' ? (
           <Tooltip
-            content={t('queue.tryAgain')}
-            aria-label={t('queue.tryAgain')}
+            content={
+              item.status === 'done'
+                ? t('queue.compressAgain')
+                : t('queue.tryAgain')
+            }
+            aria-label={
+              item.status === 'done'
+                ? t('queue.compressAgain')
+                : t('queue.tryAgain')
+            }
           >
             <Button
               isIconOnly
               size="sm"
               radius="full"
-              aria-label={t('queue.tryNameAgain', { name })}
+              aria-label={
+                item.status === 'done'
+                  ? t('queue.compressNameAgain', { name })
+                  : t('queue.tryNameAgain', { name })
+              }
               className="min-w-6 w-6 h-6 bg-black/60 text-white"
               onPress={() => {
                 retryDropQueueItem(item.id).catch(() => {})

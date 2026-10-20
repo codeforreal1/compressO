@@ -15,8 +15,8 @@ pub mod window;
 #[cfg(target_os = "linux")]
 pub mod server;
 
-// The drop zone of the tray (the macOS menu bar or the Windows system tray)
-#[cfg(any(target_os = "macos", windows))]
+// The queue of the drop zone of the tray (the macOS menu bar or the Windows system tray), & of the
+// watched folders (also on Linux, where the main window compresses it)
 pub mod drop_queue;
 
 #[cfg(any(target_os = "macos", windows))]

@@ -1,3 +1,5 @@
+import { Tab } from '@heroui/react'
+import { AnimatePresence, motion } from 'framer-motion'
 import cloneDeep from 'lodash/cloneDeep'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
@@ -6,6 +8,7 @@ import { useSnapshot } from 'valtio'
 import AnimatedLabel from '@/components/AnimatedLabel'
 import Button from '@/components/Button'
 import Icon from '@/components/Icon'
+import Tabs from '@/components/Tabs'
 import TextInput from '@/components/TextInput'
 import Tooltip from '@/components/Tooltip'
 import { t } from '@/i18n'
@@ -17,15 +20,12 @@ import {
   presetsStore,
   setDefaultPreset,
 } from '@/stores/presetsStore'
-import { settingsStore } from '@/stores/settingsStore'
 import {
   type Preset,
   type PresetMediaType,
   STANDARD_PRESET_ID,
 } from '@/types/preset'
-import { getStandardOutput } from '@/utils/presetOutput'
 import PresetOutputFields from './PresetOutputFields'
-import { SettingsSection } from './SettingsLayout'
 import {
   deletePresetAndUnlinkMedia,
   describeAudioPresetSettings,
@@ -72,7 +72,6 @@ function PresetCard({ preset, isFirst, isLast, isDefault }: PresetCardProps) {
   // The built-in preset: listed first, & only set as the default or copied (its settings & output
   // are those of the app)
   const isStandard = preset.id === STANDARD_PRESET_ID
-  const standardOutput = getStandardOutput(useSnapshot(settingsStore))
   const defaultTooltip = isDefault
     ? t('settings.presets.isDefault', { context: preset.mediaType })
     : t('settings.presets.setDefault', { context: preset.mediaType })
@@ -187,9 +186,26 @@ function PresetCard({ preset, isFirst, isLast, isDefault }: PresetCardProps) {
               <Icon name="copy" />
             </Button>
           </Tooltip>
-          {/* The Standard preset cannot be deleted (its place is kept, so the buttons line up) */}
+          {/* The Standard preset cannot be deleted: its button is disabled, & says why when
+              hovered (a disabled button gets no hover, so its wrapper shows the tooltip) */}
           {isStandard ? (
-            <span aria-hidden="true" className="w-8" />
+            <Tooltip
+              content={t('settings.presets.cannotDeleteStandard')}
+              aria-label={t('settings.presets.cannotDeleteStandard')}
+            >
+              <span className="inline-flex">
+                <Button
+                  size="sm"
+                  color="danger"
+                  variant="light"
+                  isDisabled
+                  className="min-w-8 px-2 gap-0"
+                  aria-label={t('settings.presets.cannotDeleteStandard')}
+                >
+                  <Icon name="trash" />
+                </Button>
+              </span>
+            </Tooltip>
           ) : (
             <Button
               size="sm"
@@ -218,20 +234,13 @@ function PresetCard({ preset, isFirst, isLast, isDefault }: PresetCardProps) {
       <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-2">
         {describePreset(preset)}
       </p>
-      <div className="mt-3 max-w-[560px]">
-        {isStandard ? (
-          // The Standard preset's output is kept in the settings (also used by presets following it)
-          <PresetOutputFields
-            isStandard
-            value={standardOutput}
-            onChange={(output) => {
-              if (!output) return
-              settingsStore.saveLocation = output.saveLocation
-              settingsStore.saveFolder = output.saveFolder
-              settingsStore.outputFilePrefix = output.filePrefix
-            }}
-          />
-        ) : (
+      {isStandard ? (
+        // The Standard preset's output is in Output (for videos, images & audio alike)
+        <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-2">
+          {t('settings.presets.standardOutput')}
+        </p>
+      ) : (
+        <div className="mt-3 max-w-[560px]">
           <PresetOutputFields
             value={preset.output}
             onChange={(output) => {
@@ -239,8 +248,8 @@ function PresetCard({ preset, isFirst, isLast, isDefault }: PresetCardProps) {
               if (target) target.output = output
             }}
           />
-        )}
-      </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -253,9 +262,7 @@ function PresetList({ mediaType }: { mediaType: PresetMediaType }) {
   const { t } = useTranslation()
 
   return (
-    <SettingsSection
-      title={t('settings.presets.title', { context: mediaType })}
-    >
+    <div className="divide-y divide-zinc-400 dark:divide-zinc-800">
       {/* Always first, & never moved */}
       <PresetCard
         preset={getPresetOfType(mediaType, STANDARD_PRESET_ID)}
@@ -278,16 +285,43 @@ function PresetList({ mediaType }: { mediaType: PresetMediaType }) {
           />
         ))
       )}
-    </SettingsSection>
+    </div>
   )
 }
 
+const PRESET_TABS: PresetMediaType[] = ['video', 'image', 'audio']
+
+/** The presets of one media type at a time, chosen with the tabs at the top */
 function Presets() {
+  const { t } = useTranslation()
+  const [mediaType, setMediaType] = React.useState<PresetMediaType>('video')
+
   return (
     <>
-      <PresetList mediaType="video" />
-      <PresetList mediaType="image" />
-      <PresetList mediaType="audio" />
+      <Tabs
+        aria-label={t('settings.presets.mediaType')}
+        size="sm"
+        selectedKey={mediaType}
+        onSelectionChange={(key) => setMediaType(key as PresetMediaType)}
+        className="mb-4"
+        // Compact, like the batch's filter tabs
+        classNames={{ tabContent: 'text-[11px]', tab: 'h-5' }}
+      >
+        {PRESET_TABS.map((type) => (
+          <Tab key={type} title={t(`outputSettings.tabs.${type}` as const)} />
+        ))}
+      </Tabs>
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.div
+          key={mediaType}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.15 }}
+        >
+          <PresetList mediaType={mediaType} />
+        </motion.div>
+      </AnimatePresence>
     </>
   )
 }

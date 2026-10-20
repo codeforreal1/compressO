@@ -6,7 +6,10 @@ import { useEffect } from 'react'
 import { subscribeKey } from 'valtio/utils'
 
 import { Toaster } from '@/components/Toast'
-import { useAutoCompressSync } from '@/hooks/useAutoCompressSync'
+import {
+  useAutoCompressSync,
+  useWatchedFoldersSync,
+} from '@/hooks/useAutoCompressSync'
 import { useClipboardWatchSync } from '@/hooks/useClipboardWatchSync'
 import { useHardwareEncodingSync } from '@/hooks/useHardwareEncoding'
 import { useKeepAwakeSync } from '@/hooks/useKeepAwakeSync'
@@ -49,6 +52,8 @@ function MainRoot() {
   useWindowTint()
   useClipboardWatchSync({ applyOnMount: true })
   useAutoCompressSync()
+  // Also from the menu bar's window, which stays open while the main one is closed
+  useWatchedFoldersSync()
   useHardwareEncodingSync()
   useKeepAwakeSync()
 
@@ -86,7 +91,10 @@ function MainRoot() {
         {isMacOS ? <Titlebar /> : null}
         <Outlet />
         {/* The drop zone of the tray, while it has media */}
-        {hasTray ? <DropZoneIsland /> : null}
+        {/* The drop zone's queue (on Linux, only that of the watched folders) */}
+        <DropZoneIsland />
+        {/* No menu bar window on Linux: the main window compresses the watched folders' queue */}
+        {hasTray ? null : <DropQueueRunner />}
       </UIProvider>
       <Toaster />
       {isDev ? <TanStackRouterDevtools position="bottom-right" /> : null}
@@ -94,9 +102,17 @@ function MainRoot() {
   )
 }
 
+/** Compresses the drop zone's queue from this window (see `useDropQueueRunner`) */
+function DropQueueRunner() {
+  useDropQueueRunner()
+  return null
+}
+
 function TrayRoot() {
   useClipboardWatchSync({ applyOnMount: false })
   useAutoCompressSync()
+  // Also from the menu bar's window, which stays open while the main one is closed
+  useWatchedFoldersSync()
   useHardwareEncodingSync()
   useKeepAwakeSync()
   // The menu bar's window compresses the drop zone's queue

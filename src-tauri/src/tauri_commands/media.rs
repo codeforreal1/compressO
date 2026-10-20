@@ -106,6 +106,15 @@ pub async fn compress_media_batch(
     Ok(MediaBatchCompressionResult { results })
 }
 
+/// The other outputs of a video compressed to a target size (see `VideoCompressionResult`)
+fn result_other_outputs(result: &crate::core::domain::VideoCompressionResult) -> Vec<&str> {
+    result
+        .other_outputs
+        .iter()
+        .map(|output| output.file_path.as_str())
+        .collect()
+}
+
 async fn compress_media_items(
     app: &tauri::AppHandle,
     window: &tauri::WebviewWindow,
@@ -208,6 +217,14 @@ async fn compress_media_items(
                         video_id,
                         result.file_metadata.as_ref().map(|m| m.size).unwrap_or(0)
                     );
+                    // Remembered, so a watched folder never compresses it again
+                    crate::sys::output_registry::remember(
+                        &app,
+                        std::path::Path::new(&result.file_path),
+                    );
+                    for other in result_other_outputs(&result) {
+                        crate::sys::output_registry::remember(&app, std::path::Path::new(other));
+                    }
                     let media_id = result.video_id.clone();
                     results.insert(
                         media_id.clone(),
@@ -302,6 +319,11 @@ async fn compress_media_items(
                         "[media] Compressed image '{}' ({} bytes)",
                         image_id,
                         result.file_metadata.as_ref().map(|m| m.size).unwrap_or(0)
+                    );
+                    // Remembered, so a watched folder never compresses it again
+                    crate::sys::output_registry::remember(
+                        &app,
+                        std::path::Path::new(&result.file_path),
                     );
                     let media_id = result.image_id.clone();
                     results.insert(

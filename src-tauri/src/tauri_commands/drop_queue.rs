@@ -86,6 +86,17 @@ pub struct DropQueueItem {
     pub message: Option<String>,
     /// It failed as the system did not allow opening it (e.g. macOS privacy settings)
     pub is_access_denied: bool,
+    /// The watched folder it landed in (see `watch_folders`); `None` for media dropped, pasted or
+    /// copied, which is compressed first
+    pub watch_folder_id: Option<String>,
+    /// That folder's name, shown with it
+    pub watch_folder_name: Option<String>,
+}
+
+/// Where queued media came from, when not dropped: a watched folder
+pub struct QueueSource {
+    pub folder_id: String,
+    pub folder_name: String,
 }
 
 /// Changes to an item, from the popover compressing it
@@ -171,12 +182,26 @@ fn show_queue_progress(app_handle: &AppHandle, items: &[DropQueueItem]) {
     } else {
         0.0
     };
+    #[cfg(any(target_os = "macos", windows))]
     let _ = crate::tray_popover::set_tray_progress(app_handle, progress);
+    // No tray icon on Linux (the main window shows the queue)
+    #[cfg(target_os = "linux")]
+    let _ = progress;
 }
 
 /// Adds media to the end of the queue (folders are added as the media they contain), in order.
 /// Media already waiting or being compressed is not added again.
 pub fn add_to_queue(app_handle: &AppHandle, paths: Vec<String>, is_supported: impl Fn(&str) -> bool) {
+    add_to_queue_from(app_handle, paths, is_supported, None);
+}
+
+/// `add_to_queue`, for media from a watched folder (`source`)
+pub fn add_to_queue_from(
+    app_handle: &AppHandle,
+    paths: Vec<String>,
+    is_supported: impl Fn(&str) -> bool,
+    source: Option<QueueSource>,
+) {
     let files = match crate::tauri_commands::fs::allow_asset_scopes(app_handle, paths) {
         Ok(files) => files,
         Err(err) => {
@@ -185,7 +210,8 @@ pub fn add_to_queue(app_handle: &AppHandle, paths: Vec<String>, is_supported: im
         }
     };
     let group_id = nanoid!();
-    // The tray webview compresses the queue
+    // The tray webview compresses the queue (the main window, on Linux)
+    #[cfg(any(target_os = "macos", windows))]
     crate::tray_popover::ensure_tray_window(app_handle);
     log::info!("[drop-queue] Adding {} media", files.len());
     update_queue(app_handle, |items| {
@@ -220,6 +246,8 @@ pub fn add_to_queue(app_handle: &AppHandle, paths: Vec<String>, is_supported: im
                 output_path: None,
                 message: None,
                 is_access_denied: false,
+                watch_folder_id: source.as_ref().map(|source| source.folder_id.clone()),
+                watch_folder_name: source.as_ref().map(|source| source.folder_name.clone()),
             });
         }
     });

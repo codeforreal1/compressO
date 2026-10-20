@@ -54,8 +54,9 @@ import {
   inputOnlyExtensions,
   isAudioFileExtension,
 } from '@/types/compression'
-import { STANDARD_PRESET_ID } from '@/types/preset'
+import { type PresetMediaType, STANDARD_PRESET_ID } from '@/types/preset'
 import { getOutputFileName } from '@/utils/fs'
+import { DROP_ZONE_PRESET_SETTINGS } from '@/utils/presetOutput'
 import { convertDurationToMilliseconds } from '@/utils/string'
 
 /** Top folders of dropped folders saved so far, shared by the media of a drop */
@@ -80,6 +81,20 @@ async function waitForMainWindow() {
   ) {
     await wait(1000)
   }
+}
+
+/**
+ * The preset a queued media is compressed with: its watched folder's (Standard unless chosen), or
+ * the drop zone's (Settings -> Drop Zone)
+ */
+function getQueuePresetId(item: DropQueueItem, mediaType: PresetMediaType) {
+  if (item.watchFolderId) {
+    const folder = settingsStore.watchedFolders.find(
+      ({ id }) => id === item.watchFolderId,
+    )
+    return folder?.presetIds?.[mediaType] ?? STANDARD_PRESET_ID
+  }
+  return settingsStore[DROP_ZONE_PRESET_SETTINGS[mediaType]]
 }
 
 /**
@@ -112,7 +127,7 @@ async function loadQueueMedia(item: DropQueueItem): Promise<MediaFile> {
           ...cloneDeep(audioFileConfigInitialState),
           convertToExtension: getAudioFileOutputExtension(extension),
         },
-        getAudioPreset(settingsStore.dropZoneAudioPresetId),
+        getAudioPreset(getQueuePresetId(item, 'audio')),
         { sourceExtension: extension },
         { isBatchConfig: false },
       ),
@@ -126,7 +141,7 @@ async function loadQueueMedia(item: DropQueueItem): Promise<MediaFile> {
       width && height && !Number.isNaN(width) && !Number.isNaN(height)
         ? { width, height }
         : undefined
-    const preset = getVideoPreset(settingsStore.dropZoneVideoPresetId)
+    const preset = getVideoPreset(getQueuePresetId(item, 'video'))
     // Whether it has audio only matters for a preset's audio settings
     const audioStreams =
       preset.id !== STANDARD_PRESET_ID
@@ -172,7 +187,7 @@ async function loadQueueMedia(item: DropQueueItem): Promise<MediaFile> {
     dimensions,
     config: applyImagePresetToConfig(
       config,
-      getImagePreset(settingsStore.dropZoneImagePresetId),
+      getImagePreset(getQueuePresetId(item, 'image')),
       { sourceExtension: extension, dimensions },
       { isBatchConfig: false },
     ),
@@ -318,10 +333,15 @@ export async function runDropQueue() {
       // Paused: the media being compressed finished, nothing new starts
       if (await isDropQueuePaused().catch(() => false)) break
       await waitForMainWindow()
-      // The media queued first (media tried again is queued after the waiting media)
+      // The media dropped (or pasted, or copied) first, then that of the watched folders, each in
+      // the order it was queued (media tried again is queued after the waiting media)
       const next = (await getDropQueue())
         .filter((item) => item.status === 'waiting')
-        .sort((a, b) => a.queueOrder - b.queueOrder)[0]
+        .sort(
+          (a, b) =>
+            Number(!!a.watchFolderId) - Number(!!b.watchFolderId) ||
+            a.queueOrder - b.queueOrder,
+        )[0]
       if (!next) {
         isCompleted = true
         break

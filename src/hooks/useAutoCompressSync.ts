@@ -3,7 +3,11 @@ import { subscribe, useSnapshot } from 'valtio'
 
 import { presetsStore } from '@/stores/presetsStore'
 import { settingsStore } from '@/stores/settingsStore'
-import { setAutoCompressEnabled } from '@/tauri/commands/dropQueue'
+import {
+  setAutoCompressEnabled,
+  setWatchedFolders,
+} from '@/tauri/commands/dropQueue'
+import { inputExtensions } from '@/types/compression'
 import {
   DROP_ZONE_PRESET_SETTINGS,
   getPresetOutput,
@@ -57,5 +61,46 @@ export function useAutoCompressSync() {
       unsubscribeSettings()
       unsubscribePresets()
     }
+  }, [])
+}
+
+/** A folder's name, e.g. `Screenshots` for `/Users/me/Desktop/Screenshots` */
+export function getFolderName(path: string) {
+  return path.split(/[\\/]/).filter(Boolean).pop() ?? path
+}
+
+/** Media the watched folders pick up: what can be compressed */
+const WATCHED_EXTENSIONS = [
+  ...inputExtensions.video,
+  ...inputExtensions.image,
+  ...inputExtensions.audio,
+]
+
+/**
+ * Tells the backend which folders to watch (Settings -> Watched folders): the enabled ones, while
+ * their media can be compressed: with the menu bar's (or tray's) icon on macOS & Windows, whose
+ * window compresses it, & always on Linux, where the main window does
+ */
+export function useWatchedFoldersSync() {
+  useEffect(() => {
+    let sent: string | null = null
+    const apply = () => {
+      const folders =
+        !hasTray || settingsStore.showMenuBarIcon
+          ? settingsStore.watchedFolders
+              .filter((folder) => folder.isEnabled)
+              .map((folder) => ({
+                id: folder.id,
+                path: folder.path,
+                name: getFolderName(folder.path),
+              }))
+          : []
+      const next = JSON.stringify(folders)
+      if (next === sent) return
+      sent = next
+      setWatchedFolders(folders, WATCHED_EXTENSIONS).catch(() => {})
+    }
+    apply()
+    return subscribe(settingsStore, apply)
   }, [])
 }

@@ -5,6 +5,7 @@ import React, { useEffect } from 'react'
 import ReactDOM from 'react-dom'
 import { useTranslation } from 'react-i18next'
 
+import DashedBorder from '@/components/DashedBorder'
 import Icon from '@/components/Icon'
 import { toast } from '@/components/Toast'
 import {
@@ -116,9 +117,10 @@ function DragAndDropFiles({
               className="fixed top-0 right-0 bottom-0 left-0 w-screen h-screen bg-zinc-200 dark:bg-zinc-900 flex justify-center items-center flex-col z-[60]"
             >
               <motion.div
-                className="flex justify-center items-center flex-col py-16 px-20 border-2 border-dashed border-zinc-300 dark:border-zinc-700 rounded-3xl"
+                className="relative flex justify-center items-center flex-col py-16 px-20 rounded-3xl"
                 {...zoomInTransition}
               >
+                <DashedBorder radius={24} />
                 <Icon name="dragAndDrop" className="text-primary" size={50} />
                 <p className="my-2 text-gray-600 dark:text-gray-400 text-sm">
                   {t('home.dropAnywhere')}

@@ -105,12 +105,12 @@
       "moveDown": "Przenieś w dół",
       "duplicate": "Duplikuj",
       "delete": "Usuń ustawienie wstępne",
-      "title_video": "Ustawienia wstępne wideo",
-      "title_image": "Ustawienia wstępne obrazów",
-      "title_audio": "Ustawienia wstępne audio",
       "empty_video": "Nie ma jeszcze ustawień wstępnych wideo. Dostosuj ustawienia filmu i wybierz przycisk plusa obok menu Ustawienie wstępne, aby zapisać je jako ustawienie wstępne.",
       "empty_image": "Nie ma jeszcze ustawień wstępnych obrazów. Dostosuj ustawienia obrazu i wybierz przycisk plusa obok menu Ustawienie wstępne, aby zapisać je jako ustawienie wstępne.",
-      "empty_audio": "Nie ma jeszcze ustawień wstępnych audio. Dostosuj ustawienia pliku audio i wybierz przycisk plusa obok menu Ustawienie wstępne, aby zapisać je jako ustawienie wstępne."
+      "empty_audio": "Nie ma jeszcze ustawień wstępnych audio. Dostosuj ustawienia pliku audio i wybierz przycisk plusa obok menu Ustawienie wstępne, aby zapisać je jako ustawienie wstępne.",
+      "mediaType": "Typ multimediów",
+      "standardOutput": "Jego miejsce zapisu i prefiks nazwy pliku ustawia się w sekcji Wyjście.",
+      "cannotDeleteStandard": "Nie można usunąć ustawienia Standardowego."
     },
     "dropZone": {
       "needsTrayIcon_macos": "Strefa upuszczania znajduje się na pasku menu, więc działa tylko wtedy, gdy w sekcji Ogólne włączona jest opcja „Pokazuj ikonę na pasku menu”.",
@@ -122,7 +122,7 @@
         "autoCompress": {
           "title": "Kompresuj automatycznie",
           "description": "Kompresuj multimedia od razu po dodaniu do strefy upuszczania, po kolei, i zapisuj je w miejscu zapisu ich ustawienia.",
-          "needsSaveLocation": "W sekcji Ustawienia wstępne wybierz dla ustawienia strefy upuszczania miejsce zapisu inne niż Pytaj za każdym razem, aby skompresowane multimedia były zapisywane bez pytania."
+          "needsSaveLocation": "Wybierz miejsce zapisu inne niż Pytaj za każdym razem, w sekcji Wyjście lub w ustawieniu strefy upuszczania, aby skompresowane multimedia były zapisywane bez pytania."
         }
       },
       "preset": {
@@ -140,6 +140,21 @@
           "description_macos": "Dodawaj kopiowane multimedia, takie jak pliki lub obrazy z przeglądarki, do strefy upuszczania na pasku menu.",
           "description_windows": "Dodawaj kopiowane multimedia, takie jak pliki lub obrazy z przeglądarki, do strefy upuszczania w zasobniku systemowym."
         }
+      },
+      "watchedFolders": {
+        "add": {
+          "title": "Obserwuj folder",
+          "description": "Nowe multimedia dodane do tych folderów, np. nagrania ekranu lub pobrane pliki, są kompresowane automatycznie.",
+          "button": "Dodaj folder",
+          "dialogTitle": "Wybierz folder do obserwowania.",
+          "alreadyWatched": "Ten folder jest już obserwowany.",
+          "description_linux": "Nowe multimedia dodane do tych folderów, np. nagrania ekranu lub pobrane pliki, są kompresowane automatycznie, gdy CompressO jest otwarty."
+        },
+        "watch": "Obserwuj {{name}}",
+        "remove": "Przestań obserwować",
+        "preset_video": "Wideo",
+        "preset_image": "Obrazy",
+        "preset_audio": "Audio"
       }
     },
     "output": {
@@ -148,12 +163,17 @@
         "location": {
           "option_ask": "Pytaj za każdym razem",
           "option_fixedFolder": "Stały folder",
-          "option_sameFolder": "Folder oryginału"
+          "option_sameFolder": "Folder oryginału",
+          "title": "Lokalizacja zapisu",
+          "description_ask": "Wybieraj miejsce zapisu po każdej kompresji.",
+          "description_fixedFolder": "Zapisuj automatycznie w wybranym folderze po każdej kompresji.",
+          "description_sameFolder": "Zapisuj automatycznie obok oryginalnego pliku, w tym samym folderze."
         },
         "folder": {
           "none": "Nie wybrano folderu",
           "change": "Zmień",
-          "dialogTitle": "Wybierz folder do zapisywania skompresowanych multimediów."
+          "dialogTitle": "Wybierz folder do zapisywania skompresowanych multimediów.",
+          "title": "Folder"
         },
         "preserveFolders": {
           "title": "Zachowaj strukturę folderów",
@@ -165,8 +185,10 @@
         },
         "prefix": {
           "title": "Prefiks nazwy pliku",
-          "placeholder": "Bez prefiksu"
-        }
+          "placeholder": "Bez prefiksu",
+          "description": "Tekst dodawany na początku nazw zapisywanych plików. Pozostaw puste, aby zachować oryginalne nazwy."
+        },
+        "appliesTo": "Dotyczą tylko ustawienia Standardowego."
       },
       "clipboard": {
         "title": "Schowek",
@@ -201,6 +223,9 @@
           "cleared": "Pamięć podręczna została wyczyszczona.",
           "failed": "Wystąpił problem podczas czyszczenia pamięci podręcznej."
         }
+      },
+      "savedFiles": {
+        "title": "Zapisane pliki"
       }
     },
     "open": "Otwórz ustawienia",
@@ -214,7 +239,8 @@
       "presets": "Ustawienia wstępne",
       "dropZone": "Strefa upuszczania",
       "about": "Informacje",
-      "credits": "Podziękowania"
+      "credits": "Podziękowania",
+      "watchedFolders": "Obserwowane foldery"
     },
     "about": {
       "updateAvailable": "Dostępna aktualizacja",
@@ -257,6 +283,10 @@
         "description": "Pełne informacje i licencje podmiotów zewnętrznych.",
         "view": "Wyświetl"
       }
+    },
+    "watchedFolders": {
+      "folders": "Foldery",
+      "openFailed": "Nie udało się otworzyć folderu. Mógł zostać przeniesiony lub usunięty."
     }
   },
   "common": {
@@ -347,7 +377,7 @@
     "remove": "Usuń {{name}}",
     "storedBusy": "Przechowano. Otwórz aplikację, aby skompresować je po bieżących multimediach.",
     "storedIdle": "Upuść więcej multimediów lub otwórz aplikację, aby rozpocząć kompresję.",
-    "needsSaveLocation": "W Ustawieniach, w sekcji Ustawienia wstępne, wybierz miejsce zapisu dla ustawienia strefy upuszczania, aby skompresowane multimedia były zapisywane bez pytania."
+    "needsSaveLocation": "Wybierz miejsce zapisu w Ustawieniach, w sekcji Wyjście lub w ustawieniu strefy upuszczania, aby skompresowane multimedia były zapisywane bez pytania."
   },
   "queue": {
     "notSavedLarger": "Nie zapisano, ponieważ plik jest większy niż oryginał.",
@@ -401,7 +431,10 @@
     "filesCompressed_few": "Skompresowano {{count}} pliki",
     "filesCompressed_many": "Skompresowano {{count}} plików",
     "filesCompressed_other": "Skompresowano {{count}} pliku",
-    "accessDenied": "Brak uprawnień do otwarcia tego pliku. Zezwól na dostęp w ustawieniach systemu."
+    "accessDenied": "Brak uprawnień do otwarcia tego pliku. Zezwól na dostęp w ustawieniach systemu.",
+    "fromWatchedFolder": "Z obserwowanego folderu {{name}}",
+    "compressAgain": "Kompresuj ponownie",
+    "compressNameAgain": "Kompresuj {{name}} ponownie"
   },
   "subtitles": {
     "unknownLanguage": "Nieznany",

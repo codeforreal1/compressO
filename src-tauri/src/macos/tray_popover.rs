@@ -232,6 +232,7 @@ pub fn init(app: &App) {
     app.manage(crate::tauri_commands::drop_queue::DropQueueState::default());
     let _ = APP_HANDLE.set(app.handle().clone());
     crate::sys::clipboard_watch::init(app.handle());
+    crate::sys::watch_folders::init(app.handle());
 }
 
 /// Shows or removes the status bar (tray) icon, which toggles a native popover (NSPopover) hosting

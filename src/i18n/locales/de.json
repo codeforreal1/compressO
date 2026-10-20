@@ -105,12 +105,12 @@
       "moveDown": "Nach unten",
       "duplicate": "Duplizieren",
       "delete": "Voreinstellung löschen",
-      "title_video": "Video-Voreinstellungen",
-      "title_image": "Bild-Voreinstellungen",
-      "title_audio": "Audio-Voreinstellungen",
       "empty_video": "Es gibt noch keine Video-Voreinstellungen. Passen Sie die Einstellungen eines Videos an und wählen Sie die Plus-Schaltfläche neben dem Menü „Voreinstellung“, um sie als Voreinstellung zu speichern.",
       "empty_image": "Es gibt noch keine Bild-Voreinstellungen. Passen Sie die Einstellungen eines Bildes an und wählen Sie die Plus-Schaltfläche neben dem Menü „Voreinstellung“, um sie als Voreinstellung zu speichern.",
-      "empty_audio": "Es gibt noch keine Audio-Voreinstellungen. Passen Sie die Einstellungen einer Audiodatei an und wählen Sie die Plus-Schaltfläche neben dem Menü „Voreinstellung“, um sie als Voreinstellung zu speichern."
+      "empty_audio": "Es gibt noch keine Audio-Voreinstellungen. Passen Sie die Einstellungen einer Audiodatei an und wählen Sie die Plus-Schaltfläche neben dem Menü „Voreinstellung“, um sie als Voreinstellung zu speichern.",
+      "mediaType": "Medientyp",
+      "standardOutput": "Speicherort und Dateinamenpräfix werden unter „Ausgabe“ festgelegt.",
+      "cannotDeleteStandard": "Die Standard-Voreinstellung kann nicht gelöscht werden."
     },
     "dropZone": {
       "needsTrayIcon_macos": "Die Ablagezone befindet sich in der Menüleiste und funktioniert daher nur, wenn „Symbol in der Menüleiste anzeigen“ unter „Allgemein“ aktiviert ist.",
@@ -122,7 +122,7 @@
         "autoCompress": {
           "title": "Automatisch komprimieren",
           "description": "Medien komprimieren, sobald sie zur Ablagezone hinzugefügt werden, eines nach dem anderen, und am Speicherort ihrer Voreinstellung speichern.",
-          "needsSaveLocation": "Wählen Sie unter „Voreinstellungen“ für eine Voreinstellung der Ablagezone einen anderen Speicherort als „Jedes Mal fragen“, damit die komprimierten Medien ohne Nachfrage gespeichert werden können."
+          "needsSaveLocation": "Wählen Sie unter „Ausgabe“ oder in einer Voreinstellung der Ablagezone einen anderen Speicherort als „Jedes Mal fragen“, damit die komprimierten Medien ohne Nachfrage gespeichert werden können."
         }
       },
       "preset": {
@@ -140,6 +140,21 @@
           "description_macos": "Kopierte Medien, etwa Dateien oder Bilder aus einem Browser, zur Ablagezone in der Menüleiste hinzufügen.",
           "description_windows": "Kopierte Medien, etwa Dateien oder Bilder aus einem Browser, zur Ablagezone im Infobereich hinzufügen."
         }
+      },
+      "watchedFolders": {
+        "add": {
+          "title": "Einen Ordner überwachen",
+          "description": "Neue Medien in diesen Ordnern, etwa Bildschirmaufnahmen oder Downloads, werden automatisch komprimiert.",
+          "button": "Ordner hinzufügen",
+          "dialogTitle": "Wählen Sie einen Ordner zum Überwachen.",
+          "alreadyWatched": "Dieser Ordner wird bereits überwacht.",
+          "description_linux": "Neue Medien in diesen Ordnern, etwa Bildschirmaufnahmen oder Downloads, werden automatisch komprimiert, solange CompressO geöffnet ist."
+        },
+        "watch": "{{name}} überwachen",
+        "remove": "Nicht mehr überwachen",
+        "preset_video": "Videos",
+        "preset_image": "Bilder",
+        "preset_audio": "Audio"
       }
     },
     "output": {
@@ -148,12 +163,17 @@
         "location": {
           "option_ask": "Jedes Mal fragen",
           "option_fixedFolder": "Fester Ordner",
-          "option_sameFolder": "Gleicher Ordner wie das Original"
+          "option_sameFolder": "Gleicher Ordner wie das Original",
+          "title": "Speicherort",
+          "description_ask": "Nach jeder Komprimierung auswählen, wo gespeichert werden soll.",
+          "description_fixedFolder": "Nach jeder Komprimierung automatisch im gewählten Ordner speichern.",
+          "description_sameFolder": "Automatisch neben der Originaldatei im selben Ordner speichern."
         },
         "folder": {
           "none": "Kein Ordner ausgewählt",
           "change": "Ändern",
-          "dialogTitle": "Wählen Sie einen Ordner, in dem komprimierte Medien gespeichert werden sollen."
+          "dialogTitle": "Wählen Sie einen Ordner, in dem komprimierte Medien gespeichert werden sollen.",
+          "title": "Ordner"
         },
         "preserveFolders": {
           "title": "Ordnerstruktur beibehalten",
@@ -165,8 +185,10 @@
         },
         "prefix": {
           "title": "Dateinamenpräfix",
-          "placeholder": "Kein Präfix"
-        }
+          "placeholder": "Kein Präfix",
+          "description": "Text, der am Anfang gespeicherter Dateinamen eingefügt wird. Leer lassen, um die ursprünglichen Namen beizubehalten."
+        },
+        "appliesTo": "Gilt nur für die Standard-Voreinstellung."
       },
       "clipboard": {
         "title": "Zwischenablage",
@@ -201,6 +223,9 @@
           "cleared": "Der gesamte Cache wurde geleert.",
           "failed": "Beim Leeren des Caches ist ein Problem aufgetreten."
         }
+      },
+      "savedFiles": {
+        "title": "Gespeicherte Dateien"
       }
     },
     "open": "Einstellungen öffnen",
@@ -214,7 +239,8 @@
       "presets": "Voreinstellungen",
       "dropZone": "Ablagezone",
       "about": "Über",
-      "credits": "Danksagungen"
+      "credits": "Danksagungen",
+      "watchedFolders": "Überwachte Ordner"
     },
     "about": {
       "updateAvailable": "Update verfügbar",
@@ -257,6 +283,10 @@
         "description": "Vollständige Hinweise und Lizenzen von Drittanbietern.",
         "view": "Anzeigen"
       }
+    },
+    "watchedFolders": {
+      "folders": "Ordner",
+      "openFailed": "Der Ordner konnte nicht geöffnet werden. Er wurde möglicherweise verschoben oder gelöscht."
     }
   },
   "common": {
@@ -345,7 +375,7 @@
     "remove": "{{name}} entfernen",
     "storedBusy": "Gesammelt. Öffnen Sie die App, um sie nach den aktuellen Medien zu komprimieren.",
     "storedIdle": "Legen Sie weitere Medien ab oder öffnen Sie die App, um die Komprimierung zu starten.",
-    "needsSaveLocation": "Wählen Sie in den Einstellungen unter „Voreinstellungen“ einen Speicherort für eine Voreinstellung der Ablagezone, damit die komprimierten Medien ohne Nachfrage gespeichert werden können."
+    "needsSaveLocation": "Wählen Sie in den Einstellungen unter „Ausgabe“ oder in einer Voreinstellung der Ablagezone einen Speicherort, damit die komprimierten Medien ohne Nachfrage gespeichert werden können."
   },
   "queue": {
     "notSavedLarger": "Nicht gespeichert, da größer als das Original.",
@@ -389,7 +419,10 @@
     "showDropZone": "Ablagezone anzeigen",
     "filesCompressed_one": "{{count}} Datei komprimiert",
     "filesCompressed_other": "{{count}} Dateien komprimiert",
-    "accessDenied": "Diese Datei darf nicht geöffnet werden. Erlauben Sie den Zugriff in den Systemeinstellungen."
+    "accessDenied": "Diese Datei darf nicht geöffnet werden. Erlauben Sie den Zugriff in den Systemeinstellungen.",
+    "fromWatchedFolder": "Aus dem überwachten Ordner {{name}}",
+    "compressAgain": "Erneut komprimieren",
+    "compressNameAgain": "{{name}} erneut komprimieren"
   },
   "subtitles": {
     "unknownLanguage": "Unbekannt",

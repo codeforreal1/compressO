@@ -21,6 +21,7 @@ import DropZone from './DropZone'
 import General from './General'
 import Output from './Output'
 import Presets from './Presets'
+import WatchedFolders from './WatchedFolders'
 
 type SettingsPage = {
   id: keyof Translation['settings']['pages']
@@ -64,6 +65,12 @@ const SETTINGS_GROUPS: {
             },
           ]
         : []),
+      // Compressed by the drop zone's queue (by the main window on Linux, while it is open)
+      {
+        id: 'watchedFolders',
+        icon: 'watchedFolder',
+        Component: WatchedFolders,
+      },
     ],
   },
   {

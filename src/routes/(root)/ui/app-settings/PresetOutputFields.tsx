@@ -33,19 +33,13 @@ type PresetOutputFieldsProps = {
   /** Its own output, or `null` to follow the Standard preset's */
   value: PresetOutput | null | undefined
   onChange: (output: PresetOutput | null) => void
-  /** The Standard preset's own (it always has one, so it cannot follow itself) */
-  isStandard?: boolean
 }
 
 /**
  * Where a preset's outputs are saved & their file name prefix: the same as the Standard preset
  * (the default), or its own, starting from the Standard preset's
  */
-function PresetOutputFields({
-  value,
-  onChange,
-  isStandard,
-}: PresetOutputFieldsProps) {
+function PresetOutputFields({ value, onChange }: PresetOutputFieldsProps) {
   const { t } = useTranslation()
   const location = value?.saveLocation ?? FOLLOW_STANDARD
 
@@ -77,10 +71,7 @@ function PresetOutputFields({
         }}
         classNames={{ popoverContent: 'settings-dialog' }}
       >
-        {(isStandard
-          ? SAVE_LOCATION_OPTIONS
-          : [FOLLOW_STANDARD, ...SAVE_LOCATION_OPTIONS]
-        ).map((option) => (
+        {[FOLLOW_STANDARD, ...SAVE_LOCATION_OPTIONS].map((option) => (
           <SelectItem key={option}>
             {option === FOLLOW_STANDARD
               ? t('presets.output.followStandard')

@@ -105,12 +105,12 @@
       "moveDown": "Sposta giù",
       "duplicate": "Duplica",
       "delete": "Elimina preset",
-      "title_video": "Preset video",
-      "title_image": "Preset immagine",
-      "title_audio": "Preset audio",
       "empty_video": "Non ci sono ancora preset video. Regoli le impostazioni di un video e selezioni il pulsante più accanto al menu Preset per salvarle come preset.",
       "empty_image": "Non ci sono ancora preset immagine. Regoli le impostazioni di un’immagine e selezioni il pulsante più accanto al menu Preset per salvarle come preset.",
-      "empty_audio": "Non ci sono ancora preset audio. Regoli le impostazioni di un file audio e selezioni il pulsante più accanto al menu Preset per salvarle come preset."
+      "empty_audio": "Non ci sono ancora preset audio. Regoli le impostazioni di un file audio e selezioni il pulsante più accanto al menu Preset per salvarle come preset.",
+      "mediaType": "Tipo di file",
+      "standardOutput": "La posizione di salvataggio e il prefisso del nome del file si impostano in Output.",
+      "cannotDeleteStandard": "La preimpostazione Standard non può essere eliminata."
     },
     "dropZone": {
       "needsTrayIcon_macos": "La zona di rilascio si trova nella barra dei menu, quindi funziona solo quando «Mostra icona nella barra dei menu» è attivo in Generali.",
@@ -122,7 +122,7 @@
         "autoCompress": {
           "title": "Comprimi automaticamente",
           "description": "Comprimi i file appena vengono aggiunti alla zona di rilascio, uno alla volta, e salvali nella posizione della loro preimpostazione.",
-          "needsSaveLocation": "In Preimpostazioni, scegli per una preimpostazione della zona di rilascio una posizione diversa da Chiedi ogni volta, così i file compressi vengono salvati senza chiedere."
+          "needsSaveLocation": "Scegli una posizione diversa da Chiedi ogni volta, in Output o in una preimpostazione della zona di rilascio, così i file compressi vengono salvati senza chiedere."
         }
       },
       "preset": {
@@ -140,6 +140,21 @@
           "description_macos": "Aggiungi i contenuti che copia, come file o immagini da un browser, alla zona di rilascio nella barra dei menu.",
           "description_windows": "Aggiungi i contenuti che copia, come file o immagini da un browser, alla zona di rilascio nell’area di notifica."
         }
+      },
+      "watchedFolders": {
+        "add": {
+          "title": "Monitora una cartella",
+          "description": "I nuovi file aggiunti a queste cartelle, come registrazioni dello schermo o download, vengono compressi automaticamente.",
+          "button": "Aggiungi cartella",
+          "dialogTitle": "Scegli una cartella da monitorare.",
+          "alreadyWatched": "Questa cartella è già monitorata.",
+          "description_linux": "I nuovi file aggiunti a queste cartelle, come registrazioni dello schermo o download, vengono compressi automaticamente finché CompressO è aperto."
+        },
+        "watch": "Monitora {{name}}",
+        "remove": "Interrompi il monitoraggio",
+        "preset_video": "Video",
+        "preset_image": "Immagini",
+        "preset_audio": "Audio"
       }
     },
     "output": {
@@ -148,12 +163,17 @@
         "location": {
           "option_ask": "Chiedi ogni volta",
           "option_fixedFolder": "Cartella fissa",
-          "option_sameFolder": "Stessa cartella dell’originale"
+          "option_sameFolder": "Stessa cartella dell’originale",
+          "title": "Posizione di salvataggio",
+          "description_ask": "Scegli dove salvare dopo ogni compressione.",
+          "description_fixedFolder": "Salva automaticamente nella cartella scelta dopo ogni compressione.",
+          "description_sameFolder": "Salva automaticamente accanto al file originale, nella stessa cartella."
         },
         "folder": {
           "none": "Nessuna cartella scelta",
           "change": "Cambia",
-          "dialogTitle": "Scelga una cartella in cui salvare i contenuti compressi."
+          "dialogTitle": "Scelga una cartella in cui salvare i contenuti compressi.",
+          "title": "Cartella"
         },
         "preserveFolders": {
           "title": "Mantieni la struttura delle cartelle",
@@ -165,8 +185,10 @@
         },
         "prefix": {
           "title": "Prefisso del nome file",
-          "placeholder": "Nessun prefisso"
-        }
+          "placeholder": "Nessun prefisso",
+          "description": "Testo aggiunto all’inizio dei nomi dei file salvati. Lasci vuoto per mantenere i nomi originali."
+        },
+        "appliesTo": "Si applicano solo alla preimpostazione Standard."
       },
       "clipboard": {
         "title": "Appunti",
@@ -201,6 +223,9 @@
           "cleared": "Tutta la cache è stata svuotata.",
           "failed": "Si è verificato un problema durante lo svuotamento della cache."
         }
+      },
+      "savedFiles": {
+        "title": "File salvati"
       }
     },
     "open": "Apri Impostazioni",
@@ -214,7 +239,8 @@
       "presets": "Preset",
       "dropZone": "Zona di rilascio",
       "about": "Informazioni",
-      "credits": "Riconoscimenti"
+      "credits": "Riconoscimenti",
+      "watchedFolders": "Cartelle monitorate"
     },
     "about": {
       "updateAvailable": "Aggiornamento disponibile",
@@ -257,6 +283,10 @@
         "description": "Avvisi e licenze completi di terze parti.",
         "view": "Visualizza"
       }
+    },
+    "watchedFolders": {
+      "folders": "Cartelle",
+      "openFailed": "Impossibile aprire la cartella. Potrebbe essere stata spostata o eliminata."
     }
   },
   "common": {
@@ -346,7 +376,7 @@
     "remove": "Rimuovi {{name}}",
     "storedBusy": "Conservati. Apra l’app per comprimerli dopo i contenuti attuali.",
     "storedIdle": "Rilasci altri contenuti o apra l’app per avviare la compressione.",
-    "needsSaveLocation": "Nelle Impostazioni, in Preimpostazioni, scegli una posizione di salvataggio per una preimpostazione della zona di rilascio, così i file compressi vengono salvati senza chiedere."
+    "needsSaveLocation": "Scegli una posizione di salvataggio nelle Impostazioni, in Output o in una preimpostazione della zona di rilascio, così i file compressi vengono salvati senza chiedere."
   },
   "queue": {
     "notSavedLarger": "Non salvato, perché è più grande dell’originale.",
@@ -395,7 +425,10 @@
     "filesCompressed_one": "{{count}} file compresso",
     "filesCompressed_many": "{{count}} file compressi",
     "filesCompressed_other": "{{count}} file compressi",
-    "accessDenied": "Non è consentito aprire questo file. Consenta l’accesso nelle impostazioni di sistema."
+    "accessDenied": "Non è consentito aprire questo file. Consenta l’accesso nelle impostazioni di sistema.",
+    "fromWatchedFolder": "Dalla cartella monitorata {{name}}",
+    "compressAgain": "Comprimi di nuovo",
+    "compressNameAgain": "Comprimi {{name}} di nuovo"
   },
   "subtitles": {
     "unknownLanguage": "Sconosciuta",

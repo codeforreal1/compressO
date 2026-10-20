@@ -43,6 +43,13 @@ export type DropQueueItem = {
   message: string | null
   /** It failed as the system did not allow opening it (e.g. macOS privacy settings) */
   isAccessDenied: boolean
+  /**
+   * The watched folder it landed in (see `watch_folders.rs`), `null` for media dropped, pasted or
+   * copied, which is compressed first
+   */
+  watchFolderId: string | null
+  /** That folder's name, shown with it */
+  watchFolderName: string | null
 }
 
 export type DropQueueItemUpdate = Partial<
@@ -102,4 +109,20 @@ export function setDropQueuePaused(paused: boolean) {
 
 export function isDropQueuePaused() {
   return core.invoke<boolean>('is_drop_queue_paused')
+}
+
+/** A watched folder, as the backend watches it (only the enabled ones are sent) */
+export type WatchedFolderToWatch = { id: string; path: string; name: string }
+
+/**
+ * Sets the folders watched, & the extensions of the media they pick up (see `watch_folders.rs`)
+ */
+export function setWatchedFolders(
+  folders: WatchedFolderToWatch[],
+  supportedExtensions: readonly string[],
+) {
+  return core.invoke<void>('set_watched_folders', {
+    folders,
+    supportedExtensions,
+  })
 }

@@ -83,6 +83,8 @@ pub async fn move_file(
 /// Lets the frontend load a saved file (e.g. to preview it), since the asset protocol scope only
 /// covers the app data folder by default
 fn allow_saved_file(app_handle: &AppHandle, path: &PathBuf) -> String {
+    // Remembered, so a watched folder never compresses it again (see `output_registry`)
+    crate::sys::output_registry::remember(app_handle, path);
     let _ = app_handle.fs_scope().allow_file(path);
     let _ = app_handle.asset_protocol_scope().allow_file(path);
     path.to_string_lossy().to_string()

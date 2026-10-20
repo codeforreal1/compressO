@@ -105,12 +105,12 @@
       "moveDown": "Aşağı taşı",
       "duplicate": "Çoğalt",
       "delete": "Ön ayarı sil",
-      "title_video": "Video Ön Ayarları",
-      "title_image": "Görüntü Ön Ayarları",
-      "title_audio": "Ses Ön Ayarları",
       "empty_video": "Henüz video ön ayarı yok. Bir videonun ayarlarını düzenleyin ve bunları ön ayar olarak kaydetmek için Ön ayar menüsünün yanındaki artı düğmesini seçin.",
       "empty_image": "Henüz görüntü ön ayarı yok. Bir görüntünün ayarlarını düzenleyin ve bunları ön ayar olarak kaydetmek için Ön ayar menüsünün yanındaki artı düğmesini seçin.",
-      "empty_audio": "Henüz ses ön ayarı yok. Bir ses dosyasının ayarlarını düzenleyin ve bunları ön ayar olarak kaydetmek için Ön ayar menüsünün yanındaki artı düğmesini seçin."
+      "empty_audio": "Henüz ses ön ayarı yok. Bir ses dosyasının ayarlarını düzenleyin ve bunları ön ayar olarak kaydetmek için Ön ayar menüsünün yanındaki artı düğmesini seçin.",
+      "mediaType": "Medya türü",
+      "standardOutput": "Kaydetme konumu ve dosya adı öneki Çıktı bölümünde ayarlanır.",
+      "cannotDeleteStandard": "Standart ön ayar silinemez."
     },
     "dropZone": {
       "needsTrayIcon_macos": "Bırakma alanı menü çubuğundadır; bu nedenle yalnızca Genel’de “Menü çubuğu simgesini göster” açıkken çalışır.",
@@ -122,7 +122,7 @@
         "autoCompress": {
           "title": "Otomatik sıkıştır",
           "description": "Medyayı bırakma alanına eklenir eklenmez tek tek sıkıştırır ve ön ayarının kaydetme konumuna kaydeder.",
-          "needsSaveLocation": "Sıkıştırılan medyanın sormadan kaydedilebilmesi için Ön Ayarlar bölümünde bırakma alanının bir ön ayarına Her seferinde sor dışında bir kaydetme konumu seçin."
+          "needsSaveLocation": "Sıkıştırılan medyanın sormadan kaydedilebilmesi için Çıktı bölümünde veya bırakma alanının bir ön ayarında Her seferinde sor dışında bir kaydetme konumu seçin."
         }
       },
       "preset": {
@@ -140,6 +140,21 @@
           "description_macos": "Kopyaladığınız medyayı, örneğin dosyaları veya bir tarayıcıdaki görüntüleri, menü çubuğundaki bırakma alanına ekleyin.",
           "description_windows": "Kopyaladığınız medyayı, örneğin dosyaları veya bir tarayıcıdaki görüntüleri, sistem tepsisindeki bırakma alanına ekleyin."
         }
+      },
+      "watchedFolders": {
+        "add": {
+          "title": "Bir klasörü izle",
+          "description": "Bu klasörlere eklenen yeni medya, örneğin ekran kayıtları veya indirmeler, otomatik olarak sıkıştırılır.",
+          "button": "Klasör ekle",
+          "dialogTitle": "İzlenecek bir klasör seçin.",
+          "alreadyWatched": "Bu klasör zaten izleniyor.",
+          "description_linux": "Bu klasörlere eklenen yeni medya, örneğin ekran kayıtları veya indirmeler, CompressO açıkken otomatik olarak sıkıştırılır."
+        },
+        "watch": "{{name}} klasörünü izle",
+        "remove": "İzlemeyi durdur",
+        "preset_video": "Videolar",
+        "preset_image": "Görüntüler",
+        "preset_audio": "Ses"
       }
     },
     "output": {
@@ -148,12 +163,17 @@
         "location": {
           "option_ask": "Her seferinde sor",
           "option_fixedFolder": "Sabit klasör",
-          "option_sameFolder": "Orijinalle aynı klasör"
+          "option_sameFolder": "Orijinalle aynı klasör",
+          "title": "Kayıt konumu",
+          "description_ask": "Her sıkıştırmadan sonra nereye kaydedileceğini seçin.",
+          "description_fixedFolder": "Her sıkıştırmadan sonra seçilen klasöre otomatik olarak kaydedin.",
+          "description_sameFolder": "Orijinal dosyanın yanına, aynı klasöre otomatik olarak kaydedin."
         },
         "folder": {
           "none": "Klasör seçilmedi",
           "change": "Değiştir",
-          "dialogTitle": "Sıkıştırılan medyanın kaydedileceği bir klasör seçin."
+          "dialogTitle": "Sıkıştırılan medyanın kaydedileceği bir klasör seçin.",
+          "title": "Klasör"
         },
         "preserveFolders": {
           "title": "Klasör yapısını koru",
@@ -165,8 +185,10 @@
         },
         "prefix": {
           "title": "Dosya adı öneki",
-          "placeholder": "Önek yok"
-        }
+          "placeholder": "Önek yok",
+          "description": "Kaydedilen dosya adlarının başına eklenen metin. Orijinal adları korumak için boş bırakın."
+        },
+        "appliesTo": "Bunlar yalnızca Standart ön ayar için geçerlidir."
       },
       "clipboard": {
         "title": "Pano",
@@ -201,6 +223,9 @@
           "cleared": "Önbelleğin tamamı temizlendi.",
           "failed": "Önbellek temizlenirken bir sorun oluştu."
         }
+      },
+      "savedFiles": {
+        "title": "Kaydedilen dosyalar"
       }
     },
     "open": "Ayarları Aç",
@@ -214,7 +239,8 @@
       "presets": "Ön Ayarlar",
       "dropZone": "Bırakma Alanı",
       "about": "Hakkında",
-      "credits": "Teşekkürler"
+      "credits": "Teşekkürler",
+      "watchedFolders": "İzlenen klasörler"
     },
     "about": {
       "updateAvailable": "Güncelleme mevcut",
@@ -257,6 +283,10 @@
         "description": "Üçüncü taraf bildirimlerinin ve lisanslarının tamamı.",
         "view": "Görüntüle"
       }
+    },
+    "watchedFolders": {
+      "folders": "Klasörler",
+      "openFailed": "Klasör açılamadı. Taşınmış veya silinmiş olabilir."
     }
   },
   "common": {
@@ -345,7 +375,7 @@
     "remove": "{{name}} öğesini kaldır",
     "storedBusy": "Saklandı. Geçerli medyadan sonra sıkıştırmak için uygulamayı açın.",
     "storedIdle": "Daha fazla medya bırakın veya sıkıştırmayı başlatmak için uygulamayı açın.",
-    "needsSaveLocation": "Sıkıştırılan medyanın sormadan kaydedilebilmesi için Ayarlar’da, Ön Ayarlar bölümünde bırakma alanının bir ön ayarı için kaydetme konumu seçin."
+    "needsSaveLocation": "Sıkıştırılan medyanın sormadan kaydedilebilmesi için Ayarlar’da, Çıktı bölümünde veya bırakma alanının bir ön ayarında bir kaydetme konumu seçin."
   },
   "queue": {
     "notSavedLarger": "Orijinalinden büyük olduğu için kaydedilmedi.",
@@ -389,7 +419,10 @@
     "showDropZone": "Bırakma alanını göster",
     "filesCompressed_one": "{{count}} dosya sıkıştırıldı",
     "filesCompressed_other": "{{count}} dosya sıkıştırıldı",
-    "accessDenied": "Bu dosyayı açma izni yok. Sistem ayarlarında erişime izin verin."
+    "accessDenied": "Bu dosyayı açma izni yok. Sistem ayarlarında erişime izin verin.",
+    "fromWatchedFolder": "İzlenen {{name}} klasöründen",
+    "compressAgain": "Yeniden sıkıştır",
+    "compressNameAgain": "{{name}} dosyasını yeniden sıkıştır"
   },
   "subtitles": {
     "unknownLanguage": "Bilinmiyor",

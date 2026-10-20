@@ -105,12 +105,12 @@
       "moveDown": "Mover para baixo",
       "duplicate": "Duplicar",
       "delete": "Apagar predefinição",
-      "title_video": "Predefinições de vídeo",
-      "title_image": "Predefinições de imagem",
-      "title_audio": "Predefinições de áudio",
       "empty_video": "Ainda não há predefinições de vídeo. Ajuste as configurações de um vídeo e selecione o botão de adição ao lado do menu Predefinição para salvá-las como predefinição.",
       "empty_image": "Ainda não há predefinições de imagem. Ajuste as configurações de uma imagem e selecione o botão de adição ao lado do menu Predefinição para salvá-las como predefinição.",
-      "empty_audio": "Ainda não há predefinições de áudio. Ajuste as configurações de um arquivo de áudio e selecione o botão de adição ao lado do menu Predefinição para salvá-las como predefinição."
+      "empty_audio": "Ainda não há predefinições de áudio. Ajuste as configurações de um arquivo de áudio e selecione o botão de adição ao lado do menu Predefinição para salvá-las como predefinição.",
+      "mediaType": "Tipo de mídia",
+      "standardOutput": "O seu local de salvamento e o prefixo do nome do arquivo são definidos em Saída.",
+      "cannotDeleteStandard": "A predefinição Padrão não pode ser excluída."
     },
     "dropZone": {
       "needsTrayIcon_macos": "A área de soltar fica na barra de menus, por isso só funciona quando “Mostrar ícone na barra de menus” está ativado em Geral.",
@@ -122,7 +122,7 @@
         "autoCompress": {
           "title": "Comprimir automaticamente",
           "description": "Comprime as mídias assim que são adicionadas à zona de soltar, uma de cada vez, e as salva no local da sua predefinição.",
-          "needsSaveLocation": "Em Predefinições, escolha para uma predefinição da zona de soltar um local diferente de Perguntar sempre, para que as mídias comprimidas sejam salvas sem perguntar."
+          "needsSaveLocation": "Escolha um local diferente de Perguntar sempre, em Saída ou numa predefinição da zona de soltar, para que as mídias comprimidas sejam salvas sem perguntar."
         }
       },
       "preset": {
@@ -140,6 +140,21 @@
           "description_macos": "Adicionar as mídias que você copiar, como arquivos ou imagens de um navegador, à área de soltar na barra de menus.",
           "description_windows": "Adicionar as mídias que você copiar, como arquivos ou imagens de um navegador, à área de soltar na bandeja do sistema."
         }
+      },
+      "watchedFolders": {
+        "add": {
+          "title": "Monitorar uma pasta",
+          "description": "As novas mídias adicionadas a estas pastas, como gravações de tela ou downloads, são comprimidas automaticamente.",
+          "button": "Adicionar pasta",
+          "dialogTitle": "Escolha uma pasta para monitorar.",
+          "alreadyWatched": "Esta pasta já está sendo monitorada.",
+          "description_linux": "As novas mídias adicionadas a estas pastas, como gravações de tela ou downloads, são comprimidas automaticamente enquanto o CompressO estiver aberto."
+        },
+        "watch": "Monitorar {{name}}",
+        "remove": "Parar de monitorar",
+        "preset_video": "Vídeos",
+        "preset_image": "Imagens",
+        "preset_audio": "Áudio"
       }
     },
     "output": {
@@ -148,12 +163,17 @@
         "location": {
           "option_ask": "Perguntar sempre",
           "option_fixedFolder": "Pasta fixa",
-          "option_sameFolder": "Mesma pasta do original"
+          "option_sameFolder": "Mesma pasta do original",
+          "title": "Local de salvamento",
+          "description_ask": "Escolher onde salvar após cada compressão.",
+          "description_fixedFolder": "Salvar automaticamente na pasta escolhida após cada compressão.",
+          "description_sameFolder": "Salvar automaticamente ao lado do arquivo original, na mesma pasta."
         },
         "folder": {
           "none": "Nenhuma pasta escolhida",
           "change": "Alterar",
-          "dialogTitle": "Escolha uma pasta para salvar as mídias comprimidas."
+          "dialogTitle": "Escolha uma pasta para salvar as mídias comprimidas.",
+          "title": "Pasta"
         },
         "preserveFolders": {
           "title": "Manter a estrutura de pastas",
@@ -165,8 +185,10 @@
         },
         "prefix": {
           "title": "Prefixo do nome do arquivo",
-          "placeholder": "Sem prefixo"
-        }
+          "placeholder": "Sem prefixo",
+          "description": "Texto adicionado ao início do nome dos arquivos salvos. Deixe vazio para manter os nomes originais."
+        },
+        "appliesTo": "Aplicam-se apenas à predefinição Padrão."
       },
       "clipboard": {
         "title": "Área de transferência",
@@ -201,6 +223,9 @@
           "cleared": "Todo o cache foi limpo.",
           "failed": "Ocorreu um problema ao limpar o cache."
         }
+      },
+      "savedFiles": {
+        "title": "Arquivos salvos"
       }
     },
     "open": "Abrir Ajustes",
@@ -214,7 +239,8 @@
       "presets": "Predefinições",
       "dropZone": "Área de soltar",
       "about": "Sobre",
-      "credits": "Créditos"
+      "credits": "Créditos",
+      "watchedFolders": "Pastas monitoradas"
     },
     "about": {
       "updateAvailable": "Atualização disponível",
@@ -257,6 +283,10 @@
         "description": "Avisos e licenças completos de terceiros.",
         "view": "Ver"
       }
+    },
+    "watchedFolders": {
+      "folders": "Pastas",
+      "openFailed": "Não foi possível abrir a pasta. Ela pode ter sido movida ou excluída."
     }
   },
   "common": {
@@ -346,7 +376,7 @@
     "remove": "Remover {{name}}",
     "storedBusy": "Guardadas. Abra o app para comprimi-las depois das mídias atuais.",
     "storedIdle": "Solte mais mídias ou abra o app para iniciar a compressão.",
-    "needsSaveLocation": "Nas Configurações, em Predefinições, escolha um local de salvamento para uma predefinição da zona de soltar, para que as mídias comprimidas sejam salvas sem perguntar."
+    "needsSaveLocation": "Escolha um local de salvamento nas Configurações, em Saída ou numa predefinição da zona de soltar, para que as mídias comprimidas sejam salvas sem perguntar."
   },
   "queue": {
     "notSavedLarger": "Não salvo, pois é maior que o original.",
@@ -395,7 +425,10 @@
     "filesCompressed_one": "{{count}} arquivo comprimido",
     "filesCompressed_many": "{{count}} arquivos comprimidos",
     "filesCompressed_other": "{{count}} arquivos comprimidos",
-    "accessDenied": "Não é permitido abrir este arquivo. Permita o acesso nos ajustes do sistema."
+    "accessDenied": "Não é permitido abrir este arquivo. Permita o acesso nos ajustes do sistema.",
+    "fromWatchedFolder": "Da pasta monitorada {{name}}",
+    "compressAgain": "Comprimir novamente",
+    "compressNameAgain": "Comprimir {{name}} novamente"
   },
   "subtitles": {
     "unknownLanguage": "Desconhecido",

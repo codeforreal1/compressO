@@ -327,6 +327,7 @@ pub fn init(app: &App) {
     app.manage(crate::tauri_commands::tray::DroppedFilesState::default());
     app.manage(crate::tauri_commands::drop_queue::DropQueueState::default());
     crate::sys::clipboard_watch::init(app.handle());
+    crate::sys::watch_folders::init(app.handle());
 }
 
 /// Shows or removes the tray icon, which toggles the popover. Removing it also destroys the tray
