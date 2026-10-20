@@ -8,6 +8,7 @@ use crate::core::domain::{
 use crate::core::ffprobe::FFPROBE;
 use crate::core::image::ImageCompressor;
 use crate::core::media_process::{CancelCallback, MediaProcessExecutorBuilder};
+use crate::core::video_encoder::build_video_encoding_args;
 use crate::sys::fs::{ensure_assets_dir, get_file_metadata};
 use crate::utils;
 use nanoid::nanoid;
@@ -177,31 +178,6 @@ impl FFMPEG {
             "error",
         ]);
 
-        let mut cmd_args = if !is_gif_target {
-            match preset_name {
-                Some(preset) => match preset {
-                    "thunderbolt" => cmd_args,
-                    _ => {
-                        cmd_args.extend_from_slice(&[
-                            "-pix_fmt:v:0",
-                            "yuv420p",
-                            "-b:v:0",
-                            "0",
-                            "-movflags",
-                            "+faststart",
-                            "-preset",
-                            "slow",
-                        ]);
-                        cmd_args
-                    }
-                },
-                None => cmd_args,
-            }
-        } else {
-            cmd_args.extend_from_slice(&["-preset", "ultrafast"]);
-            cmd_args
-        };
-
         let file_metadata = get_file_metadata(video_path).map_err(|err| err.to_string())?;
         let original_extension = &file_metadata.extension;
 
@@ -258,25 +234,9 @@ impl FFMPEG {
                 }
             }
         };
-        cmd_args.extend_from_slice(&["-c:v:0", output_codec.as_str()]);
-
-        // Quality
-        let compression_quality: String = {
-            let default_crf: u16 = 28;
-            let max_crf: u16 = 36;
-            let min_crf: u16 = 24;
-            if (0..=100).contains(&quality) {
-                let diff = (max_crf - min_crf) - ((max_crf - min_crf) * quality) / 100;
-                format!("{}", min_crf + diff)
-            } else {
-                format!("{default_crf}")
-            }
-        };
-        if preset_name.is_some() && !is_gif_target {
-            cmd_args.extend_from_slice(&["-crf", compression_quality.as_str()]);
-        } else {
-            cmd_args.extend_from_slice(&["-crf", "18"]);
-        }
+        let video_encoding_args =
+            build_video_encoding_args(&output_codec, preset_name, quality, convert_to_extension);
+        cmd_args.extend(video_encoding_args.iter().map(|s| s.as_str()));
 
         // Build the post-processing chain for video (transforms + scale + pad)
         let video_post_process = build_ffmpeg_filters(transform_history, dimensions);

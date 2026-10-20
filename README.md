@@ -67,8 +67,32 @@ brew install --cask codeforreal1/tap/compresso
 This app is created using [Tauri](https://tauri.app/), a Rust🦀 framework for building a cross-platform desktop app. It uses [React](https://react.dev) powered by [Vite](https://vite.dev/) as a frontend layer. The compression is done entirely by 3rd part tools like [FFmpeg](https://ffmpeg.org/), [pngquant](https://pngquant.org/), [jpegoptim](https://github.com/tjko/jpegoptim), [gifski](https://gif.ski/), etc. using platform specific standalone binaries.
 The app works completely offline and no any network requests is made to/from the app(except for built-in app updates).
 
+### NVIDIA GPU encoding
+
+Build this source to enable **H.264 (NVIDIA NVENC)** and **H.265 (NVIDIA NVENC)** in the video codec selector. Enable **Codec** in the video output settings and choose an NVENC encoder.
+
+H.264 supports MP4, MOV, MKV, and AVI. H.265 supports MP4, MOV, and MKV. Encoding requires a compatible NVIDIA GPU, its driver, and an FFmpeg build with NVENC support. The bundled Windows FFmpeg includes both encoders.
+
+NVENC uses constant-quality variable bitrate encoding. The quality slider controls CQ, and the Thunderbolt preset uses `p1` for speed; the other settings use `p5`. Video filters continue to run on the CPU.
+
+Encoder tests can run independently of the desktop application:
+
+```powershell
+rustc --edition 2021 --test src-tauri/src/core/video_encoder.rs -o video-encoder-tests.exe
+.\video-encoder-tests.exe
+```
+
+To run the hardware encoding test on Windows:
+
+```powershell
+$env:COMPRESSO_TEST_FFMPEG = (Resolve-Path 'src-tauri/bin/compresso_ffmpeg-x86_64-pc-windows-msvc.exe').Path
+.\video-encoder-tests.exe --ignored
+```
+
 ### Building
 Make sure [Rust](https://rust-lang.org/) & [Node.js](https://nodejs.org/) toolchains are installed.
+
+On Windows, use the Rust MSVC toolchain and install Visual Studio Build Tools with the **Desktop development with C++** workload, including MSVC and the Windows SDK.
 
 Local Development:
 - Start Tauri server
