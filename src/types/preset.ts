@@ -1,3 +1,4 @@
+import type { SaveLocation } from '@/stores/settingsStore'
 import type { AudioConfig, ImageConfig, VideoConfig } from './app'
 import type { PortableTransform } from './compression'
 
@@ -106,11 +107,25 @@ export type AudioPresetSettings = Omit<
 
 export type AudioPresetKey = keyof AudioPresetSettings
 
+/**
+ * Where a preset's outputs are saved, & the prefix of their file names. A preset without one
+ * follows the Standard preset, whose output is the one of Settings -> Output (see `getPresetOutput`).
+ */
+export type PresetOutput = {
+  saveLocation: SaveLocation
+  /** Folder used when `saveLocation` is `fixedFolder` */
+  saveFolder: string | null
+  /** Added to the start of saved file names; empty keeps the original names */
+  filePrefix: string
+}
+
 export type VideoPreset = {
   id: string
   name: string
   mediaType: 'video'
   settings: VideoPresetSettings
+  /** Its own output, or `null`/missing to follow the Standard preset's */
+  output?: PresetOutput | null
 }
 
 export type ImagePreset = {
@@ -118,6 +133,8 @@ export type ImagePreset = {
   name: string
   mediaType: 'image'
   settings: ImagePresetSettings
+  /** See `VideoPreset['output']` */
+  output?: PresetOutput | null
 }
 
 export type AudioPreset = {
@@ -125,6 +142,8 @@ export type AudioPreset = {
   name: string
   mediaType: 'audio'
   settings: AudioPresetSettings
+  /** See `VideoPreset['output']` */
+  output?: PresetOutput | null
 }
 
 export type Preset = VideoPreset | ImagePreset | AudioPreset

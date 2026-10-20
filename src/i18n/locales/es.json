@@ -121,8 +121,8 @@
         "title": "Compresión",
         "autoCompress": {
           "title": "Comprimir automáticamente",
-          "description": "Comprimir los archivos multimedia en cuanto se añaden a la zona de arrastre, de uno en uno, y guardarlos en la ubicación de guardado de Salida.",
-          "needsSaveLocation": "Elija en Salida una ubicación de guardado distinta de «Preguntar cada vez», para que los archivos comprimidos se puedan guardar sin preguntar."
+          "description": "Comprime los archivos en cuanto se añaden a la zona de soltar, uno a uno, y los guarda en la ubicación de su ajuste preestablecido.",
+          "needsSaveLocation": "En Ajustes preestablecidos, elija para un ajuste de la zona de soltar una ubicación distinta de Preguntar cada vez, para que los archivos comprimidos se guarden sin preguntar."
         }
       },
       "preset": {
@@ -146,23 +146,18 @@
       "saving": {
         "title": "Guardado",
         "location": {
-          "title": "Ubicación de guardado",
           "option_ask": "Preguntar cada vez",
           "option_fixedFolder": "Carpeta fija",
-          "option_sameFolder": "Misma carpeta que el original",
-          "description_ask": "Elegir dónde guardar después de cada compresión.",
-          "description_fixedFolder": "Guardar automáticamente en la carpeta elegida después de cada compresión.",
-          "description_sameFolder": "Guardar automáticamente junto al archivo original, en la misma carpeta."
+          "option_sameFolder": "Misma carpeta que el original"
         },
         "folder": {
-          "title": "Carpeta",
           "none": "No se ha elegido ninguna carpeta",
           "change": "Cambiar",
           "dialogTitle": "Elija una carpeta en la que guardar los archivos comprimidos."
         },
         "preserveFolders": {
           "title": "Conservar la estructura de carpetas",
-          "description": "Guardar los archivos de una carpeta arrastrada en las mismas carpetas. Si está desactivado, todos los archivos se guardan en una sola carpeta y los archivos con el mismo nombre se numeran."
+          "description": "Mantener la estructura de carpetas original al guardar."
         },
         "skipLarger": {
           "title": "Omitir resultados más grandes",
@@ -170,7 +165,6 @@
         },
         "prefix": {
           "title": "Prefijo del nombre de archivo",
-          "description": "Texto añadido al principio de los nombres de los archivos guardados. Déjelo vacío para conservar los nombres originales.",
           "placeholder": "Sin prefijo"
         }
       },
@@ -323,7 +317,11 @@
     "label": "Ajuste preestablecido:",
     "update": "Actualizar «{{name}}»",
     "saveAsNew": "Guardar como ajuste preestablecido nuevo",
-    "revert": "Volver al ajuste preestablecido"
+    "revert": "Volver al ajuste preestablecido",
+    "output": {
+      "location": "Ubicación de guardado",
+      "followStandard": "Igual que el ajuste preestablecido Estándar"
+    }
   },
   "dropZone": {
     "unsupportedType": "Este tipo de archivo no es compatible.",
@@ -348,11 +346,11 @@
     "remove": "Quitar {{name}}",
     "storedBusy": "Guardados. Abra la app para comprimirlos después de los archivos actuales.",
     "storedIdle": "Arrastre más archivos o abra la app para iniciar la compresión.",
-    "needsSaveLocation": "Elija una ubicación de guardado en Ajustes, en Salida, para que los archivos comprimidos se puedan guardar sin preguntar."
+    "needsSaveLocation": "En Ajustes, en Ajustes preestablecidos, elija una ubicación de guardado para un ajuste de la zona de soltar, para que los archivos comprimidos se guarden sin preguntar."
   },
   "queue": {
     "notSavedLarger": "No se ha guardado, ya que es más grande que el original.",
-    "noSaveLocation": "Elija una ubicación de guardado en Ajustes, en Salida.",
+    "noSaveLocation": "Elija una ubicación de guardado para su ajuste preestablecido, en Ajustes.",
     "saveFailed": "No se pudo guardar el archivo comprimido.",
     "compressFailed": "No se pudo comprimir el archivo.",
     "summary": {

@@ -18,6 +18,7 @@ import { ImageConfig, VideoConfig } from '@/types/app'
 import {
   type Preset,
   type PresetMediaType,
+  type PresetOutput,
   STANDARD_PRESET_ID,
 } from '@/types/preset'
 import SavePresetModal from './SavePresetModal'
@@ -193,21 +194,23 @@ function PresetSelector({ mediaType, mediaIndex }: PresetSelectorProps) {
     const storedPreset = getStoredPreset(targetConfig?.presetId)
     if (!targetConfig || !storedPreset) return
     const index = presetsStore.presets.indexOf(storedPreset)
-    presetsStore.presets[index] = createPresetFromConfig(
-      targetConfig,
-      storedPreset,
-    )
+    // Its output is not part of the media's settings, so it is kept
+    presetsStore.presets[index] = {
+      ...createPresetFromConfig(targetConfig, storedPreset),
+      output: storedPreset.output ?? null,
+    }
     linkToPreset(storedPreset.id)
     toast.success(t('presets.updated', { name: storedPreset.name }))
   }
 
-  const handleSaveAsNewPreset = (name: string) => {
+  const handleSaveAsNewPreset = (name: string, output: PresetOutput | null) => {
     const targetConfig = getTargetConfig()
     if (!targetConfig) return
     const id = generatePresetId()
-    presetsStore.presets.push(
-      createPresetFromConfig(targetConfig, { id, name }),
-    )
+    presetsStore.presets.push({
+      ...createPresetFromConfig(targetConfig, { id, name }),
+      output,
+    })
     linkToPreset(id)
     setIsSaveModalOpen(false)
     toast.success(t('presets.saved', { name }))

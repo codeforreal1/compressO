@@ -121,8 +121,8 @@
         "title": "Komprimierung",
         "autoCompress": {
           "title": "Automatisch komprimieren",
-          "description": "Medien komprimieren, sobald sie zur Ablagezone hinzugefügt werden, eines nach dem anderen, und am Speicherort unter „Ausgabe“ speichern.",
-          "needsSaveLocation": "Wählen Sie unter „Ausgabe“ einen anderen Speicherort als „Jedes Mal fragen“, damit die komprimierten Medien ohne Nachfrage gespeichert werden können."
+          "description": "Medien komprimieren, sobald sie zur Ablagezone hinzugefügt werden, eines nach dem anderen, und am Speicherort ihrer Voreinstellung speichern.",
+          "needsSaveLocation": "Wählen Sie unter „Voreinstellungen“ für eine Voreinstellung der Ablagezone einen anderen Speicherort als „Jedes Mal fragen“, damit die komprimierten Medien ohne Nachfrage gespeichert werden können."
         }
       },
       "preset": {
@@ -146,23 +146,18 @@
       "saving": {
         "title": "Speichern",
         "location": {
-          "title": "Speicherort",
           "option_ask": "Jedes Mal fragen",
           "option_fixedFolder": "Fester Ordner",
-          "option_sameFolder": "Gleicher Ordner wie das Original",
-          "description_ask": "Nach jeder Komprimierung auswählen, wo gespeichert werden soll.",
-          "description_fixedFolder": "Nach jeder Komprimierung automatisch im gewählten Ordner speichern.",
-          "description_sameFolder": "Automatisch neben der Originaldatei im selben Ordner speichern."
+          "option_sameFolder": "Gleicher Ordner wie das Original"
         },
         "folder": {
-          "title": "Ordner",
           "none": "Kein Ordner ausgewählt",
           "change": "Ändern",
           "dialogTitle": "Wählen Sie einen Ordner, in dem komprimierte Medien gespeichert werden sollen."
         },
         "preserveFolders": {
           "title": "Ordnerstruktur beibehalten",
-          "description": "Die Dateien eines abgelegten Ordners in denselben Ordnern speichern. Wenn ausgeschaltet, werden alle Dateien in einem Ordner gespeichert und gleichnamige Dateien nummeriert."
+          "description": "Beim Speichern die ursprüngliche Ordnerstruktur beibehalten."
         },
         "skipLarger": {
           "title": "Größere Ausgaben überspringen",
@@ -170,7 +165,6 @@
         },
         "prefix": {
           "title": "Dateinamenpräfix",
-          "description": "Text, der am Anfang gespeicherter Dateinamen eingefügt wird. Leer lassen, um die ursprünglichen Namen beizubehalten.",
           "placeholder": "Kein Präfix"
         }
       },
@@ -323,7 +317,11 @@
     "label": "Voreinstellung:",
     "update": "„{{name}}“ aktualisieren",
     "saveAsNew": "Als neue Voreinstellung speichern",
-    "revert": "Auf Voreinstellung zurücksetzen"
+    "revert": "Auf Voreinstellung zurücksetzen",
+    "output": {
+      "location": "Speicherort",
+      "followStandard": "Wie die Standard-Voreinstellung"
+    }
   },
   "dropZone": {
     "unsupportedType": "Dieser Dateityp wird nicht unterstützt.",
@@ -347,11 +345,11 @@
     "remove": "{{name}} entfernen",
     "storedBusy": "Gesammelt. Öffnen Sie die App, um sie nach den aktuellen Medien zu komprimieren.",
     "storedIdle": "Legen Sie weitere Medien ab oder öffnen Sie die App, um die Komprimierung zu starten.",
-    "needsSaveLocation": "Wählen Sie in den Einstellungen unter „Ausgabe“ einen Speicherort, damit die komprimierten Medien ohne Nachfrage gespeichert werden können."
+    "needsSaveLocation": "Wählen Sie in den Einstellungen unter „Voreinstellungen“ einen Speicherort für eine Voreinstellung der Ablagezone, damit die komprimierten Medien ohne Nachfrage gespeichert werden können."
   },
   "queue": {
     "notSavedLarger": "Nicht gespeichert, da größer als das Original.",
-    "noSaveLocation": "Wählen Sie in den Einstellungen unter „Ausgabe“ einen Speicherort.",
+    "noSaveLocation": "Wählen Sie in den Einstellungen einen Speicherort für ihre Voreinstellung.",
     "saveFailed": "Die komprimierten Medien konnten nicht gespeichert werden.",
     "compressFailed": "Die Medien konnten nicht komprimiert werden.",
     "summary": {

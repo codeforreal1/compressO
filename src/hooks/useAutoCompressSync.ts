@@ -1,21 +1,39 @@
 import { useEffect } from 'react'
-import { subscribe } from 'valtio'
+import { subscribe, useSnapshot } from 'valtio'
 
+import { presetsStore } from '@/stores/presetsStore'
 import { settingsStore } from '@/stores/settingsStore'
 import { setAutoCompressEnabled } from '@/tauri/commands/dropQueue'
+import {
+  DROP_ZONE_PRESET_SETTINGS,
+  getPresetOutput,
+  savesAutomatically,
+} from '@/utils/presetOutput'
 import { hasTray } from '@/utils/tray'
 
 /**
- * Whether the drop zone compresses automatically (Settings -> Drop Zone): only with a save location,
- * as nothing can ask where to save
+ * Whether the drop zone can compress automatically (Settings -> Drop Zone): when one of its presets
+ * saves without asking where (nothing can ask). Media of a preset that asks are left to be saved
+ * from the queue.
  */
-export function isAutoCompressAvailable({
-  saveLocation,
-  saveFolder,
-}: Pick<typeof settingsStore, 'saveLocation' | 'saveFolder'> = settingsStore) {
-  return (
-    saveLocation === 'sameFolder' ||
-    (saveLocation === 'fixedFolder' && !!saveFolder)
+export function isAutoCompressAvailable(
+  settings: typeof settingsStore = settingsStore,
+  presets: typeof presetsStore.presets = presetsStore.presets,
+) {
+  return Object.values(DROP_ZONE_PRESET_SETTINGS).some((settingKey) =>
+    savesAutomatically(
+      getPresetOutput(settings[settingKey], { presets, settings }),
+    ),
+  )
+}
+
+/** `isAutoCompressAvailable`, updated when the settings or presets it depends on change */
+export function useIsAutoCompressAvailable() {
+  const settings = useSnapshot(settingsStore)
+  const { presets } = useSnapshot(presetsStore)
+  return isAutoCompressAvailable(
+    settings as typeof settingsStore,
+    presets as typeof presetsStore.presets,
   )
 }
 
@@ -32,6 +50,12 @@ export function useAutoCompressSync() {
       setAutoCompressEnabled(shouldEnable).catch(() => {})
     }
     apply()
-    return subscribe(settingsStore, apply)
+    // The drop zone's presets, & their outputs (or the Standard one, in the settings)
+    const unsubscribeSettings = subscribe(settingsStore, apply)
+    const unsubscribePresets = subscribe(presetsStore, apply)
+    return () => {
+      unsubscribeSettings()
+      unsubscribePresets()
+    }
   }, [])
 }

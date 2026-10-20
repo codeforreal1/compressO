@@ -121,8 +121,8 @@
         "title": "Compressione",
         "autoCompress": {
           "title": "Comprimi automaticamente",
-          "description": "Comprimi i contenuti non appena vengono aggiunti alla zona di rilascio, uno alla volta, e salvali nella posizione di salvataggio di Output.",
-          "needsSaveLocation": "Scelga in Output una posizione di salvataggio diversa da «Chiedi ogni volta», così i contenuti compressi possono essere salvati senza chiedere."
+          "description": "Comprimi i file appena vengono aggiunti alla zona di rilascio, uno alla volta, e salvali nella posizione della loro preimpostazione.",
+          "needsSaveLocation": "In Preimpostazioni, scegli per una preimpostazione della zona di rilascio una posizione diversa da Chiedi ogni volta, così i file compressi vengono salvati senza chiedere."
         }
       },
       "preset": {
@@ -146,23 +146,18 @@
       "saving": {
         "title": "Salvataggio",
         "location": {
-          "title": "Posizione di salvataggio",
           "option_ask": "Chiedi ogni volta",
           "option_fixedFolder": "Cartella fissa",
-          "option_sameFolder": "Stessa cartella dell’originale",
-          "description_ask": "Scegli dove salvare dopo ogni compressione.",
-          "description_fixedFolder": "Salva automaticamente nella cartella scelta dopo ogni compressione.",
-          "description_sameFolder": "Salva automaticamente accanto al file originale, nella stessa cartella."
+          "option_sameFolder": "Stessa cartella dell’originale"
         },
         "folder": {
-          "title": "Cartella",
           "none": "Nessuna cartella scelta",
           "change": "Cambia",
           "dialogTitle": "Scelga una cartella in cui salvare i contenuti compressi."
         },
         "preserveFolders": {
           "title": "Mantieni la struttura delle cartelle",
-          "description": "Salva i file di una cartella rilasciata nelle stesse cartelle. Se disattivato, tutti i file vengono salvati in un’unica cartella e i file con lo stesso nome vengono numerati."
+          "description": "Mantieni la struttura delle cartelle originale durante il salvataggio."
         },
         "skipLarger": {
           "title": "Ignora gli output più grandi",
@@ -170,7 +165,6 @@
         },
         "prefix": {
           "title": "Prefisso del nome file",
-          "description": "Testo aggiunto all’inizio dei nomi dei file salvati. Lasci vuoto per mantenere i nomi originali.",
           "placeholder": "Nessun prefisso"
         }
       },
@@ -323,7 +317,11 @@
     "label": "Preset:",
     "update": "Aggiorna «{{name}}»",
     "saveAsNew": "Salva come nuovo preset",
-    "revert": "Ripristina il preset"
+    "revert": "Ripristina il preset",
+    "output": {
+      "location": "Posizione di salvataggio",
+      "followStandard": "Come la preimpostazione Standard"
+    }
   },
   "dropZone": {
     "unsupportedType": "Questo tipo di file non è supportato.",
@@ -348,11 +346,11 @@
     "remove": "Rimuovi {{name}}",
     "storedBusy": "Conservati. Apra l’app per comprimerli dopo i contenuti attuali.",
     "storedIdle": "Rilasci altri contenuti o apra l’app per avviare la compressione.",
-    "needsSaveLocation": "Scelga una posizione di salvataggio in Impostazioni, in Output, così i contenuti compressi possono essere salvati senza chiedere."
+    "needsSaveLocation": "Nelle Impostazioni, in Preimpostazioni, scegli una posizione di salvataggio per una preimpostazione della zona di rilascio, così i file compressi vengono salvati senza chiedere."
   },
   "queue": {
     "notSavedLarger": "Non salvato, perché è più grande dell’originale.",
-    "noSaveLocation": "Scelga una posizione di salvataggio in Impostazioni, in Output.",
+    "noSaveLocation": "Scegli una posizione di salvataggio per la sua preimpostazione, nelle Impostazioni.",
     "saveFailed": "Non è stato possibile salvare il contenuto compresso.",
     "compressFailed": "Non è stato possibile comprimere il contenuto.",
     "summary": {

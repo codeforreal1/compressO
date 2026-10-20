@@ -12,7 +12,7 @@ import InfoTooltip from '@/components/InfoTooltip'
 import ScrollShadow from '@/components/ScrollShadow'
 import Switch from '@/components/Switch'
 import { toast } from '@/components/Toast'
-import { isAutoCompressAvailable } from '@/hooks/useAutoCompressSync'
+import { useIsAutoCompressAvailable } from '@/hooks/useAutoCompressSync'
 import { useDropQueue } from '@/hooks/useDropQueue'
 import { t } from '@/i18n'
 import { settingsStore } from '@/stores/settingsStore'
@@ -191,9 +191,9 @@ function TrayWindow() {
   const [isPinned, setIsPinned] = useState(false)
   // With "Compress automatically", dropped media is queued instead (Settings -> Drop Zone), also
   // while the main window is busy
-  const { autoCompress, saveLocation, saveFolder } = useSnapshot(settingsStore)
-  const isAutoCompressing =
-    autoCompress && isAutoCompressAvailable({ saveLocation, saveFolder })
+  const { autoCompress } = useSnapshot(settingsStore)
+  const canAutoCompress = useIsAutoCompressAvailable()
+  const isAutoCompressing = autoCompress && canAutoCompress
   const queueItems = useDropQueue()
   // The drop zone is separate from the main window, so media can always be dropped: queued, or
   // stored until the main window is free
@@ -585,9 +585,9 @@ function DroppedFiles({
 /** Switches compressing the dropped media automatically (Settings -> Drop Zone) */
 function AutoCompressSwitch() {
   const { t } = useTranslation()
-  const { autoCompress, saveLocation, saveFolder } = useSnapshot(settingsStore)
-  // Only with a save location, as nothing can ask where to save
-  const canAutoCompress = isAutoCompressAvailable({ saveLocation, saveFolder })
+  const { autoCompress } = useSnapshot(settingsStore)
+  // Only when a preset of the drop zone saves without asking where (nothing can ask)
+  const canAutoCompress = useIsAutoCompressAvailable()
 
   return (
     <div className="flex items-center gap-1.5">

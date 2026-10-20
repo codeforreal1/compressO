@@ -121,8 +121,8 @@
         "title": "Kompresja",
         "autoCompress": {
           "title": "Kompresuj automatycznie",
-          "description": "Kompresuj multimedia od razu po dodaniu do strefy upuszczania, po jednym, i zapisuj je w lokalizacji zapisu z sekcji Wyjście.",
-          "needsSaveLocation": "Wybierz w sekcji Wyjście lokalizację zapisu inną niż „Pytaj za każdym razem”, aby skompresowane multimedia mogły być zapisywane bez pytania."
+          "description": "Kompresuj multimedia od razu po dodaniu do strefy upuszczania, po kolei, i zapisuj je w miejscu zapisu ich ustawienia.",
+          "needsSaveLocation": "W sekcji Ustawienia wstępne wybierz dla ustawienia strefy upuszczania miejsce zapisu inne niż Pytaj za każdym razem, aby skompresowane multimedia były zapisywane bez pytania."
         }
       },
       "preset": {
@@ -146,23 +146,18 @@
       "saving": {
         "title": "Zapisywanie",
         "location": {
-          "title": "Lokalizacja zapisu",
           "option_ask": "Pytaj za każdym razem",
           "option_fixedFolder": "Stały folder",
-          "option_sameFolder": "Folder oryginału",
-          "description_ask": "Wybieraj miejsce zapisu po każdej kompresji.",
-          "description_fixedFolder": "Zapisuj automatycznie w wybranym folderze po każdej kompresji.",
-          "description_sameFolder": "Zapisuj automatycznie obok oryginalnego pliku, w tym samym folderze."
+          "option_sameFolder": "Folder oryginału"
         },
         "folder": {
-          "title": "Folder",
           "none": "Nie wybrano folderu",
           "change": "Zmień",
           "dialogTitle": "Wybierz folder do zapisywania skompresowanych multimediów."
         },
         "preserveFolders": {
           "title": "Zachowaj strukturę folderów",
-          "description": "Zapisuj pliki z upuszczonego folderu w tych samych folderach. Gdy wyłączone, wszystkie pliki są zapisywane w jednym folderze, a pliki o tej samej nazwie są numerowane."
+          "description": "Zachowaj oryginalną strukturę folderów podczas zapisywania."
         },
         "skipLarger": {
           "title": "Pomijaj większe wyniki",
@@ -170,7 +165,6 @@
         },
         "prefix": {
           "title": "Prefiks nazwy pliku",
-          "description": "Tekst dodawany na początku nazw zapisywanych plików. Pozostaw puste, aby zachować oryginalne nazwy.",
           "placeholder": "Bez prefiksu"
         }
       },
@@ -323,7 +317,11 @@
     "label": "Ustawienie wstępne:",
     "update": "Zaktualizuj „{{name}}”",
     "saveAsNew": "Zapisz jako nowe ustawienie wstępne",
-    "revert": "Przywróć ustawienie wstępne"
+    "revert": "Przywróć ustawienie wstępne",
+    "output": {
+      "location": "Miejsce zapisu",
+      "followStandard": "Tak jak ustawienie Standardowe"
+    }
   },
   "dropZone": {
     "unsupportedType": "Ten typ pliku nie jest obsługiwany.",
@@ -349,11 +347,11 @@
     "remove": "Usuń {{name}}",
     "storedBusy": "Przechowano. Otwórz aplikację, aby skompresować je po bieżących multimediach.",
     "storedIdle": "Upuść więcej multimediów lub otwórz aplikację, aby rozpocząć kompresję.",
-    "needsSaveLocation": "Wybierz lokalizację zapisu w Ustawieniach, w sekcji Wyjście, aby skompresowane multimedia mogły być zapisywane bez pytania."
+    "needsSaveLocation": "W Ustawieniach, w sekcji Ustawienia wstępne, wybierz miejsce zapisu dla ustawienia strefy upuszczania, aby skompresowane multimedia były zapisywane bez pytania."
   },
   "queue": {
     "notSavedLarger": "Nie zapisano, ponieważ plik jest większy niż oryginał.",
-    "noSaveLocation": "Wybierz lokalizację zapisu w Ustawieniach, w sekcji Wyjście.",
+    "noSaveLocation": "Wybierz miejsce zapisu dla jego ustawienia, w Ustawieniach.",
     "saveFailed": "Nie udało się zapisać skompresowanego pliku.",
     "compressFailed": "Nie udało się skompresować pliku.",
     "summary": {

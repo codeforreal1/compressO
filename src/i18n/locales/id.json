@@ -121,8 +121,8 @@
         "title": "Kompresi",
         "autoCompress": {
           "title": "Kompresi otomatis",
-          "description": "Kompresi media segera setelah ditambahkan ke zona taruh, satu per satu, dan simpan ke lokasi penyimpanan di Output.",
-          "needsSaveLocation": "Pilih lokasi penyimpanan di Output selain “Tanyakan setiap kali”, agar media yang dikompresi dapat disimpan tanpa bertanya."
+          "description": "Kompres media segera setelah ditambahkan ke zona letak, satu per satu, dan simpan ke lokasi penyimpanan presetnya.",
+          "needsSaveLocation": "Di Preset, pilih lokasi penyimpanan selain Tanyakan setiap kali untuk preset zona letak, agar media terkompresi dapat disimpan tanpa bertanya."
         }
       },
       "preset": {
@@ -146,23 +146,18 @@
       "saving": {
         "title": "Penyimpanan",
         "location": {
-          "title": "Lokasi penyimpanan",
           "option_ask": "Tanyakan setiap kali",
           "option_fixedFolder": "Folder tetap",
-          "option_sameFolder": "Folder yang sama dengan file asli",
-          "description_ask": "Pilih lokasi penyimpanan setelah setiap kompresi.",
-          "description_fixedFolder": "Simpan otomatis ke folder yang dipilih setelah setiap kompresi.",
-          "description_sameFolder": "Simpan otomatis di samping file asli, di folder yang sama."
+          "option_sameFolder": "Folder yang sama dengan file asli"
         },
         "folder": {
-          "title": "Folder",
           "none": "Tidak ada folder yang dipilih",
           "change": "Ubah",
           "dialogTitle": "Pilih folder untuk menyimpan media yang dikompresi."
         },
         "preserveFolders": {
           "title": "Pertahankan struktur folder",
-          "description": "Simpan file dari folder yang ditaruh dalam folder yang sama. Jika dinonaktifkan, semua file disimpan dalam satu folder dan file dengan nama yang sama diberi nomor."
+          "description": "Pertahankan struktur folder asli saat menyimpan."
         },
         "skipLarger": {
           "title": "Lewati output yang lebih besar",
@@ -170,7 +165,6 @@
         },
         "prefix": {
           "title": "Awalan nama file",
-          "description": "Teks yang ditambahkan di awal nama file yang disimpan. Biarkan kosong untuk mempertahankan nama asli.",
           "placeholder": "Tanpa awalan"
         }
       },
@@ -323,7 +317,11 @@
     "label": "Preset:",
     "update": "Perbarui “{{name}}”",
     "saveAsNew": "Simpan sebagai preset baru",
-    "revert": "Kembalikan ke preset"
+    "revert": "Kembalikan ke preset",
+    "output": {
+      "location": "Lokasi penyimpanan",
+      "followStandard": "Sama dengan preset Standar"
+    }
   },
   "dropZone": {
     "unsupportedType": "Jenis file ini tidak didukung.",
@@ -346,11 +344,11 @@
     "remove": "Hapus {{name}}",
     "storedBusy": "Disimpan sementara. Buka aplikasi untuk mengompresinya setelah media saat ini.",
     "storedIdle": "Taruh media lainnya, atau buka aplikasi untuk memulai kompresi.",
-    "needsSaveLocation": "Pilih lokasi penyimpanan di Pengaturan, pada Output, agar media yang dikompresi dapat disimpan tanpa bertanya."
+    "needsSaveLocation": "Di Pengaturan, pada Preset, pilih lokasi penyimpanan untuk preset zona letak, agar media terkompresi dapat disimpan tanpa bertanya."
   },
   "queue": {
     "notSavedLarger": "Tidak disimpan, karena ukurannya lebih besar dari aslinya.",
-    "noSaveLocation": "Pilih lokasi penyimpanan di Pengaturan, pada Output.",
+    "noSaveLocation": "Pilih lokasi penyimpanan untuk presetnya, di Pengaturan.",
     "saveFailed": "Media yang dikompresi tidak dapat disimpan.",
     "compressFailed": "Media tidak dapat dikompresi.",
     "summary": {

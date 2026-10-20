@@ -121,8 +121,8 @@
         "title": "Nén",
         "autoCompress": {
           "title": "Tự động nén",
-          "description": "Nén tệp phương tiện ngay khi được thêm vào vùng thả, lần lượt từng tệp, và lưu vào vị trí lưu trong Đầu ra.",
-          "needsSaveLocation": "Hãy chọn vị trí lưu trong Đầu ra khác với “Hỏi mỗi lần”, để tệp đã nén được lưu mà không cần hỏi."
+          "description": "Nén phương tiện ngay khi được thêm vào vùng thả, lần lượt từng tệp, và lưu vào vị trí lưu của cài đặt sẵn tương ứng.",
+          "needsSaveLocation": "Trong Cài đặt sẵn, hãy chọn cho một cài đặt sẵn của vùng thả vị trí lưu khác Hỏi mỗi lần, để phương tiện đã nén được lưu mà không cần hỏi."
         }
       },
       "preset": {
@@ -146,23 +146,18 @@
       "saving": {
         "title": "Lưu",
         "location": {
-          "title": "Vị trí lưu",
           "option_ask": "Hỏi mỗi lần",
           "option_fixedFolder": "Thư mục cố định",
-          "option_sameFolder": "Cùng thư mục với tệp gốc",
-          "description_ask": "Chọn nơi lưu sau mỗi lần nén.",
-          "description_fixedFolder": "Tự động lưu vào thư mục đã chọn sau mỗi lần nén.",
-          "description_sameFolder": "Tự động lưu bên cạnh tệp gốc, trong cùng thư mục."
+          "option_sameFolder": "Cùng thư mục với tệp gốc"
         },
         "folder": {
-          "title": "Thư mục",
           "none": "Chưa chọn thư mục",
           "change": "Thay đổi",
           "dialogTitle": "Chọn thư mục để lưu tệp phương tiện đã nén."
         },
         "preserveFolders": {
           "title": "Giữ nguyên cấu trúc thư mục",
-          "description": "Lưu các tệp của thư mục được thả vào đúng các thư mục tương ứng. Khi tắt, tất cả tệp được lưu vào một thư mục và các tệp trùng tên sẽ được đánh số."
+          "description": "Giữ nguyên cấu trúc thư mục gốc khi lưu."
         },
         "skipLarger": {
           "title": "Bỏ qua đầu ra lớn hơn",
@@ -170,7 +165,6 @@
         },
         "prefix": {
           "title": "Tiền tố tên tệp",
-          "description": "Văn bản thêm vào đầu tên tệp được lưu. Để trống để giữ tên gốc.",
           "placeholder": "Không có tiền tố"
         }
       },
@@ -323,7 +317,11 @@
     "label": "Cài đặt sẵn:",
     "update": "Cập nhật “{{name}}”",
     "saveAsNew": "Lưu thành cài đặt sẵn mới",
-    "revert": "Khôi phục cài đặt sẵn"
+    "revert": "Khôi phục cài đặt sẵn",
+    "output": {
+      "location": "Vị trí lưu",
+      "followStandard": "Giống cài đặt sẵn Tiêu chuẩn"
+    }
   },
   "dropZone": {
     "unsupportedType": "Loại tệp này không được hỗ trợ.",
@@ -346,11 +344,11 @@
     "remove": "Xóa {{name}}",
     "storedBusy": "Đã lưu tạm. Mở ứng dụng để nén các tệp này sau tệp phương tiện hiện tại.",
     "storedIdle": "Thả thêm tệp phương tiện hoặc mở ứng dụng để bắt đầu nén.",
-    "needsSaveLocation": "Hãy chọn vị trí lưu trong Cài đặt, mục Đầu ra, để tệp đã nén được lưu mà không cần hỏi."
+    "needsSaveLocation": "Trong Cài đặt, ở mục Cài đặt sẵn, hãy chọn vị trí lưu cho một cài đặt sẵn của vùng thả, để phương tiện đã nén được lưu mà không cần hỏi."
   },
   "queue": {
     "notSavedLarger": "Không được lưu vì lớn hơn tệp gốc.",
-    "noSaveLocation": "Hãy chọn vị trí lưu trong Cài đặt, mục Đầu ra.",
+    "noSaveLocation": "Hãy chọn vị trí lưu cho cài đặt sẵn của nó, trong Cài đặt.",
     "saveFailed": "Không thể lưu tệp đã nén.",
     "compressFailed": "Không thể nén tệp phương tiện.",
     "summary": {

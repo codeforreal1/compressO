@@ -121,8 +121,8 @@
         "title": "壓縮",
         "autoCompress": {
           "title": "自動壓縮",
-          "description": "媒體加入拖放區後立即逐一壓縮，並儲存到「輸出」中設定的儲存位置。",
-          "needsSaveLocation": "請在「輸出」中選擇「每次詢問」以外的儲存位置，以便無須詢問即可儲存壓縮後的媒體。"
+          "description": "媒體加入投放區後立即逐一壓縮，並儲存到其預設的儲存位置。",
+          "needsSaveLocation": "請在「預設」中為投放區的預設選擇「每次詢問」以外的儲存位置，以便無需詢問即可儲存壓縮後的媒體。"
         }
       },
       "preset": {
@@ -146,23 +146,18 @@
       "saving": {
         "title": "儲存",
         "location": {
-          "title": "儲存位置",
           "option_ask": "每次詢問",
           "option_fixedFolder": "固定資料夾",
-          "option_sameFolder": "與原始檔案相同的資料夾",
-          "description_ask": "每次壓縮後選擇儲存位置。",
-          "description_fixedFolder": "每次壓縮後自動儲存到所選資料夾。",
-          "description_sameFolder": "自動儲存在原始檔案旁邊的同一資料夾中。"
+          "option_sameFolder": "與原始檔案相同的資料夾"
         },
         "folder": {
-          "title": "資料夾",
           "none": "未選擇資料夾",
           "change": "變更",
           "dialogTitle": "選擇用來儲存壓縮媒體的資料夾。"
         },
         "preserveFolders": {
           "title": "保留資料夾結構",
-          "description": "將拖入資料夾中的檔案儲存到相同的資料夾結構中。關閉時，所有檔案都儲存在同一個資料夾中，同名檔案會加上編號。"
+          "description": "儲存時保留原始資料夾結構。"
         },
         "skipLarger": {
           "title": "略過較大的輸出",
@@ -170,7 +165,6 @@
         },
         "prefix": {
           "title": "檔名前綴",
-          "description": "加在儲存檔名開頭的文字。留空則保留原始檔名。",
           "placeholder": "無前綴"
         }
       },
@@ -323,7 +317,11 @@
     "label": "預設：",
     "update": "更新「{{name}}」",
     "saveAsNew": "儲存為新預設",
-    "revert": "還原為預設"
+    "revert": "還原為預設",
+    "output": {
+      "location": "儲存位置",
+      "followStandard": "與標準預設相同"
+    }
   },
   "dropZone": {
     "unsupportedType": "不支援此檔案類型。",
@@ -346,11 +344,11 @@
     "remove": "移除 {{name}}",
     "storedBusy": "已暫存。開啟 App，即可在目前的媒體之後壓縮它們。",
     "storedIdle": "拖入更多媒體，或開啟 App 開始壓縮。",
-    "needsSaveLocation": "請在「設定」的「輸出」中選擇儲存位置，以便無須詢問即可儲存壓縮後的媒體。"
+    "needsSaveLocation": "請在「設定」的「預設」中為投放區的預設選擇儲存位置，以便無需詢問即可儲存壓縮後的媒體。"
   },
   "queue": {
     "notSavedLarger": "未儲存，因為比原始檔案大。",
-    "noSaveLocation": "請在「設定」的「輸出」中選擇儲存位置。",
+    "noSaveLocation": "請在「設定」中為其預設選擇儲存位置。",
     "saveFailed": "無法儲存壓縮後的媒體。",
     "compressFailed": "無法壓縮該媒體。",
     "summary": {

@@ -245,6 +245,7 @@ async function compressQueueItem(item: DropQueueItem) {
           media.extension,
           outputMetadata.extension,
         ),
+        presetId: media.config?.presetId,
       },
       { groupKey: item.groupId, topFolders },
     )

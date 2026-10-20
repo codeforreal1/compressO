@@ -5,6 +5,7 @@ import * as constants from '@/constants'
 import {
   type Preset,
   type PresetMediaType,
+  type PresetOutput,
   STANDARD_PRESET_ID,
 } from '@/types/preset'
 
@@ -34,6 +35,18 @@ function isValidPreset(preset: unknown): preset is Preset {
   )
 }
 
+function isValidOutput(output: unknown): output is PresetOutput {
+  const value = output as Partial<PresetOutput> | null
+  return (
+    !!value &&
+    (value.saveLocation === 'ask' ||
+      value.saveLocation === 'fixedFolder' ||
+      value.saveLocation === 'sameFolder') &&
+    (value.saveFolder === null || typeof value.saveFolder === 'string') &&
+    typeof value.filePrefix === 'string'
+  )
+}
+
 /** Reads the stored presets, dropping anything that is not a valid preset */
 function readPresets(): PresetsState {
   const fallback: PresetsState = {
@@ -51,9 +64,14 @@ function readPresets(): PresetsState {
     if (!stored || stored.schemaVersion !== PRESETS_SCHEMA_VERSION) {
       return fallback
     }
-    const presets = (
-      Array.isArray(stored.presets) ? stored.presets : []
-    ).filter(isValidPreset)
+    const presets = (Array.isArray(stored.presets) ? stored.presets : [])
+      .filter(isValidPreset)
+      // An output that is not valid is dropped (the preset follows the Standard preset's)
+      .map((preset) =>
+        preset.output && !isValidOutput(preset.output)
+          ? { ...preset, output: null }
+          : preset,
+      )
     const getDefaultPresetId = (mediaType: PresetMediaType) => {
       const id = stored.defaultPresetIds?.[mediaType]
       return presets.some(

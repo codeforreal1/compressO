@@ -121,8 +121,8 @@
         "title": "Compression",
         "autoCompress": {
           "title": "Compress automatically",
-          "description": "Compress media as soon as it is added to the drop zone, one at a time, and save it to the save location of Output.",
-          "needsSaveLocation": "Choose a save location in Output, other than Ask every time, so the compressed media can be saved without asking."
+          "description": "Compress media as soon as it is added to the drop zone, one at a time, and save it to the save location of its preset.",
+          "needsSaveLocation": "In Presets, choose a save location other than Ask every time for a preset of the drop zone, so the compressed media can be saved without asking."
         }
       },
       "preset": {
@@ -146,23 +146,18 @@
       "saving": {
         "title": "Saving",
         "location": {
-          "title": "Save location",
           "option_ask": "Ask every time",
           "option_fixedFolder": "Fixed folder",
-          "option_sameFolder": "Same folder as original",
-          "description_ask": "Choose where to save after each compression.",
-          "description_fixedFolder": "Save automatically to the chosen folder after each compression.",
-          "description_sameFolder": "Save automatically next to the original file, in the same folder."
+          "option_sameFolder": "Same folder as original"
         },
         "folder": {
-          "title": "Folder",
           "none": "No folder chosen",
           "change": "Change",
           "dialogTitle": "Choose a folder to save compressed media to."
         },
         "preserveFolders": {
           "title": "Preserve folder structure",
-          "description": "Save the files of a dropped folder in the same folders. When off, all files are saved in one folder, and files with the same name are numbered."
+          "description": "Keep the original folder structure when saving."
         },
         "skipLarger": {
           "title": "Skip larger outputs",
@@ -170,7 +165,6 @@
         },
         "prefix": {
           "title": "File name prefix",
-          "description": "Text added to the start of saved file names. Leave empty to keep the original names.",
           "placeholder": "No prefix"
         }
       },
@@ -323,7 +317,11 @@
     "label": "Preset:",
     "update": "Update \"{{name}}\"",
     "saveAsNew": "Save as new preset",
-    "revert": "Revert to preset"
+    "revert": "Revert to preset",
+    "output": {
+      "location": "Save location",
+      "followStandard": "Same as the Standard preset"
+    }
   },
   "dropZone": {
     "unsupportedType": "This file type is not supported.",
@@ -347,11 +345,11 @@
     "remove": "Remove {{name}}",
     "storedBusy": "Stored. Open the app to compress them after the current media.",
     "storedIdle": "Drop more media, or open the app to start compression.",
-    "needsSaveLocation": "Choose a save location in Settings, under Output, so the compressed media can be saved without asking."
+    "needsSaveLocation": "In Settings, under Presets, choose a save location for a preset of the drop zone, so the compressed media can be saved without asking."
   },
   "queue": {
     "notSavedLarger": "Not saved, as it is larger than the original.",
-    "noSaveLocation": "Choose a save location in Settings, under Output.",
+    "noSaveLocation": "Choose a save location for its preset, in Settings.",
     "saveFailed": "The compressed media could not be saved.",
     "compressFailed": "The media could not be compressed.",
     "summary": {

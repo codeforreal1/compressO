@@ -121,8 +121,8 @@
         "title": "Compressão",
         "autoCompress": {
           "title": "Comprimir automaticamente",
-          "description": "Comprimir as mídias assim que forem adicionadas à área de soltar, uma de cada vez, e salvá-las no local de salvamento definido em Saída.",
-          "needsSaveLocation": "Escolha em Saída um local de salvamento diferente de “Perguntar sempre”, para que as mídias comprimidas possam ser salvas sem perguntar."
+          "description": "Comprime as mídias assim que são adicionadas à zona de soltar, uma de cada vez, e as salva no local da sua predefinição.",
+          "needsSaveLocation": "Em Predefinições, escolha para uma predefinição da zona de soltar um local diferente de Perguntar sempre, para que as mídias comprimidas sejam salvas sem perguntar."
         }
       },
       "preset": {
@@ -146,23 +146,18 @@
       "saving": {
         "title": "Salvamento",
         "location": {
-          "title": "Local de salvamento",
           "option_ask": "Perguntar sempre",
           "option_fixedFolder": "Pasta fixa",
-          "option_sameFolder": "Mesma pasta do original",
-          "description_ask": "Escolher onde salvar após cada compressão.",
-          "description_fixedFolder": "Salvar automaticamente na pasta escolhida após cada compressão.",
-          "description_sameFolder": "Salvar automaticamente ao lado do arquivo original, na mesma pasta."
+          "option_sameFolder": "Mesma pasta do original"
         },
         "folder": {
-          "title": "Pasta",
           "none": "Nenhuma pasta escolhida",
           "change": "Alterar",
           "dialogTitle": "Escolha uma pasta para salvar as mídias comprimidas."
         },
         "preserveFolders": {
           "title": "Manter a estrutura de pastas",
-          "description": "Salvar os arquivos de uma pasta solta nas mesmas pastas. Quando desativado, todos os arquivos são salvos em uma única pasta e os arquivos com o mesmo nome são numerados."
+          "description": "Manter a estrutura de pastas original ao salvar."
         },
         "skipLarger": {
           "title": "Ignorar resultados maiores",
@@ -170,7 +165,6 @@
         },
         "prefix": {
           "title": "Prefixo do nome do arquivo",
-          "description": "Texto adicionado ao início do nome dos arquivos salvos. Deixe vazio para manter os nomes originais.",
           "placeholder": "Sem prefixo"
         }
       },
@@ -323,7 +317,11 @@
     "label": "Predefinição:",
     "update": "Atualizar “{{name}}”",
     "saveAsNew": "Salvar como nova predefinição",
-    "revert": "Reverter para a predefinição"
+    "revert": "Reverter para a predefinição",
+    "output": {
+      "location": "Local de salvamento",
+      "followStandard": "Igual à predefinição Padrão"
+    }
   },
   "dropZone": {
     "unsupportedType": "Este tipo de arquivo não é compatível.",
@@ -348,11 +346,11 @@
     "remove": "Remover {{name}}",
     "storedBusy": "Guardadas. Abra o app para comprimi-las depois das mídias atuais.",
     "storedIdle": "Solte mais mídias ou abra o app para iniciar a compressão.",
-    "needsSaveLocation": "Escolha um local de salvamento em Ajustes, em Saída, para que as mídias comprimidas possam ser salvas sem perguntar."
+    "needsSaveLocation": "Nas Configurações, em Predefinições, escolha um local de salvamento para uma predefinição da zona de soltar, para que as mídias comprimidas sejam salvas sem perguntar."
   },
   "queue": {
     "notSavedLarger": "Não salvo, pois é maior que o original.",
-    "noSaveLocation": "Escolha um local de salvamento em Ajustes, em Saída.",
+    "noSaveLocation": "Escolha um local de salvamento para a sua predefinição, nas Configurações.",
     "saveFailed": "Não foi possível salvar a mídia comprimida.",
     "compressFailed": "Não foi possível comprimir a mídia.",
     "summary": {

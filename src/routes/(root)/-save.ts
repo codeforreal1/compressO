@@ -13,9 +13,15 @@ import {
 } from '@/tauri/commands/fs'
 import { Image, Video } from '@/types/app'
 import { formatBytes, getParentDirectory } from '@/utils/fs'
+import { getPresetOutput, savesAutomatically } from '@/utils/presetOutput'
 import { appProxy } from './-state'
 
 type Media = (Video & { type: 'video' }) | (Image & { type: 'image' })
+
+/** Where a media's output is saved & its file name prefix: those of its preset (see `PresetOutput`) */
+function getMediaOutput(media: Pick<Media, 'config'>) {
+  return getPresetOutput(media.config?.presetId)
+}
 
 /**
  * Saves every compressed output that isn't saved yet into the directory returned by
@@ -34,9 +40,12 @@ async function saveCompressedMedia(
   {
     isAutomatic = false,
     keepFolderStructure = true,
-  }: { isAutomatic?: boolean; keepFolderStructure?: boolean } = {},
+  }: {
+    isAutomatic?: boolean
+    /** For all media, or for each (e.g. by its preset's save location) */
+    keepFolderStructure?: boolean | ((media: Media) => boolean)
+  } = {},
 ) {
-  const prefix = settingsStore.outputFilePrefix
   // Resolved once per save so all of a dropped folder's files go into the same top folder
   const destinationTopFolders = new Map<string, string>()
   const savedLocations = new Set<string>()
@@ -53,6 +62,11 @@ async function saveCompressedMedia(
 
     const baseDirectory = getBaseDirectory(mediaFile)
     if (baseDirectory == null) continue
+    const prefix = getMediaOutput(mediaFile).filePrefix
+    const shouldKeepFolderStructure =
+      typeof keepFolderStructure === 'function'
+        ? keepFolderStructure(mediaFile)
+        : keepFolderStructure
 
     appProxy.state.media[i].compressedFile = {
       ...(snapshot(appProxy).state.media[i].compressedFile ?? {}),
@@ -61,7 +75,7 @@ async function saveCompressedMedia(
     try {
       let destinationDirectory = baseDirectory
       let location = baseDirectory
-      if (keepFolderStructure && mediaFile.relativeDir) {
+      if (shouldKeepFolderStructure && mediaFile.relativeDir) {
         const [topFolder, ...subFolders] = mediaFile.relativeDir.split('/')
         const topFolderKey = `${baseDirectory}\n${topFolder}`
         let destinationTopFolder = destinationTopFolders.get(topFolderKey)
@@ -202,7 +216,7 @@ export async function saveCompressedMediaWithPrompt() {
 
   const pathToSave = await save({
     title: t('save.chooseLocation'),
-    defaultPath: `${settingsStore.outputFilePrefix}${compressedFile.fileNameToDisplay ?? mediaFile.fileName ?? ''}`,
+    defaultPath: `${getMediaOutput(mediaFile).filePrefix}${compressedFile.fileNameToDisplay ?? mediaFile.fileName ?? ''}`,
   })
   if (!pathToSave) return
 
@@ -235,10 +249,12 @@ export async function saveCompressedMediaWithPrompt() {
  * - outputs larger than their original, when "Skip larger outputs" is on
  */
 export async function autoSaveCompressedMedia() {
-  const { saveLocation, saveFolder, saveLargerOutputs } = settingsStore
+  const { saveLargerOutputs } = settingsStore
+  // Each media is saved where its preset saves; those whose preset asks are left for the Save button
   if (
-    saveLocation === 'ask' ||
-    (saveLocation === 'fixedFolder' && !saveFolder)
+    !appProxy.state.media.some((mediaFile) =>
+      savesAutomatically(getMediaOutput(mediaFile)),
+    )
   ) {
     return
   }
@@ -248,7 +264,9 @@ export async function autoSaveCompressedMedia() {
 
   await saveCompressedMedia(
     (mediaFile) => {
+      const output = getMediaOutput(mediaFile)
       if (
+        !savesAutomatically(output) ||
         !mediaFile.pathRaw ||
         !appDataDirectory ||
         mediaFile.pathRaw.startsWith(appDataDirectory)
@@ -263,8 +281,8 @@ export async function autoSaveCompressedMedia() {
         return null
       }
 
-      if (saveLocation === 'fixedFolder') {
-        return saveFolder
+      if (output.saveLocation === 'fixedFolder') {
+        return output.saveFolder
       }
       // Same folder: right next to the original, in its own folder (also for a dropped folder's
       // files), e.g. `/a/Vacation/Day1/clip.mp4` -> `/a/Vacation/Day1`
@@ -274,8 +292,9 @@ export async function autoSaveCompressedMedia() {
       isAutomatic: true,
       // No new folders next to the originals; only a fixed folder mirrors dropped folders (when
       // "Preserve folder structure" is on)
-      keepFolderStructure:
-        saveLocation === 'fixedFolder' && settingsStore.preserveFolderStructure,
+      keepFolderStructure: (mediaFile) =>
+        getMediaOutput(mediaFile).saveLocation === 'fixedFolder' &&
+        settingsStore.preserveFolderStructure,
     },
   )
 
@@ -298,7 +317,7 @@ export async function autoCopyCompressedMediaToClipboard() {
   if (!copyOutputToClipboard || !media.length) return
   if (media.length > 1 && !copyBatchOutputToClipboard) return
 
-  const files = media.flatMap(({ compressedFile, fileName }) => {
+  const files = media.flatMap(({ compressedFile, fileName, config }) => {
     if (!compressedFile?.isSuccessful) return []
     if (compressedFile.savedPath) return [{ path: compressedFile.savedPath }]
     if (!compressedFile.pathRaw) return []
@@ -306,7 +325,9 @@ export async function autoCopyCompressedMediaToClipboard() {
     return [
       {
         path: compressedFile.pathRaw,
-        fileName: name ? `${settingsStore.outputFilePrefix}${name}` : undefined,
+        fileName: name
+          ? `${getPresetOutput(config?.presetId).filePrefix}${name}`
+          : undefined,
       },
     ]
   })
@@ -331,11 +352,13 @@ export type QueueOutput = {
   outputSize: number
   /** Name to save it under, without the prefix */
   outputFileName: string
+  /** The preset it was compressed with, whose save location & prefix are used */
+  presetId?: string | null
 }
 
 /**
  * Saves an output of the menu bar's queue automatically, like `autoSaveCompressedMedia`: to the save
- * location of the Output settings, with the file name prefix (next to the original, or in the fixed
+ * location of its preset, with its file name prefix (next to the original, or in the fixed
  * folder, mirroring dropped folders). Media of
  * a drop share their top folder through `topFolders` (by `groupKey`). Returns where it was saved,
  * or why it was not.
@@ -349,12 +372,13 @@ export async function saveQueueOutput(
 ): Promise<
   { savedPath: string } | { reason: 'no-save-location' | 'larger' | 'failed' }
 > {
-  const { saveLocation, saveFolder, saveLargerOutputs, outputFilePrefix } =
-    settingsStore
-  if (
-    saveLocation === 'ask' ||
-    (saveLocation === 'fixedFolder' && !saveFolder)
-  ) {
+  const { saveLargerOutputs } = settingsStore
+  const {
+    saveLocation,
+    saveFolder,
+    filePrefix: outputFilePrefix,
+  } = getPresetOutput(output.presetId)
+  if (!savesAutomatically(getPresetOutput(output.presetId))) {
     return { reason: 'no-save-location' }
   }
   if (

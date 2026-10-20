@@ -121,8 +121,8 @@
         "title": "Sıkıştırma",
         "autoCompress": {
           "title": "Otomatik sıkıştır",
-          "description": "Medyayı bırakma alanına eklenir eklenmez, birer birer sıkıştırın ve Çıktı’daki kayıt konumuna kaydedin.",
-          "needsSaveLocation": "Sıkıştırılan medyanın sormadan kaydedilebilmesi için Çıktı’da “Her seferinde sor” dışında bir kayıt konumu seçin."
+          "description": "Medyayı bırakma alanına eklenir eklenmez tek tek sıkıştırır ve ön ayarının kaydetme konumuna kaydeder.",
+          "needsSaveLocation": "Sıkıştırılan medyanın sormadan kaydedilebilmesi için Ön Ayarlar bölümünde bırakma alanının bir ön ayarına Her seferinde sor dışında bir kaydetme konumu seçin."
         }
       },
       "preset": {
@@ -146,23 +146,18 @@
       "saving": {
         "title": "Kaydetme",
         "location": {
-          "title": "Kayıt konumu",
           "option_ask": "Her seferinde sor",
           "option_fixedFolder": "Sabit klasör",
-          "option_sameFolder": "Orijinalle aynı klasör",
-          "description_ask": "Her sıkıştırmadan sonra nereye kaydedileceğini seçin.",
-          "description_fixedFolder": "Her sıkıştırmadan sonra seçilen klasöre otomatik olarak kaydedin.",
-          "description_sameFolder": "Orijinal dosyanın yanına, aynı klasöre otomatik olarak kaydedin."
+          "option_sameFolder": "Orijinalle aynı klasör"
         },
         "folder": {
-          "title": "Klasör",
           "none": "Klasör seçilmedi",
           "change": "Değiştir",
           "dialogTitle": "Sıkıştırılan medyanın kaydedileceği bir klasör seçin."
         },
         "preserveFolders": {
           "title": "Klasör yapısını koru",
-          "description": "Bırakılan bir klasörün dosyalarını aynı klasörlere kaydedin. Kapalıyken tüm dosyalar tek bir klasöre kaydedilir ve aynı adlı dosyalar numaralandırılır."
+          "description": "Kaydederken orijinal klasör yapısını koru."
         },
         "skipLarger": {
           "title": "Daha büyük çıktıları atla",
@@ -170,7 +165,6 @@
         },
         "prefix": {
           "title": "Dosya adı öneki",
-          "description": "Kaydedilen dosya adlarının başına eklenen metin. Orijinal adları korumak için boş bırakın.",
           "placeholder": "Önek yok"
         }
       },
@@ -323,7 +317,11 @@
     "label": "Ön ayar:",
     "update": "“{{name}}” ön ayarını güncelle",
     "saveAsNew": "Yeni ön ayar olarak kaydet",
-    "revert": "Ön ayara geri dön"
+    "revert": "Ön ayara geri dön",
+    "output": {
+      "location": "Kaydetme konumu",
+      "followStandard": "Standart ön ayarla aynı"
+    }
   },
   "dropZone": {
     "unsupportedType": "Bu dosya türü desteklenmiyor.",
@@ -347,11 +345,11 @@
     "remove": "{{name}} öğesini kaldır",
     "storedBusy": "Saklandı. Geçerli medyadan sonra sıkıştırmak için uygulamayı açın.",
     "storedIdle": "Daha fazla medya bırakın veya sıkıştırmayı başlatmak için uygulamayı açın.",
-    "needsSaveLocation": "Sıkıştırılan medyanın sormadan kaydedilebilmesi için Ayarlar’da Çıktı altında bir kayıt konumu seçin."
+    "needsSaveLocation": "Sıkıştırılan medyanın sormadan kaydedilebilmesi için Ayarlar’da, Ön Ayarlar bölümünde bırakma alanının bir ön ayarı için kaydetme konumu seçin."
   },
   "queue": {
     "notSavedLarger": "Orijinalinden büyük olduğu için kaydedilmedi.",
-    "noSaveLocation": "Ayarlar’da Çıktı altında bir kayıt konumu seçin.",
+    "noSaveLocation": "Ayarlar’da ön ayarı için bir kaydetme konumu seçin.",
     "saveFailed": "Sıkıştırılan medya kaydedilemedi.",
     "compressFailed": "Medya sıkıştırılamadı.",
     "summary": {

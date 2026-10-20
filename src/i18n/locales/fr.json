@@ -121,8 +121,8 @@
         "title": "Compression",
         "autoCompress": {
           "title": "Compresser automatiquement",
-          "description": "Compresser les médias dès qu’ils sont ajoutés à la zone de dépôt, un à la fois, et les enregistrer à l’emplacement d’enregistrement défini dans Sortie.",
-          "needsSaveLocation": "Choisissez dans Sortie un emplacement d’enregistrement autre que « Demander à chaque fois », afin que les médias compressés puissent être enregistrés sans demande."
+          "description": "Compresse les médias dès qu’ils sont ajoutés à la zone de dépôt, un par un, et les enregistre à l’emplacement de leur préréglage.",
+          "needsSaveLocation": "Dans Préréglages, choisissez pour un préréglage de la zone de dépôt un emplacement autre que Demander à chaque fois, afin que les médias compressés soient enregistrés sans demande."
         }
       },
       "preset": {
@@ -146,23 +146,18 @@
       "saving": {
         "title": "Enregistrement",
         "location": {
-          "title": "Emplacement d’enregistrement",
           "option_ask": "Demander à chaque fois",
           "option_fixedFolder": "Dossier fixe",
-          "option_sameFolder": "Même dossier que l’original",
-          "description_ask": "Choisir où enregistrer après chaque compression.",
-          "description_fixedFolder": "Enregistrer automatiquement dans le dossier choisi après chaque compression.",
-          "description_sameFolder": "Enregistrer automatiquement à côté du fichier original, dans le même dossier."
+          "option_sameFolder": "Même dossier que l’original"
         },
         "folder": {
-          "title": "Dossier",
           "none": "Aucun dossier choisi",
           "change": "Modifier",
           "dialogTitle": "Choisissez un dossier où enregistrer les médias compressés."
         },
         "preserveFolders": {
           "title": "Conserver la structure des dossiers",
-          "description": "Enregistrer les fichiers d’un dossier déposé dans les mêmes dossiers. Si cette option est désactivée, tous les fichiers sont enregistrés dans un seul dossier et les fichiers portant le même nom sont numérotés."
+          "description": "Conserver la structure de dossiers d’origine lors de l’enregistrement."
         },
         "skipLarger": {
           "title": "Ignorer les sorties plus volumineuses",
@@ -170,7 +165,6 @@
         },
         "prefix": {
           "title": "Préfixe du nom de fichier",
-          "description": "Texte ajouté au début du nom des fichiers enregistrés. Laissez vide pour conserver les noms d’origine.",
           "placeholder": "Aucun préfixe"
         }
       },
@@ -323,7 +317,11 @@
     "label": "Préréglage :",
     "update": "Mettre à jour « {{name}} »",
     "saveAsNew": "Enregistrer comme nouveau préréglage",
-    "revert": "Revenir au préréglage"
+    "revert": "Revenir au préréglage",
+    "output": {
+      "location": "Emplacement d’enregistrement",
+      "followStandard": "Comme le préréglage Standard"
+    }
   },
   "dropZone": {
     "unsupportedType": "Ce type de fichier n’est pas pris en charge.",
@@ -348,11 +346,11 @@
     "remove": "Retirer {{name}}",
     "storedBusy": "Conservés. Ouvrez l’app pour les compresser après les médias en cours.",
     "storedIdle": "Déposez d’autres médias, ou ouvrez l’app pour lancer la compression.",
-    "needsSaveLocation": "Choisissez un emplacement d’enregistrement dans les Réglages, sous Sortie, afin que les médias compressés puissent être enregistrés sans demande."
+    "needsSaveLocation": "Dans les Réglages, sous Préréglages, choisissez un emplacement d’enregistrement pour un préréglage de la zone de dépôt, afin que les médias compressés soient enregistrés sans demande."
   },
   "queue": {
     "notSavedLarger": "Non enregistré, car plus volumineux que l’original.",
-    "noSaveLocation": "Choisissez un emplacement d’enregistrement dans les Réglages, sous Sortie.",
+    "noSaveLocation": "Choisissez un emplacement d’enregistrement pour son préréglage, dans les Réglages.",
     "saveFailed": "Le média compressé n’a pas pu être enregistré.",
     "compressFailed": "Le média n’a pas pu être compressé.",
     "summary": {

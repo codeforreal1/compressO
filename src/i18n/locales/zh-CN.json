@@ -121,8 +121,8 @@
         "title": "压缩",
         "autoCompress": {
           "title": "自动压缩",
-          "description": "媒体添加到拖放区后立即逐个压缩，并保存到“输出”中设置的保存位置。",
-          "needsSaveLocation": "请在“输出”中选择“每次询问”以外的保存位置，以便无需询问即可保存压缩后的媒体。"
+          "description": "媒体添加到投放区后立即逐个压缩，并保存到其预设的保存位置。",
+          "needsSaveLocation": "请在“预设”中为投放区的预设选择“每次询问”以外的保存位置，以便无需询问即可保存压缩后的媒体。"
         }
       },
       "preset": {
@@ -146,23 +146,18 @@
       "saving": {
         "title": "保存",
         "location": {
-          "title": "保存位置",
           "option_ask": "每次询问",
           "option_fixedFolder": "固定文件夹",
-          "option_sameFolder": "与原文件相同的文件夹",
-          "description_ask": "每次压缩后选择保存位置。",
-          "description_fixedFolder": "每次压缩后自动保存到所选文件夹。",
-          "description_sameFolder": "自动保存在原文件旁边的同一文件夹中。"
+          "option_sameFolder": "与原文件相同的文件夹"
         },
         "folder": {
-          "title": "文件夹",
           "none": "未选择文件夹",
           "change": "更改",
           "dialogTitle": "选择用于保存压缩媒体的文件夹。"
         },
         "preserveFolders": {
           "title": "保留文件夹结构",
-          "description": "将拖入文件夹中的文件保存到相同的文件夹结构中。关闭时，所有文件都保存在同一个文件夹中，同名文件会被编号。"
+          "description": "保存时保留原始文件夹结构。"
         },
         "skipLarger": {
           "title": "跳过更大的输出",
@@ -170,7 +165,6 @@
         },
         "prefix": {
           "title": "文件名前缀",
-          "description": "添加到保存文件名开头的文字。留空则保留原文件名。",
           "placeholder": "无前缀"
         }
       },
@@ -323,7 +317,11 @@
     "label": "预设：",
     "update": "更新“{{name}}”",
     "saveAsNew": "另存为新预设",
-    "revert": "还原为预设"
+    "revert": "还原为预设",
+    "output": {
+      "location": "保存位置",
+      "followStandard": "与标准预设相同"
+    }
   },
   "dropZone": {
     "unsupportedType": "不支持此文件类型。",
@@ -346,11 +344,11 @@
     "remove": "移除 {{name}}",
     "storedBusy": "已暂存。打开应用，可在当前媒体之后压缩它们。",
     "storedIdle": "拖入更多媒体，或打开应用开始压缩。",
-    "needsSaveLocation": "请在“设置”的“输出”中选择保存位置，以便无需询问即可保存压缩后的媒体。"
+    "needsSaveLocation": "请在“设置”的“预设”中为投放区的预设选择保存位置，以便无需询问即可保存压缩后的媒体。"
   },
   "queue": {
     "notSavedLarger": "未保存，因为比原文件更大。",
-    "noSaveLocation": "请在“设置”的“输出”中选择保存位置。",
+    "noSaveLocation": "请在“设置”中为其预设选择保存位置。",
     "saveFailed": "无法保存压缩后的媒体。",
     "compressFailed": "无法压缩该媒体。",
     "summary": {

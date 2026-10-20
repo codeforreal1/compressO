@@ -1,6 +1,3 @@
-// The item must be HeroUI's own (not a wrapper) so the Select can build its collection
-import { SelectItem } from '@heroui/react'
-import { open } from '@tauri-apps/plugin-dialog'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
@@ -9,17 +6,10 @@ import AnimatedLabel from '@/components/AnimatedLabel'
 import Button from '@/components/Button'
 import Icon from '@/components/Icon'
 import InfoTooltip from '@/components/InfoTooltip'
-import Select from '@/components/Select'
 import Switch from '@/components/Switch'
-import TextInput from '@/components/TextInput'
 import { toast } from '@/components/Toast'
 import { useHardwareEncoders } from '@/hooks/useHardwareEncoding'
-import { t } from '@/i18n'
-import {
-  type SaveLocation,
-  sanitizeFileNamePart,
-  settingsStore,
-} from '@/stores/settingsStore'
+import { settingsStore } from '@/stores/settingsStore'
 import { deleteCache as invokeDeleteCache } from '@/tauri/commands/fs'
 import { SettingsRow, SettingsSection } from './SettingsLayout'
 import { appProxy } from '../../-state'
@@ -33,28 +23,11 @@ function isOnHomeScreen() {
   return media.length === 0 && !isLoadingMediaFiles && !isCompressing
 }
 
-const SAVE_LOCATION_OPTIONS: SaveLocation[] = [
-  'ask',
-  'fixedFolder',
-  'sameFolder',
-]
-
-async function pickSaveFolder() {
-  const folder = await open({
-    directory: true,
-    title: t('settings.output.saving.folder.dialogTitle'),
-  })
-  return typeof folder === 'string' ? folder : null
-}
-
 function Output() {
   const { t } = useTranslation()
   const [confirmClearCache, setConfirmClearCache] = React.useState(false)
   const [isCacheDeleting, setIsCacheDeleting] = React.useState(false)
   const {
-    outputFilePrefix,
-    saveLocation,
-    saveFolder,
     saveLargerOutputs,
     preserveFolderStructure,
     copyOutputToClipboard,
@@ -67,15 +40,6 @@ function Output() {
   const hasHardwareAcceleration =
     hardwareEncoders == null || hardwareEncoders.length > 0
 
-  const handleSaveLocationChange = async (location: SaveLocation) => {
-    // A fixed folder needs a folder; keep the previous option if none is chosen
-    if (location === 'fixedFolder' && !settingsStore.saveFolder) {
-      const folder = await pickSaveFolder()
-      if (!folder) return
-      settingsStore.saveFolder = folder
-    }
-    settingsStore.saveLocation = location
-  }
   // Read from the snapshot so the button updates if the screen changes while the dialog is open
   const {
     state: { media, isLoadingMediaFiles, isCompressing },
@@ -98,57 +62,10 @@ function Output() {
 
   return (
     <>
+      {/* Where outputs are saved & their prefix are set per preset (the Standard one too), in
+          Presets; these apply to every preset */}
       <SettingsSection title={t('settings.output.saving.title')}>
         <SettingsRow
-          title={t('settings.output.saving.location.title')}
-          description={t('settings.output.saving.location.description', {
-            context: saveLocation,
-          })}
-        >
-          <Select
-            aria-label={t('settings.output.saving.location.title')}
-            selectedKeys={[saveLocation]}
-            disallowEmptySelection
-            onSelectionChange={(keys) => {
-              const [key] = [...keys]
-              if (key) handleSaveLocationChange(key as SaveLocation)
-            }}
-            className="w-[220px]"
-            classNames={{ popoverContent: 'settings-dialog' }}
-          >
-            {SAVE_LOCATION_OPTIONS.map((option) => (
-              <SelectItem key={option}>
-                {t('settings.output.saving.location.option', {
-                  context: option,
-                })}
-              </SelectItem>
-            ))}
-          </Select>
-        </SettingsRow>
-        <SettingsRow
-          isVisible={saveLocation === 'fixedFolder'}
-          isNested
-          title={t('settings.output.saving.folder.title')}
-          description={
-            <span className="break-all">
-              {saveFolder ?? t('settings.output.saving.folder.none')}
-            </span>
-          }
-        >
-          <Button
-            size="sm"
-            onPress={async () => {
-              const folder = await pickSaveFolder()
-              if (folder) settingsStore.saveFolder = folder
-            }}
-          >
-            {t('settings.output.saving.folder.change')}
-          </Button>
-        </SettingsRow>
-        {/* Next to the originals, each file is always saved in its original's folder */}
-        <SettingsRow
-          isVisible={saveLocation !== 'sameFolder'}
-          isNested
           title={t('settings.output.saving.preserveFolders.title')}
           description={t('settings.output.saving.preserveFolders.description')}
         >
@@ -161,8 +78,6 @@ function Output() {
           />
         </SettingsRow>
         <SettingsRow
-          isVisible={saveLocation !== 'ask'}
-          isNested
           title={t('settings.output.saving.skipLarger.title')}
           description={t('settings.output.saving.skipLarger.description')}
         >
@@ -172,20 +87,6 @@ function Output() {
             onValueChange={(isSelected) => {
               settingsStore.saveLargerOutputs = !isSelected
             }}
-          />
-        </SettingsRow>
-        <SettingsRow
-          title={t('settings.output.saving.prefix.title')}
-          description={t('settings.output.saving.prefix.description')}
-        >
-          <TextInput
-            aria-label={t('settings.output.saving.prefix.title')}
-            placeholder={t('settings.output.saving.prefix.placeholder')}
-            value={outputFilePrefix}
-            onValueChange={(value) => {
-              settingsStore.outputFilePrefix = sanitizeFileNamePart(value)
-            }}
-            className="w-[180px]"
           />
         </SettingsRow>
       </SettingsSection>
@@ -286,6 +187,7 @@ function Output() {
               size="sm"
               color="danger"
               variant={confirmClearCache ? 'solid' : 'flat'}
+              isIconOnly={!confirmClearCache}
               onPress={() => {
                 if (!confirmClearCache) {
                   setConfirmClearCache(true)
@@ -299,7 +201,7 @@ function Output() {
               <AnimatedLabel>
                 {confirmClearCache
                   ? t('settings.output.storage.clearCache.confirm')
-                  : t('settings.output.storage.clearCache.title')}
+                  : ''}
               </AnimatedLabel>
             </Button>
           </div>

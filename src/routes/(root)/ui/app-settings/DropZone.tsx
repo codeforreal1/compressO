@@ -6,20 +6,14 @@ import { useSnapshot } from 'valtio'
 import InfoTooltip from '@/components/InfoTooltip'
 import Select from '@/components/Select'
 import Switch from '@/components/Switch'
-import { isAutoCompressAvailable } from '@/hooks/useAutoCompressSync'
+import { useIsAutoCompressAvailable } from '@/hooks/useAutoCompressSync'
 import { presetsStore } from '@/stores/presetsStore'
 import { settingsStore } from '@/stores/settingsStore'
 import type { Preset, PresetMediaType } from '@/types/preset'
+import { DROP_ZONE_PRESET_SETTINGS } from '@/utils/presetOutput'
 import { TRAY_CONTEXT } from '@/utils/tray'
 import { SettingsRow, SettingsSection } from './SettingsLayout'
 import { getPreset, getPresets } from '../../-presets'
-
-/** Setting of the preset each type of media is compressed with by the drop zone */
-const DROP_ZONE_PRESET_SETTINGS = {
-  video: 'dropZoneVideoPresetId',
-  image: 'dropZoneImagePresetId',
-  audio: 'dropZoneAudioPresetId',
-} as const satisfies Record<PresetMediaType, keyof typeof settingsStore>
 
 /** Picks the preset of the media compressed by the drop zone */
 function DropZonePresetSelect({ mediaType }: { mediaType: PresetMediaType }) {
@@ -58,15 +52,9 @@ function DropZonePresetSelect({ mediaType }: { mediaType: PresetMediaType }) {
 /** Settings of the drop zone in the menu bar (macOS only) */
 function DropZone() {
   const { t } = useTranslation()
-  const {
-    showMenuBarIcon,
-    watchClipboard,
-    autoCompress,
-    // Read so it updates when the save location changes
-    saveLocation,
-    saveFolder,
-  } = useSnapshot(settingsStore)
-  const canAutoCompress = isAutoCompressAvailable({ saveLocation, saveFolder })
+  const { showMenuBarIcon, watchClipboard, autoCompress } =
+    useSnapshot(settingsStore)
+  const canAutoCompress = useIsAutoCompressAvailable()
 
   return (
     <>
