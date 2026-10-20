@@ -69,7 +69,7 @@ function ImageSettings({ mediaIndex }: ImageSettingsProps) {
             <div>
               <div>
                 <CompressionQuality mediaIndex={mediaIndex} />
-                <Divider className="my-3" />
+                <Divider className="mb-3" />
               </div>
 
               {(['svg'] as ImageExtensionType[]).includes(
@@ -105,7 +105,7 @@ function ImageSettings({ mediaIndex }: ImageSettingsProps) {
                   </div>
                   <div>
                     <TransformImage mediaIndex={mediaIndex} />
-                    <Divider className="my-3" />
+                    <Divider className="my-3 mb-2" />
                   </div>
                 </>
               ) : null}
@@ -117,7 +117,7 @@ function ImageSettings({ mediaIndex }: ImageSettingsProps) {
                 </div>
               ) : null}
 
-              <div className="!mt-8">
+              <div className="!mt-10">
                 <ImageExtension mediaIndex={mediaIndex} />
               </div>
             </div>

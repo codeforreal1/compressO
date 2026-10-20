@@ -191,6 +191,10 @@
           "title": "使用硬件加速",
           "description": "使用硬件加速更快地压缩视频（文件可能略大）",
           "unavailable": "此电脑不支持硬件加速。"
+        },
+        "retryTargetSizeOnCpu": {
+          "title": "不使用加速来达到目标大小",
+          "description": "视频未达到目标大小时，将不使用硬件加速重新压缩，速度较慢但更接近目标大小。"
         }
       },
       "storage": {
@@ -278,7 +282,9 @@
     "reset": "重置",
     "apply": "应用",
     "yes": "是",
-    "edit": "编辑"
+    "edit": "编辑",
+    "decrease": "减少",
+    "increase": "增加"
   },
   "presets": {
     "standard": "标准",
@@ -296,7 +302,8 @@
       "metadataRemoved": "已移除元数据",
       "metadataKept": "保留元数据",
       "svgScale": "SVG 缩放 {{scale}} 倍",
-      "customSvg": "自定义 SVG 转换"
+      "customSvg": "自定义 SVG 转换",
+      "targetSize": "目标大小 {{size}} MB"
     },
     "save": {
       "title_video": "保存视频预设",
@@ -575,7 +582,10 @@
     "progress": "进度 {{value}}%",
     "mediaToCompress": "待压缩的媒体",
     "waitingForDropZone": "正在等待拖放区…",
-    "processing": "正在处理…"
+    "processing": "正在处理…",
+    "estimatingSize": "正在估算输出大小...",
+    "estimatedSize": "预计大小：约 {{size}}",
+    "estimatedSizeUpTo": "预计大小：最多 {{size}}"
   },
   "thumbnail": {
     "copyFrameUnavailable": "无法复制该帧",
@@ -858,5 +868,27 @@
     "minimize": "最小化",
     "zoom": "缩放",
     "help": "帮助"
+  },
+  "targetSize": {
+    "mode": "压缩方式",
+    "modes": {
+      "quality": "按质量",
+      "size": "按目标大小"
+    },
+    "size": "目标大小",
+    "estimate": "约 {{width}}×{{height}}，{{fps}} fps，不超过 {{size}} MB。",
+    "estimateLowered": "已降至 {{width}}×{{height}}，{{fps}} fps，以控制在 {{size}} MB 以内。",
+    "notForGif": "GIF 无法按大小压缩。请选择其他格式，或按质量压缩。",
+    "eachVideo": "每个视频都会压缩到此大小以内。",
+    "retrying": "正在重新压缩以达到目标大小。",
+    "retryingOnCpu": "正在不使用硬件加速重新压缩以达到目标大小。",
+    "fitsAtQuality": "所选质量已符合要求，约为 {{size}}，因此将使用该质量。",
+    "switchUnit": "以 {{unit}} 显示大小"
+  },
+  "outputOptions": {
+    "title": "其他选项",
+    "choose": "使用 {{size}} 的输出",
+    "withinTarget": "在目标以内",
+    "overTarget": "超出目标"
   }
 }

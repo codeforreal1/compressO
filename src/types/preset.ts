@@ -10,6 +10,8 @@ export const videoPresetFields = [
   'convertToExtension',
   'shouldDisableCompression',
   'quality',
+  'shouldUseTargetSize',
+  'targetSizeInMB',
   'shouldEnableCustomVideoCodec',
   'customVideoCodec',
   'shouldEnableCustomFPS',

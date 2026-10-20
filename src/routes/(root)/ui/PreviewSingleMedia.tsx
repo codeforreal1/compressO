@@ -1,13 +1,15 @@
-import { motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import React, { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
+import AnimatedNumber from '@/components/AnimatedNumber'
 import Button from '@/components/Button'
 import Code from '@/components/Code'
 import Divider from '@/components/Divider'
 import Icon from '@/components/Icon'
 import Image from '@/components/Image'
+import ImpactPop from '@/components/ImpactPop'
 import { CircularProgress } from '@/components/Progress'
 import Switch from '@/components/Switch'
 import { toast } from '@/components/Toast'
@@ -17,6 +19,7 @@ import { showItemInFileManager } from '@/tauri/commands/fs'
 import { isAudioExtension } from '@/types/compression'
 import { Ripple } from '@/ui/Patterns/Ripple'
 import { slideUpTransition, zoomInTransition } from '@/utils/animation'
+import { formatBytes } from '@/utils/fs'
 import { isOverlayOpen, isTextEntryElement } from '@/utils/keyboard'
 import { formatDuration } from '@/utils/string'
 import { cn } from '@/utils/tailwind'
@@ -24,6 +27,7 @@ import ExitMedia from './ExitMedia'
 import ImageInfo from './ImageInfo'
 import MediaOutputCompareSlider from './MediaOutputCompareSlider'
 import MediaThumbnail from './MediaThumbnail'
+import OutputOptions from './OutputOptions'
 import styles from './styles.module.css'
 import VideoInfo from './VideoInfo'
 import { pickMediaToAdd } from '../-media'
@@ -36,6 +40,15 @@ type PreviewSingleMediaProps = {
    * customized in a batch)
    */
   headerEnd?: React.ReactNode
+}
+
+/** How long the result's numbers count (in seconds) before they land */
+const RESULT_COUNT_SECONDS = 0.3
+
+/** A percentage as shown, e.g. `99.77` or `50` (without `.00`) */
+const formatPercentage = (value: number) => {
+  const text = value.toFixed(2)
+  return text.endsWith('.00') ? text.slice(0, -3) : text
 }
 
 function PreviewSingleMedia({
@@ -53,6 +66,7 @@ function PreviewSingleMedia({
       showMediaInfo,
       isLoadingMediaFiles,
       isWaitingForDropZone,
+      isEstimatingSize,
     },
   } = useSnapshot(appProxy)
   const mediaFile = media.length > 0 ? media[mediaIndex] : null
@@ -65,6 +79,8 @@ function PreviewSingleMedia({
     compressedFile,
     thumbnailPath,
   } = mediaFile ?? {}
+  const estimatedOutputSize =
+    mediaFile?.type === 'video' ? mediaFile.estimatedOutputSize : null
   const { videoDuration, fps } =
     mediaFile?.type === 'video' ? (mediaFile ?? {}) : {}
   const { isVideoTransformEditMode, isVideoTrimEditMode } =
@@ -114,6 +130,8 @@ function PreviewSingleMedia({
         : 0,
     [compressedFile?.sizeInBytes, sizeInBytes],
   )
+  // Only a smaller output is counted down (a larger one is shown as it is)
+  const isSmaller = compressedSizeDiff > 0
 
   const singleFileNameDisplay =
     (isProcessCompleted
@@ -282,24 +300,58 @@ function PreviewSingleMedia({
           <section className="animate-appearance-in">
             <div className="flex justify-center items-center mt-2">
               <p className="text-2xl font-bold mx-4">{mediaSize}</p>
-              <Icon
-                name="curvedArrow"
-                className="text-black dark:text-white rotate-[-65deg] translate-y-[-8px]"
-                size={100}
-              />
+              <motion.div
+                initial={isSmaller ? { opacity: 0, x: -12 } : false}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.2, ease: 'easeOut' }}
+              >
+                <Icon
+                  name="curvedArrow"
+                  className="text-black dark:text-white rotate-[-65deg] translate-y-[-8px]"
+                  size={100}
+                />
+              </motion.div>
               <p className="text-3xl  font-bold mx-4 text-primary">
-                {compressedFile?.size}
+                {/* A smaller output shrinks from the original's size to its own, & lands with a hit */}
+                <ImpactPop
+                  trigger={compressedFile?.sizeInBytes}
+                  delay={RESULT_COUNT_SECONDS}
+                  isDisabled={!isSmaller}
+                >
+                  <AnimatedNumber
+                    value={compressedFile?.sizeInBytes ?? 0}
+                    from={sizeInBytes ?? 0}
+                    format={formatBytes}
+                    duration={RESULT_COUNT_SECONDS}
+                    isStatic={!isSmaller}
+                  />
+                </ImpactPop>
               </p>
             </div>
-            {!(compressedSizeDiff <= 0) ? (
+            {isSmaller ? (
               <p className="block text-5xl text-center text-primary">
-                {compressedSizeDiff.toFixed(2)?.endsWith('.00')
-                  ? compressedSizeDiff.toFixed(2)?.slice(0, -3)
-                  : compressedSizeDiff.toFixed(2)}
+                <AnimatedNumber
+                  value={compressedSizeDiff}
+                  from={0}
+                  format={formatPercentage}
+                  duration={RESULT_COUNT_SECONDS}
+                />
                 %
-                <span className="text-large block">{t('preview.smaller')}</span>
+                <motion.span
+                  className="text-large block"
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: 0.2,
+                    delay: RESULT_COUNT_SECONDS * 0.75,
+                    ease: 'easeOut',
+                  }}
+                >
+                  {t('preview.smaller')}
+                </motion.span>
               </p>
             ) : null}
+            <OutputOptions mediaIndex={mediaIndex} />
           </section>
         ) : (
           <section className={cn(['my-4 mb-2', styles.videoMetadata])}>
@@ -465,7 +517,9 @@ function PreviewSingleMedia({
           <p className=" text-sm mt-10 text-center animate-pulse">
             {isWaitingForDropZone
               ? t('preview.waitingForDropZone')
-              : t('preview.processing')}
+              : isEstimatingSize
+                ? t('preview.estimatingSize')
+                : t('preview.processing')}
           </p>
           <p
             className={`text-2xl text-center font-bold my-2 opacity-${
@@ -474,6 +528,28 @@ function PreviewSingleMedia({
           >
             {compressionProgress?.toFixed(2)}%
           </p>
+          {/* Its estimated size (compressing to a target size), faded in once known; its line is
+              kept so the text above does not move */}
+          <div className="h-5">
+            <AnimatePresence>
+              {estimatedOutputSize && !isEstimatingSize ? (
+                <motion.p
+                  className="text-center text-sm text-white/80"
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.4, ease: 'easeOut' }}
+                >
+                  {t(
+                    estimatedOutputSize.isUpTo
+                      ? 'preview.estimatedSizeUpTo'
+                      : 'preview.estimatedSize',
+                    { size: formatBytes(estimatedOutputSize.sizeInBytes) },
+                  )}
+                </motion.p>
+              ) : null}
+            </AnimatePresence>
+          </div>
         </div>
         <div className="bg-black/60 z-[10] absolute top-0 right-0 bottom-0 left-0 rounded-full" />
       </div>

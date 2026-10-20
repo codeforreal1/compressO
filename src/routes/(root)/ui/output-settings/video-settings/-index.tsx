@@ -203,7 +203,7 @@ function VideoSettings({
               <Divider className="my-3" />
               <AudioBitrate mediaIndex={mediaIndex} />
               <Divider className="my-3" />
-              <div className="mt-4">
+              <div className="mt-10">
                 <VideoExtension mediaIndex={mediaIndex} />
               </div>
             </div>

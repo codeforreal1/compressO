@@ -1,6 +1,6 @@
 import { core, event } from '@tauri-apps/api'
 import { motion } from 'framer-motion'
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { snapshot, useSnapshot } from 'valtio'
@@ -9,6 +9,7 @@ import Button from '@/components/Button'
 import ShortcutHint from '@/components/ShortcutHint'
 import { useCommandEnterShortcut } from '@/hooks/useCommandEnterShortcut'
 import { useCommandKeyHeld } from '@/hooks/useCommandKeyHeld'
+import { flushSyncStates } from '@/hooks/useSyncState'
 import { settingsStore } from '@/stores/settingsStore'
 import { getDropQueue } from '@/tauri/commands/dropQueue'
 import { compressMediaBatch } from '@/tauri/commands/media'
@@ -24,6 +25,9 @@ import PauseCompression from './PauseCompression'
 import SaveMedia from './SaveMedia'
 import {
   getMediaItemConfig,
+  getOutputOptions,
+  getQualitySizeEstimate,
+  getTargetSizePlan,
   type MediaFile,
   waitForDropZone,
 } from '../-compression'
@@ -31,10 +35,32 @@ import {
   autoCopyCompressedMediaToClipboard,
   autoSaveCompressedMedia,
 } from '../-save'
+import {
+  estimateTargetSizeVideos,
+  needsQualityEstimate,
+} from '../-sizeEstimate'
 import { appProxy } from '../-state'
 
 function StartCompression() {
   const { t } = useTranslation()
+
+  // A video missed its target size & is compressed again (see `ffmpeg.rs`), on the CPU with
+  // "Retry target sizes on the CPU"
+  useEffect(() => {
+    const unlisten = event.listen<{ videoId: string; onCpu: boolean }>(
+      'target-size-retry',
+      ({ payload }) => {
+        toast.info(
+          payload?.onCpu
+            ? t('targetSize.retryingOnCpu')
+            : t('targetSize.retrying'),
+        )
+      },
+    )
+    return () => {
+      unlisten.then((stop) => stop()).catch(() => {})
+    }
+  }, [t])
   const {
     state: {
       selectedMediaIndexForCustomization,
@@ -45,6 +71,15 @@ function StartCompression() {
   } = useSnapshot(appProxy)
 
   const handleCompression = useCallback(async () => {
+    if (appProxy.state.isCompressing) return
+    // A number still being typed is entered (inputs take it when they lose focus), & changes not
+    // yet saved to the settings (e.g. just before, see `useSyncState`) are saved, so they are used
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur()
+      // The value entered reaches `useSyncState` a moment later (valtio notifies after a tick)
+      await new Promise((resolve) => setTimeout(resolve, 0))
+    }
+    flushSyncStates()
     const appSnapshot = snapshot(appProxy)
     if (appSnapshot.state.isCompressing) return
 
@@ -145,6 +180,50 @@ function StartCompression() {
         }
       }
 
+      // Videos compressed to a size are compressed at their quality settings when those fit, so
+      // their size at them is estimated first (when not already)
+      const mediaToEstimate = appSnapshot.state.media.filter((v) =>
+        needsQualityEstimate(v as MediaFile, batchVideoLongerSide),
+      ) as MediaFile[]
+      if (mediaToEstimate.length > 0) {
+        appProxy.state.isEstimatingSize = true
+        try {
+          await Promise.race([
+            estimateTargetSizeVideos(
+              mediaToEstimate,
+              batchVideoLongerSide,
+              abortController.signal,
+            ),
+            cancellation,
+          ])
+        } finally {
+          appProxy.state.isEstimatingSize = false
+        }
+      }
+      // The size each video compressed to a target size comes out at, shown while compressing
+      for (const index in appProxy.state.media) {
+        const item = appProxy.state.media[index]
+        if (item.type !== 'video') continue
+        const plan = getTargetSizePlan(
+          snapshot(item) as MediaFile,
+          batchVideoLongerSide,
+        )
+        const qualitySize = plan
+          ? getQualitySizeEstimate(
+              snapshot(item) as MediaFile,
+              batchVideoLongerSide,
+            )
+          : null
+        item.estimatedOutputSize = !plan
+          ? null
+          : plan.fitsAtQuality && qualitySize != null
+            ? {
+                sizeInBytes: Math.min(qualitySize, plan.sizeInBytes),
+                isUpTo: false,
+              }
+            : { sizeInBytes: plan.sizeInBytes, isUpTo: true }
+      }
+
       const { results } = (await Promise.race([
         compressMediaBatch(
           batchId,
@@ -188,6 +267,7 @@ function StartCompression() {
             sizeInBytes: videoResult?.fileMetadata?.size,
             size: formatBytes(videoResult?.fileMetadata?.size ?? 0),
             extension: videoResult?.fileMetadata?.extension,
+            ...getOutputOptions(videoResult, video.config?.targetSizeInMB),
           }
         } else if (appProxy.state.media[index].type === 'image') {
           const image = appProxy.state.media[index]
@@ -259,7 +339,8 @@ function StartCompression() {
           as={motion.button}
           onPress={handleCompression}
           fullWidth
-          className="w-full bg-primary"
+          className="w-full"
+          color="primary"
           variant="solid"
           isDisabled={isLoadingMediaFiles}
         >

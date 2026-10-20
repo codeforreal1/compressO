@@ -2,6 +2,17 @@ import { useCallback, useEffect, useRef } from 'react'
 import { proxy, useSnapshot } from 'valtio'
 import { subscribeKey } from 'valtio/utils'
 
+/** Changes waiting to be synced to global state (debounced), by the hook that made them */
+const pendingSyncs = new Set<() => void>()
+
+/**
+ * Syncs every change still waiting (debounced) to global state now, e.g. before compressing, so a
+ * value changed just before (a slider, a number typed) is the one used
+ */
+export function flushSyncStates() {
+  for (const sync of [...pendingSyncs]) sync()
+}
+
 type UseSyncStateOptions<T> = {
   globalValue: T | undefined
   setGlobalValue: (value: T) => void
@@ -50,6 +61,7 @@ export function useSyncState<T>({
 
   useEffect(() => {
     let unsubscribe: () => void
+    let pendingSync: (() => void) | null = null
     if (stateProxy.current) {
       unsubscribe = subscribeKey(
         stateProxy.current,
@@ -65,13 +77,20 @@ export function useSyncState<T>({
             if (debounceTimerRef.current) {
               clearTimeout(debounceTimerRef.current)
             }
-            debounceTimerRef.current = setTimeout(() => {
+            if (pendingSync) pendingSyncs.delete(pendingSync)
+            const sync = () => {
+              clearTimeout(debounceTimerRef.current)
+              pendingSyncs.delete(sync)
+              pendingSync = null
               isUpdatingRef.current = true
               setGlobalValueRef.current(newLocalValue)
               setTimeout(() => {
                 isUpdatingRef.current = false
               }, 0)
-            }, debounceMs)
+            }
+            pendingSync = sync
+            pendingSyncs.add(sync)
+            debounceTimerRef.current = setTimeout(sync, debounceMs)
           }
         },
       )
@@ -79,6 +98,7 @@ export function useSyncState<T>({
     return () => {
       unsubscribe?.()
       clearTimeout(debounceTimerRef.current)
+      if (pendingSync) pendingSyncs.delete(pendingSync)
     }
   }, [debounceMs])
 

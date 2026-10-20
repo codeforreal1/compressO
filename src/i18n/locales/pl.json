@@ -191,6 +191,10 @@
           "title": "Używaj akceleracji sprzętowej",
           "description": "Szybciej kompresuj filmy dzięki akceleracji sprzętowej (pliki mogą być nieco większe)",
           "unavailable": "Akceleracja sprzętowa nie jest dostępna na tym komputerze."
+        },
+        "retryTargetSizeOnCpu": {
+          "title": "Osiągaj rozmiar docelowy bez przyspieszenia",
+          "description": "Gdy wideo nie osiągnie rozmiaru docelowego, jest kompresowane ponownie bez przyspieszenia sprzętowego, co jest wolniejsze, ale dokładniejsze."
         }
       },
       "storage": {
@@ -278,7 +282,9 @@
     "reset": "Resetuj",
     "apply": "Zastosuj",
     "yes": "Tak",
-    "edit": "Edytuj"
+    "edit": "Edytuj",
+    "decrease": "Zmniejsz",
+    "increase": "Zwiększ"
   },
   "presets": {
     "standard": "Standardowe",
@@ -296,7 +302,8 @@
       "metadataRemoved": "Usunięto metadane",
       "metadataKept": "Zachowano metadane",
       "svgScale": "Skala SVG {{scale}}x",
-      "customSvg": "Niestandardowa konwersja SVG"
+      "customSvg": "Niestandardowa konwersja SVG",
+      "targetSize": "Rozmiar docelowy {{size}} MB"
     },
     "save": {
       "title_video": "Zapisz ustawienie wstępne wideo",
@@ -593,7 +600,10 @@
     "progress": "Postęp {{value}}%",
     "mediaToCompress": "Plik do kompresji",
     "waitingForDropZone": "Oczekiwanie na strefę upuszczania…",
-    "processing": "Przetwarzanie…"
+    "processing": "Przetwarzanie…",
+    "estimatingSize": "Szacowanie rozmiaru pliku...",
+    "estimatedSize": "Szacowany rozmiar: około {{size}}",
+    "estimatedSizeUpTo": "Szacowany rozmiar: do {{size}}"
   },
   "thumbnail": {
     "copyFrameUnavailable": "Nie można skopiować klatki",
@@ -897,5 +907,27 @@
     "minimize": "Minimalizuj",
     "zoom": "Powiększ",
     "help": "Pomoc"
+  },
+  "targetSize": {
+    "mode": "Kompresuj według",
+    "modes": {
+      "quality": "Jakości",
+      "size": "Rozmiaru docelowego"
+    },
+    "size": "Rozmiar docelowy",
+    "estimate": "Około {{width}}×{{height}} przy {{fps}} kl./s, w granicach {{size}} MB.",
+    "estimateLowered": "Zmniejszono do {{width}}×{{height}} przy {{fps}} kl./s, aby zmieścić się w {{size}} MB.",
+    "notForGif": "Plików GIF nie można skompresować do rozmiaru. Wybierz inny format lub kompresuj według jakości.",
+    "eachVideo": "Każde wideo jest kompresowane tak, aby zmieściło się w tym rozmiarze.",
+    "retrying": "Ponowna kompresja, aby osiągnąć rozmiar docelowy.",
+    "retryingOnCpu": "Ponowna kompresja bez przyspieszenia sprzętowego, aby osiągnąć rozmiar docelowy.",
+    "fitsAtQuality": "Wybrana jakość już się mieści (około {{size}}), dlatego zostanie użyta.",
+    "switchUnit": "Pokaż rozmiar w {{unit}}"
+  },
+  "outputOptions": {
+    "title": "Inne opcje",
+    "choose": "Użyj pliku o rozmiarze {{size}}",
+    "withinTarget": "W granicach celu",
+    "overTarget": "Powyżej celu"
   }
 }

@@ -6,6 +6,7 @@ import { useSnapshot } from 'valtio'
 import Icon from '@/components/Icon'
 import Layout from '@/components/Layout'
 import Spinner from '@/components/Spinner'
+import { cn } from '@/utils/tailwind'
 import { useCompressionStatusSync } from './-compression-status'
 import { addMedia, openExternalMedia, pickMediaToAdd } from './-media'
 import { appProxy } from './-state'
@@ -72,7 +73,11 @@ function Root() {
           }
         }}
       >
-        <div className="flex flex-col justify-center items-center py-16 px-20 border-2 border-dashed border-zinc-200 dark:border-zinc-800 rounded-3xl">
+        <div
+          className={cn(
+            'flex flex-col justify-center items-center py-16 px-20 border-2 border-dashed border-zinc-200 dark:border-zinc-800 rounded-3xl',
+          )}
+        >
           <Icon name="addMedia" className="text-primary" size={60} />
           <p className="text-sm mt-4 text-gray-600 dark:text-gray-400 text-center">
             {t('home.dragAndDrop')}

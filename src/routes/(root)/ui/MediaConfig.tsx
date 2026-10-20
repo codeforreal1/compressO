@@ -60,6 +60,7 @@ function MediaConfig() {
                 }}
                 className="mb-4"
                 classNames={{
+                  base: 'dark:bg-zinc-900 rounded-xl',
                   tabContent: 'text-[11px]',
                   tab: 'h-5',
                 }}

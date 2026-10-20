@@ -66,6 +66,13 @@ export type VideoConfig = {
   shouldDisableCompression: boolean
   audioConfig: AudioConfig
   quality?: number | null
+  /**
+   * Compressed to a file size instead of a quality (see `utils/targetSize.ts`): the resolution &
+   * frame rate chosen are then upper limits, lowered to fit
+   */
+  shouldUseTargetSize?: boolean
+  /** The size, in MB */
+  targetSizeInMB?: number | null
   shouldEnableCustomDimensions?: boolean
   customDimensions?: [number, number]
   /** Resolution for all videos of a batch (set on the batch config only) */
@@ -130,6 +137,11 @@ export type Video = {
   thumbnailPathRaw?: string | null
   thumbnailPath?: string | null
   videoDuration?: number | null
+  /**
+   * While compressing to a target size: the size it comes out at, about its estimate at the quality
+   * settings when those fit, or else up to the target size
+   */
+  estimatedOutputSize?: { sizeInBytes: number; isUpTo: boolean } | null
   isCompressing?: boolean
   isProcessCompleted?: boolean
   compressedFile?: {
@@ -145,6 +157,12 @@ export type Video = {
     isSaving?: boolean
     isSaved?: boolean
     savedPath?: string
+    /**
+     * Compressed to a target size: every output made for it (by size, the one used among them),
+     * any of which can be used instead (see `chooseOutputOption`)
+     */
+    options?: { pathRaw: string; sizeInBytes: number }[] | null
+    targetSizeInBytes?: number | null
   } | null
   compressionProgress?: number
   config: VideoConfig
@@ -253,6 +271,8 @@ export type App = {
   isAppendingMedia: boolean
   /** The compression waits for the drop zone to finish the media it is compressing (macOS) */
   isWaitingForDropZone?: boolean
+  /** Before compressing to a target size, the size at the quality settings is estimated */
+  isEstimatingSize?: boolean
   /** A batch is paused: the media being compressed finishes, the next waits until resumed */
   isBatchPaused?: boolean
   currentMediaIndex: number

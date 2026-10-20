@@ -11,7 +11,7 @@ import {
 } from '@/types/compression'
 import { formatBytes, getOutputFileName } from '@/utils/fs'
 import { convertDurationToMilliseconds } from '@/utils/string'
-import { getOutputDuration, MediaFile } from '../-compression'
+import { getOutputDuration, getOutputOptions, MediaFile } from '../-compression'
 import { appProxy } from '../-state'
 
 async function updateDockProgress() {
@@ -160,6 +160,12 @@ function CompressionProgress() {
                     extension: fileMetadata?.extension,
                     size: formatBytes(fileMetadata?.size ?? 0),
                     sizeInBytes: fileMetadata?.size,
+                    ...getOutputOptions(
+                      payload.result,
+                      originalMedia.type === 'video'
+                        ? originalMedia.config?.targetSizeInMB
+                        : null,
+                    ),
                   }
                   if (appProxy.state.media.length > 1) {
                     appProxy.takeSnapshot('batchCompressionStep')

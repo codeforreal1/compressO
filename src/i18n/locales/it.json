@@ -191,6 +191,10 @@
           "title": "Usa l’accelerazione hardware",
           "description": "Comprimi i video più velocemente con l’accelerazione hardware (i file possono essere leggermente più grandi)",
           "unavailable": "L’accelerazione hardware non è disponibile su questo computer."
+        },
+        "retryTargetSizeOnCpu": {
+          "title": "Raggiungere le dimensioni obiettivo senza accelerazione",
+          "description": "Quando un video non raggiunge la dimensione obiettivo, viene compresso di nuovo senza accelerazione hardware: è più lento ma più vicino alla dimensione."
         }
       },
       "storage": {
@@ -278,7 +282,9 @@
     "reset": "Ripristina",
     "apply": "Applica",
     "yes": "Sì",
-    "edit": "Modifica"
+    "edit": "Modifica",
+    "decrease": "Diminuisci",
+    "increase": "Aumenta"
   },
   "presets": {
     "standard": "Standard",
@@ -296,7 +302,8 @@
       "metadataRemoved": "Metadati rimossi",
       "metadataKept": "Metadati mantenuti",
       "svgScale": "Scala SVG {{scale}}x",
-      "customSvg": "Conversione SVG personalizzata"
+      "customSvg": "Conversione SVG personalizzata",
+      "targetSize": "Dimensione obiettivo {{size}} MB"
     },
     "save": {
       "title_video": "Salva preset video",
@@ -587,7 +594,10 @@
     "progress": "Avanzamento {{value}}%",
     "mediaToCompress": "Contenuto da comprimere",
     "waitingForDropZone": "In attesa della zona di rilascio…",
-    "processing": "Elaborazione…"
+    "processing": "Elaborazione…",
+    "estimatingSize": "Stima della dimensione del file...",
+    "estimatedSize": "Dimensione stimata: circa {{size}}",
+    "estimatedSizeUpTo": "Dimensione stimata: fino a {{size}}"
   },
   "thumbnail": {
     "copyFrameUnavailable": "Impossibile copiare il fotogramma",
@@ -884,5 +894,27 @@
     "minimize": "Contrai",
     "zoom": "Ridimensiona",
     "help": "Aiuto"
+  },
+  "targetSize": {
+    "mode": "Comprimi per",
+    "modes": {
+      "quality": "Qualità",
+      "size": "Dimensione obiettivo"
+    },
+    "size": "Dimensione obiettivo",
+    "estimate": "Circa {{width}}×{{height}} a {{fps}} fps, entro {{size}} MB.",
+    "estimateLowered": "Ridotto a {{width}}×{{height}} a {{fps}} fps per stare entro {{size}} MB.",
+    "notForGif": "Le GIF non possono essere compresse a una dimensione. Scegli un altro formato o comprimi per qualità.",
+    "eachVideo": "Ogni video viene compresso per stare entro questa dimensione.",
+    "retrying": "Nuova compressione per raggiungere la dimensione obiettivo.",
+    "retryingOnCpu": "Nuova compressione senza accelerazione hardware per raggiungere la dimensione obiettivo.",
+    "fitsAtQuality": "La qualità scelta rientra già, con circa {{size}}, quindi viene utilizzata.",
+    "switchUnit": "Mostra la dimensione in {{unit}}"
+  },
+  "outputOptions": {
+    "title": "Altre opzioni",
+    "choose": "Usa il file di {{size}}",
+    "withinTarget": "Entro l’obiettivo",
+    "overTarget": "Oltre l’obiettivo"
   }
 }

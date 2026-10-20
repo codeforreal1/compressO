@@ -197,7 +197,6 @@ function SvgConfig({ mediaIndex }: SvgConfigProps) {
                   className="mb-6 mt-1 mx-auto"
                   classNames={{
                     mark: 'text-[11px] mt-2',
-                    base: 'mt-[-10px]',
                     label: 'text-xs',
                   }}
                   getValue={(value) => {
@@ -246,7 +245,6 @@ function SvgConfig({ mediaIndex }: SvgConfigProps) {
                   className="mb-6 mt-1 mx-auto"
                   classNames={{
                     mark: 'text-[11px] mt-2',
-                    base: 'mt-[-10px]',
                     label: 'text-xs',
                   }}
                   getValue={(value) => {
@@ -294,7 +292,6 @@ function SvgConfig({ mediaIndex }: SvgConfigProps) {
                   className="mb-6 mt-1 mx-auto"
                   classNames={{
                     mark: 'text-[11px] mt-2',
-                    base: 'mt-[-10px]',
                     label: 'text-xs',
                   }}
                   getValue={(value) => {
@@ -342,7 +339,6 @@ function SvgConfig({ mediaIndex }: SvgConfigProps) {
                   className="mb-6 mt-1 mx-auto"
                   classNames={{
                     mark: 'text-[11px] mt-2',
-                    base: 'mt-[-10px]',
                     label: 'text-xs',
                   }}
                   getValue={(value) => {
@@ -391,7 +387,6 @@ function SvgConfig({ mediaIndex }: SvgConfigProps) {
                   className="mb-6 mt-1 mx-auto"
                   classNames={{
                     mark: 'text-[11px] mt-2',
-                    base: 'mt-[-10px]',
                     label: 'text-xs',
                   }}
                   getValue={(value) => {
@@ -439,7 +434,6 @@ function SvgConfig({ mediaIndex }: SvgConfigProps) {
                   className="mb-6 mt-1 mx-auto"
                   classNames={{
                     mark: 'text-[11px] mt-2',
-                    base: 'mt-[-10px]',
                     label: 'text-xs',
                   }}
                   getValue={(value) => {

@@ -48,6 +48,17 @@ pub struct VideoCompressionResult {
     pub file_name: String,
     pub file_path: String,
     pub file_metadata: Option<FileMetadata>,
+    /// The other outputs made for a target size (each attempt), any of which can be used instead
+    #[serde(default)]
+    pub other_outputs: Vec<OutputOption>,
+}
+
+/// An output a video can be saved as instead (see `VideoCompressionResult::other_outputs`)
+#[derive(Serialize, Deserialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct OutputOption {
+    pub file_path: String,
+    pub size: u64,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -150,6 +161,26 @@ pub struct VideoCompressionConfig {
     pub trim_segments: Option<Vec<VideoTrimSegment>>,
     pub subtitles_config: Option<SubtitlesConfig>,
     pub speed: Option<f32>,
+    /// Compresses to (just under) a file size instead of a quality, see `TargetSize`
+    pub target_size: Option<TargetSize>,
+}
+
+/// A file size a video is compressed to: the video is encoded at an average bitrate worked out by
+/// the frontend (from the size, the output's duration & the audio's share), then encoded again at a
+/// lower bitrate when it still came out larger
+#[derive(Serialize, Deserialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct TargetSize {
+    pub size_in_bytes: u64,
+    /// The video's average bitrate, in kbit/s
+    pub video_bitrate: u32,
+    /// Encodes again (when the size was missed) on the CPU, not the graphics card
+    #[serde(default)]
+    pub retry_on_cpu: bool,
+    /// Encoded at its quality first (its estimated size fits), & at the bitrate only when that
+    /// came out larger
+    #[serde(default)]
+    pub quality_first: bool,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]

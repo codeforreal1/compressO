@@ -9,6 +9,7 @@ import {
   isVideoCodecCompatible,
   type MediaTransformHistory,
 } from '@/types/compression'
+import { DEFAULT_TARGET_SIZE_IN_MB } from '@/utils/targetSize'
 import { applyPortableTransform } from '@/utils/transform'
 import {
   getLongerSideDimensions,
@@ -52,6 +53,8 @@ export const videoConfigInitialState: VideoConfig = {
   },
   shouldEnableAudioTrackSelection: false,
   quality: 50,
+  shouldUseTargetSize: false,
+  targetSizeInMB: DEFAULT_TARGET_SIZE_IN_MB,
   shouldStripMetadata: true,
   metadataConfig: null,
   customThumbnailPath: null,

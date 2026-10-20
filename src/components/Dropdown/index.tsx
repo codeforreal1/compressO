@@ -9,9 +9,17 @@ import {
   type DropdownTriggerProps as NextUIDropdownTriggerProps,
 } from '@heroui/react'
 
+import { glassBorder, glassMenuItem, mergeClassNames } from '@/utils/glass'
+
 interface DropdownProps extends NextUIDropdownProps {}
+/** Its menu has a thin grey border (see `utils/glass.ts`) */
 function Dropdown(props: DropdownProps) {
-  return <NextUIDropdown {...props} />
+  return (
+    <NextUIDropdown
+      {...props}
+      classNames={mergeClassNames({ content: glassBorder }, props.classNames)}
+    />
+  )
 }
 
 interface DropdownTriggerProps extends NextUIDropdownTriggerProps {}
@@ -20,8 +28,14 @@ export function DropdownTrigger(props: DropdownTriggerProps) {
 }
 
 interface DropdownMenuProps extends NextUIDropdownMenuProps {}
+/** Its options are only faintly highlighted (see `utils/glass.ts`) */
 export function DropdownMenu(props: DropdownMenuProps) {
-  return <NextUIDropdownMenu {...props} />
+  return (
+    <NextUIDropdownMenu
+      {...props}
+      itemClasses={mergeClassNames({ base: glassMenuItem }, props.itemClasses)}
+    />
+  )
 }
 
 interface DropdownItemProps extends NextUIDropdownItemProps {}

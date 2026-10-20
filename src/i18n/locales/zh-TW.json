@@ -191,6 +191,10 @@
           "title": "使用硬體加速",
           "description": "使用硬體加速更快速地壓縮影片（檔案可能稍大）",
           "unavailable": "此電腦不支援硬體加速。"
+        },
+        "retryTargetSizeOnCpu": {
+          "title": "不使用加速來達到目標大小",
+          "description": "影片未達到目標大小時，將不使用硬體加速重新壓縮，速度較慢但更接近目標大小。"
         }
       },
       "storage": {
@@ -278,7 +282,9 @@
     "reset": "重設",
     "apply": "套用",
     "yes": "是",
-    "edit": "編輯"
+    "edit": "編輯",
+    "decrease": "減少",
+    "increase": "增加"
   },
   "presets": {
     "standard": "標準",
@@ -296,7 +302,8 @@
       "metadataRemoved": "已移除中繼資料",
       "metadataKept": "保留中繼資料",
       "svgScale": "SVG 縮放 {{scale}} 倍",
-      "customSvg": "自訂 SVG 轉換"
+      "customSvg": "自訂 SVG 轉換",
+      "targetSize": "目標大小 {{size}} MB"
     },
     "save": {
       "title_video": "儲存影片預設",
@@ -575,7 +582,10 @@
     "progress": "進度 {{value}}%",
     "mediaToCompress": "待壓縮的媒體",
     "waitingForDropZone": "正在等待拖放區…",
-    "processing": "正在處理…"
+    "processing": "正在處理…",
+    "estimatingSize": "正在估算輸出大小...",
+    "estimatedSize": "預計大小：約 {{size}}",
+    "estimatedSizeUpTo": "預計大小：最多 {{size}}"
   },
   "thumbnail": {
     "copyFrameUnavailable": "無法複製此影格",
@@ -858,5 +868,27 @@
     "minimize": "縮到最小",
     "zoom": "縮放",
     "help": "輔助說明"
+  },
+  "targetSize": {
+    "mode": "壓縮方式",
+    "modes": {
+      "quality": "依品質",
+      "size": "依目標大小"
+    },
+    "size": "目標大小",
+    "estimate": "約 {{width}}×{{height}}，{{fps}} fps，不超過 {{size}} MB。",
+    "estimateLowered": "已降至 {{width}}×{{height}}，{{fps}} fps，以控制在 {{size}} MB 以內。",
+    "notForGif": "GIF 無法依大小壓縮。請選擇其他格式，或依品質壓縮。",
+    "eachVideo": "每部影片都會壓縮到此大小以內。",
+    "retrying": "正在重新壓縮以達到目標大小。",
+    "retryingOnCpu": "正在不使用硬體加速重新壓縮以達到目標大小。",
+    "fitsAtQuality": "所選品質已符合要求，約為 {{size}}，因此將使用該品質。",
+    "switchUnit": "以 {{unit}} 顯示大小"
+  },
+  "outputOptions": {
+    "title": "其他選項",
+    "choose": "使用 {{size}} 的輸出",
+    "withinTarget": "在目標以內",
+    "overTarget": "超出目標"
   }
 }

@@ -29,20 +29,38 @@ const sizeClassNames: Partial<Record<SwitchSize, SwitchClassNames>> = {
   },
 }
 
+/**
+ * The frosted glass look (see `utils/glass.ts`): a frosted track (orange when on, with the same
+ * finish over it) with a thin grey border inside it (so the sizes & the thumb's travel stay the
+ * same), & a highlight along the thumb's top
+ */
+const glassClassNames: SwitchClassNames = {
+  wrapper: cn(
+    'ring-1 ring-inset ring-zinc-300/60 dark:ring-white/15',
+    'bg-zinc-200 dark:bg-white/[0.06]',
+    'bg-gradient-to-b from-white/50 to-transparent dark:from-white/[0.14] dark:to-white/[0.04]',
+    'shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]',
+  ),
+  thumb:
+    'shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_1px_3px_rgba(0,0,0,0.3)]',
+}
+
 function Switch(props: SwitchProps) {
   const { size = 'sm', classNames, ...switchProps } = props
   const sizeClasses = sizeClassNames[size] ?? {}
 
-  // Merged per slot, so passed class names add to the size's instead of replacing them
+  // Merged per slot, so passed class names add to the size's & the look's instead of replacing them
   const mergedClassNames = Object.fromEntries(
     [
       ...new Set([
         ...Object.keys(sizeClasses),
+        ...Object.keys(glassClassNames),
         ...Object.keys(classNames ?? {}),
       ]),
     ].map((slot) => [
       slot,
       cn(
+        glassClassNames[slot as keyof SwitchClassNames],
         sizeClasses[slot as keyof SwitchClassNames],
         classNames?.[slot as keyof SwitchClassNames],
       ),

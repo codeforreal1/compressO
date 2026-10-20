@@ -191,6 +191,10 @@
           "title": "ハードウェアアクセラレーションを使用",
           "description": "ハードウェアアクセラレーションでビデオをより速く圧縮します（ファイルがやや大きくなる場合があります）",
           "unavailable": "このコンピュータではハードウェアアクセラレーションを利用できません。"
+        },
+        "retryTargetSizeOnCpu": {
+          "title": "アクセラレーションなしで目標サイズに合わせる",
+          "description": "動画が目標サイズに届かない場合、ハードウェアアクセラレーションなしで再圧縮します。時間はかかりますが、サイズにより近くなります。"
         }
       },
       "storage": {
@@ -278,7 +282,9 @@
     "reset": "リセット",
     "apply": "適用",
     "yes": "はい",
-    "edit": "編集"
+    "edit": "編集",
+    "decrease": "減らす",
+    "increase": "増やす"
   },
   "presets": {
     "standard": "標準",
@@ -296,7 +302,8 @@
       "metadataRemoved": "メタデータを削除",
       "metadataKept": "メタデータを保持",
       "svgScale": "SVG 拡大率 {{scale}} 倍",
-      "customSvg": "カスタム SVG 変換"
+      "customSvg": "カスタム SVG 変換",
+      "targetSize": "目標サイズ {{size}} MB"
     },
     "save": {
       "title_video": "ビデオのプリセットを保存",
@@ -575,7 +582,10 @@
     "progress": "進行状況 {{value}}%",
     "mediaToCompress": "圧縮するメディア",
     "waitingForDropZone": "ドロップゾーンを待機中…",
-    "processing": "処理中…"
+    "processing": "処理中…",
+    "estimatingSize": "出力サイズを推定しています...",
+    "estimatedSize": "推定サイズ：約 {{size}}",
+    "estimatedSizeUpTo": "推定サイズ：最大 {{size}}"
   },
   "thumbnail": {
     "copyFrameUnavailable": "フレームをコピーできません",
@@ -858,5 +868,27 @@
     "minimize": "しまう",
     "zoom": "拡大／縮小",
     "help": "ヘルプ"
+  },
+  "targetSize": {
+    "mode": "圧縮の基準",
+    "modes": {
+      "quality": "画質",
+      "size": "目標サイズ"
+    },
+    "size": "目標サイズ",
+    "estimate": "約 {{width}}×{{height}}、{{fps}} fps、{{size}} MB 以内。",
+    "estimateLowered": "{{size}} MB 以内に収めるため {{width}}×{{height}}、{{fps}} fps に下げました。",
+    "notForGif": "GIF はサイズを指定して圧縮できません。別の形式を選ぶか、画質で圧縮してください。",
+    "eachVideo": "各動画はこのサイズ以内に収まるよう圧縮されます。",
+    "retrying": "目標サイズに合わせるため再圧縮しています。",
+    "retryingOnCpu": "目標サイズに合わせるため、ハードウェアアクセラレーションなしで再圧縮しています。",
+    "fitsAtQuality": "選択した品質で既に収まるため（約 {{size}}）、その品質を使用します。",
+    "switchUnit": "サイズを {{unit}} で表示"
+  },
+  "outputOptions": {
+    "title": "その他の候補",
+    "choose": "{{size}} の出力を使用",
+    "withinTarget": "目標以内",
+    "overTarget": "目標超過"
   }
 }

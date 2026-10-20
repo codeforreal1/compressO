@@ -60,6 +60,7 @@ function Output() {
     copyOutputToClipboard,
     copyBatchOutputToClipboard,
     useHardwareAcceleration,
+    retryTargetSizeOnCpu,
   } = useSnapshot(settingsStore)
   // `null` while hardware acceleration is being checked (when the app starts)
   const hardwareEncoders = useHardwareEncoders()
@@ -247,6 +248,24 @@ function Output() {
               }}
             />
           </div>
+        </SettingsRow>
+        <SettingsRow
+          isVisible={useHardwareAcceleration && hasHardwareAcceleration}
+          isNested
+          title={t('settings.output.performance.retryTargetSizeOnCpu.title')}
+          description={t(
+            'settings.output.performance.retryTargetSizeOnCpu.description',
+          )}
+        >
+          <Switch
+            aria-label={t(
+              'settings.output.performance.retryTargetSizeOnCpu.title',
+            )}
+            isSelected={retryTargetSizeOnCpu}
+            onValueChange={(isSelected) => {
+              settingsStore.retryTargetSizeOnCpu = isSelected
+            }}
+          />
         </SettingsRow>
       </SettingsSection>
 

@@ -124,7 +124,7 @@ const VideoSpeed = ({ mediaIndex }: VideoSpeedProps) => {
                 }
               }}
               isDisabled={!shouldEnableCustomSpeed || shouldDisableInput}
-              className="w-full mb-8"
+              className="w-full mt-3 mb-8"
               classNames={{
                 label: 'text-gray-600 dark:text-gray-400 text-sm',
                 mark: '!text-xs mt-2',

@@ -19,6 +19,7 @@ import {
   getVideoPreset,
 } from '@/routes/(root)/-presets'
 import { saveQueueOutput } from '@/routes/(root)/-save'
+import { estimateTargetSizeVideos } from '@/routes/(root)/-sizeEstimate'
 import {
   audioFileConfigInitialState,
   imageConfigInitialState,
@@ -215,6 +216,8 @@ async function compressQueueItem(item: DropQueueItem) {
       },
     )
 
+    // Compressed at its quality settings when those fit its target size (see `-sizeEstimate.ts`)
+    await estimateTargetSizeVideos([media], null)
     // The queue item's id is the batch's, so its progress & cancellation are its own
     const { results } = await compressMediaBatch(item.id, [
       getMediaItemConfig(media, {

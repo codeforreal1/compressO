@@ -103,7 +103,6 @@ function CompressionQuality({
         className="mb-8 mt-1 mx-auto"
         classNames={{
           mark: 'text-[11px] mt-2',
-          base: 'mt-[-10px]',
           label: 'text-xs',
         }}
         getValue={(value) => {

@@ -12,6 +12,7 @@ import Tooltip from '@/components/Tooltip'
 import type { Translation } from '@/i18n'
 import { updateStore } from '@/stores/updateStore'
 import { getPlatform } from '@/utils/fs'
+import { glassBorder } from '@/utils/glass'
 import { cn } from '@/utils/tailwind'
 import { hasTray } from '@/utils/tray'
 import About from './About'
@@ -210,10 +211,16 @@ function SettingsDialog({ onClose, hasNewVersion }: SettingsDialogProps) {
                   type="button"
                   onClick={() => setSelectedPageId(page.id)}
                   className={cn([
-                    'w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-left transition-colors',
+                    // A transparent border, so the chosen page's frosted glass (& its border)
+                    // does not move the text
+                    'w-full flex items-center gap-3 px-3 py-1 my-1 rounded-lg border border-transparent text-sm text-left transition-colors',
                     page.id === selectedPage.id
-                      ? 'bg-zinc-200/70 dark:bg-zinc-800 text-foreground font-medium'
-                      : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/60',
+                      ? [
+                          'bg-zinc-100 dark:bg-zinc-700',
+                          glassBorder,
+                          'text-foreground font-medium',
+                        ]
+                      : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-900/[0.04] dark:hover:bg-white/[0.05]',
                   ])}
                 >
                   <Icon name={page.icon} size={18} />

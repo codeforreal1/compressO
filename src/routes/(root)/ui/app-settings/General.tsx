@@ -235,9 +235,6 @@ function General() {
                   : value
               }}
             />
-            <span className="text-sm w-10 text-right tabular-nums">
-              {tintOpacity}%
-            </span>
           </div>
         </SettingsRow>
       </SettingsSection>

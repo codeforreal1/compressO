@@ -191,6 +191,10 @@
           "title": "Donanım hızlandırmayı kullan",
           "description": "Videoları donanım hızlandırmayla daha hızlı sıkıştırın (dosyalar biraz daha büyük olabilir)",
           "unavailable": "Bu bilgisayarda donanım hızlandırma kullanılamıyor."
+        },
+        "retryTargetSizeOnCpu": {
+          "title": "Hedef boyutlara hızlandırma olmadan ulaş",
+          "description": "Bir video hedef boyutunu tutturamazsa donanım hızlandırma olmadan yeniden sıkıştırılır; bu daha yavaştır ama boyuta daha yakındır."
         }
       },
       "storage": {
@@ -278,7 +282,9 @@
     "reset": "Sıfırla",
     "apply": "Uygula",
     "yes": "Evet",
-    "edit": "Düzenle"
+    "edit": "Düzenle",
+    "decrease": "Azalt",
+    "increase": "Artır"
   },
   "presets": {
     "standard": "Standart",
@@ -296,7 +302,8 @@
       "metadataRemoved": "Meta veriler kaldırıldı",
       "metadataKept": "Meta veriler korundu",
       "svgScale": "SVG ölçeği {{scale}}x",
-      "customSvg": "Özel SVG dönüştürme"
+      "customSvg": "Özel SVG dönüştürme",
+      "targetSize": "Hedef boyut {{size}} MB"
     },
     "save": {
       "title_video": "Video Ön Ayarını Kaydet",
@@ -581,7 +588,10 @@
     "progress": "İlerleme %{{value}}",
     "mediaToCompress": "Sıkıştırılacak medya",
     "waitingForDropZone": "Bırakma alanı bekleniyor…",
-    "processing": "İşleniyor…"
+    "processing": "İşleniyor…",
+    "estimatingSize": "Çıktı boyutu tahmin ediliyor...",
+    "estimatedSize": "Tahmini boyut: yaklaşık {{size}}",
+    "estimatedSizeUpTo": "Tahmini boyut: en fazla {{size}}"
   },
   "thumbnail": {
     "copyFrameUnavailable": "Kare kopyalanamıyor",
@@ -871,5 +881,27 @@
     "minimize": "Küçült",
     "zoom": "Büyüt/Küçült",
     "help": "Yardım"
+  },
+  "targetSize": {
+    "mode": "Sıkıştırma ölçütü",
+    "modes": {
+      "quality": "Kalite",
+      "size": "Hedef boyut"
+    },
+    "size": "Hedef boyut",
+    "estimate": "Yaklaşık {{width}}×{{height}}, {{fps}} fps, en fazla {{size}} MB.",
+    "estimateLowered": "{{size}} MB içine sığması için {{width}}×{{height}}, {{fps}} fps değerine düşürüldü.",
+    "notForGif": "GIF dosyaları bir boyuta sıkıştırılamaz. Başka bir biçim seçin veya kaliteye göre sıkıştırın.",
+    "eachVideo": "Her video bu boyuta sığacak şekilde sıkıştırılır.",
+    "retrying": "Hedef boyuta ulaşmak için yeniden sıkıştırılıyor.",
+    "retryingOnCpu": "Hedef boyuta ulaşmak için donanım hızlandırma olmadan yeniden sıkıştırılıyor.",
+    "fitsAtQuality": "Seçilen kalite zaten sığıyor (yaklaşık {{size}}), bu nedenle kullanılıyor.",
+    "switchUnit": "Boyutu {{unit}} olarak göster"
+  },
+  "outputOptions": {
+    "title": "Diğer seçenekler",
+    "choose": "{{size}} boyutundaki çıktıyı kullan",
+    "withinTarget": "Hedefin içinde",
+    "overTarget": "Hedefin üzerinde"
   }
 }

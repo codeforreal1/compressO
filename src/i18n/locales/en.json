@@ -191,6 +191,10 @@
           "title": "Use hardware acceleration",
           "description": "Compress videos faster with hardware acceleration (Files can be slightly larger)",
           "unavailable": "Hardware acceleration is not available on this computer."
+        },
+        "retryTargetSizeOnCpu": {
+          "title": "Reach target sizes without acceleration",
+          "description": "When a video misses its target size, it is compressed again without hardware acceleration, which is slower but closer to the size."
         }
       },
       "storage": {
@@ -238,13 +242,13 @@
       "madeBy": "Made with <heart></heart> in public by <link>Code For Real⚡</link>",
       "releaseNotes": "Release notes",
       "releaseNotesOnline": {
-        "title": "See what is new in version {{version}}",
+        "title": "See what's new in version {{version}}",
         "description": "The release notes could not be loaded here.",
         "view": "View online"
       },
       "changelog": {
         "title": "Changelog",
-        "description": "What is new in every version of CompressO.",
+        "description": "What's new in every version of CompressO?",
         "view": "View changelog"
       }
     },
@@ -278,7 +282,9 @@
     "reset": "Reset",
     "apply": "Apply",
     "yes": "Yes",
-    "edit": "Edit"
+    "edit": "Edit",
+    "decrease": "Decrease",
+    "increase": "Increase"
   },
   "presets": {
     "standard": "Standard",
@@ -296,7 +302,8 @@
       "metadataRemoved": "Metadata removed",
       "metadataKept": "Metadata kept",
       "svgScale": "SVG scale {{scale}}x",
-      "customSvg": "Custom SVG conversion"
+      "customSvg": "Custom SVG conversion",
+      "targetSize": "Target size {{size}} MB"
     },
     "save": {
       "title_video": "Save Video Preset",
@@ -581,7 +588,10 @@
     "progress": "Progress {{value}}%",
     "mediaToCompress": "Media to compress",
     "waitingForDropZone": "Waiting for the drop zone...",
-    "processing": "Processing..."
+    "processing": "Processing...",
+    "estimatingSize": "Estimating the output size...",
+    "estimatedSize": "Estimated size: about {{size}}",
+    "estimatedSizeUpTo": "Estimated size: up to {{size}}"
   },
   "thumbnail": {
     "copyFrameUnavailable": "Unable to copy frame",
@@ -871,5 +881,27 @@
     "minimize": "Minimize",
     "zoom": "Zoom",
     "help": "Help"
+  },
+  "targetSize": {
+    "mode": "Compress by",
+    "modes": {
+      "quality": "Quality",
+      "size": "Target size"
+    },
+    "size": "Target size",
+    "estimate": "About {{width}}×{{height}} at {{fps}} fps, within {{size}} MB.",
+    "estimateLowered": "Lowered to {{width}}×{{height}} at {{fps}} fps to fit within {{size}} MB.",
+    "notForGif": "GIFs cannot be compressed to a size. Choose another format, or compress by quality.",
+    "eachVideo": "Each video is compressed to fit within this size.",
+    "retrying": "Compressing again to reach the target size.",
+    "retryingOnCpu": "Compressing again without hardware acceleration to reach the target size.",
+    "fitsAtQuality": "The chosen quality already fits, at about {{size}}, so it is used.",
+    "switchUnit": "Show the size in {{unit}}"
+  },
+  "outputOptions": {
+    "title": "Other options",
+    "choose": "Use the output of {{size}}",
+    "withinTarget": "Within the target",
+    "overTarget": "Over the target"
   }
 }

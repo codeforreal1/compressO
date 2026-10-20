@@ -1,3 +1,4 @@
+import { core } from '@tauri-apps/api'
 import { appDataDir } from '@tauri-apps/api/path'
 import { open, save } from '@tauri-apps/plugin-dialog'
 import { snapshot } from 'valtio'
@@ -11,7 +12,7 @@ import {
   moveFile,
 } from '@/tauri/commands/fs'
 import { Image, Video } from '@/types/app'
-import { getParentDirectory } from '@/utils/fs'
+import { formatBytes, getParentDirectory } from '@/utils/fs'
 import { appProxy } from './-state'
 
 type Media = (Video & { type: 'video' }) | (Image & { type: 'image' })
@@ -130,6 +131,54 @@ async function saveCompressedMedia(
 }
 
 /** Saves after asking where: a file location for a single output, a folder for a batch */
+/**
+ * Uses another output of a video compressed to a target size (see `compressedFile.options`). When
+ * the output was already saved, the chosen one replaces it there (same name & folder), & the one
+ * saved goes back among the options.
+ */
+export async function chooseOutputOption(
+  mediaIndex: number,
+  option: { pathRaw: string; sizeInBytes: number },
+) {
+  const mediaFile = appProxy.state.media[mediaIndex]
+  const file = mediaFile?.type === 'video' ? mediaFile.compressedFile : null
+  if (!file?.pathRaw || file.pathRaw === option.pathRaw || file.isSaving) {
+    return
+  }
+  const chosen = {
+    pathRaw: option.pathRaw,
+    path: core.convertFileSrc(option.pathRaw),
+    sizeInBytes: option.sizeInBytes,
+    size: formatBytes(option.sizeInBytes),
+  }
+  if (!file.isSaved || !file.savedPath) {
+    Object.assign(file, chosen)
+    return
+  }
+
+  const savedPath = file.savedPath
+  const previousPath = file.pathRaw
+  file.isSaving = true
+  try {
+    await moveFile(savedPath, previousPath)
+    try {
+      const newSavedPath = await moveFile(option.pathRaw, savedPath)
+      Object.assign(file, chosen, { savedPath: newSavedPath })
+      if (appProxy.state.media.length === 1) {
+        appProxy.state.savedPath = newSavedPath
+      }
+    } catch (error) {
+      // The output saved before is put back
+      await moveFile(previousPath, savedPath).catch(() => {})
+      throw error
+    }
+  } catch (_) {
+    toast.error(t('save.failed'))
+  } finally {
+    file.isSaving = false
+  }
+}
+
 export async function saveCompressedMediaWithPrompt() {
   const { media } = appProxy.state
   if (!media.length) return

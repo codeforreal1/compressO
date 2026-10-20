@@ -191,6 +191,10 @@
           "title": "하드웨어 가속 사용",
           "description": "하드웨어 가속으로 비디오를 더 빠르게 압축합니다(파일이 약간 커질 수 있음)",
           "unavailable": "이 컴퓨터에서는 하드웨어 가속을 사용할 수 없습니다."
+        },
+        "retryTargetSizeOnCpu": {
+          "title": "가속 없이 목표 크기에 맞추기",
+          "description": "동영상이 목표 크기에 맞지 않으면 하드웨어 가속 없이 다시 압축합니다. 더 느리지만 크기에 더 가깝습니다."
         }
       },
       "storage": {
@@ -278,7 +282,9 @@
     "reset": "재설정",
     "apply": "적용",
     "yes": "예",
-    "edit": "편집"
+    "edit": "편집",
+    "decrease": "줄이기",
+    "increase": "늘리기"
   },
   "presets": {
     "standard": "표준",
@@ -296,7 +302,8 @@
       "metadataRemoved": "메타데이터 제거",
       "metadataKept": "메타데이터 유지",
       "svgScale": "SVG 배율 {{scale}}배",
-      "customSvg": "사용자 지정 SVG 변환"
+      "customSvg": "사용자 지정 SVG 변환",
+      "targetSize": "목표 크기 {{size}} MB"
     },
     "save": {
       "title_video": "비디오 프리셋 저장",
@@ -575,7 +582,10 @@
     "progress": "진행률 {{value}}%",
     "mediaToCompress": "압축할 미디어",
     "waitingForDropZone": "드롭 영역을 기다리는 중…",
-    "processing": "처리 중…"
+    "processing": "처리 중…",
+    "estimatingSize": "출력 크기를 추정하는 중...",
+    "estimatedSize": "예상 크기: 약 {{size}}",
+    "estimatedSizeUpTo": "예상 크기: 최대 {{size}}"
   },
   "thumbnail": {
     "copyFrameUnavailable": "프레임을 복사할 수 없습니다",
@@ -858,5 +868,27 @@
     "minimize": "최소화",
     "zoom": "확대/축소",
     "help": "도움말"
+  },
+  "targetSize": {
+    "mode": "압축 기준",
+    "modes": {
+      "quality": "화질",
+      "size": "목표 크기"
+    },
+    "size": "목표 크기",
+    "estimate": "약 {{width}}×{{height}}, {{fps}} fps, {{size}} MB 이내.",
+    "estimateLowered": "{{size}} MB 이내로 맞추기 위해 {{width}}×{{height}}, {{fps}} fps로 낮췄습니다.",
+    "notForGif": "GIF는 크기를 지정하여 압축할 수 없습니다. 다른 형식을 선택하거나 화질로 압축하십시오.",
+    "eachVideo": "각 동영상은 이 크기 이내로 압축됩니다.",
+    "retrying": "목표 크기에 맞추기 위해 다시 압축하는 중입니다.",
+    "retryingOnCpu": "목표 크기에 맞추기 위해 하드웨어 가속 없이 다시 압축하는 중입니다.",
+    "fitsAtQuality": "선택한 품질로 이미 맞으므로(약 {{size}}) 해당 품질을 사용합니다.",
+    "switchUnit": "크기를 {{unit}}(으)로 표시"
+  },
+  "outputOptions": {
+    "title": "다른 옵션",
+    "choose": "{{size}} 출력 사용",
+    "withinTarget": "목표 이내",
+    "overTarget": "목표 초과"
   }
 }

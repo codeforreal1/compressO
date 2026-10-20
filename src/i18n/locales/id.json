@@ -191,6 +191,10 @@
           "title": "Gunakan akselerasi perangkat keras",
           "description": "Kompresi video lebih cepat dengan akselerasi perangkat keras (ukuran file dapat sedikit lebih besar)",
           "unavailable": "Akselerasi perangkat keras tidak tersedia di komputer ini."
+        },
+        "retryTargetSizeOnCpu": {
+          "title": "Capai ukuran target tanpa akselerasi",
+          "description": "Jika video tidak mencapai ukuran targetnya, video dikompres ulang tanpa akselerasi perangkat keras, yang lebih lambat tetapi lebih mendekati ukurannya."
         }
       },
       "storage": {
@@ -278,7 +282,9 @@
     "reset": "Atur ulang",
     "apply": "Terapkan",
     "yes": "Ya",
-    "edit": "Edit"
+    "edit": "Edit",
+    "decrease": "Kurangi",
+    "increase": "Tambah"
   },
   "presets": {
     "standard": "Standar",
@@ -296,7 +302,8 @@
       "metadataRemoved": "Metadata dihapus",
       "metadataKept": "Metadata dipertahankan",
       "svgScale": "Skala SVG {{scale}}x",
-      "customSvg": "Konversi SVG kustom"
+      "customSvg": "Konversi SVG kustom",
+      "targetSize": "Ukuran target {{size}} MB"
     },
     "save": {
       "title_video": "Simpan Preset Video",
@@ -575,7 +582,10 @@
     "progress": "Kemajuan {{value}}%",
     "mediaToCompress": "Media yang akan dikompresi",
     "waitingForDropZone": "Menunggu zona taruh…",
-    "processing": "Memproses…"
+    "processing": "Memproses…",
+    "estimatingSize": "Memperkirakan ukuran keluaran...",
+    "estimatedSize": "Perkiraan ukuran: sekitar {{size}}",
+    "estimatedSizeUpTo": "Perkiraan ukuran: hingga {{size}}"
   },
   "thumbnail": {
     "copyFrameUnavailable": "Frame tidak dapat disalin",
@@ -858,5 +868,27 @@
     "minimize": "Minimalkan",
     "zoom": "Zoom",
     "help": "Bantuan"
+  },
+  "targetSize": {
+    "mode": "Kompres berdasarkan",
+    "modes": {
+      "quality": "Kualitas",
+      "size": "Ukuran target"
+    },
+    "size": "Ukuran target",
+    "estimate": "Sekitar {{width}}×{{height}} pada {{fps}} fps, dalam {{size}} MB.",
+    "estimateLowered": "Diturunkan ke {{width}}×{{height}} pada {{fps}} fps agar muat dalam {{size}} MB.",
+    "notForGif": "GIF tidak dapat dikompres ke suatu ukuran. Pilih format lain, atau kompres berdasarkan kualitas.",
+    "eachVideo": "Setiap video dikompres agar muat dalam ukuran ini.",
+    "retrying": "Mengompres ulang untuk mencapai ukuran target.",
+    "retryingOnCpu": "Mengompres ulang tanpa akselerasi perangkat keras untuk mencapai ukuran target.",
+    "fitsAtQuality": "Kualitas yang dipilih sudah sesuai, sekitar {{size}}, sehingga kualitas tersebut digunakan.",
+    "switchUnit": "Tampilkan ukuran dalam {{unit}}"
+  },
+  "outputOptions": {
+    "title": "Opsi lainnya",
+    "choose": "Gunakan keluaran {{size}}",
+    "withinTarget": "Dalam target",
+    "overTarget": "Melebihi target"
   }
 }

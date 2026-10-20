@@ -35,6 +35,22 @@ pub fn set_batch_paused(batch_id: String, paused: bool) {
     set_batch_paused_state(&batch_id, paused);
 }
 
+/// About the size a video comes out at with its settings, in bytes (see
+/// `FFMPEG::estimate_video_size`); stopped like a compression, with `estimate_id`
+#[tauri::command]
+pub async fn estimate_video_size(
+    app: tauri::AppHandle,
+    window: tauri::WebviewWindow,
+    estimate_id: String,
+    config: crate::core::domain::VideoCompressionConfig,
+    duration: f64,
+) -> Result<u64, String> {
+    FFMPEG::new(&app)?
+        .with_owner_window(window.label())
+        .estimate_video_size(&estimate_id, &config, duration)
+        .await
+}
+
 #[tauri::command]
 pub async fn compress_media_batch(
     app: tauri::AppHandle,
@@ -178,6 +194,7 @@ async fn compress_media_items(
                         config.trim_segments.as_ref(),
                         config.subtitles_config.as_ref(),
                         config.speed,
+                        config.target_size.as_ref(),
                     )
                     .await
             })

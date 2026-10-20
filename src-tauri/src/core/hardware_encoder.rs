@@ -166,11 +166,20 @@ pub async fn encoder_for(app: &AppHandle, codec: &str) -> Option<HardwareEncoder
 /// The rest is kept (e.g. HEVC's `hvc1` tag for Apple players).
 pub fn to_hardware_args(cpu_args: &[String], encoder: &HardwareEncoder) -> Vec<String> {
     let mut args = Vec::with_capacity(cpu_args.len() + 8);
+    let mut has_hwaccel = false;
     let mut index = 0;
     while index < cpu_args.len() {
         let arg = cpu_args[index].as_str();
         let value = cpu_args.get(index + 1).map(String::as_str);
         match (arg, value) {
+            // The video is also decoded on the graphics card (e.g. an iPhone's HEVC, which is
+            // heavy for the CPU), & its frames are handed to the filters as usual
+            ("-i", Some(_)) if encoder.api == Api::VideoToolbox && !has_hwaccel => {
+                args.extend(["-hwaccel".to_string(), "videotoolbox".to_string()]);
+                has_hwaccel = true;
+                args.push(arg.to_string());
+                index += 1;
+            }
             ("-c:v:0", Some(_)) => {
                 args.extend(["-c:v:0".to_string(), encoder.name.to_string()]);
                 index += 2;

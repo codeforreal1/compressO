@@ -78,6 +78,11 @@ export type SettingsState = {
    */
   useHardwareAcceleration: boolean
   /**
+   * With hardware acceleration, a video that missed its target size is compressed again on the CPU
+   * (on by default), which keeps to the size more closely (see `ffmpeg.rs`)
+   */
+  retryTargetSizeOnCpu: boolean
+  /**
    * Play videos in the app (Linux only, off by default: they are played through a local server,
    * which does not work well on every system). Applied when the app starts (see
    * `isVideoPreviewAvailable`).
@@ -140,6 +145,9 @@ function readSettings(): SettingsState {
       STANDARD_PRESET_ID,
     useHardwareAcceleration:
       localStorage.getItem(constants.useHardwareAcceleration) === 'true',
+    // Only an explicit opt-out turns it off
+    retryTargetSizeOnCpu:
+      localStorage.getItem(constants.retryTargetSizeOnCpu) !== 'false',
     enableVideoPreviews:
       localStorage.getItem(constants.enableVideoPreviews) === 'true',
     // Only an explicit opt-out turns it off
@@ -231,6 +239,10 @@ subscribe(settingsStore, () => {
   localStorage.setItem(
     constants.useHardwareAcceleration,
     String(settingsStore.useHardwareAcceleration),
+  )
+  localStorage.setItem(
+    constants.retryTargetSizeOnCpu,
+    String(settingsStore.retryTargetSizeOnCpu),
   )
   localStorage.setItem(
     constants.enableVideoPreviews,

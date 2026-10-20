@@ -40,6 +40,7 @@ import {
   type VideoPresetSettings,
   videoPresetFields,
 } from '@/types/preset'
+import { formatSizeInMB } from '@/utils/targetSize'
 import {
   applyPortableTransform,
   getPortableTransform,
@@ -649,7 +650,16 @@ function getEffectiveVideoSettings(
 ) {
   const effective: Record<string, unknown> = cloneDeep(settings)
   const audioConfig = effective.audioConfig as Record<string, unknown>
-  if (settings.shouldDisableCompression) delete effective.quality
+  // Compressed to a size: the quality & lossless do not apply (presets saved before target sizes
+  // have neither field, which is compressing by quality)
+  if (settings.shouldUseTargetSize) {
+    delete effective.quality
+    delete effective.shouldDisableCompression
+  } else {
+    delete effective.shouldUseTargetSize
+    delete effective.targetSizeInMB
+    if (settings.shouldDisableCompression) delete effective.quality
+  }
   if (!settings.shouldEnableCustomVideoCodec) delete effective.customVideoCodec
   if (!settings.shouldEnableCustomFPS) delete effective.customFPS
   if (!settings.shouldEnableCustomSpeed) delete effective.customSpeed
@@ -1223,9 +1233,13 @@ export function describeVideoPresetSettings(settings: VideoPresetSettings) {
   const isAudioOutput = isAudioExtension(settings.convertToExtension)
   if (!isAudioOutput) {
     lines.push(
-      settings.shouldDisableCompression
-        ? t('common.lossless')
-        : t('presets.summary.quality', { value: settings.quality ?? 0 }),
+      settings.shouldUseTargetSize && settings.targetSizeInMB
+        ? t('presets.summary.targetSize', {
+            size: formatSizeInMB(settings.targetSizeInMB),
+          })
+        : settings.shouldDisableCompression
+          ? t('common.lossless')
+          : t('presets.summary.quality', { value: settings.quality ?? 0 }),
     )
     if (settings.shouldEnableCustomVideoCodec && settings.customVideoCodec) {
       lines.push(

@@ -203,6 +203,8 @@ export type VideoCompressionResult = {
   fileName: string
   filePath: string
   fileMetadata: FileMetadata
+  /** The other outputs made for a target size (each attempt), any of which can be used instead */
+  otherOutputs?: { filePath: string; size: number }[]
 }
 
 export enum CustomEvents {
@@ -417,6 +419,15 @@ export type VideoCompressionConfig = {
   trimSegments?: VideoTrimSegment[] | null
   subtitlesConfig?: SubtitlesConfig | null
   speed?: number | null
+  /** Compressed to (just under) a size, at a video bitrate in kbit/s (see `utils/targetSize.ts`) */
+  targetSize?: {
+    sizeInBytes: number
+    videoBitrate: number
+    /** Compresses again (when the size was missed) on the CPU, not the graphics card */
+    retryOnCpu: boolean
+    /** Compressed at its quality first (its estimated size fits), at the bitrate only when larger */
+    qualityFirst: boolean
+  } | null
 }
 
 export type ImageCompressionProgress = {

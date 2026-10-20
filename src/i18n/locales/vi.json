@@ -191,6 +191,10 @@
           "title": "Dùng tăng tốc phần cứng",
           "description": "Nén video nhanh hơn bằng tăng tốc phần cứng (tệp có thể lớn hơn một chút)",
           "unavailable": "Máy tính này không hỗ trợ tăng tốc phần cứng."
+        },
+        "retryTargetSizeOnCpu": {
+          "title": "Đạt kích thước mục tiêu không dùng tăng tốc",
+          "description": "Khi video không đạt kích thước mục tiêu, nó được nén lại không dùng tăng tốc phần cứng, chậm hơn nhưng sát kích thước hơn."
         }
       },
       "storage": {
@@ -278,7 +282,9 @@
     "reset": "Đặt lại",
     "apply": "Áp dụng",
     "yes": "Có",
-    "edit": "Sửa"
+    "edit": "Sửa",
+    "decrease": "Giảm",
+    "increase": "Tăng"
   },
   "presets": {
     "standard": "Tiêu chuẩn",
@@ -296,7 +302,8 @@
       "metadataRemoved": "Đã xóa siêu dữ liệu",
       "metadataKept": "Giữ siêu dữ liệu",
       "svgScale": "Tỷ lệ SVG {{scale}}x",
-      "customSvg": "Chuyển đổi SVG tùy chỉnh"
+      "customSvg": "Chuyển đổi SVG tùy chỉnh",
+      "targetSize": "Kích thước mục tiêu {{size}} MB"
     },
     "save": {
       "title_video": "Lưu cài đặt sẵn cho video",
@@ -575,7 +582,10 @@
     "progress": "Tiến trình {{value}}%",
     "mediaToCompress": "Tệp phương tiện cần nén",
     "waitingForDropZone": "Đang chờ vùng thả…",
-    "processing": "Đang xử lý…"
+    "processing": "Đang xử lý…",
+    "estimatingSize": "Đang ước tính kích thước đầu ra...",
+    "estimatedSize": "Kích thước ước tính: khoảng {{size}}",
+    "estimatedSizeUpTo": "Kích thước ước tính: tối đa {{size}}"
   },
   "thumbnail": {
     "copyFrameUnavailable": "Không thể sao chép khung hình",
@@ -858,5 +868,27 @@
     "minimize": "Thu nhỏ",
     "zoom": "Thu phóng",
     "help": "Trợ giúp"
+  },
+  "targetSize": {
+    "mode": "Nén theo",
+    "modes": {
+      "quality": "Chất lượng",
+      "size": "Kích thước mục tiêu"
+    },
+    "size": "Kích thước mục tiêu",
+    "estimate": "Khoảng {{width}}×{{height}} ở {{fps}} fps, trong {{size}} MB.",
+    "estimateLowered": "Đã giảm xuống {{width}}×{{height}} ở {{fps}} fps để vừa trong {{size}} MB.",
+    "notForGif": "Không thể nén GIF theo kích thước. Hãy chọn định dạng khác hoặc nén theo chất lượng.",
+    "eachVideo": "Mỗi video được nén để vừa trong kích thước này.",
+    "retrying": "Đang nén lại để đạt kích thước mục tiêu.",
+    "retryingOnCpu": "Đang nén lại không dùng tăng tốc phần cứng để đạt kích thước mục tiêu.",
+    "fitsAtQuality": "Chất lượng đã chọn đã vừa, khoảng {{size}}, nên chất lượng này được sử dụng.",
+    "switchUnit": "Hiển thị kích thước theo {{unit}}"
+  },
+  "outputOptions": {
+    "title": "Tùy chọn khác",
+    "choose": "Dùng tệp {{size}}",
+    "withinTarget": "Trong mục tiêu",
+    "overTarget": "Vượt mục tiêu"
   }
 }

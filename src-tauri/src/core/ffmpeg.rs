@@ -1,7 +1,7 @@
 use crate::core::domain::{
     AudioConfig, BatchCompressionResult, BatchVideoCompressionProgress,
     BatchVideoIndividualCompressionResult, CustomEvents, MediaMetadataConfig, MediaTransform,
-    MediaTransformCrop, MediaTransformHistory, SubtitleStream, SubtitlesConfig,
+    MediaTransformCrop, MediaTransformHistory, OutputOption, SubtitleStream, SubtitlesConfig, TargetSize,
     VideoCompressionConfig, VideoCompressionProgress, VideoCompressionResult, VideoThumbnail,
     VideoTrimSegment,
 };
@@ -26,6 +26,8 @@ pub struct FFMPEG {
     app: AppHandle,
     assets_dir: PathBuf,
     owner_window: String,
+    /// Only this part of the input is read (its start & length in seconds), see `with_input_range`
+    input_range: Option<(f64, f64)>,
 }
 
 const EXTENSIONS: [&str; 10] = [
@@ -94,12 +96,20 @@ impl FFMPEG {
             app: app.to_owned(),
             assets_dir,
             owner_window: String::from("main"),
+            input_range: None,
         })
     }
 
     /// Window the processes belong to (the main window by default), see `MediaProcessExecutorBuilder`
     pub fn with_owner_window(mut self, label: &str) -> Self {
         self.owner_window = label.to_string();
+        self
+    }
+
+    /// Compresses only a part of the input (its start & length in seconds), seeking to it instead
+    /// of decoding up to it, e.g. for the samples of `estimate_video_size`
+    pub fn with_input_range(mut self, range: Option<(f64, f64)>) -> Self {
+        self.input_range = range;
         self
     }
 
@@ -135,6 +145,7 @@ impl FFMPEG {
         trim_segments: Option<&Vec<VideoTrimSegment>>,
         subtitles_config: Option<&SubtitlesConfig>,
         speed: Option<f32>,
+        target_size: Option<&TargetSize>,
     ) -> Result<VideoCompressionResult, String> {
         let is_audio_target = AUDIO_EXTENSIONS.contains(&convert_to_extension);
         if !EXTENSIONS.contains(&convert_to_extension) && !is_audio_target {
@@ -201,8 +212,21 @@ impl FFMPEG {
             .iter()
             .collect();
 
+        let input_range_args: Vec<String> = self
+            .input_range
+            .map(|(start, length)| {
+                vec![
+                    "-ss".to_string(),
+                    format!("{:.3}", start),
+                    "-t".to_string(),
+                    format!("{:.3}", length),
+                ]
+            })
+            .unwrap_or_default();
+
         let mut cmd_args: Vec<&str> = Vec::new();
 
+        cmd_args.extend(input_range_args.iter().map(|arg| arg.as_str()));
         cmd_args.push("-i");
         cmd_args.push(video_path);
 
@@ -362,10 +386,26 @@ impl FFMPEG {
             }
         }
 
-        // Compression settings (`preset_name` is unset for lossless): constant quality via CRF, and
-        // only the options the encoder & container support
+        // A target size: an average bitrate, with peaks kept near it so the size is reached (see
+        // `TargetSize`); GIFs & audio are not compressed to a size
+        let target_size =
+            target_size.filter(|_| preset_name.is_some() && !is_gif_target && !is_audio_target);
+        // Encoded at its bitrate from the start, unless the quality is tried first (it is encoded at
+        // a bitrate only when that came out larger, see `TargetSize::quality_first`)
+        let bitrate_target = target_size.filter(|target| !target.quality_first);
+        let target_bitrate_args: Vec<String> = bitrate_target
+            .map(|target| bitrate_args(target.video_bitrate))
+            .unwrap_or_default();
+
+        // Compression settings (`preset_name` is unset for lossless): constant quality via CRF (or
+        // a bitrate, for a target size), and only the options the encoder & container support
         if preset_name.is_some() && !is_gif_target && !is_audio_target {
-            cmd_args.extend_from_slice(&["-pix_fmt:v:0", "yuv420p", "-b:v:0", "0"]);
+            cmd_args.extend_from_slice(&["-pix_fmt:v:0", "yuv420p"]);
+            if bitrate_target.is_some() {
+                cmd_args.extend(target_bitrate_args.iter().map(|arg| arg.as_str()));
+            } else {
+                cmd_args.extend_from_slice(&["-b:v:0", "0"]);
+            }
             if matches!(output_codec.as_str(), "libx264" | "libx265") {
                 cmd_args.extend_from_slice(&["-preset", "slow"]);
             }
@@ -388,6 +428,8 @@ impl FFMPEG {
         };
         if is_audio_target {
             // No video is encoded
+        } else if bitrate_target.is_some() {
+            // The bitrate sets the quality
         } else if preset_name.is_some() && !is_gif_target {
             cmd_args.extend_from_slice(&["-crf", compression_quality.as_str()]);
         } else {
@@ -917,7 +959,13 @@ impl FFMPEG {
         let output_path = output_file.display().to_string();
         cmd_args.extend_from_slice(&["-y", &output_path]);
 
-        log::info!("[ffmpeg] final command{:?}", cmd_args);
+        // The parts compressed for an estimate are many & short, so they are not logged as usual
+        let log_level = if self.input_range.is_some() {
+            log::Level::Debug
+        } else {
+            log::Level::Info
+        };
+        log::log!(log_level, "[ffmpeg] final command{:?}", cmd_args);
 
         // On the graphics card first when it can encode the codec (not GIFs, audio or lossless), then
         // on the CPU if that fails, so a video is never lost to the graphics card (see
@@ -928,13 +976,14 @@ impl FFMPEG {
         } else {
             None
         };
-        let mut attempts: Vec<(Option<&'static str>, Vec<String>)> = Vec::new();
         if let Some(encoder) = &hardware_encoder {
-            let hardware_args = hardware_encoder::to_hardware_args(&cpu_args, encoder);
-            log::info!("[ffmpeg] on the graphics card ({}): {:?}", encoder.name, hardware_args);
-            attempts.push((Some(encoder.name), hardware_args));
+            log::log!(
+                log_level,
+                "[ffmpeg] on the graphics card ({}): {:?}",
+                encoder.name,
+                hardware_encoder::to_hardware_args(&cpu_args, encoder)
+            );
         }
-        attempts.push((None, cpu_args));
 
         let output_file_clone = output_file.clone();
         let cancel_callback: CancelCallback = Arc::new(move || {
@@ -972,40 +1021,209 @@ impl FFMPEG {
             }
         });
 
-        let attempt_count = attempts.len();
-        for (attempt, (hardware_encoder_name, args)) in attempts.into_iter().enumerate() {
-            let is_last_attempt = attempt + 1 == attempt_count;
-
-            let mut ffmpeg_cmd = self.get_ffmpeg_command()?;
-            ffmpeg_cmd.args(args);
-
-            let executor = MediaProcessExecutorBuilder::new(self.app.clone())
-                .owner_window(&self.owner_window)
-                .command(ffmpeg_cmd)
-                .with_cancel_support(
-                    vec![video_id.to_string(), batch_id.clone()],
-                    Some(cancel_callback.clone()),
-                )
-                .with_stdout_callback(stdout_callback.clone())
-                .build()?;
-
-            let error = match executor.spawn_and_wait().await {
-                Ok(result) if result.success() => break,
-                // Cancelled by the user: not tried again
-                Err(error) if error == "CANCELLED" => return Err(error),
-                Ok(_) => "Video compression failed".to_string(),
-                Err(error) => error,
-            };
-            // The window compressing it was closed (its processes are stopped with it)
-            let is_owner_closed = self.app.get_webview_window(&self.owner_window).is_none();
-            if is_last_attempt || is_owner_closed {
-                return Err(error);
+        // With a target size, an output larger than it, or well under it (the encoder kept below
+        // the bitrate, e.g. on still footage), is encoded again at a bitrate worked out from the
+        // outputs so far (see `next_target_bitrate`). Every output is kept until the end & the best
+        // is used: the largest within the size (the most quality for it), or else the smallest. A
+        // retry that fails keeps the earlier outputs.
+        let mut video_bitrate = target_size.map(|target| target.video_bitrate);
+        let mut size_attempt: u32 = 0;
+        let mut candidates: Vec<(PathBuf, u64)> = Vec::new();
+        let mut samples: Vec<SizeSample> = Vec::new();
+        let remove_candidates = |candidates: &[(PathBuf, u64)]| {
+            for (path, _) in candidates {
+                std::fs::remove_file(path).ok();
             }
-            log::warn!(
-                "[ffmpeg] compressing on the graphics card ({}) failed ({}), compressing on the CPU instead",
-                hardware_encoder_name.unwrap_or_default(),
-                error
+        };
+        loop {
+            let is_retry = size_attempt > 0;
+            // The first encode is at the quality when its estimated size fits
+            let is_quality_round = !is_retry && target_size.is_some_and(|t| t.quality_first);
+            // "Reach target sizes without acceleration": retries skip the graphics card, as the CPU
+            // keeps to a bitrate much more closely (the first encode is still on the graphics card)
+            let retry_on_cpu = is_retry && target_size.is_some_and(|target| target.retry_on_cpu);
+            let round_cpu_args = match video_bitrate {
+                Some(bitrate) if is_retry => with_bitrate(&cpu_args, bitrate),
+                _ => cpu_args.clone(),
+            };
+            let mut round_attempts: Vec<(Option<&'static str>, Vec<String>)> = Vec::new();
+            if let Some(encoder) = hardware_encoder.as_ref().filter(|_| !retry_on_cpu) {
+                round_attempts.push((
+                    Some(encoder.name),
+                    hardware_encoder::to_hardware_args(&round_cpu_args, encoder),
+                ));
+            }
+            round_attempts.push((None, round_cpu_args));
+            if is_retry {
+                let on_cpu = round_attempts
+                    .first()
+                    .is_none_or(|(name, _)| name.is_none());
+                let _ = self.app.emit_to(
+                    self.owner_window.as_str(),
+                    TARGET_SIZE_RETRY_EVENT,
+                    TargetSizeRetry {
+                        video_id: video_id.to_string(),
+                        on_cpu,
+                    },
+                );
+            }
+
+            let mut round_error: Option<String> = None;
+            // Whether the output was encoded on the graphics card (it falls back to the CPU)
+            let mut on_graphics_card = false;
+            let attempt_count = round_attempts.len();
+            for (attempt, (hardware_encoder_name, args)) in round_attempts.into_iter().enumerate() {
+                let is_last_attempt = attempt + 1 == attempt_count;
+
+                let mut ffmpeg_cmd = self.get_ffmpeg_command()?;
+                ffmpeg_cmd.args(args);
+
+                let executor = MediaProcessExecutorBuilder::new(self.app.clone())
+                    .owner_window(&self.owner_window)
+                    .command(ffmpeg_cmd)
+                    .with_cancel_support(
+                        vec![video_id.to_string(), batch_id.clone()],
+                        Some(cancel_callback.clone()),
+                    )
+                    .with_stdout_callback(stdout_callback.clone())
+                    .build()?;
+
+                let error = match executor.spawn_and_wait().await {
+                    Ok(result) if result.success() => {
+                        on_graphics_card = hardware_encoder_name.is_some();
+                        break;
+                    }
+                    // Cancelled by the user: not tried again, & nothing is kept
+                    Err(error) if error == "CANCELLED" => {
+                        remove_candidates(&candidates);
+                        return Err(error);
+                    }
+                    Ok(_) => "Video compression failed".to_string(),
+                    Err(error) => error,
+                };
+                // The window compressing it was closed (its processes are stopped with it)
+                if self.app.get_webview_window(&self.owner_window).is_none() {
+                    remove_candidates(&candidates);
+                    return Err(error);
+                }
+                if is_last_attempt {
+                    round_error = Some(error);
+                    break;
+                }
+                log::warn!(
+                    "[ffmpeg] compressing on the graphics card ({}) failed ({}), compressing on the CPU instead",
+                    hardware_encoder_name.unwrap_or_default(),
+                    error
+                );
+            }
+            if let Some(error) = round_error {
+                if candidates.is_empty() {
+                    return Err(error);
+                }
+                log::warn!(
+                    "[ffmpeg] compressing again for the target size failed ({}), keeping the earlier output",
+                    error
+                );
+                break;
+            }
+
+            let (Some(target), Some(bitrate)) = (target_size, video_bitrate) else {
+                break;
+            };
+            let output_size = std::fs::metadata(&output_file)
+                .map(|metadata| metadata.len())
+                .unwrap_or(0);
+            log::info!(
+                "[ffmpeg] target size {} bytes: {} bytes {} on the {}",
+                target.size_in_bytes,
+                output_size,
+                if is_quality_round {
+                    "at the quality".to_string()
+                } else {
+                    format!("at {} kbit/s", bitrate)
+                },
+                if on_graphics_card { "graphics card" } else { "CPU" }
             );
+            let candidate = output_file.with_file_name(format!(
+                "{}.attempt{}.{}",
+                video_id, size_attempt, convert_to_extension
+            ));
+            if std::fs::rename(&output_file, &candidate).is_ok() {
+                candidates.push((candidate, output_size));
+            }
+            if !is_quality_round {
+                samples.push(SizeSample {
+                    on_graphics_card,
+                    bitrate,
+                    size: output_size,
+                });
+            }
+
+            // Done when the quality fits, or an output is close under the size
+            let is_close = candidates.iter().any(|(_, size)| {
+                *size <= target.size_in_bytes
+                    && *size as f64 >= target.size_in_bytes as f64 * TARGET_SIZE_CLOSE
+            });
+            if (is_quality_round && output_size <= target.size_in_bytes)
+                || is_close
+                || output_size == 0
+                || size_attempt >= MAX_TARGET_SIZE_RETRIES
+            {
+                break;
+            }
+            let next_on_graphics_card = hardware_encoder.is_some() && !target.retry_on_cpu;
+            let next_bitrate = next_target_bitrate(
+                &samples,
+                next_on_graphics_card,
+                target.video_bitrate,
+                target.size_in_bytes,
+            );
+            log::info!(
+                "[ffmpeg] {} bytes is {} the target size of {} bytes, compressing again at {} kbit/s on the {}",
+                output_size,
+                if output_size > target.size_in_bytes {
+                    "over"
+                } else {
+                    "well under"
+                },
+                target.size_in_bytes,
+                next_bitrate,
+                if next_on_graphics_card {
+                    "graphics card"
+                } else {
+                    "CPU"
+                }
+            );
+            video_bitrate = Some(next_bitrate);
+            size_attempt += 1;
+        }
+
+        // The best output becomes the output; the others are kept, to be chosen instead
+        let mut other_outputs: Vec<OutputOption> = Vec::new();
+        if let (Some(target), false) = (target_size, candidates.is_empty()) {
+            let best = candidates
+                .iter()
+                .filter(|(_, size)| *size <= target.size_in_bytes)
+                .max_by_key(|(_, size)| *size)
+                .or_else(|| candidates.iter().min_by_key(|(_, size)| *size))
+                .map(|(path, size)| (path.clone(), *size));
+            if let Some((best_path, best_size)) = best {
+                for (path, size) in &candidates {
+                    if *path == best_path {
+                        std::fs::rename(path, &output_file).map_err(|err| err.to_string())?;
+                    } else {
+                        other_outputs.push(OutputOption {
+                            file_path: path.display().to_string(),
+                            size: *size,
+                        });
+                    }
+                }
+                log::info!(
+                    "[ffmpeg] kept the output of {} bytes for the target size of {} bytes",
+                    best_size,
+                    target.size_in_bytes
+                );
+            }
         }
 
         if convert_to_extension == "gif" {
@@ -1032,6 +1250,7 @@ impl FFMPEG {
                 file_name: gif_file_name,
                 file_path: gif_path,
                 file_metadata: file_metadata.ok(),
+                other_outputs: Vec::new(),
             });
         }
 
@@ -1041,7 +1260,149 @@ impl FFMPEG {
             file_name,
             file_path: output_file.display().to_string(),
             file_metadata: file_metadata.ok(),
+            other_outputs,
         })
+    }
+
+    /// About the size a video comes out at with its settings (`config`, compressed by quality), in
+    /// bytes: a short video is compressed whole, a longer one in a few short parts spread over it,
+    /// whose size is scaled up to its length. Cancelled like a compression, by `estimate_id`.
+    /// - `duration`: the video's length, in seconds
+    pub async fn estimate_video_size(
+        &mut self,
+        estimate_id: &str,
+        config: &VideoCompressionConfig,
+        duration: f64,
+    ) -> Result<u64, String> {
+        // The parts of the video kept (all of it, unless trimmed)
+        let segments: Vec<(f64, f64)> = config
+            .trim_segments
+            .as_ref()
+            .map(|segments| {
+                segments
+                    .iter()
+                    .filter(|segment| segment.end > segment.start)
+                    .map(|segment| (segment.start, segment.end))
+                    .collect::<Vec<_>>()
+            })
+            .filter(|segments| !segments.is_empty())
+            .unwrap_or_else(|| vec![(0.0, duration)]);
+        let kept_length: f64 = segments.iter().map(|(start, end)| end - start).sum();
+        if kept_length <= 0.0 {
+            return Err("The video has no length".to_string());
+        }
+
+        // Short videos whole (exact), longer ones in many short parts spread evenly over the kept
+        // length (footage often changes a lot over a video, so a few parts can be far off)
+        let parts: Vec<Option<(f64, f64)>> = if kept_length <= ESTIMATE_WHOLE_VIDEO_SECONDS {
+            vec![None]
+        } else {
+            let count = ((kept_length / ESTIMATE_SECONDS_PER_SAMPLE).round() as usize)
+                .clamp(ESTIMATE_MIN_SAMPLES, ESTIMATE_MAX_SAMPLES);
+            (0..count)
+                .map(|index| {
+                    let middle = kept_length * (index as f64 + 0.5) / count as f64;
+                    // The kept segment the middle falls in (the last one, past its end), & the
+                    // part around the middle within it
+                    let mut offset = middle;
+                    let (start, end) = segments
+                        .iter()
+                        .find(|(start, end)| {
+                            let is_in = offset <= end - start;
+                            if !is_in {
+                                offset -= end - start;
+                            }
+                            is_in
+                        })
+                        .copied()
+                        .unwrap_or(segments[segments.len() - 1]);
+                    let length = end - start;
+                    let part_length = ESTIMATE_SAMPLE_SECONDS.min(length);
+                    let part_start = (start + offset.min(length) - part_length / 2.0)
+                        .clamp(start, end - part_length);
+                    Some((part_start, part_length))
+                })
+                .collect()
+        };
+
+        // A few parts at a time
+        let mut size: u64 = 0;
+        let mut encoded_length: f64 = 0.0;
+        let mut pending = parts.into_iter().enumerate();
+        let mut running = tokio::task::JoinSet::new();
+        loop {
+            while running.len() < ESTIMATE_PARALLEL_SAMPLES {
+                let Some((index, range)) = pending.next() else {
+                    break;
+                };
+                let app = self.app.clone();
+                let owner_window = self.owner_window.clone();
+                let config = config.clone();
+                let estimate_id = estimate_id.to_string();
+                running.spawn(async move {
+                    let result = FFMPEG::new(&app)?
+                        .with_owner_window(&owner_window)
+                        .with_input_range(range)
+                        .compress_video(
+                            &config.video_path,
+                            &config.convert_to_extension,
+                            config.preset_name.as_deref(),
+                            &format!("{}-{}", estimate_id, index),
+                            Some(estimate_id.as_str()),
+                            &config.audio_config,
+                            config.quality,
+                            config.dimensions,
+                            config.fps.as_deref(),
+                            config.video_codec.as_deref(),
+                            config.transform_history.as_ref().map(|v| v.as_ref()),
+                            config.strip_metadata,
+                            config.metadata_config.as_ref(),
+                            None,
+                            // A part is already taken from the kept segments
+                            if range.is_some() {
+                                None
+                            } else {
+                                config.trim_segments.as_ref()
+                            },
+                            None,
+                            config.speed,
+                            None,
+                        )
+                        .await?;
+                    let path = PathBuf::from(&result.file_path);
+                    let part_size = std::fs::metadata(&path).map(|m| m.len()).unwrap_or(0);
+                    std::fs::remove_file(&path).ok();
+                    Ok::<(u64, Option<(f64, f64)>), String>((part_size, range))
+                });
+            }
+            let Some(joined) = running.join_next().await else {
+                break;
+            };
+            match joined.map_err(|err| err.to_string()).and_then(|result| result) {
+                Ok((part_size, range)) => {
+                    size += part_size;
+                    encoded_length += range.map(|(_, length)| length).unwrap_or(kept_length);
+                }
+                // No more parts are started; those running finish (they are short) & are deleted
+                Err(error) => {
+                    while running.join_next().await.is_some() {}
+                    return Err(error);
+                }
+            }
+        }
+        if encoded_length <= 0.0 {
+            return Err("Nothing was encoded".to_string());
+        }
+        let estimate = (size as f64 * kept_length / encoded_length).round() as u64;
+        log::info!(
+            "[ffmpeg] estimated {} bytes for {:?} ({} bytes for {:.1} of {:.1} seconds)",
+            estimate,
+            config.video_path,
+            size,
+            encoded_length,
+            kept_length
+        );
+        Ok(estimate)
     }
 
     /// Compressed videos in batch
@@ -1133,6 +1494,7 @@ impl FFMPEG {
                     trim_segments,
                     subtitles_config,
                     speed,
+                    video_options.target_size.as_ref(),
                 )
                 .await
             {
@@ -1454,6 +1816,143 @@ impl FFMPEG {
 }
 
 /// Builds complete FFmpeg filter complex for video/image post-processing
+/// A video up to this long (seconds) is compressed whole for its estimated size
+const ESTIMATE_WHOLE_VIDEO_SECONDS: f64 = 30.0;
+
+/// A longer one is compressed in parts this long (seconds), one for about every this many
+/// seconds of it (within the fewest & the most), a few at a time, for its estimate
+const ESTIMATE_SAMPLE_SECONDS: f64 = 2.0;
+const ESTIMATE_SECONDS_PER_SAMPLE: f64 = 15.0;
+const ESTIMATE_MIN_SAMPLES: usize = 8;
+const ESTIMATE_MAX_SAMPLES: usize = 30;
+const ESTIMATE_PARALLEL_SAMPLES: usize = 3;
+
+/// How many times a video is encoded again when it missed its target size
+const MAX_TARGET_SIZE_RETRIES: u32 = 3;
+
+/// An output at least this part of its target size (& within it) is kept as it is
+const TARGET_SIZE_CLOSE: f64 = 0.85;
+
+/// The part of its target size a retry aims for, leaving room for the encoder's drift
+const TARGET_SIZE_AIM: f64 = 0.96;
+
+/// The most a retry's bitrate changes from the previous one's (up or down)
+const MAX_TARGET_SIZE_CHANGE: f64 = 4.0;
+
+/// Sent to the window compressing a video when it is encoded again for its target size
+const TARGET_SIZE_RETRY_EVENT: &str = "target-size-retry";
+
+#[derive(serde::Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
+struct TargetSizeRetry {
+    video_id: String,
+    /// Encoded again on the CPU (instead of the graphics card)
+    on_cpu: bool,
+}
+
+/// The options encoding a video at an average bitrate (in kbit/s), with its peaks kept near it
+fn bitrate_args(video_bitrate: u32) -> Vec<String> {
+    vec![
+        "-b:v:0".to_string(),
+        format!("{}k", video_bitrate),
+        "-maxrate:v:0".to_string(),
+        format!("{}k", video_bitrate.saturating_mul(3) / 2),
+        "-bufsize:v:0".to_string(),
+        format!("{}k", video_bitrate.saturating_mul(2)),
+    ]
+}
+
+/// The arguments of an ffmpeg command encoding at a video bitrate (see `bitrate_args`): its
+/// bitrate options replaced, & a constant quality (`-crf`) dropped
+fn with_bitrate(args: &[String], video_bitrate: u32) -> Vec<String> {
+    let mut next = Vec::with_capacity(args.len() + 6);
+    let mut index = 0;
+    while index < args.len() {
+        match args[index].as_str() {
+            "-b:v:0" if index + 1 < args.len() => {
+                next.extend(bitrate_args(video_bitrate));
+                index += 2;
+            }
+            "-crf" | "-maxrate:v:0" | "-bufsize:v:0" if index + 1 < args.len() => index += 2,
+            arg => {
+                next.push(arg.to_string());
+                index += 1;
+            }
+        }
+    }
+    next
+}
+
+/// An encode for a target size: where it ran, its bitrate (kbit/s) & the size it came out
+struct SizeSample {
+    on_graphics_card: bool,
+    bitrate: u32,
+    size: u64,
+}
+
+/// The bitrate (kbit/s) of the next encode for a target size, from the earlier encodes on the same
+/// encoder (the CPU keeps to a bitrate, while a graphics card often keeps well below it):
+/// - none yet (e.g. retrying on the CPU after the graphics card): the bitrate planned for the size
+/// - one under & one over the size: between them, where the size is aimed for
+/// - otherwise: along the line through the last two, or in proportion to the last one
+fn next_target_bitrate(
+    samples: &[SizeSample],
+    on_graphics_card: bool,
+    planned_bitrate: u32,
+    target_size: u64,
+) -> u32 {
+    let same: Vec<&SizeSample> = samples
+        .iter()
+        .filter(|sample| sample.on_graphics_card == on_graphics_card && sample.size > 0)
+        .collect();
+    let Some(last) = same.last() else {
+        return planned_bitrate;
+    };
+    let goal = target_size as f64 * TARGET_SIZE_AIM;
+    let under = same
+        .iter()
+        .filter(|sample| sample.size <= target_size)
+        .max_by_key(|sample| sample.size);
+    let over = same
+        .iter()
+        .filter(|sample| sample.size > target_size)
+        .min_by_key(|sample| sample.size);
+
+    let next = match (under, over) {
+        (Some(under), Some(over)) if over.bitrate > under.bitrate => {
+            let part = ((goal - under.size as f64) / (over.size as f64 - under.size as f64))
+                .clamp(0.1, 0.9);
+            under.bitrate as f64 + part * (over.bitrate - under.bitrate) as f64
+        }
+        _ => {
+            let proportional = last.bitrate as f64 * goal / last.size as f64;
+            let along_line = same
+                .len()
+                .checked_sub(2)
+                .map(|index| same[index])
+                .filter(|previous| previous.bitrate != last.bitrate)
+                .map(|previous| {
+                    let slope = (last.size as f64 - previous.size as f64)
+                        / (last.bitrate as f64 - previous.bitrate as f64);
+                    (slope, last.bitrate as f64 + (goal - last.size as f64) / slope)
+                })
+                .filter(|(slope, _)| slope.is_finite() && *slope > 0.0)
+                .map(|(_, bitrate)| bitrate);
+            along_line.unwrap_or(proportional).clamp(
+                last.bitrate as f64 / MAX_TARGET_SIZE_CHANGE,
+                last.bitrate as f64 * MAX_TARGET_SIZE_CHANGE,
+            )
+        }
+    };
+    let mut next = next.floor().max(1.0) as u32;
+    // Never the same bitrate again (it would come out the same)
+    if same.iter().any(|sample| sample.bitrate == next) {
+        let factor = if last.size > target_size { 0.93 } else { 1.05 };
+        next = ((next as f64) * factor).floor().max(1.0) as u32;
+    }
+    next
+}
+
 /// Combines transforms (crop, rotate, flip) + scale (dimensions) + padding
 pub fn build_ffmpeg_filters(
     transform_history: Option<&MediaTransformHistory>,
@@ -1520,3 +2019,4 @@ pub fn build_transform_filters(
 
     filters
 }
+

@@ -143,9 +143,11 @@ function MediaOutputCompareSlider({
   )
 
   // Saving moves the output out of the cache, so a saved output is loaded from where it was saved
+  // (with its size, as another output of a target size can replace it there, see
+  // `chooseOutputOption`)
   const outputPath =
     mediaFile?.compressedFile?.isSaved && mediaFile.compressedFile.savedPath
-      ? core.convertFileSrc(mediaFile.compressedFile.savedPath)
+      ? `${core.convertFileSrc(mediaFile.compressedFile.savedPath)}?v=${mediaFile.compressedFile.sizeInBytes ?? 0}`
       : mediaFile?.compressedFile?.path
 
   return (

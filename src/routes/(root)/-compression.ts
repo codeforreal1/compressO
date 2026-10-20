@@ -1,17 +1,25 @@
 import { TimelineAction } from '@xzdarcy/timeline-engine'
+import { proxy } from 'valtio'
 
+import { settingsStore } from '@/stores/settingsStore'
 import { getDropQueue } from '@/tauri/commands/dropQueue'
 import { Image, MediaMetadataConfig, Video } from '@/types/app'
 import {
   getAudioFileOutputExtension,
   ImageCompressionConfig,
   isAudioExtension,
+  type MediaCompressionResult,
   MediaItem,
   MediaTransformHistory,
   VideoCompressionConfig,
   VideoTrimSegment,
 } from '@/types/compression'
 import { getAudioBitrateForQuality } from '@/utils/audio'
+import {
+  BYTES_PER_MB,
+  planTargetSize,
+  type TargetSizePlan,
+} from '@/utils/targetSize'
 import {
   getLongerSideDimensions,
   getTransformedDimensions,
@@ -60,6 +68,150 @@ export function getOutputDuration(media: MediaFile) {
 }
 
 /**
+ * The estimated sizes of videos at their quality settings, in bytes, by `getQualityEstimateKey`
+ * (see `-sizeEstimate.ts`): shown under the quality, and used by target sizes (`getTargetSizePlan`)
+ */
+export const qualitySizeEstimates = proxy<{ sizes: Record<string, number> }>({
+  sizes: {},
+})
+
+/**
+ * What a video's estimated size at its quality settings depends on (the settings sent to the
+ * backend, & whether the graphics card is used), or `null` when it is not estimated: lossless,
+ * GIFs, audio, & before its duration is known
+ */
+export function getQualityEstimateKey(
+  media: MediaFile,
+  batchVideoLongerSide: number | null,
+) {
+  if (
+    media.type !== 'video' ||
+    media.isAudioFile ||
+    !media.videoDuration ||
+    media.config?.shouldDisableCompression ||
+    media.config?.convertToExtension === 'gif' ||
+    isAudioExtension(media.config?.convertToExtension)
+  ) {
+    return null
+  }
+  const { videoConfig } = getQualityMediaItemConfig(media, batchVideoLongerSide)
+  if (!videoConfig) return null
+  const { videoId: _videoId, ...settings } = videoConfig
+  return JSON.stringify({
+    ...settings,
+    useHardwareAcceleration: settingsStore.useHardwareAcceleration,
+  })
+}
+
+/** What a video is compressed with by quality (its target size turned off) */
+export function getQualityMediaItemConfig(
+  media: MediaFile,
+  batchVideoLongerSide: number | null,
+) {
+  return getMediaItemConfig(
+    {
+      ...media,
+      config: { ...media.config, shouldUseTargetSize: false },
+    } as MediaFile,
+    { batchVideoLongerSide, batchImageLongerSide: null },
+  )
+}
+
+/** A video's estimated size at its quality settings in bytes, once estimated */
+export function getQualitySizeEstimate(
+  media: MediaFile,
+  batchVideoLongerSide: number | null,
+): number | null {
+  const key = getQualityEstimateKey(media, batchVideoLongerSide)
+  return key ? (qualitySizeEstimates.sizes[key] ?? null) : null
+}
+
+/**
+ * How a video fits in its target size (see `utils/targetSize.ts`), or `null` when it is compressed
+ * by quality: without a target size, for GIFs & extracted audio, and before its duration & size are
+ * known. The resolution & frame rate chosen are upper limits.
+ * - `batchVideoLongerSide`: the batch's resolution, also an upper limit (`null` outside a batch)
+ */
+export function getTargetSizePlan(
+  media: MediaFile,
+  batchVideoLongerSide: number | null,
+): TargetSizePlan | null {
+  if (media.type !== 'video' || media.isAudioFile) return null
+  const config = media.config
+  if (
+    !config?.shouldUseTargetSize ||
+    !config.targetSizeInMB ||
+    config.convertToExtension === 'gif' ||
+    isAudioExtension(config.convertToExtension) ||
+    !media.videoDuration ||
+    !media.dimensions?.width ||
+    !media.dimensions?.height
+  ) {
+    return null
+  }
+
+  const transformedDimensions = getTransformedDimensions(
+    media.dimensions,
+    config.shouldTransformVideo
+      ? config.transformVideoConfig?.transformHistory
+      : null,
+  )
+  const batchDimensions = getLongerSideDimensions(
+    transformedDimensions,
+    batchVideoLongerSide,
+  )
+  const dimensions =
+    config.shouldEnableCustomDimensions && config.customDimensions
+      ? {
+          width: config.customDimensions[0],
+          height: config.customDimensions[1],
+        }
+      : batchDimensions
+        ? { width: batchDimensions[0], height: batchDimensions[1] }
+        : transformedDimensions
+
+  const volume = config.audioConfig?.volume ?? 100
+  const knownAudioTracks = media.videoInfoRaw?.audioStreams?.length
+  const audioTrackCount =
+    volume === 0
+      ? 0
+      : config.shouldEnableAudioTrackSelection && config.selectedAudioTracks
+        ? config.selectedAudioTracks.length
+        : // Unknown until the audio tracks are read: one is assumed, to keep room for it
+          (knownAudioTracks ?? 1)
+
+  const videoCodec =
+    config.shouldEnableCustomVideoCodec &&
+    config.customVideoCodec &&
+    config.customVideoCodec !== '-'
+      ? config.customVideoCodec
+      : (config.convertToExtension === '-'
+            ? media.extension
+            : config.convertToExtension) === 'webm'
+        ? 'libvpx-vp9'
+        : null
+
+  return planTargetSize({
+    targetSizeInMB: config.targetSizeInMB,
+    durationInSeconds: getOutputDuration(media) / 1000,
+    dimensions,
+    fps:
+      config.shouldEnableCustomFPS && config.customFPS
+        ? Math.min(config.customFPS, media.fps ?? config.customFPS)
+        : (media.fps ?? null),
+    sourceSizeInBytes: media.sizeInBytes ?? null,
+    sourceDurationInSeconds: media.videoDuration,
+    audioTrackCount,
+    audioBitrate:
+      config.shouldEnableCustomBitrate && config.audioConfig?.bitrate
+        ? config.audioConfig.bitrate
+        : null,
+    videoCodec,
+    qualitySizeInBytes: getQualitySizeEstimate(media, batchVideoLongerSide),
+  })
+}
+
+/**
  * What the backend compresses a media with (`compress_media_batch`), from its settings. Used by the
  * main window & the menu bar's queue.
  * - `batchVideoLongerSide` / `batchImageLongerSide`: the batch's resolution, for media without
@@ -78,6 +230,10 @@ export function getMediaItemConfig(
   if (v.type === 'video' && v.isAudioFile) {
     v = getAudioFileForCompression(v)
   }
+  // Compressed to a size: its bitrate, & the resolution & frame rate lowered to fit, unless its
+  // quality settings already fit (then they are used, & the bitrate only when larger after all)
+  const targetPlan = getTargetSizePlan(v, batchVideoLongerSide)
+  const sizePlan = targetPlan?.fitsAtQuality ? null : targetPlan
   return {
     videoConfig:
       v.type === 'video'
@@ -89,10 +245,14 @@ export function getMediaItemConfig(
               : v.config.convertToExtension)!,
             // The backend compresses (CRF from the quality) when a preset is set, and keeps
             // the source codec otherwise (lossless)
-            presetName: !v.config?.shouldDisableCompression ? 'ironclad' : null,
-            quality: !v.config?.shouldDisableCompression
-              ? (v.config?.quality as number)
-              : 101,
+            presetName:
+              targetPlan || !v.config?.shouldDisableCompression
+                ? 'ironclad'
+                : null,
+            quality:
+              targetPlan || !v.config?.shouldDisableCompression
+                ? (v.config?.quality as number)
+                : 101,
             audioConfig: {
               volume: v.config?.audioConfig?.volume ?? 100,
               audioChannelConfig:
@@ -101,7 +261,9 @@ export function getMediaItemConfig(
                   : null,
               bitrate:
                 (v.config?.audioConfig?.volume ?? 100) !== 0
-                  ? (v.config?.audioConfig?.bitrate ?? null)
+                  ? (sizePlan?.audioBitrate ??
+                    v.config?.audioConfig?.bitrate ??
+                    null)
                   : null,
               audioCodec:
                 v.config?.shouldEnableCustomAudioCodec &&
@@ -114,9 +276,10 @@ export function getMediaItemConfig(
                   ? (v.config?.selectedAudioTracks ?? null)
                   : null,
             },
-            dimensions:
-              v.config?.shouldEnableCustomDimensions &&
-              v.config.customDimensions
+            dimensions: sizePlan?.isResolutionLowered
+              ? sizePlan.dimensions
+              : v.config?.shouldEnableCustomDimensions &&
+                  v.config.customDimensions
                 ? ([
                     Math.round(v.config.customDimensions[0]),
                     Math.round(v.config.customDimensions[1]),
@@ -137,8 +300,20 @@ export function getMediaItemConfig(
               v.config?.shouldEnableCustomSpeed && v.config.customSpeed !== 1
                 ? v.config.customSpeed
                 : null,
-            fps: v.config?.shouldEnableCustomFPS
-              ? v.config.customFPS?.toString?.()
+            fps: sizePlan?.fps
+              ? sizePlan.fps.toString()
+              : v.config?.shouldEnableCustomFPS
+                ? v.config.customFPS?.toString?.()
+                : null,
+            targetSize: targetPlan
+              ? {
+                  sizeInBytes: targetPlan.sizeInBytes,
+                  videoBitrate: targetPlan.videoBitrate,
+                  retryOnCpu:
+                    settingsStore.useHardwareAcceleration &&
+                    settingsStore.retryTargetSizeOnCpu,
+                  qualityFirst: targetPlan.fitsAtQuality,
+                }
               : null,
             videoCodec:
               v.config?.shouldEnableCustomVideoCodec &&
@@ -276,5 +451,34 @@ function getAudioFileForCompression(
             : getAudioBitrateForQuality(config.quality),
       },
     },
+  }
+}
+
+/**
+ * A video compressed to a target size with more than one output (each attempt): all of them, by
+ * size, to choose from after compressing (see `OutputOptions`). Used by
+ * the final results & by each media's completion (which can arrive after them).
+ */
+export function getOutputOptions(
+  result: MediaCompressionResult | null,
+  targetSizeInMB: number | null | undefined,
+) {
+  const otherOutputs =
+    result?.mediaType === 'video' ? (result.otherOutputs ?? []) : []
+  if (!result?.fileMetadata?.path || otherOutputs.length === 0) return {}
+  return {
+    options: [
+      {
+        pathRaw: result.fileMetadata.path,
+        sizeInBytes: result.fileMetadata.size,
+      },
+      ...otherOutputs.map((output) => ({
+        pathRaw: output.filePath,
+        sizeInBytes: output.size,
+      })),
+    ].sort((a, b) => a.sizeInBytes - b.sizeInBytes),
+    targetSizeInBytes: targetSizeInMB
+      ? Math.floor(targetSizeInMB * BYTES_PER_MB)
+      : null,
   }
 }

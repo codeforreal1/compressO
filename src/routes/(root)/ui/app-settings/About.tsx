@@ -70,7 +70,8 @@ function About() {
           {hasNewVersion ? (
             <Button
               size="sm"
-              className="bg-primary"
+              color="primary"
+              variant="solid"
               onPress={downloadAndInstallUpdateApp}
               isLoading={isInstalling}
               isDisabled={isInstalling}
@@ -100,6 +101,7 @@ function About() {
             }}
           >
             {t('settings.about.changelog.view')}
+            <Icon name="externalLink" size={18} />
           </Button>
         </SettingsRow>
         <SettingsRow
