@@ -15,8 +15,12 @@ Run the usual `pnpm tauri:build`. The Tauri before-build hook runs
 `TAURI_ENV_TARGET_TRIPLE` (provided by Tauri), then `TARGET`, then the Rust host target.
 For a standalone packaging run, set `TARGET` explicitly when preparing another architecture.
 
-Build prerequisites are Node, Python 3 with its standard `lzma` module, Rust, and the normal
-platform build tools. On macOS, the first packaging run downloads checksum-pinned lrzip 0.7.3,
+Build prerequisites are Node, Rust, and the normal platform build tools; Python is not required.
+The isolated Rust helper in `scripts/tool-archive/` creates deterministic TAR/XZ archives using
+the same TAR and statically linked XZ libraries as the app. It builds for the host architecture,
+even when packaging tools for a different target, and is never included in the app download.
+Cargo caches its build under `src-tauri/target/tool-archive/`.
+On macOS, the first packaging run downloads checksum-pinned lrzip 0.7.3,
 LZ4 1.10.0, and LZO 2.10 source archives. `scripts/build-lrzip.mjs` compiles them privately under
 `src-tauri/.toolchain-cache/<target>/`, with macOS 11 as the deployment target and static LZ4/LZO
 linking. Only Apple system libraries remain dynamically linked. This avoids Homebrew binaries
@@ -81,6 +85,7 @@ takes those handles to read FFprobe JSON, FFmpeg progress, and failure diagnosti
 pnpm tsc:check
 pnpm vite:build
 pnpm exec biome check scripts/build-lrzip.mjs scripts/prepare-tools.mjs src/ui/ToolsPreparation/index.tsx src/main.tsx
+cargo test --manifest-path scripts/tool-archive/Cargo.toml --target-dir src-tauri/target/tool-archive
 cd src-tauri
 cargo test core::tool_bundle::tests
 cargo test core::tool_bundle::tests -- --include-ignored --nocapture

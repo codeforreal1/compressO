@@ -12,10 +12,8 @@ import { buildLrzip } from './build-lrzip.mjs'
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const run = (program, args, options = {}) =>
   execFileSync(program, args, { encoding: 'utf8', ...options })
-const target =
-  process.env.TAURI_ENV_TARGET_TRIPLE ||
-  process.env.TARGET ||
-  run('rustc', ['-vV']).match(/^host: (.+)$/m)?.[1]
+const host = run('rustc', ['-vV']).match(/^host: (.+)$/m)?.[1]
+const target = process.env.TAURI_ENV_TARGET_TRIPLE || process.env.TARGET || host
 const names = ['ffmpeg', 'ffprobe', 'pngquant', 'jpegoptim', 'gifski']
 const isMac = target?.endsWith('apple-darwin')
 const extension = target?.includes('windows') ? '.exe' : ''
@@ -50,6 +48,9 @@ const inputHash = createHash('sha256')
   .update(
     JSON.stringify({
       script: sha256(fileURLToPath(import.meta.url)),
+      packer: ['Cargo.toml', 'Cargo.lock', 'src/main.rs'].map((file) =>
+        sha256(path.join(root, 'scripts/tool-archive', file)),
+      ),
       target,
       tools: sources.map(({ source }) => sha256(source)),
       helper: lrzip ? sha256(lrzip) : null,
@@ -153,27 +154,30 @@ try {
     ])
   }
 
-  // Python's standard library gives deterministic TAR headers and XZ on every build host.
+  // Run on the build host even when the application is cross-compiled. This isolated helper
+  // uses the existing Rust toolchain, without Python or platform archive utilities.
   const tarFile = path.join(temporary, 'tools.tar')
-  run(process.platform === 'win32' ? 'python' : 'python3', [
-    '-c',
-    `
-import lzma, pathlib, shutil, sys, tarfile
-source, output, fmt = pathlib.Path(sys.argv[1]), sys.argv[2], sys.argv[3]
-with tarfile.open(output, 'w', format=tarfile.USTAR_FORMAT) as archive:
-    for file in sorted(source.iterdir()):
-        info = tarfile.TarInfo(file.name)
-        info.size, info.mode, info.mtime = file.stat().st_size, 0o755, 0
-        with file.open('rb') as data: archive.addfile(info, data)
-if fmt == 'xz':
-    with open(output, 'rb') as data, lzma.open(sys.argv[4], 'wb', preset=9) as compressed:
-        shutil.copyfileobj(data, compressed)
-`,
-    tools,
-    tarFile,
-    isMac ? 'lrz' : 'xz',
-    path.join(output, 'tools.tar.xz'),
-  ])
+  run(
+    'cargo',
+    [
+      'run',
+      '--quiet',
+      '--locked',
+      '--release',
+      '--manifest-path',
+      path.join(root, 'scripts/tool-archive/Cargo.toml'),
+      '--target-dir',
+      path.join(root, 'src-tauri/target/tool-archive'),
+      '--target',
+      host,
+      '--',
+      tools,
+      tarFile,
+      isMac ? 'tar' : 'xz',
+      path.join(output, 'tools.tar.xz'),
+    ],
+    { stdio: 'inherit' },
+  )
   const archive = isMac ? 'tools.tar.lrz' : 'tools.tar.xz'
   if (isMac)
     run(
