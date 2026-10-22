@@ -47,6 +47,8 @@ Button.displayName = 'Button'
 
 **Styling**: Tailwind CSS with `cn()` utility for className merging. Dark mode with `dark:` prefix.
 
+**UI Design System**: Reuse the existing HeroUI wrappers in `src/components/` (including Spinner and Button) and `UIProvider`. Do not recreate existing controls or add custom CSS spinners.
+
 **State Management**: Valtio - `proxy()` for state, `useSnapshot()` for reading, direct mutation for writes.
 
 **Routing**: TanStack Router with `createFileRoute()`, export `Route` constant from `src/routes/`.
