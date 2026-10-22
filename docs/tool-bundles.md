@@ -82,7 +82,8 @@ separate directories; older versions are retained so switching versions does not
 The archive stays in the application bundle for offline repair.
 
 If installation or repair is required, Rust opens a separate **Preparing CompressO** window.
-It is a centered, borderless splash window with no native title bar, shadow, or window buttons.
+It is centered with a native title bar and minimize/close controls. Its content size stays fixed
+at 460 × 340, with resizing and maximizing disabled.
 The main and tray frontends wait before mounting their normal router and hooks. Hardware encoder
 probing also waits. Files opened during preparation stay queued for frontend readiness.
 
