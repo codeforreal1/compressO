@@ -4,9 +4,9 @@ Release builds ship one target-specific compressed archive instead of five uncom
 sidecars. **All 20 original binaries in `src-tauri/bin/` remain tracked and unchanged.** Packaging
 copies them into a temporary directory; it never signs, replaces, or removes the originals.
 
-macOS uses `tools.tar.lrz` and a small lrzip executable. Windows and Linux use `tools.tar.xz`,
-decoded by Rust's statically linked XZ library, with no external extraction program. No download
-or administrator access is needed when the app starts.
+macOS and Windows use `tools.tar.lrz` with a bundled lrzip executable for their respective
+platforms. Linux continues to use `tools.tar.xz`, decoded by Rust's statically linked XZ library.
+No download or administrator access is needed when the app starts.
 
 ## Building
 
@@ -26,6 +26,20 @@ LZ4 1.10.0, and LZO 2.10 source archives. `scripts/build-lrzip.mjs` compiles the
 linking. Only Apple system libraries remain dynamically linked. This avoids Homebrew binaries
 silently raising the minimum supported OS. Cached sources/builds make subsequent builds offline.
 Use a native macOS runner for each architecture, as configured in the release workflow.
+
+Windows x64 uses the supplied `lrzip-0.651.1-x86_64-ucrt64.exe`, preserved as
+`src-tauri/bin/compresso_lrzip-x86_64-pc-windows-msvc.exe`. Build its archive on Windows: this
+exact executable creates and then extracts the complete archive during packaging, and the
+round-trip TAR hashes must match before packaging succeeds. This catches runtime dependencies,
+unsupported options, archive incompatibility, and extraction failures before shipping. Windows
+archives are never produced with the newer macOS helper. The original 20 media tools are unchanged.
+
+`LICENSES/lrzip-windows/SOURCE.json` pins the supplied helper's SHA-256, release provenance, and
+matching source archive checksum. Its import table lists Windows system/UCRT DLLs, with no MSYS,
+LZO, LZ4, or MinGW runtime DLL imports. The license is bundled with the app, and CI publishes
+`src-tauri/tool-sources/lrzip-windows-v0.651-1.tar.gz` separately alongside Windows releases.
+The helper is copied to `tool-bundle/bootstrap/lrzip.exe`, verified against the embedded manifest
+at extraction time, and launched without an additional console window.
 
 On macOS, tools are copied and signed **before** their hashes and archive are generated.
 `APPLE_SIGNING_IDENTITY` selects the release identity; local builds use ad-hoc signing. The helper

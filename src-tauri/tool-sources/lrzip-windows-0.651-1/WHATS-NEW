@@ -1,0 +1,571 @@
+lrzip-0.651
+
+Remove redundant files
+Revert locale dependent output
+Add warnings for low memory and threads
+
+lrzip-0.650
+
+Minor optimisations.
+Exit status fixes.
+Update and beautify information output.
+Fix Android build.
+Enable MD5 on Apple build.
+Deprecate and remove liblrzip which was unused and at risk of bitrot.
+Fix failures with compressing to STDOUT with inadequate memory.
+Fix possible race conditions.
+Fix memory leaks.
+Fix -q to only hide progress.
+Add -Q option for very quiet.
+
+
+lrzip-0.641
+
+Critical bugfix for broken lz4 testing which would prevent secondary
+compression from being enabled.
+
+lrzip-0.640
+
+Numerous bugfixes and build fixes.
+lz4 now used for compressibility testing (only) making lz4-dev a build
+requirement.
+Fixes for handling of corrupt archives without crashing.
+Fixes for creating small lzma based archives to stdout.
+Incomplete files are now deleted on interrupting lrzip unless the keep-broken
+option is enabled.
+Version prints to stdout instead of stderr.
+
+
+lrzip-0.631
+
+Assembler code is back and works with x86_64
+
+lrzip-0.621
+
+Substantial speed ups for the rzip stage in both regular and unlimited modes.
+Lrzip now supports long command line options.
+Proper support for the various forms of TMPDIR environment variables.
+More unix portability fixes.
+OSX fixes.
+Fixed order of lrzip.conf search.
+Addressed all warnings created with pedantic compiler settings and clang
+Fixes for some stderr messages being swallowed up.
+Fixed being unable to decompress to STDOUT when in a non-writable directory.
+Changed broken liblrzip callback function API to match lrzip proper.
+
+
+lrzip-0.620
+
+Fixes display output of lrzip -i for large files greater than one chunk.
+Fixes for various failure to allocate memory conditions when dealing with
+large files and STDIO.
+Fixes for more unix portability.
+Fixes for failure to decompress to STDOUT.
+
+
+lrzip-0.616
+
+Fixes for various issues with -O not working with trailing slashes and
+outputting to directories that already exist.
+
+
+lrzip-0.615
+
+Fixed -O not working on lrztar.
+Made it less likely to run out of ram when working with STDIN/OUT.
+Fixed running out of ram when using -U on huge files.
+Fixed corrupt archives being generated from incompressible data.
+Fixed corrupt archives being generated from very small files.
+Fixed endianness on various platforms for MD5 calculation to work.
+Fixed rare corruption when compressing with lzma from STDIN.
+Fixed all blank data being generated when compressing from STDIN on OSX.
+Performance micro-optimisations.
+Fixed corrupt archive being generated when all the same non-zero bytes exist on
+large files.
+
+
+lrzip-0.614
+
+Fixed lrztar not working.
+
+
+lrzip-0.613
+
+Fixed the bug where massive files would show an incorrect md5 value on
+decompression - this was a bug from the md5 code upstream.
+Compressing ultra-small files to corrupt archives was fixed.
+Compilation on various other platforms was fixed.
+A crash with using -S was fixed.
+
+
+lrzip-0.612
+
+Updated to a new zpaq library back end which is faster and now supports three
+different compression levels, which will be activated at lrzip levels -L 1+, 4+
+and 8+. This significantly increases the maximum compression available by lrzip
+with -L 9.
+The include file Lrzip.h used by liblrzip is now properly installed into
+$prefix/include.
+
+lrzip-0.611
+
+lrzcat and lrzuntar have been fixed.
+The update counter will continue to update even when there is nothing being
+matched (like a file full of zeroes).
+Numerous optimisations in the rzip stage speeds up the faster compression modes
+noticeably.
+Checksumming is done in a separate thread during rzip compression for more
+compression speed improvements.
+
+lrzip-0.610
+
+The new liblrzip library allows you to add lrzip compression and decompression
+to other applications with either simple lrzip_compress and lrzip_decompress
+functions or fine control over all the options with low level functions.
+Faster rzip stage when files are large enough to require the sliding mmap
+feature (usually >1/3 of ram) and in unlimited mode.
+A bug where multiple files being compressed or decompressed from the one
+command line could have gotten corrupted was fixed.
+Modification date of the decompressed file is now set to that of the lrzip
+archive (support for storing the original file's date would require modifying
+the archive format again).
+Compilation warning fixes.
+Make lrztar work with directories with spaces in their names.
+
+lrzip-0.608
+
+Faster rzip stage through use of a selective get_sb function.
+The bash completion script is no longer installed by default to not conflict
+with distribution bash completion packages.
+More compilation fixes for non-linux platforms.
+
+lrzip-0.607
+
+A rare case of not being able to decompress archives was fixed.
+The lzma library was updated to version 920.
+A bash completion script for lrzip was added.
+More debugging info was added in maximum verbose mode.
+Less messages occur without verbose mode.
+FreeBSD and posix compilation fixes were committed.
+
+lrzip-0.606
+
+lrzuntar, which broke last version leaving behind an untarred .tar file, is
+working properly again.
+
+lrzip-0.605
+
+Addition of lrzcat - automatically decompresses .lrz files to stdout.
+lrzip and lrunzip will no longer automatically output to stdout due to
+addition of lrzcat executable, and to be consistent with gzip.
+lrzip progress output will no longer spam the output unless the percentage
+has changed.
+lrzip now has no lower limit on file sizes it will happily compress and is
+able to work with zero byte sized files.
+The percentage counter when getting file info on small files will not show
+%nan.
+The executable bit will not be enabled when compressing via a means that
+can't preserve the original permissions (e.g. from STDIN).
+
+lrzip-0.604
+
+lrzip will no longer fail with a "resource temporarily unavailable" error
+when compressing files over 100GB that require hundreds of threads to
+complete.
+
+lrzip-0.603
+
+lrzip now supports stdout without requiring the '-o -' option. It detects when
+output is being redirected without a filename and will automatically output to
+stdout so you can do:
+ lrunzip patch-2.6.38.4.lrz | patch -p1
+Apple builds will not have errors on compressing files >2GB in size which
+broke with 0.600.
+lrztar will properly support -o, -O and -S.
+lrzip.conf file now supports encryption.
+lrzip will now warn if it's inappropriately passed a directory as an argument
+directly.
+
+lrzip-0.602
+
+Fixed wrong symlinks which broke some package generation.
+Imposed limits for 32bit machines with way too much ram for their own good.
+Disable md5 generation on Apple for now since it's faulty.
+Displays full version with -V.
+Checks for podman on ./configure
+Now builds on Cygwin.
+File permissions are better carried over instead of being only 0600.
+
+lrzip-0.601
+
+lrzuntar, lrunzip symlinks and the pod-based manpages are installed again.
+Configuration clearly shows now that ASM isn't supported on 64bit.
+
+lrzip-0.600
+
+Compressing/decompressing to/from STDIN/STDOUT now works without generating
+any temporary files. Very large files compressed in this way will be less
+efficiently compressed than if the whole solid file is presented to lrzip,
+but it is guaranteed not to generate temporary files on compression. 
+Decompressing files on a machine with the same amount of ram will also not
+generate temporary files, but if a file was generated on a larger ram machine,
+lrzip might employ temporary files, but they will not be the full size of the
+final file.
+Decompression should now be faster as the rzip reconstruction stage is mostly
+performed in ram before being written to disk, and testing much faster.
+Final file sizes should be slightly smaller as block headers are now also
+compressed.
+Heavy grade encryption is now provided with the -e option. A combination of
+a time scaled multiply hashed sha512 password with random salt followed by
+aes128 block encryption of all data, including the data headers, provides for
+extremely secure encryption. Passwords up to 500 characters in length are
+supported, and the same file encrypted with the same password is virtually
+guaranteed to never produce the same data twice. All data beyond the basic
+lrzip opening header is completely obscured. Don't lose your password!
+Lrzip will not try to malloc a negative amount of ram on smaller ram machines,
+preferring to decrease the number of threads used when compressing, and then
+aborting to a nominal minimum.
+A new build configuration system which should be more robust and provides
+neater output during compilation.
+lrzip should work again on big endian hardware.
+lrztar / lrzuntar will no longer use temporary files.
+
+lrzip-0.571
+
+Avoid spurious errors on failing to mmap a file.
+Fee space will now be checked to ensure there is enough room for the
+compressed or decompressed file and lrzip will abort unless the -f option is
+passed to it.
+The extra little chunk at the end of every large file should now be fixed.
+The file lzma.txt now has unix end-of-lines.
+There will be a more accurate summary of what compression window will be used
+when lrzip is invoked with STDIN/STDOUT.
+STDIN will now be able to show estimated time to completion and percentage
+complete once lrzip knows how much file is left.
+Temporary files are much less likely to be left lying around.
+Less temporary file space will be used when decompressing to stdout.
+File checking will not be attempted when it's meaningless (like to stdout).
+Times displayed should avoid the nonsense thousands of seconds bug.
+
+lrzip-0.570
+
+Multi-threaded performance has been improved with a significant speed-up on
+both compression and decompression. New benchmark results have been added to
+the README.benchmarks file.
+Visual output has been further improved, with an updated help menu and no
+unrelated system errors on failure.
+lrzip.conf supports the newer options available.
+TMP environment is now respected when using temporary files and TMPDIR can be
+set in lrzip.conf.
+LRZIP=NOCONFIG environment variable setting can be used to bypass lrzip.conf.
+The -M option has been removed as the -U option achieves more and has
+understandable semantics.
+Memory usage should be very tightly controlled on compression now by default,
+using the most possible without running out of ram.
+Temporary files generated when doing -t from stdin will no longer be left lying
+around.
+lrzip will no longer stupidly sit waiting to read from stdin/stdout when called
+from a terminal without other arguments.
+Executable size will be slightly smaller due to stripping symbols by default
+now.
+The -T option no longer takes an argument. It simply denotes that lzo testing
+should be disabled.
+Verbose added to -i now prints a lot more information about an lrzip archive.
+
+lrzip-0.560
+
+Implemented OSX multi-threading by converting all semaphores to pthread_mutexes.
+Converted the integrity checking to also use md5 hash checking. As a bonus it
+is still backwardly compatible by still storing the crc value, and yet is
+faster on large files than the old one. On decompression it detects whether
+the md5 value has been stored and chooses what integrity checking to use.
+Implemented the -H feature which shows the md5 hash value on compression and
+decompression. It is also shown in max verbose mode.
+Added information about what integrity testing will be used in verbose mode,
+and with the -i option.
+Added the -c option which will perform a hash check on the file generated on
+disk on decompression, comparing it to that from the archive to validate the
+decompressed file.
+Modified lrzip to delete broken or damaged files when lrzip is interrupted or
+the file generated fails an integrity test.
+Added the -k keep option to keep broken or damaged files.
+Case reports of corruption have been confirmed to NOT BE DUE TO LRZIP.
+
+lrzip-0.552
+
+Fixed a potential silent corruption bug on decompression.
+Fixed compilation on freebsd.
+Fixed failures on incompressible blocks with bzip2 or gzip.
+Fixed osx failing to work. It does not support threaded compression or
+decompression but should work again.
+
+lrzip-0.551
+
+Compressing from stdin should be unbroken again.
+Compression values returned at the end of stdin work.
+lzma failing to compress a block will not cause a failure.
+
+lrzip-0.550
+
+Speed up compression on large files that take more than one pass by overlapping
+work on successive streams, thus using multiple CPUs better.
+Fix for failures to decompress large files. Decompression will be slightly
+slower but more reliable.
+Faster lzma compression by default, less prone to memory failures, but at slight
+compression cost.
+Recover from multithreaded failures by serialising work that there isn't enough
+ram to do in parallel.
+Revert the "smooth out spacing" change in 0.544 as it slowed things down instead
+of speeding them up.
+Larger compression windows are back for 32 bits now that memory usage is kept
+under better control.
+Fixed some memory allocation issues which may have been causing subtle bugs.
+
+lrzip-0.544
+
+Hopefully a fix for corrupt decompression on large files with multiple stream 0
+entries.
+Fix for use under uclibc.
+Fix for memory allocation errors on large files on 32 bits.
+Smooth out spacing of compression threads making better use of CPU on compress
+and decompress.
+Fix for using -U on ultra-small files.
+Use bzip2 on blocks that lzma fails to compress to make sure they are still
+compressed.
+
+lrzip-0.543
+
+A fix for when large files being decompressed fail with multithreaded
+decompression.
+Slight speedup on multithreaded workloads by decreasing the nice value of the
+main process compared to the back end threads as it tends to be the rate
+limiting component.
+Fixed lzma compression windows being set way too small by default.
+
+lrzip-0.542
+
+Lrzip will now try to select sane defaults for memory usage in cases where the
+virtual memory heavily overcommits (eg. Linux) as this seriously slows down
+compression.
+For compression windows larger than 2/3 ram, lrzip will now use a sliding mmap
+buffer for better performance.
+The progress output is more informative in max verbose mode, and will no longer
+do more passes than it estimates.
+32 bit machines should be able to use slightly larger windows.
+The sliding mmap not working on 2nd pass onwards has been fixed which should
+speed up the slowdown of death.
+
+lrzip-0.540
+
+MASSIVE MULTITHREADING on the decompression phase. Provided there are enough
+chunks of data in the archived file, lrzip will use as many threads as there
+are CPUs for the backend decompression. Much like the multithreading on the
+compression side, it makes the slower compression algorithms speed up the most.
+Fixed output from being scrambled and consuming a lot of CPU time on threaded
+zpaq compression.
+Further fixes to ensure window sizes work on 32 bit machines.
+Be more careful about testing for how much ram lrzip can use.
+Minor build warning fixes.
+Minor tweaks to screen output.
+Updated benchmarks.
+
+lrzip-0.530
+
+MASSIVE MULTITHREADING on the compression phase. Lrzip will now use as many
+threads as you have CPU cores for the back end compression, and even continue
+doing the rzip preprocessing stage as long as it can which the other threads
+continue. This makes the slower compression algorithms (lzma and zpaq) much
+faster on multicore machines, to the point of making zpaq compression almost
+as fast as single threaded lzma compression.
+-p option added to allow you to specify number of processors to override the
+built-in test, or if you wish to disable threading.
+-P option to not set permissions has now been removed since failing to set
+permissions is only a warning now and not a failure.
+Further improvements to the progress output.
+Updated benchmarks and docs.
+
+lrzip-0.520
+
+Just changed version numbering back to 2 point.
+
+lrzip-0.5.2
+
+Fixed the Darwin build again.
+Fix the corner case of big ram usage on 32 bit zpaq failing due to the
+compression window not being limited by limiting zpaq to 600MB windows on 32
+bits as well.
+Some previous failures now only induce warnings.
+Improved progress output.
+
+lrzip-0.5.1
+
+Fixed the build on Darwin.
+Rewrote the rzip compression phase to make it possible to use unlimited sized
+windows now, not limited by ram. Unfortunately it gets progressively slower in
+this mode the bigger the file gets but you can compress a file of any size as
+one big compression window with it using the new -U option. Suggest you try
+the new improved -M mode first or in combination. See the docs for more
+information.
+Changed the memory selection system to simply find the largest reasonable sized
+window and use that by default instead of guessing the window size.
+Setting -M now only affects the window size, trying to find the largest
+unreasonably sized window that will still work.
+The default compression level is now 9 and affects the rzip compression stage
+as well as the backend compression.
+Fixed some potential failures during compression.
+Improved screen output with more reporting in verbose mode, and chunk size
+percentage update.
+Fixed file size reporting on compressed files generated from stdin.
+Changed to 3 point releases in case we get more than 9 subversions ;)
+
+lrzip-0.50
+
+Rewrote the file format to be up to 5% more compact and slightly faster.
+Made the memory initialisation much more robust, with attempted fallback
+to still work even when initial settings fail.
+Updated a lot of the stdin code.
+The most common scenario of compression from stdin now works without
+temporary files.
+Lots more meaningful warnings if failure occurs.
+May be able to decompress files on 32 bit machines that were compressed on 64
+bit machines with >2GB windows now if there is enough ram.
+
+lrzip-0.46
+
+Added lrzuntar which works the same as lrztar -d.
+
+Con Kolivas
+May 2010
+
+lrzip-0.45
+
+Added docs for lrztar and lrunzip.
+Added distclean and maintainer-clean make targets.
+Created git repo: http://github.com/ckolivas/lrzip
+
+Con Kolivas
+March 2010
+
+lrzip-0.44
+
+Added an lrztar wrapper to compress / decompress whole directories (finally).
+Added -i option to give information about a compressed file.
+
+lrzip-0.43
+
+Darwin support updated. Should build on OSX v10.5+
+Finally, stdin/stdout support.
+Test archive integrity support.
+ZPAQ support in config files.
+
+lrzip-0.42
+
+ZPAQ compression update now shows which rzip stream it's currently compressing
+making the update more useful. It also doesn't update unnecessarily with every
+byte compressed which was slowing it down a LOT.
+
+lrzip-0.41
+
+ZPAQ compression backend! ZPAQ is from the family of "paq" compressors that
+have some of the best compression ratios around, but at the cost of extremely
+long compression and equally long decompression times. This can be enabled
+with the -z option and makes lrzip archives made with this not backwardly
+compatible.
+
+lrzip-0.40
+
+Compression windows should be limited by available ram now on 64bit. The limit
+on 32bit is still 2GB.
+The compression advantages on large files on 64bit machines with large ram
+should be substantially better.
+The file format is no longer compatible with earlier versions of lrzip.
+Support for decompressing older formats is present, but all new files will
+be generated in the new format.
+Minor speedups.
+Decompression should no longer stall at 4GB boundaries for extended periods
+making decompression much faster on files >4GB in size.
+Documentation and benchmark updates galore.
+
+lrzip-0.31
+
+The window size limit is now 2GB on both 32bit and 64bit. While it appears to be
+smaller than the old windows, only 900MB was being used on .30 even though it
+claimed to use more. This can cause huge improvements in the compression of very
+large files. Flushing of data to disk between compression windows was
+implemented to minimise disk thrashing of read vs write.
+
+Con Kolivas
+November 2009
+
+lrzip-0.30
+
+-P option to not set permissions on output files allowing you to write to
+braindead filesystems (eg fat32).
+Probably other weird and wonderful bugs have been introduced.
+
+Con Kolivas
+November 2009
+
+lrzip-0.24 has updated functionality
+
+FEATURE ENHANCEMENTS
+lrzip.conf file may be used to set default parameters.
+Omit conf using environment: LRZIP=NOCONFIG lrzip.....
+LRZIP environment variable may be used in the future
+to store certain types of parameters.
+
+LZMA SDK has been upgraded to version 4.63. This
+version fixes some problems certain users observed,
+and is much simpler using a C-only wrapper
+interface.
+
+lrzip now is able to compute an ETA for completion.
+In order to do this, the file must be larger than
+one compression window in size. That is, is the
+compression window is 500MB, and the file is 1GB,
+then after the first pass, an ETA will be computed.
+If the file is smaller, then no estimate can be made.
+
+lrzip is now able to compute MB/s transfer speeds
+for both compression and decompression.
+
+CLEANUPS
+Some file cleanups have been done.
+
+Peter Hyman
+January 2009
+pete@peterhyman.com
+
+lrzip-0.22 update
+FEATURE ENHANCEMENTS
+
+-g option. Now supports gzip compression. Very fast!
+Expanded dictionary buffer size in lzma compressor.
+Variable, expanded dictionary size buffer in both lzma
+ compressor and decompressor.
+Improved output during compression when using -vv.
+Multi-threading supprt when using multiple processors
+ or dual core processors when using lzma compression.
+ This results in a nearly 2x speed improvement.
+Assembler module support to speed up CRC checking.
+Improvements in autotools usage, system detection
+ and Makefile enhancements.
+Lrzip now has a timer that will print total time
+ at the end of a compression or decompression if
+ -q command line option is not used.
+
+BUG FIX!!!
+
+Even though lrzip uses a compression threshold to
+prevent the lzma compressor from getting data that
+may not be compressible, there was still a possibility
+that lrzip could hang. This was because a data chunk
+could contain an uncompressible segment and if the
+lzma compressor got it, it would hang.
+
+THANKS TO LASSE COLLIN for uncovering the error in
+the lzma wrapper code that was causing the hangup.
+
+January 2008
+Peter Hyman
+pete@peterhyman.com

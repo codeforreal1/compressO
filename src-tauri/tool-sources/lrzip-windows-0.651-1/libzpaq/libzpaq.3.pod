@@ -1,0 +1,737 @@
+#  Documentation for libzpaq
+#
+#  Copyright (C) 2012, Dell Inc. Written by Matt Mahoney.
+#
+#  Permission is hereby granted, free of charge, to any person obtaining a copy
+#  of this software and associated documentation files (the "Software"), to deal
+#  in the Software without restriction, including without limitation the rights
+#  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+#  copies of the Software, and to permit persons to whom the Software is
+#  furnished to do so without restriction.
+#  This Software is provided "as is" without warranty.
+#
+#  To create man page: pod2man libzpaq.3.pod > libzpaq.3
+#  To create HTML documentation: pod2html libzpaq.3.pod > libzpaq.html
+
+=pod
+
+=head1 NAME
+
+libzpaq - ZPAQ compression API
+
+=head1 SYNOPSIS
+
+    #include "libzpaq.h"
+
+    namespace libzpaq {
+
+    extern void error(const char* msg);
+
+    class Reader {
+    public:
+        virtual int get() = 0;
+        virtual int read(char* buf, int n); // optional
+        virtual ~Reader() {}
+    };
+
+    class Writer {
+    public:
+        virtual void put(int c) = 0;
+        virtual void write(const char* buf, int n); // optional
+        virtual ~Writer() {}
+    };
+
+    class SHA1 {
+    public:
+        SHA1();
+        void put(int c);
+        double size() const;
+        uint64_t usize() const
+        const char* result();
+    };
+
+    class Compressor {
+    public:
+        Compressor();
+        void setOutput(Writer* out);
+        void writeTag();
+        void startBlock(int level);
+        void startBlock(const char* hcomp);
+        void startSegment(const char* filename = 0,
+                          const char* comment = 0);
+        void setInput(Reader* i);
+        void postProcess(const char* pcomp = 0, int length = 0);
+        bool compress(int n = -1);
+        void endSegment(const char* sha1string = 0);
+        void endBlock();
+    };
+
+    class Decompresser {
+    public:
+        Decompresser();
+        void setInput(Reader* in);
+        bool findBlock(double* memptr = 0);
+        void hcomp(Writer* out);
+        bool findFilename(Writer* = 0);
+        void readComment(Writer* = 0);
+        void setOutput(Writer* out);
+        void setSHA1(SHA1* sha1ptr);
+        bool decompress(int n = -1);
+        bool pcomp(Writer* out);
+        void readSegmentEnd(char* sha1string = 0);
+    };
+
+    void compress(Reader* in, Writer* out, int level);
+
+    void decompress(Reader* in, Writer* out);
+    }
+
+=head1 DESCRIPTION
+
+I<libzpaq> is a C++ API for compressing or decompressing
+files or objects in memory comforming to the ZPAQ level 1 and 2 standards
+(see I<availability>). This document describes version 5.00
+of the software. The software may be used without
+restriction under a modified MIT license.
+
+ZPAQ provides a high level of data compression in a streaming
+(single pass) self-describing format that supports single or multiple
+named objects (such as archives) with optional integrity checking.
+
+The library provides 3 default compression levels but supports
+custom algorithms. The performance of the default levels is
+shown in the table below for the 14 file Calgary corpus as
+a tar file. Compression and decompression times are in seconds
+on a 2 GHz T3200 running on one of two cores. Memory required
+to compress or decompress is in MB. Some popular formats
+are shown for comparison.
+
+    Program       Format       Size     Time (C, D)   Memory
+    -----------   ------     ---------  -----------   ------
+    Uncompresed   .tar       3,152,896
+    compress      .tar.Z     1,319,521    1.6   0.2    .1 MB
+    gzip -9       .tar.gz    1,022,810    0.7   0.1    .1 MB
+    bzip2 -9      .tar.bz2     860,097    0.6   0.4     5 MB
+    7zip          .tar.7z      824,573    1.5   0.1   195 MB
+    zpaq 1 (fast) .tar.zpaq    806,959    2     2      38 MB
+    zpaq 2 (mid)  .tar.zpaq    699,191    8     8     112 MB
+    zpaq 3 (max)  .tar.zpaq    644,190   20    20     246 MB
+
+A ZPAQ stream consists of one or more blocks, possibly mixed with
+other data, that can be decompressed independently in any order.
+Each block consists of one or more segments that must be decompressed
+in order from the beginning of the block. Each block header contains
+a description of the decompression algorithm. Each segment consists
+of an optional filename string, an optional comment string,
+self delimiting compressed data, and an optional SHA-1 checksum.
+If ZPAQ blocks are mixed with other data, they must be
+preceded by an identifying 13 byte tag which does not otherwise
+appear in that data.
+
+ZPAQ compression is based on the PAQ context mixing model.
+An array of components predict the probability of the next bit
+of input, either independently or depending on the predictions
+of earlier components. The final prediction is arithmetic coded.
+Each component inputs a context computed from earlier input
+by a program written in ZPAQL byte code which runs on a virtual
+machine. Both the component array description and the ZPAQL
+code are encoded in a string called HCOMP in each block header.
+Data can also be stored uncompressed.
+
+A block may optionally specify a post-processor, a program
+(also in ZPAQL) which takes the decoded data as input and
+outputs the decompressed output. This program, if present,
+is encoded as a string called PCOMP which is compressed
+in the first segment prior to the compressed data. The first
+decoded byte from the first segment is a flag indicating
+whether a PCOMP string is present. The user is responsible
+for correctly pre-processing the data so that post-processing
+restores the original data.
+
+=head2 API Organization
+
+The I<libzpaq> API consists of 2 files.
+
+=over
+
+=item libzpaq.h
+
+Header file to include in your application.
+
+=item libzpaq.cpp
+
+Source code file to link to your application.
+
+=back
+
+An application would have the line C<#include "libzpaq.h"> and
+link to libzpaq.cpp.
+The API provides two classes, C<Compressor> and C<Decompresser>
+which write or read respectively each of the syntactic elements
+of a ZPAQ stream. The two functions C<compress()> and
+C<decompress()> provide simple interfaces for the most common
+uses. In either case, the user must create classes derived
+from the abstract base classes C<Reader> and C<Writer> and
+define methods C<get()> and C<put()> which the code
+will use to read and write bytes. The user must also define
+a callback error handler.
+
+By default, libzpaq(3) uses just-in-time (JIT) acceleration
+by translating ZPAQL code to x86-32 or x86-64 internally
+and executing it. This feature can be disabled by compiling
+with -DNOJIT. If enabled, it requires an x86 processor
+capable of executing SSE2 instructions. SSE2 is supported
+by most Intel processors since 2001 and AMD since 2003.
+
+Run time checks (assertions) can be enabled with -DDEBUG
+for debugging purposes.
+
+All of the API code is contained in the namespace C<libzpaq>.
+
+=head2 Callback Functions
+
+The following three functions must be defined by the user.
+
+=over
+
+=item C<extern void libzpaq::error(const char* msg);>
+
+This function must be defined by the user to handle errors
+from libzpaq. The library will call the function with
+an English language message passed to C<msg>. Errors may
+result from bad input during decompression, out of memory,
+or illegal arguments or calling sequences to libzpaq
+functions. Errors should be considered unrecoverable.
+
+=item C<int libzpaq::Reader::get() = 0;>
+
+The user must create a class derived from Reader with an
+implementation for C<get()> that reads one byte of input
+and returns its value in the range 0...255, or returns
+EOF (-1) at end of input. Objects of the derived type
+would then be passed to functions that require a C<Reader>.
+
+=item C<void libzpaq::Writer::put(int c) = 0;>
+
+The user must create a class derived from Writer with
+an implemenation of C<put()> which is expected to take
+a byte value C<c> in the range 0...255 and write it to
+output. Objects of the derived type
+would then be passed to functions that require a C<Writer>.
+
+=back
+
+The following two functions are optional. Defining them
+can improve performance slightly.
+
+=over
+
+=item C<virtual int read(char* buf, int n);>
+
+If defined, this function should input up to C<n> bytes into
+the array C<buf> and return the number actually read, in
+the range 0..n. A return value of 0 indicates end of input.
+If C<read()> is not defined, then the default implementation
+will call C<get()> n times.
+
+=item C<virtual void write(const char* buf, int n);>
+
+If defined, this function should output the elements C<buf[0]>
+through C<buf[n-1]> in order. If not defined, then the default
+implementation will call C<put()> n times.
+
+=back
+
+=head2 Simple Compression
+
+In the remainder of this document, all classes and
+functions are assumed to be in namespace C<libzpaq>.
+
+=over
+
+=item C<void compress(Reader* in, Writer* out, int mode);>
+
+C<compress()> compresses from C<in> to C<out> until C<get()>
+returns EOF. It writes a single segment in a single block
+with empty filename, comment, and checksum fields. C<mode>
+must be 1, 2, or 3, to select models I<fast>, I<mid>, or
+I<max> respectively. Higher modes compress smaller but
+take longer to compress and subsequently decompress.
+
+=item C<void decompress(Reader* in, Writer* out);>
+
+C<decompress()> decompresses any valid ZPAQ stream from
+C<in> to C<out> until C<get()> returns EOF. Any
+non-ZPAQ data in the input is ignored. Any ZPAQ blocks
+following non-ZPAQ must be preceded by a marker tag
+to be recognized. Each block is decoded according to the
+instructions in the block header. The contents of the
+filename, comment, and checksum fields are ignored.
+Data with bad checksums will be decoded anyway. If there
+is more than one segment, then all of the output
+data will be concatenated.
+
+=back
+
+=head2 class SHA1
+
+The SHA1 class is used to compute SHA-1 checksums for compression
+and verify them for decompression. It is believed to be
+computationally infeasible to find two different strings
+with the same hash value. Its member functions
+are as follows:
+
+=over
+
+=item C<SHA1();>
+
+The constructor creates a new SHA1 object representing the
+hash of an empty string.
+
+=item C<void put(int c);>
+
+Appends one byte c (0...255) to the string whose hash is represented.
+
+=item C<double size() const;>
+
+Returns the length (so far) of the string whose hash is represented.
+The largest possible value returned is
+2^61 - 1 = 2305843009213693951.0, but values larger than 2^53 =
+9007199254740992.0
+will not be exact on systems using IEEE 64 bit floating point
+representation of type C<double>. The initial value is 0.0.
+
+=item C<int64_t usize() const;>
+
+Returns the length (so far) as a 64 bit unsigned integer.
+
+=item C<const char* result();>
+
+Computes the 20 byte SHA-1 hash and resets the string back
+to a size of 0.0. The returned pointer points to an array
+inside the SHA1 object whose
+contents remain unchanged until the next call to C<result()>.
+
+=back
+
+=head2 class Compressor
+
+The C<Compressor> class has member functions to write
+each of the syntactic elements of a ZPAQ stream and to specify
+their values. It will compress using either built-in or
+user supplied models.
+
+=over
+
+=item C<Compressor();>
+
+The constructor creates a Compression object. No input source,
+output destination, or compression model is specified.
+
+=item C<void setOutput(Writer* out);>
+
+Specifies a destination for output. Must be specified before
+calling any function that writes data.
+
+=item C<void writeTag();>
+
+Writes a 13 byte marker tag which can be used to identify
+the start of a block following non-ZPAQ data.
+
+=item C<void startBlock(int level);>
+
+Writes a block header and specifies a compression model.
+If linked with F<libzpaqo.cpp>, then C<level> must be 1, 2, or 3
+to specify I<fast>, I<mid>, or I<max> respectively. Higher numbers
+compress smaller but more slowly. These models are compatible
+with both the ZPAQ level 1 and 2 standards.
+
+=item C<void startBlock(const char* hcomp);>
+
+Writes a block header and specifies the HCOMP portion of the
+compression model. The first two bytes of the string should
+encode the length of the rest of the string as a 16 bit unsigned
+number with the least significant bit first. The meaning of the
+rest of the string is defined in the ZPAQ level 2 standard.
+If the number of components (C<hcomp[8]>) is 0, then the block
+is saved in ZPAQ level 2 format, which cannot be read by
+older ZPAQ level 1 decoders. Otherwise the block is saved in
+ZPAQ level 1 format, which is compatible with all decoders.
+
+=item C<void startSegment(const char* filename = 0, const char* comment = 0);>
+
+Writes a segment header. C<filename> and
+C<comment> are NUL terminated strings. If specified, then their
+values are stored. Normally, C<filename> would be a file name
+when compressing to an archive or omitted otherwise. If a file
+is split among segments, then by convention only the first segment
+is named. C<comment> is normally the uncompressed size as a decimal
+number which is displayed when listing the contents of an archive.
+Omitting it does not affect decompression.
+
+=item C<void postProcess(const char* pcomp = 0, int length = 0);>
+
+Specifies the optional PCOMP string used for post-processing.
+It must be called from within the first segment
+of each block prior to compressing any data, but not from within
+any other segment.
+If C<pcomp> is 0 or no argument is passed, then the decompresser
+will not post-process the data. The effect is to compress a
+0 byte to indicate to the decompresser that no PCOMP string
+is present.
+
+If C<pcomp> is not 0, then I<length> bytes of the string I<pcomp>
+are passed. If I<length> is 0 or omitted, then
+the first two bytes must encode
+the length of the rest of the string as a 16 bit unsigned number
+with the least significant byte first. The format of the remainder
+of the string is described in the ZPAQ level 2 standard.
+The effect is to compress a 1 byte
+to indicate the presence of PCOMP, followed by the two length
+bytes and the string as passed. For example, either
+C<pcomp("\x02\x00\x05\x08")> or C<pcomp("\x05\x08", 2)>
+would compress the 5 bytes 1, 2, 0, 5, 8.
+The user is responsible for pre-processing the input
+prior to compression so that PCOMP restores the original data.
+
+=item C<void setInput(Reader* in);>
+
+Specifies the input source for compression. It must be set
+prior to the first call to C<compress()>.
+
+=item C<bool compress(int n = -1);>
+
+Compress n bytes of data, or until EOF is input, whichever comes
+first. If n < 0 or omitted, then compress until EOF.
+Returns true if there is more input available, or false if EOF
+was read.
+
+=item C<void endSegment(const char* sha1string = 0);>
+
+Stop compressing and write the end of a segment. If
+C<sha1string> is specified, it should be a 20 byte string
+as returned by C<SHA1::result()> on the input data for
+this segment I<before> pre-processing.
+
+=item C<void endBlock();>
+
+Finish writing the current block.
+
+=back
+
+In order to create a valid ZPAQ stream, the components must
+be written in the following order:
+
+    for each block do {
+        if any non-ZPAQ data then {
+            write non-ZPAQ data
+            writeTag()
+        }
+        startBlock()
+        for each segment do {
+            startSegment()
+            if first segment in block then {
+                postProcess()
+            }
+            while (compress(n)) ;
+            endSegment()
+        }
+        endBlock()
+    }
+
+=head2 class Decompresser
+
+The class Decompresser has member functions to read each of the
+syntactic elements of a ZPAQ stream.
+
+=over
+
+=item C<Decompresser()>
+
+The constructor creates a Decompresser object. No input source or
+output destination is specified.
+
+=item C<void setInput(Reader* in);>
+
+Specifies where the ZPAQ stream will be read from. Must be called
+before any function that reads the stream.
+
+=item C<bool findBlock(double* memptr = 0);>
+
+Scan the input to find the start of the next block. If a block
+does not start immediately, then the block must be preceded by
+a marker tag (written with C<Compressor::writeTag()>) or it will
+not be found. If C<memptr> is not 0, then write the approximate
+memory requirement (in bytes) to decompress to C<*memptr>). The
+memory will be allocated by the first call to C<decompress()>.
+It returns true if a block is found, or false if it reads to EOF
+without finding a block.
+
+=item C<void hcomp(Writer* out);>
+
+Write the HCOMP string of the current block to C<out>.
+It will be in a format suitable
+for passing to C<Compressor::startBlock()>. The first 2 bytes will
+encode the length of the rest of the string as a 16 bit unsigned
+integer with the least significant byte first. The format of the
+remainder of the string is described in the ZPAQ level 1
+specification.
+
+=item C<bool findFilename(Writer* out = 0);>
+
+Find the start of the next segment. If another segment is found
+within the current block then return true. If the end of the block
+is found first, then return false. If a segment is found, the
+filename field is not empty, and C<out>
+is not 0, then write the filename (without a terminating NUL byte)
+to C<out>.
+
+=item C<void readComment(Writer* out = 0);>
+
+Read or skip past the comment field following the filename field
+in the segment header. If C<out> is not 0 and the comment field is
+not empty, then write the comment
+(without a terminating NUL byte) to C<out>.
+
+=item C<void setOutput(Writer* out);>
+
+Specify the destination for decompression. It must be set before
+any data can be decompressed.
+
+=item C<void setSHA1(SHA1* sha1ptr);>
+
+Specify the address of a SHA1 object for computing the checksum
+of the decompressed data (after post-processing). As each byte C<c>
+is output, it is also passed to C<sha1ptr-E<gt>put(c)>. In order to
+compute the correct checksum, the SHA1 object should be in its
+initial state, either newly created, or by calling C<SHA1::result()>,
+before the first call to C<decompress()>. When the end of the segment
+is reached, the value returned by C<sha1ptr-E<gt>result()> should match
+the stored checksum, if any.
+
+=item C<bool decompress(int n = -1);>
+
+Decode n bytes or until the end of segment, whichever comes
+first. Return false if the end of segment is reached first. If
+n < 0 or not specified, then decompress to the end of segment
+and return false. C<n> is the number of bytes prior to post-processing.
+If the data is post-processed, then the size of the output may
+be different.
+
+=item C<bool pcomp(Writer* out);>
+
+Write the PCOMP string, if any, for the current block to C<out>.
+If there is no PCOMP string (no post-processor) then return false.
+Otherwise write the string to C<out> in a format suitable for
+passing to C<Compressor::postProcess()> and return true. If written,
+then the first 2 bytes will encode the length of the rest of the
+string as a 16 bit unsigned integer with the least significant
+bit first. The format of the rest of the string is descibed in
+the ZPAQ level 1 standard.
+
+C<pcomp()> is only valid after the first call to C<decompress()>
+in the current block. To read the PCOMP string without decompressing any
+data, then call C<decompress(0)> first. It is not necessary to
+call C<setOutput()> in this case.
+
+=item C<void readSegmentEnd(char* sha1string = 0);>
+
+Skip any compressed data in the current segment that has not yet
+been decompressed and advance to the end of the segment.
+Then if C<sha1string> is not 0 then write into
+the 21 byte array that it points to. If a checksum is present,
+then write a 1 into C<sha1string[0]> and write the stored checksum
+in C<sha1string[1...20]>. Otherwise write a 0 in C<sha1string[0]>.
+
+Note that it is not permitted to call decompress() if any compressed
+data has been skipped in any earlier segments in the same block.
+
+=back
+
+A valid sequence of calls is as follows:
+
+    while (findBlock()) {
+        while (findFilename()) {
+            readComment();
+            if first segment in block then { (optional)
+                decompress(0)
+                pcomp()
+            }
+            while (decompress(n)) ; (optional)
+            readSegmentEnd();
+        }
+    }
+
+=head1 EXAMPLES
+
+The following program F<listzpaq.cpp>
+lists the contents of a ZPAQ archive
+read from standard input.
+
+    #include <stdio.h>
+    #include <stdlib.h>
+    #include "libzpaq.h"
+
+    // Implement Reader and Writer interfaces for file I/O
+    class File: public libzpaq::Reader, public libzpaq::Writer {
+        FILE* f;
+    public:
+        File(FILE* f_): f(f_) {}
+        int get() {return getc(f);}
+        void put(int c) {putc(c, f);}
+        int read(char* buf, int n) {return fread(buf, 1, n, f);}
+        void write(const char* buf, int n) {fwrite(buf, 1, n, f);}
+    };
+
+    // Implement error handler
+    namespace libzpaq {
+        void error(const char* msg) {
+            fprintf(stderr, "Error: %s\n", msg);
+            exit(1);
+        }
+    }
+
+    // List the contents of an archive. For each block, show
+    // the memory required to decompress. For each segment,
+    // show the filename and comment.
+    void list(FILE* input, FILE* output) {
+        libzpaq::Decompresser d;
+        File in(input), out(output);
+        double memory;
+        d.setInput(&in);
+        for (int block=1; d.findBlock(&memory); ++block) {
+            printf("Block %d needs %1.0f MB\n", block, memory/1e6);
+            while (d.findFilename(&out)) {  // print filename
+                printf("\t");
+                d.readComment(&out);  // print comment
+                printf("\n");
+                d.readSegmentEnd();  // skip compressed data
+            }
+        }
+    }
+
+    int main() {
+        list(stdin, stdout);
+        return 0;
+    }
+
+The program could be compiled as follows:
+
+    g++ listzpaq.cpp libzpaq.cpp
+
+The following code compresses a list of files into one block
+written to stdout. Each file is compressed to a separate
+segment. For each segment, the filename, comment, and SHA-1
+checksum are stored. The comment, as conventional, is the
+file size as a decimal string.
+
+    // Compress one file to one segment
+    void compress_file(libzpaq::Compressor& c,
+                       const char* filename,
+                       bool first_segment) {
+
+        // Open input file
+        FILE* f;
+        f=fopen(filename, "rb");
+        if (!f) return;
+
+        // Compute SHA-1 checksum and file size
+        libzpaq::SHA1 sha1;
+        int ch;
+        while ((ch=getc(f))!=EOF)
+            sha1.put(ch);
+
+        // Write file size as a comment.
+        // The size can have at most 19 digits.
+        char comment[20];
+        sprintf(comment, "%1.0f", sha1.size());
+
+        // Compress segment
+        rewind(f);
+        File in(f);
+        c.startSegment(filename, comment);
+        if (first_segment)
+            c.postProcess();
+        c.setInput(&in);
+        c.compress();
+        c.endSegment(sha1.result());
+
+        // Close input file
+        fclose(f);
+    }
+
+    // Compress a list of argc files in argv[0...argc-1] into one
+    // ZPAQ block to stdout at level 2.
+    void compress_list(int argc, char** argv) {
+        libzpaq::Compressor c;
+        File out(stdout);
+        c.setOutput(&out);
+        c.startBlock(2);
+        for (int i=0; i<argc; ++i)
+            compress_file(c, argv[i], i==0);
+        c.endBlock();
+    }
+
+The following function decompresses from stdin to stdout.
+Filenames and comments are ignored, but checksums are verified
+if present.
+
+    void decompress() {
+        libzpaq::Decompresser d;
+        File in(stdin), out(stdout);
+        d.setInput(&in);
+        while (d.findBlock()) {
+            while (d.findFilename()) {
+                d.readComment();
+                libzpaq::SHA1 sha1;
+                d.setSHA1(&sha1);
+                d.setOutput(&out);
+                d.decompress();
+                char sha1string[21];
+                d.readSegmentEnd(sha1string);
+                const char* sha1result = sha1.result();
+                if (sha1string[0]==1
+                         && memcmp(sha1string+1, sha1result, 20))
+                    libzpaq::error("checksum verify error");
+            }
+        }
+    }
+
+C<Compressor::compress()> and C<Decompresser::decompress()> can
+be passed an argument n to display progress every n bytes,
+for example:
+
+    for (int i=1; d.decompress(1000000); ++i)
+        fprintf(stderr, "Decompressed %d MB\n", i);
+
+To compress or decompress to and from objects in memory, derive
+appropriate classes from C<Reader> and C<Writer>. For example, it is
+possible to compress or decompress to a C<std::string> using
+the following class.
+
+    struct String: public libzpaq::Writer {
+        std::string s;
+        void put(int c) {s+=char(c);}
+    };
+
+This class is also useful for reading the filename and comment
+fields during decompression as follows:
+
+    String filename, comment;
+    while (d.findFilename(&filename)) {
+        d.readComment(&comment);
+        // ...
+
+=head1 AVAILABILITY
+
+I<libzpaq>, I<zpaq>, and the ZPAQ level 1 and 2 specifications are
+available from L<http://mattmahoney.net/zpaq/>.
+
+=head1 SEE ALSO
+
+C<zpaq(1)>
+C<sha1(1SSL)>
+
+=cut
+
+

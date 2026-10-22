@@ -1,0 +1,384 @@
+.TH "lrzip" "1" "February 2022" "" ""
+.SH "NAME"
+lrzip \- a large-file compression program
+.SH "SYNOPSIS"
+.PP
+lrzip [OPTIONS] <file>
+.br
+lrzip \-d [OPTIONS] <file>
+.br
+lrunzip [OPTIONS] <file>
+.br
+lrzcat [OPTIONS] <file>
+.br
+lrztar [lrzip options] <directory>
+.br
+lrztar \-d [lrzip options] <directory>
+.br
+lrzuntar [lrzip options] <directory>
+.br
+lrz [lrz options] <directory>
+.br
+LRZIP=NOCONFIG [lrzip|lrunzip] [OPTIONS] <file>
+.PP
+.SH "DESCRIPTION"
+.PP
+LRZIP is a file compression program designed to do particularly
+well on very large files containing long distance redundancy\&.
+lrztar is a wrapper for LRZIP to simplify compression and decompression
+of directories.
+.PP
+.SH "OPTIONS SUMMARY"
+.PP
+Here is a summary of the options to lrzip\&.
+
+.nf
+
+
+General options:
+ \-c, \-\-check             check integrity of file written on decompression
+ \-d, \-\-decompress        decompress
+ \-e, \-\-encrypt[=password] password protected sha512/aes128 encryption on compression
+ \-h, \-?, \-\-help          show help
+ \-H, \-\-hash              display md5 hash integrity information
+ \-i, \-\-info              show compressed file information
+ \-q, \-\-quiet             don't show compression progress
+ \-Q, \-\-very-quiet        don't show any output
+ \-r, \-\-recursive         operate recursively on directories
+ \-t, \-\-test              test compressed file integrity
+ \-v[v], \-\-verbose        Increase verbosity
+ \-V, \-\-version           show version
+Options affecting output:
+ \-D, \-\-delete            delete existing files
+ \-f, \-\-force             force overwrite of any existing files
+ \-k, \-\-keep-broken       keep broken or damaged output files
+ \-o, \-\-outfile filename  specify the output file name and/or path
+ \-O, \-\-outdir directory  specify the output directory when -o is not used
+ \-S, \-\-suffix suffix     specify compressed suffix (default '.lrz')
+Options affecting compression:
+ \-b, \-\-bzip2             bzip2 compression
+ \-g, \-\-gzip              gzip compression using zlib
+ \-l, \-\-lzo               lzo compression (ultra fast)
+ \-n, \-\-no-compress       no backend compression - prepare for other compressor
+ \-z, \-\-zpaq              zpaq compression (best, extreme compression, extremely slow)
+Low level options:
+ \-L, \-\-level level       set lzma/bzip2/gzip compression level (1-9, default 7)
+ \-N, \-\-nice-level value  Set nice value to value (default 19)
+ \-p, \-\-threads value     Set processor count to override number of threads
+ \-m, \-\-maxram size       Set maximum available ram in hundreds of MB
+                         overrides detected amount of available ram
+ \-T, \-\-threshold         Disable LZ4 compressibility testing
+ \-U, \-\-unlimited         Use unlimited window size beyond ramsize (potentially much slower)
+ \-w, \-\-window size       maximum compression window in hundreds of MB
+                         default chosen by heuristic dependent on ram and chosen compression
+
+LRZIP=NOCONFIG environment variable setting can be used to bypass lrzip.conf.
+TMP environment variable will be used for storage of temporary files when needed.
+TMPDIR may also be stored in lrzip.conf file.
+
+If no filenames or "-" is specified, stdin/out will be used.
+
+
+.fi
+.PP
+.SH "OPTIONS"
+.PP
+.SH "General options"
+.IP "\fB-c\fP"
+This option enables integrity checking of the file written to disk on
+decompression. All decompression is tested internally in lrzip with either
+crc32 or md5 hash checking depending on the version of the archive already.
+However the file written to disk may be corrupted for other reasons to do with
+other userspace problems such as faulty library versions, drivers, hardware
+failure and so on. Enabling this option will make lrzip perform an md5 hash
+check on the file that's written to disk. When the archive has the md5 value
+stored in it, it is compared to this. Otherwise it is compared to the value
+calculated during decompression. This offers an extra guarantee that the file
+written is the same as the original archived.
+.IP
+.IP "\fB-d\fP"
+Decompress. If this option is not used then lrzip looks at
+the name used to launch the program. If it contains the string
+"lrunzip" then the \-d option is automatically set. If it contains the string
+"lrzcat" then the \-d \-o \- options are automatically set.
+.IP
+.IP "\fB-e\fP"
+.IP "\fB\-\-encrypt\fP[=\fIpassword\fP]"
+Encrypt. This option enables high grade password encryption using a combination
+of multiply sha512 hashed password, random salt and aes128 CBC encryption.
+Passwords up to 500 characters long are supported, and the encryption mechanism
+used virtually guarantees that the same file created with the same password
+will never be the same. Furthermore, the password hashing is increased
+according to the date the file is encrypted, increasing the number of CPU
+cycles required for each password attempt in accordance with Moore's law, thus
+making the difficulty of attempting brute force attacks proportional to the
+power of modern computers.
+.IP
+.IP "\fB-h|-?\fP"
+Print an options summary page
+.IP
+.IP "\fB-H\fP"
+This shows the md5 hash value calculated on compressing or decompressing an
+lrzip archive. By default all compression has the md5 value calculated and
+stored in all archives since version 0.560. On decompression, when an md5
+value has been found, it will be calculated and used for integrity checking.
+If the md5 value is not stored in the archive, it will not be calculated unless
+explicitly specified with this option, or check integrity (see below) has been
+requested.
+.IP
+.IP "\fB-i\fP"
+This shows information about a compressed file. It shows the compressed size,
+the decompressed size, the compression ratio, what compression was used and
+what hash checking will be used for internal integrity checking.
+Note that the compression mode is detected from the first block only and
+it will show no compression used if the first block was incompressible, even
+if later blocks were compressible. If verbose options \-v or \-vv are added,
+a breakdown of all the internal blocks and progressively more information
+pertaining to them will also be shown.
+.IP
+.IP "\fB-q\fP"
+If this option is specified then lrzip will not show the
+percentage progress while compressing. Note that compression happens in
+bursts with lzma compression which is the default compression. This means
+that it will progress very rapidly for short periods and then stop for
+long periods.
+.IP
+.IP "\fB-Q\fP"
+If this option is specified then lrzip will not show any output to the console
+except for error messages.
+.IP
+.IP "\fB-r\fP"
+If this option is specified, lrzip will recursively enter the directories
+specified, compressing or decompressing every file individually in the same
+directory. Note for better compression it is recommended to instead combine
+files in a tar file rather than compress them separately, either manually
+or with the lrztar helper.
+.IP
+.IP "\fB-t\fP"
+This tests the compressed file integrity. It does this by decompressing it
+to a temporary file and then deleting it.
+.IP
+.IP "\fB-v[v]\fP"
+Increases verbosity. \-vv will print more messages than \-v.
+.IP
+.IP "\fB-V\fP"
+Print the lrzip version number
+.IP
+.PP
+.SH "Options affecting output"
+.PP
+.IP "\fB-D\fP"
+If this option is specified then lrzip will delete the
+source file after successful compression or decompression. When this
+option is not specified then the source files are not deleted.
+.IP
+.IP "\fB-f\fP"
+If this option is not specified (Default) then lrzip will not
+overwrite any existing files. If you set this option then rzip will
+silently overwrite any files as needed.
+.IP
+.IP "\fB-k\fP"
+This option will keep broken or damaged files instead of deleting them.
+When compression or decompression is interrupted either by user or error, or
+a file decompressed fails an integrity check, it is normally deleted by LRZIP.
+.IP
+.IP "\fB-o\fP"
+Set the output file name. If this option is not set then
+the output file name is chosen based on the input name and the
+suffix. The \-o option cannot be used if more than one file name is
+specified on the command line.
+.IP
+.IP "\fB-O\fP"
+Set the output directory for the default filename. This option
+cannot be combined with \-o.
+.IP
+.IP "\fB-S\fP"
+Set the compression suffix. The default is '.lrz'.
+.IP
+.PP
+.SH "Options affecting compression"
+.PP
+.IP "\fB-b\fP"
+Bzip2 compression. Uses bzip2 compression for the 2nd stage, much like
+the original rzip does.
+.IP "\fB-g\fP"
+Gzip compression. Uses gzip compression for the 2nd stage. Uses libz compress
+and uncompress functions.
+.IP
+.IP "\fB-l\fP"
+LZO Compression. If this option is set then lrzip will use the ultra
+fast lzo compression algorithm for the 2nd stage. This mode of compression
+gives bzip2 like compression at the speed it would normally take to simply
+copy the file, giving excellent compression/time value.
+.IP
+.IP "\fB-n\fP"
+No 2nd stage compression. If this option is set then lrzip will only
+perform the long distance redundancy 1st stage compression. While this does
+not compress any faster than LZO compression, it produces a smaller file
+that then responds better to further compression (by eg another application),
+also reducing the compression time substantially.
+.IP
+.IP "\fB-z\fP"
+ZPAQ compression. Uses ZPAQ compression which is from the PAQ family of
+compressors known for having some of the highest compression ratios possible
+but at the cost of being extremely slow on both compress and decompress (4x
+slower than lzma which is the default).
+.IP
+.PP
+.SH "Low level options"
+.PP
+.IP "\fB-L 1\&.\&.9\fP"
+Set the compression level from 1 to 9. The default is to use level 7, which
+gives good all round compression. The compression level is also strongly related
+to how much memory lrzip uses. See the \-w option for details.
+.IP
+.IP "\fB-N value\fP"
+The default nice value is 19. This option can be used to set the priority
+scheduling for the lrzip backup or decompression. Valid nice values are
+from \-20 to 19. Note this does NOT speed up or slow down compression.
+.IP
+.IP "\fB-p value\fP"
+Set the number of processor count to determine the number of threads to run.
+Normally lrzip will scale according to the number of CPUs it detects. Using
+this will override the value in case you wish to use less CPUs to either
+decrease the load on your machine, or to improve compression. Setting it to
+1 will maximise compression but will not attempt to use more than one CPU.
+.IP
+.IP "\fB-T\fP"
+Disables the LZ4 compressibility threshold testing when a slower compression
+back-end is used. LZ4 testing is normally performed for the slower back-end
+compression of LZMA and ZPAQ. The reasoning is that if it is completely
+incompressible by LZ4 then it will also be incompressible by them. Thus if a
+block fails to be compressed by the very fast LZ4, lrzip will not attempt to
+compress that block with the slower compressor, thereby saving time. If this
+option is enabled, it will bypass the LZ4 testing and attempt to compress each
+block regardless.
+.IP
+.IP "\fB-U \fP"
+Unlimited window size\&. If this option is set, and the file being compressed
+does not fit into the available ram, lrzip will use a moving second buffer as a
+"sliding mmap" which emulates having infinite ram. This will provide the most
+possible compression in the first rzip stage which can improve the compression
+of ultra large files when they're bigger than the available ram. However it runs
+progressively slower the larger the difference between ram and the file size,
+so is best reserved for when the smallest possible size is desired on a very
+large file, and the time taken is not important.
+.IP
+.IP "\fB-w n\fP"
+Set the maximum allowable compression window size to n in hundreds of megabytes.
+This is the amount of memory lrzip will search during its first stage of
+pre-compression and is the main thing that will determine how much benefit lrzip
+will provide over ordinary compression with the 2nd stage algorithm. If not set
+(recommended), the value chosen will be determined by an internal heuristic in
+lrzip which uses the most memory that is reasonable, without any hard upper
+limit. It is limited to 2GB on 32bit machines. lrzip will always reduce the
+window size to the biggest it can be without running out of memory.
+.IP
+.PP
+.SH "INSTALLATION"
+.PP
+"make install" or just install lrzip somewhere in your search path.
+.PP
+.SH "COMPRESSION ALGORITHM"
+.PP
+LRZIP operates in two stages. The first stage finds and encodes large chunks of
+duplicated data over potentially very long distances in the input file. The
+second stage is to use a compression algorithm to compress the output of the
+first stage. The compression algorithm can be chosen to be optimised for extreme
+size (zpaq), size (lzma - default), speed (lzo), legacy (bzip2 or gzip) or can
+be omitted entirely doing only the first stage. A one stage only compressed file
+can almost always improve both the compression size and speed done by a
+subsequent compression program.
+
+.PP
+The key difference between lrzip and other well known compression
+algorithms is its ability to take advantage of very long distance
+redundancy. The well known deflate algorithm used in gzip uses a
+maximum history buffer of 32k. The block sorting algorithm used in
+bzip2 is limited to 900k of history. The history buffer in lrzip can be
+any size long, not even limited by available ram.
+.
+.PP
+It is quite common these days to need to compress files that contain
+long distance redundancies. For example, when compressing a set of
+home directories several users might have copies of the same file, or
+of quite similar files. It is also common to have a single file that
+contains large duplicated chunks over long distances, such as pdf
+files containing repeated copies of the same image. Most compression
+programs won't be able to take advantage of this redundancy, and thus
+might achieve a much lower compression ratio than lrzip can achieve.
+.IP
+.PP
+.SH "FILES"
+.PP
+LRZIP recognises a configuration file that contains default settings.
+This configuration is searched for in the current directory, /etc/lrzip,
+and $HOME/.lrzip. The configuration filename must be \fBlrzip.conf\fP.
+.PP
+.SH "ENVIRONMENT"
+By default, lrzip will search for and use a configuration file, lrzip.conf.
+If the user wishes to bypass the file, a startup ENV variable may be set.
+.br
+.B LRZIP =
+.I "NOCONFIG "
+.B "[lrzip|lrunzip]"
+[OPTIONS] <file>
+.br
+which will force lrzip to ignore the configuration file.
+.PP
+.SH "HISTORY - Notes on rzip by Andrew Tridgell"
+.PP
+The ideas behind rzip were first implemented in 1998 while I was
+working on rsync. That version was too slow to be practical, and was
+replaced by this version in 2003.
+LRZIP was created by the desire to have better compression and/or speed
+by Con Kolivas on blending the lzma and lzo compression algorithms with
+the rzip first stage, and extending the compression windows to scale
+with increasing ram sizes.
+.PP
+.SH "BUGS"
+.PP
+Nil known.
+
+.PP
+.SH "SEE ALSO"
+lrzip.conf(5),
+lrunzip(1),
+lrzcat(1),
+lrztar(1),
+lrzuntar(1),
+lrz(1),
+bzip2(1),
+gzip(1),
+lzop(1),
+rzip(1),
+zip(1)
+
+.PP
+.SH "DIAGNOSTICS"
+.PP
+Exit status is normally 0; if an error occurs, exit status is 1, usage errors
+is 2.
+
+.PP
+.SH "AUTHOR and CREDITS"
+.br
+lrzip is being extensively bastardised from rzip by Con Kolivas.
+.br
+rzip was written by Andrew Tridgell.
+.br
+lzma was written by Igor Pavlov.
+.br
+lzo was written by Markus Oberhumer.
+.br
+zpaq was written by Matt Mahoney.
+.br
+Peter Hyman added informational output, updated LZMA SDK,
+and added lzma multi-threading capabilities.
+.PP
+If you wish to report a problem, or make a suggestion, then please consult the
+git repository at:
+https://github.com/ckolivas/lrzip
+.PP
+lrzip is released under the GNU General Public License version 2.
+Please see the file COPYING for license details.

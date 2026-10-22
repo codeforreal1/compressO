@@ -1,0 +1,23 @@
+MAYBE TODO for lrzip program
+
+Upgrade to newer version of zpaq supporting 3 compression levels without
+relying on open_memstream so it works without temporary files on apple.
+
+Get MD5 working on apple.
+
+Make sure STDIO works properly on large files on apple.
+
+Make a liblrzip library.
+
+Other posix/windows builds?? Need help there...
+
+Add log file option so that output could be
+saved for review.
+
+Add test function that would only run lzo_compresses
+for a current file without doing any writes.
+
+Consider ncurses version or even GUI one.
+
+Consider using LZMA Filters for processor-optimised
+coding to increase compression.

@@ -16,7 +16,9 @@ const host = run('rustc', ['-vV']).match(/^host: (.+)$/m)?.[1]
 const target = process.env.TAURI_ENV_TARGET_TRIPLE || process.env.TARGET || host
 const names = ['ffmpeg', 'ffprobe', 'pngquant', 'jpegoptim', 'gifski']
 const isMac = target?.endsWith('apple-darwin')
-const extension = target?.includes('windows') ? '.exe' : ''
+const isWindows = target?.includes('windows')
+const useLrzip = isMac || isWindows
+const extension = isWindows ? '.exe' : ''
 const destination = path.join(root, 'src-tauri/tool-bundle')
 const sha256 = (file) =>
   createHash('sha256').update(fs.readFileSync(file)).digest('hex')
@@ -34,8 +36,43 @@ for (const { source } of sources) {
 
 // A cross-build must use a matching decompressor, never the build host's executable.
 const toolchain = isMac ? buildLrzip(target) : null
-const lrzip = toolchain?.binary
-if (lrzip) {
+const windowsMetadata = isWindows
+  ? JSON.parse(
+      fs.readFileSync(
+        path.join(root, 'LICENSES/lrzip-windows/SOURCE.json'),
+        'utf8',
+      ),
+    )
+  : null
+const lrzip = isWindows
+  ? path.join(root, `src-tauri/bin/compresso_lrzip-${target}.exe`)
+  : toolchain?.binary
+if (isWindows) {
+  if (target !== windowsMetadata.target) {
+    throw new Error(
+      `The bundled Windows LRZIP supports only ${windowsMetadata.target}.`,
+    )
+  }
+  if (sha256(lrzip) !== windowsMetadata.binarySha256) {
+    throw new Error(
+      'The Windows LRZIP executable does not match its pinned checksum.',
+    )
+  }
+  if (
+    sha256(path.join(root, windowsMetadata.sourceArchive)) !==
+    windowsMetadata.sourceSha256
+  ) {
+    throw new Error(
+      'The Windows LRZIP source archive does not match its pinned checksum.',
+    )
+  }
+  if (process.platform !== 'win32') {
+    throw new Error(
+      'Build Windows tool bundles on Windows so the supplied lrzip.exe can create and verify its own archive.',
+    )
+  }
+}
+if (isMac) {
   const arch = target.startsWith('aarch64') ? 'arm64' : 'x86_64'
   if (!run('lipo', ['-archs', lrzip]).split(/\s+/).includes(arch)) {
     throw new Error(
@@ -54,6 +91,7 @@ const inputHash = createHash('sha256')
       target,
       tools: sources.map(({ source }) => sha256(source)),
       helper: lrzip ? sha256(lrzip) : null,
+      windowsMetadata,
       identity,
     }),
   )
@@ -102,17 +140,20 @@ try {
   if (lrzip) {
     const helperDir = path.join(output, 'bootstrap')
     fs.mkdirSync(helperDir)
-    const helper = path.join(helperDir, 'lrzip')
+    const helperName = isWindows ? 'lrzip.exe' : 'lrzip'
+    const helper = path.join(helperDir, helperName)
     fs.copyFileSync(lrzip, helper)
     fs.chmodSync(helper, 0o755)
-    sign(helper)
+    if (isMac) sign(helper)
     bootstrap.push({
-      name: 'bootstrap/lrzip',
+      name: `bootstrap/${helperName}`,
       size: fs.statSync(helper).size,
       sha256: sha256(helper),
     })
-    // Check the relocated helper, rather than accidentally testing the Homebrew copy.
+    // Fail early on missing runtime DLLs or an executable that cannot start on this host.
     run(helper, ['--version'])
+  }
+  if (isMac) {
     const licenseDir = path.join(output, 'licenses')
     fs.mkdirSync(licenseDir)
     for (const license of toolchain.licenses) {
@@ -173,13 +214,13 @@ try {
       '--',
       tools,
       tarFile,
-      isMac ? 'tar' : 'xz',
+      useLrzip ? 'tar' : 'xz',
       path.join(output, 'tools.tar.xz'),
     ],
     { stdio: 'inherit' },
   )
-  const archive = isMac ? 'tools.tar.lrz' : 'tools.tar.xz'
-  if (isMac)
+  const archive = useLrzip ? 'tools.tar.lrz' : 'tools.tar.xz'
+  if (useLrzip) {
     run(
       lrzip,
       ['-q', '-L', '9', '-p', '1', '-o', path.join(output, archive), tarFile],
@@ -188,13 +229,29 @@ try {
         stdio: 'inherit',
       },
     )
+    // Windows uses the exact supplied 0.651.1 executable for both operations. Never produce
+    // its archive with the newer macOS helper, whose format/features may be incompatible.
+    if (isWindows) {
+      const roundTrip = path.join(temporary, 'windows-lrzip-check.tar')
+      run(
+        lrzip,
+        ['-d', '-q', '-p', '1', '-o', roundTrip, path.join(output, archive)],
+        { env: { ...process.env, LRZIP: 'NOCONFIG' }, stdio: 'inherit' },
+      )
+      if (sha256(roundTrip) !== sha256(tarFile)) {
+        throw new Error(
+          'The Windows LRZIP archive failed its extraction round-trip check.',
+        )
+      }
+    }
+  }
   const checksum = sha256(path.join(output, archive))
   const manifest = {
     schema: 1,
     target,
     inputHash,
     archive,
-    format: isMac ? 'lrz' : 'xz',
+    format: useLrzip ? 'lrz' : 'xz',
     sha256: checksum,
     tarSize: fs.statSync(tarFile).size,
     files,

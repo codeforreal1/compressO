@@ -183,6 +183,7 @@ jobs:
               cp "$bundle/macos/CompressO.app.tar.gz.sig" "release-files/CompressO_${VERSION}_${arch}.app.tar.gz.sig"
               ;;
             *-windows-*)
+              cp "src-tauri/tool-sources/lrzip-windows-v0.651-1.tar.gz" release-files/
               cp "$bundle/nsis/CompressO_${VERSION}_x64-setup.exe" "release-files/CompressO_${VERSION}_x64.exe"
               cp "$bundle/nsis/CompressO_${VERSION}_x64-setup.exe.sig" "release-files/CompressO_${VERSION}_x64.exe.sig"
               ;;

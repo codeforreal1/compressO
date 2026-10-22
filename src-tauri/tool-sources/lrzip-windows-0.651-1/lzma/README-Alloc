@@ -1,0 +1,31 @@
+README for Memory Allocation Debugging
+
+If it is necessary or desired to debug the memory allocation
+process in LZMA, edit the file C/Alloc.c and uncomment the
+line:
+
+/* #define _SZ_ALLOC_DEBUG */
+
+Then, add this to the Makefile and relink. This output will
+show chunks of memory Alloc uses during LZMA compression.
+
+Output will appear similar to this:
+
+Alloc     284484 bytes, count =          0,  addr = 44251008
+Alloc      65536 bytes, count =          1,  addr =  80636F0
+Alloc      12288 bytes, count =          2,  addr =  80736F8
+Alloc      12288 bytes, count =          3,  addr =  8076700
+Alloc    4456448 bytes, count =          4,  addr = 43E10008
+Alloc  102877690 bytes, count =          5,  addr = 3DBF3008
+Alloc  604246024 bytes, count =          6,  addr = 19BB1008
+Free; count =          6,  addr = 43E10008
+Free; count =          5,  addr = 19BB1008
+Free; count =          4,  addr = 3DBF3008
+Free; count =          3,  addr =  80736F8
+Free; count =          2,  addr =  8076700
+Free; count =          1,  addr =  80636F0
+Free; count =          0,  addr = 44251008
+
+As you can see, LZMA takes large chunks of ram and sometimes
+it can use more than what is available and return an
+SZ_ERROR_MEM (2) code.

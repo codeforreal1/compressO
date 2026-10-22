@@ -1,0 +1,12 @@
+{
+  "name": "lrzip-windows",
+  "version": "0.651.1",
+  "target": "x86_64-pc-windows-msvc",
+  "license": "GPL-2.0-or-later",
+  "release": "https://github.com/eat-swap/lrzip-windows/releases/tag/v0.651-1",
+  "asset": "https://github.com/eat-swap/lrzip-windows/releases/download/v0.651-1/lrzip-0.651.1-x86_64-ucrt64.exe",
+  "binarySha256": "2d0dc581548bf4db8b7ba457e155a1fe0994e87e02fce5ce92ed7b8b50b5f328",
+  "source": "https://github.com/eat-swap/lrzip-windows/archive/refs/tags/v0.651-1.tar.gz",
+  "sourceArchive": "src-tauri/tool-sources/lrzip-windows-v0.651-1.tar.gz",
+  "sourceSha256": "8f79e4464a6fdbaa120929e20b06de8d0ebb05cab7639d689052d187ea604a5b"
+}

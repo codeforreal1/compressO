@@ -353,13 +353,17 @@ fn ensure_bundle(
             "lrz" => {
                 let tar = staging.join("tools.tar");
                 let log_path = staging.join("lrzip.log");
-                let mut command = Command::new(resources.join("bootstrap/lrzip"));
+                let helper = if cfg!(windows) { "lrzip.exe" } else { "lrzip" };
+                let mut command = process_command(resources.join("bootstrap").join(helper));
                 command
                     .env("LRZIP", "NOCONFIG")
                     .env("TMPDIR", &staging)
+                    .env("TMP", &staging)
+                    .env("TEMP", &staging)
                     .args(["-d", "-q", "-p", "1", "-o"])
                     .arg(&tar)
                     .arg(&archive)
+                    .stdin(Stdio::null())
                     .stdout(Stdio::null())
                     .stderr(File::create(&log_path).map_err(|e| e.to_string())?);
                 let child = Arc::new(

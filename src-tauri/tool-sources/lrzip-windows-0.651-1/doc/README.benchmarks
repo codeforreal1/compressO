@@ -1,0 +1,154 @@
+The first comparison is that of a linux kernel tarball (2.6.37). In all cases
+the default options were used. 4 other common compression apps were used for
+comparison, 7z which is an excellent all-round lzma based compression app,
+gzip which is the benchmark fast standard that has good compression, and bzip2
+which is the most common linux used compression. xz was included for
+completeness.
+
+In the following tables, lrzip means lrzip default options, lrzip -l means
+lrzip using the lzo backend, lrzip -g means using the gzip backend,
+lrzip -b means using the bzip2 backend and lrzip -z means using the zpaq
+backend.
+
+
+linux-2.6.37.tar
+
+These are benchmarks performed on a 3GHz quad core Intel Core2 with 8GB ram
+using lrzip v0.612 on an SSD drive.
+
+Compression	Size		Percentage	Compress	Decompress
+None		430612480	100
+7z		63636839	14.8		2m28s		0m6.6s
+xz		63291156	14.7		4m02s		0m8.7
+lrzip		64561485	14.9		1m12s		0m4.3s
+lrzip -z	51588423	12.0		2m02s		2m08s
+lrzip -l	137515997	31.9		0m14s		0m2.7s
+lrzip -g	86142459	20.0		0m17s		0m3.0s
+lrzip -b	72103197	16.7		0m21s		0m6.5s
+bzip2		74060625	17.2		0m48s		0m12.8s
+gzip		94512561	21.9		0m17s		0m4.0s
+
+
+These results are interesting to note the compression of lrzip by default is
+about the same as 7z, but it's significantly faster thanks to its heavily
+multithreaded nature. Zpaq offers by far the best compression but at the cost
+of extra time. However with the heavily threaded nature of lrzip, it's not a lot
+longer given how much better its compression is. It's actually faster than xz
+on compression on a quad core machine.
+
+
+Let's take six kernel trees one version apart as a tarball, linux-2.6.31 to
+linux-2.6.36. These will show lots of redundant information, but hundreds
+of megabytes apart, which lrzip will be very good at compressing. For
+simplicity, only 7z will be compared since that's by far the best general
+purpose compressor at the moment:
+
+These are benchmarks performed on a 2.53Ghz dual core Intel Core2 with 4GB ram
+using lrzip v0.5.1. Note that it was running with a 32 bit userspace so only
+2GB addressing was possible. However the benchmark was run with the -U option
+allowing the whole file to be treated as one large compression window.
+
+Tarball of 6 consecutive kernel trees.
+
+Compression	Size		Percentage	Compress	Decompress
+None		2373713920	100
+7z		344088002	14.5		17m26s		1m22s
+lrzip		104874109	4.4		11m37s		56s
+lrzip -l	223130711	9.4		05m21s		1m01s
+lrzip -U	73356070	3.1		08m53s		43s
+lrzip -Ul	158851141	6.7		04m31s		35s
+lrzip -Uz	62614573	2.6		24m42s		25m30s
+
+Things start getting very interesting now when lrzip is really starting to
+shine. Note how it's not that much larger for 6 kernel trees than it was for
+one. That's because all the similar data in both kernel trees is being
+compressed as one copy and only the differences really make up the extra size.
+All compression software does this, but not over such large distances. If you
+copy the same data over multiple times, the resulting lrzip archive doesn't
+get much larger at all. You might find this example interesting because the
+-U option is actually faster as well as providing better compression. The
+reason is that the window is not much larger than the amount of ram addressable
+(2GB), and it compresses so much more in the rzip stage that it makes up the
+time by not needing to compress anywhere near as much data with the backend
+compressor.
+
+
+Using the first example (linux-2.6.31.tar) and simply copying the data multiple
+times over gives these results with lrzip(lzo):
+
+Copies		Size		Compressed	Compress	Decompress
+1		365711360	112151676	0m14.9s		0m5.1s
+2		731422720	112151829	0m16.2s		0m6.5s
+3		1097134080	112151832	0m17.5s		0m8.1s
+
+
+I had the amusing thought that this compression software could be used as a
+bullshit detector if you were to compress people's speeches because if their
+talks were full of catchphrases and not much actual content, it would all be
+compressed down. So the larger the final archive, the less bullshit =)
+
+Now let's move on to the other special feature of lrzip, the ability to
+compress massive amounts of data on huge ram machines by using massive
+compression windows. This is a 10GB virtual image of an installed operating
+system and some basic working software on it. The default options on the
+8GB machine meant that it was using a 5 GB window.
+
+
+10GB Virtual image:
+
+These benchmarks were done on the quad core with version 0.612
+
+Compression	Size		Percentage	Compress Time	Decompress Time
+None		10737418240	100.0
+gzip		2772899756	 25.8		05m47s		2m46s
+bzip2		2704781700	 25.2		16m15s		6m19s
+xz		2272322208	 21.2		50m58s		3m52s
+7z		2242897134	 20.9		26m36s		5m41s
+lrzip		1372218189	 12.8		10m23s		2m53s
+lrzip -U	1095735108	 10.2		08m44s		2m45s
+lrzip -l	1831894161	 17.1		04m53s		2m37s
+lrzip -lU	1414959433	 13.2		04m48s		2m38s
+lrzip -zU	1067169419	  9.9		39m32s		39m46s
+
+
+At this end of the spectrum things really start to heat up. The compression
+advantage is massive, with the lzo backend even giving much better results than
+7z, and over a ridiculously short time. The improvements in version 0.530 in
+scalability with multiple CPUs has a huge impact on compression time here,
+with zpaq almost being faster on quad core than xz is, yet producing a file
+less than half the size.
+
+What appears to be a big disappointment is actually zpaq here which takes more
+than 4 times longer than r/lzma for a measly .3% improvement. The reason is that
+most of the advantage here is achieved by the rzip first stage since there's a
+lot of redundant space over huge distances on a virtual image. The -U option
+which works the memory subsystem rather hard making noticeable impact on the
+rest of the machine also does further wonders for the compression (virtually
+always) and even the times in this particular case.
+
+
+Finally testing the same 10GB image on a i7-3930K at 3.2GHz (12 thread CPU!)
+with 32GB of ram so the whole image fits in ram with a fast SSD:
+
+Compression	Size		Percentage	Compress Time	Decompress Time
+None		10737418240	100.0
+gzip		2772899756	 25.8		3m56s		2m15s
+pbzip2		2705814394	 25.2		1m41s		1m46s
+lrzip		1095337763	 10.2		2m54s		2m21s
+
+
+Note that with enough ram and CPU, lrzip is actually faster than gzip (which
+does compression in place) and comparable on decompression, despite a huge
+increase in compression. pbzip2 is faster than both but its compression is
+almost no better than gzip.
+
+
+This should help govern what compression you choose. Small files are nicely
+compressed with zpaq. Intermediate files are nicely compressed with lzma.
+Large files get excellent results even with lzo provided you have enough ram.
+(Small being < 100MB, intermediate <1GB, large >1GB).
+Or, to make things easier, just use the default settings all the time and be
+happy as lzma gives good results. :D
+
+Con Kolivas
+Saturday, 7th July 2012
