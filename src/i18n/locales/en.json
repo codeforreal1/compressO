@@ -943,7 +943,7 @@
     "mode": "Compress by",
     "modes": {
       "quality": "Quality",
-      "size": "Target size"
+      "size": "Target Size"
     },
     "size": "Target size",
     "estimate": "About {{width}}×{{height}} at {{fps}} fps, within {{size}} MB.",

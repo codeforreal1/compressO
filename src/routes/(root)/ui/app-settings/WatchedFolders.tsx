@@ -188,11 +188,11 @@ function WatchedFolders() {
                 <Button
                   isIconOnly
                   size="sm"
-                  variant="light"
+                  variant="flat"
                   color="danger"
                   onPress={() => removeFolder(folder.id)}
                 >
-                  <Icon name="trash" />
+                  <Icon name="trash" size={18} />
                 </Button>
               </Tooltip>
             </div>

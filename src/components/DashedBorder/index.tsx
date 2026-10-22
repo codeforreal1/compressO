@@ -78,7 +78,7 @@ function DashedBorder({
         rx={Math.max(radius - 1, 0)}
         fill="none"
         stroke={`url(#${gradientId})`}
-        strokeWidth={2}
+        strokeWidth={1}
         strokeDasharray="6 5"
         className={cn(
           'transition-colors',
