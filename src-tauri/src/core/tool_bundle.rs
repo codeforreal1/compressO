@@ -83,6 +83,16 @@ pub fn is_ready(app: &AppHandle) -> bool {
         .is_some_and(|state| state.0.lock().unwrap().status.ready)
 }
 
+#[tauri::command]
+pub fn exit_tool_preparation(app: AppHandle, window: tauri::WebviewWindow) -> Result<(), String> {
+    if window.label() != "preparation" || is_ready(&app) {
+        return Err("Only the preparation window can exit while tools are not ready".into());
+    }
+    // The app's exit handler also terminates a registered extraction subprocess.
+    app.exit(0);
+    Ok(())
+}
+
 fn update(app: &AppHandle, phase: &str, message: &str) {
     let state = app.state::<ToolBundleState>();
     let mut inner = state.0.lock().unwrap();
@@ -99,6 +109,10 @@ fn show_preparation(app: &AppHandle) -> Result<(), String> {
         .title("Preparing CompressO")
         .inner_size(460.0, 340.0)
         .resizable(false)
+        .decorations(false)
+        .shadow(false)
+        .minimizable(false)
+        .maximizable(false)
         .center()
         .build()
         .map_err(|e| format!("Could not open preparation window: {e}"))?;
@@ -139,7 +153,11 @@ pub fn prepare_tools(app: AppHandle) {
                     inner.status.message = "Compression tools are ready".into();
                 }
                 Err(error) => {
-                    log::error!("[tools] {error}");
+                    log::error!(
+                        "[tools] Preparation failed during {} for {TARGET}: {error}",
+                        inner.status.phase
+                    );
+                    log::logger().flush();
                     inner.status.phase = "error".into();
                     inner.status.error = Some(error);
                 }
@@ -311,6 +329,42 @@ fn installed(directory: &Path, manifest: &Manifest) -> bool {
         && verify_files(directory, &manifest.files, true).is_ok()
 }
 
+fn lrzip_extraction_command(
+    helper: &Path,
+    archive: &Path,
+    staging: &Path,
+    relative_paths: bool,
+) -> Result<Command, String> {
+    let mut command = process_command(helper.to_path_buf());
+    command.env("LRZIP", "NOCONFIG");
+    if relative_paths {
+        // Tauri's Windows resource directory is canonicalized (\\?\...). The old MinGW
+        // LRZIP stat/fopen routines cannot reliably handle that form. Keep all file arguments
+        // ASCII and relative; Rust handles the resource path and CreateProcessW sets the cwd.
+        // Copy bytes without inheriting read-only resource attributes into the staging folder.
+        let mut source = File::open(archive).map_err(|e| e.to_string())?;
+        let mut copy = File::create(staging.join("tools.tar.lrz")).map_err(|e| e.to_string())?;
+        io::copy(&mut source, &mut copy).map_err(|e| e.to_string())?;
+        drop(copy);
+        command
+            .current_dir(staging)
+            .env("TMPDIR", ".")
+            .env("TMP", ".")
+            .env("TEMP", ".")
+            .args(["-d", "-q", "-p", "1", "-o", "tools.tar", "tools.tar.lrz"]);
+    } else {
+        command
+            .env("TMPDIR", staging)
+            .env("TMP", staging)
+            .env("TEMP", staging)
+            .args(["-d", "-q", "-p", "1", "-o"])
+            .arg(staging.join("tools.tar"))
+            .arg(archive);
+    }
+    command.stdin(Stdio::null()).stdout(Stdio::null());
+    Ok(command)
+}
+
 fn ensure_bundle(
     resources: &Path,
     root: &Path,
@@ -354,18 +408,18 @@ fn ensure_bundle(
                 let tar = staging.join("tools.tar");
                 let log_path = staging.join("lrzip.log");
                 let helper = if cfg!(windows) { "lrzip.exe" } else { "lrzip" };
-                let mut command = process_command(resources.join("bootstrap").join(helper));
-                command
-                    .env("LRZIP", "NOCONFIG")
-                    .env("TMPDIR", &staging)
-                    .env("TMP", &staging)
-                    .env("TEMP", &staging)
-                    .args(["-d", "-q", "-p", "1", "-o"])
-                    .arg(&tar)
-                    .arg(&archive)
-                    .stdin(Stdio::null())
-                    .stdout(Stdio::null())
-                    .stderr(File::create(&log_path).map_err(|e| e.to_string())?);
+                log::info!(
+                    "[tools] Extracting {} into {}",
+                    archive.display(),
+                    staging.display()
+                );
+                let mut command = lrzip_extraction_command(
+                    &resources.join("bootstrap").join(helper),
+                    &archive,
+                    &staging,
+                    cfg!(windows),
+                )?;
+                command.stderr(File::create(&log_path).map_err(|e| e.to_string())?);
                 let child = Arc::new(
                     shared_child::SharedChild::spawn(&mut command)
                         .map_err(|e| format!("Could not start lrzip: {e}"))?,
@@ -381,6 +435,8 @@ fn ensure_bundle(
                     ));
                 }
                 fs::remove_file(log_path).map_err(|e| e.to_string())?;
+                #[cfg(windows)]
+                fs::remove_file(staging.join("tools.tar.lrz")).map_err(|e| e.to_string())?;
                 if regular_file(&tar)?.len() != manifest.tar_size {
                     return Err("Unexpected decompressed archive size".into());
                 }
@@ -593,6 +649,87 @@ mod tests {
         assert!(
             ensure_bundle(&temp.0, &temp.0.join("installed"), &manifest, |_, _| Ok(())).is_err()
         );
+    }
+
+    #[test]
+    fn windows_lrzip_uses_relative_files_from_a_writable_staging_directory() {
+        let temp = Fixture::new();
+        let resources = temp.0.join("Program Files").join("CompressO");
+        let staging = temp.0.join("User profile with spaces and 日本語");
+        fs::create_dir_all(&resources).unwrap();
+        fs::create_dir(&staging).unwrap();
+        let archive = resources.join("tools.tar.lrz");
+        fs::write(&archive, b"verified resource archive").unwrap();
+        let original_permissions = fs::metadata(&archive).unwrap().permissions();
+        let mut read_only = original_permissions.clone();
+        read_only.set_readonly(true);
+        fs::set_permissions(&archive, read_only).unwrap();
+        // On Windows canonicalization supplies the extended-length prefix used by Tauri.
+        let archive = fs::canonicalize(archive).unwrap();
+        let command = lrzip_extraction_command(
+            &resources.join("bootstrap/lrzip.exe"),
+            &archive,
+            &staging,
+            true,
+        )
+        .unwrap();
+        fs::set_permissions(&archive, original_permissions).unwrap();
+        assert_eq!(command.get_current_dir(), Some(staging.as_path()));
+        let arguments: Vec<_> = command
+            .get_args()
+            .map(|arg| arg.to_string_lossy().into_owned())
+            .collect();
+        assert_eq!(
+            arguments,
+            ["-d", "-q", "-p", "1", "-o", "tools.tar", "tools.tar.lrz"]
+        );
+        assert_eq!(
+            fs::read(staging.join("tools.tar.lrz")).unwrap(),
+            b"verified resource archive"
+        );
+        assert!(!fs::metadata(staging.join("tools.tar.lrz"))
+            .unwrap()
+            .permissions()
+            .readonly());
+        for key in ["TMPDIR", "TMP", "TEMP"] {
+            assert_eq!(
+                command.get_envs().find(|(name, _)| *name == key).unwrap().1,
+                Some(std::ffi::OsStr::new("."))
+            );
+        }
+    }
+
+    #[test]
+    #[ignore = "extracts a real LRZIP archive using the Windows relative-path strategy"]
+    fn real_lrzip_extracts_with_relative_files_in_a_unicode_directory_with_spaces() {
+        let manifest = manifest().unwrap().expect("prepare a tool archive first");
+        if manifest.format != "lrz" {
+            return;
+        } // Linux intentionally uses XZ.
+        let temp = Fixture::new();
+        let resources = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tool-bundle");
+        let staging = temp.0.join("User profile with spaces and 日本語");
+        fs::create_dir(&staging).unwrap();
+        let helper = if cfg!(windows) { "lrzip.exe" } else { "lrzip" };
+        let archive = fs::canonicalize(resources.join(&manifest.archive)).unwrap();
+        assert_eq!(hash_file(&archive).unwrap(), manifest.sha256);
+        let mut command = lrzip_extraction_command(
+            &resources.join("bootstrap").join(helper),
+            &archive,
+            &staging,
+            true,
+        )
+        .unwrap();
+        let output = command.stderr(Stdio::piped()).output().unwrap();
+        assert!(
+            output.status.success(),
+            "{}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        let tar = staging.join("tools.tar");
+        assert_eq!(fs::metadata(&tar).unwrap().len(), manifest.tar_size);
+        extract_tar(File::open(tar).unwrap(), &staging, &manifest).unwrap();
+        verify_files(&staging, &manifest.files, true).unwrap();
     }
 
     #[test]

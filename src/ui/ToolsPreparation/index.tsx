@@ -5,6 +5,8 @@ import { type ReactNode, useEffect, useState } from 'react'
 import Button from '@/components/Button'
 import Spinner from '@/components/Spinner'
 import UIProvider from '@/providers/UIProvider'
+import { getLogFilePath, logError } from '@/tauri/commands/app'
+import { showItemInFileManager } from '@/tauri/commands/fs'
 
 type ToolStatus = {
   phase: string
@@ -20,6 +22,7 @@ const preparationWindow = getCurrentWindow().label === 'preparation'
 export function ToolPreparation({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<ToolStatus | null>(null)
   const [connectionError, setConnectionError] = useState<string | null>(null)
+  const [logAccessError, setLogAccessError] = useState<string | null>(null)
 
   useEffect(() => {
     let stopped = false
@@ -64,17 +67,55 @@ export function ToolPreparation({ children }: { children: ReactNode }) {
             >
               {error}
             </p>
-            <Button
-              onPress={() => {
-                setStatus(null)
-                setConnectionError(null)
-                invoke('prepare_tools').catch((reason) =>
-                  setConnectionError(String(reason)),
-                )
-              }}
-            >
-              Retry
-            </Button>
+            <div className="flex items-center gap-3">
+              <Button
+                size="sm"
+                onPress={() => {
+                  setStatus(null)
+                  setConnectionError(null)
+                  setLogAccessError(null)
+                  invoke('prepare_tools').catch((reason) =>
+                    setConnectionError(String(reason)),
+                  )
+                }}
+              >
+                Retry
+              </Button>
+              <Button
+                size="sm"
+                onPress={() => {
+                  invoke('exit_tool_preparation').catch((reason) =>
+                    setConnectionError(String(reason)),
+                  )
+                }}
+              >
+                Exit
+              </Button>
+              <Button
+                size="sm"
+                onPress={async () => {
+                  setLogAccessError(null)
+                  try {
+                    await showItemInFileManager(await getLogFilePath())
+                  } catch (reason) {
+                    logError('Could not show tool preparation logs', reason)
+                    setLogAccessError(
+                      `Could not open the log file: ${String(reason)}`,
+                    )
+                  }
+                }}
+              >
+                Show logs
+              </Button>
+            </div>
+            {logAccessError ? (
+              <p
+                role="alert"
+                className="max-h-12 overflow-auto text-xs text-red-600 dark:text-red-400"
+              >
+                {logAccessError}
+              </p>
+            ) : null}
           </>
         ) : (
           <>

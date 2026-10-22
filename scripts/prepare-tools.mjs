@@ -232,13 +232,26 @@ try {
     // Windows uses the exact supplied 0.651.1 executable for both operations. Never produce
     // its archive with the newer macOS helper, whose format/features may be incompatible.
     if (isWindows) {
-      const roundTrip = path.join(temporary, 'windows-lrzip-check.tar')
-      run(
-        lrzip,
-        ['-d', '-q', '-p', '1', '-o', roundTrip, path.join(output, archive)],
-        { env: { ...process.env, LRZIP: 'NOCONFIG' }, stdio: 'inherit' },
+      // Mirror installed-app extraction: no absolute resource/output paths are passed to the
+      // older MinGW executable, which cannot handle Windows extended-length path prefixes.
+      const checkDirectory = path.join(temporary, 'installed app path check')
+      fs.mkdirSync(checkDirectory)
+      fs.copyFileSync(
+        path.join(output, archive),
+        path.join(checkDirectory, archive),
       )
-      if (sha256(roundTrip) !== sha256(tarFile)) {
+      run(lrzip, ['-d', '-q', '-p', '1', '-o', 'tools.tar', archive], {
+        cwd: checkDirectory,
+        env: {
+          ...process.env,
+          LRZIP: 'NOCONFIG',
+          TMPDIR: '.',
+          TMP: '.',
+          TEMP: '.',
+        },
+        stdio: 'inherit',
+      })
+      if (sha256(path.join(checkDirectory, 'tools.tar')) !== sha256(tarFile)) {
         throw new Error(
           'The Windows LRZIP archive failed its extraction round-trip check.',
         )

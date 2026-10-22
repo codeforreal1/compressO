@@ -447,6 +447,7 @@ async fn main() {
         .invoke_handler(tauri::generate_handler![
             core::tool_bundle::get_tool_status,
             core::tool_bundle::prepare_tools,
+            core::tool_bundle::exit_tool_preparation,
             compress_video,
             compress_videos_batch,
             compress_images_batch,

@@ -41,6 +41,12 @@ LZO, LZ4, or MinGW runtime DLL imports. The license is bundled with the app, and
 The helper is copied to `tool-bundle/bootstrap/lrzip.exe`, verified against the embedded manifest
 at extraction time, and launched without an additional console window.
 
+The older Windows helper receives only ASCII relative filenames. Rust copies the verified archive
+into the writable staging directory, and LRZIP runs there with `tools.tar.lrz` as input and
+`tools.tar` as output. This avoids passing Tauri's canonical Windows resource paths (`\\?\...`)
+to the port's older C file APIs. The temporary archive copy is removed before installation is
+completed. The build-time round-trip check uses the same relative-path strategy.
+
 On macOS, tools are copied and signed **before** their hashes and archive are generated.
 `APPLE_SIGNING_IDENTITY` selects the release identity; local builds use ad-hoc signing. The helper
 is signed with the same identity. Production Developer ID signing/notarization must still be
@@ -76,6 +82,7 @@ separate directories; older versions are retained so switching versions does not
 The archive stays in the application bundle for offline repair.
 
 If installation or repair is required, Rust opens a separate **Preparing CompressO** window.
+It is a centered, borderless splash window with no native title bar, shadow, or window buttons.
 The main and tray frontends wait before mounting their normal router and hooks. Hardware encoder
 probing also waits. Files opened during preparation stay queued for frontend readiness.
 
@@ -85,7 +92,11 @@ It writes the completion marker and renames the staging directory into place onl
 An interrupted staging directory is cleared on retry. Missing files, changed bytes, missing execute
 permissions, and missing completion markers trigger full re-extraction on the next launch.
 Closing the preparation window exits the app and stops a running decompressor. Failures stay in
-that window with an error and a Retry button; a damaged bundled archive requires reinstalling.
+that window with an error and small, side-by-side Retry, Exit, and Show logs buttons; a damaged
+bundled archive requires reinstalling. Exit quits the app and stops any remaining extraction
+subprocess. Show logs uses the same current-log-file reveal action as Settings. Preparation
+failures record their stage, target, and error (including decompressor diagnostics) in that log,
+and log output is flushed before revealing the file so it can be sent to the developer.
 
 Executable paths are resolved inside Rust, never from user input or the system PATH. Existing
 compression process management, cancellation, and progress handling are retained. Tool commands
