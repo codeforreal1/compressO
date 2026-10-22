@@ -2,10 +2,32 @@
 use std::{path::PathBuf, process::Command};
 
 fn main() {
+    prepare_tool_manifest();
     #[cfg(target_os = "macos")]
     build_swift_library();
 
     tauri_build::build()
+}
+
+// Embed the expected manifest in the app executable: a replaced resource manifest must never
+// be able to authorize different executable bytes. Dev runs may use the source binaries.
+fn prepare_tool_manifest() {
+    let target = std::env::var("TARGET").unwrap();
+    println!("cargo:rustc-env=COMPRESSO_TARGET={target}");
+    let source = std::path::Path::new("tool-bundle/manifest.json");
+    println!("cargo:rerun-if-changed=tool-bundle/manifest.json");
+    let manifest = std::fs::read_to_string(source).ok().filter(|text| {
+        text.contains(&format!("\"target\": \"{target}\""))
+    });
+    let manifest = manifest.unwrap_or_else(|| {
+        if std::env::var("PROFILE").unwrap() == "release" {
+            panic!("Missing tool archive for {target}. Run the Tauri build or scripts/prepare-tools.mjs first.");
+        }
+        "{}".to_string()
+    });
+    let output = std::path::PathBuf::from(std::env::var("OUT_DIR").unwrap())
+        .join("tool-manifest.json");
+    std::fs::write(output, manifest).expect("write embedded tool manifest");
 }
 
 // Compiles the Swift package (native macOS UI) into a static library and links it in. Rust talks to

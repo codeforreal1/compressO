@@ -41,3 +41,8 @@ analyze
 target
 
 .DS_Store
+
+# Generated target-specific compressed tools
+/src-tauri/tool-bundle/*
+!/src-tauri/tool-bundle/.gitkeep
+/src-tauri/.toolchain-cache/

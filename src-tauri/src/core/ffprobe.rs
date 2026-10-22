@@ -6,7 +6,6 @@ use serde_json::Value;
 use std::path::Path;
 use std::process::Command;
 use tauri::AppHandle;
-use tauri_plugin_shell::ShellExt;
 
 pub struct FFPROBE {
     app: AppHandle,
@@ -28,10 +27,7 @@ impl FFPROBE {
     }
 
     pub fn get_ffprobe_command(&self) -> Result<Command, String> {
-        self.app
-            .shell()
-            .sidecar("compresso_ffprobe")
-            .map(Command::from)
+        super::tool_bundle::command(&self.app, "ffprobe")
             .map_err(|e| format!("Failed to create ffprobe command: {}", e))
     }
 

@@ -9,7 +9,6 @@
 use std::sync::atomic::{AtomicBool, Ordering};
 
 use tauri::AppHandle;
-use tauri_plugin_shell::ShellExt;
 use tokio::sync::OnceCell;
 
 /// Whether to use the graphics card, as set in the settings (off by default)
@@ -112,7 +111,7 @@ pub async fn available_encoders(app: &AppHandle) -> &'static [HardwareEncoder] {
 
 /// Whether an encoder can encode a single frame here
 async fn works(app: &AppHandle, candidate: &HardwareEncoder) -> bool {
-    let Ok(command) = app.shell().sidecar("compresso_ffmpeg") else {
+    let Ok(mut command) = super::tool_bundle::command(app, "ffmpeg").map(tokio::process::Command::from) else {
         return false;
     };
     let pixel_format = if candidate.api == Api::Qsv { "nv12" } else { "yuv420p" };

@@ -15,7 +15,7 @@ use tauri::{AppHandle, Listener, Manager};
 /// not kept alive.
 static RUNNING_PROCESSES: Mutex<Vec<Weak<SharedChild>>> = Mutex::new(Vec::new());
 
-fn register_running_process(process: &Arc<SharedChild>) {
+pub(super) fn register_running_process(process: &Arc<SharedChild>) {
     if let Ok(mut processes) = RUNNING_PROCESSES.lock() {
         processes.retain(|process| process.strong_count() > 0);
         processes.push(Arc::downgrade(process));

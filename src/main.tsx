@@ -6,6 +6,7 @@ import './global.css'
 import './i18n'
 
 import { routeTree } from './routeTree.gen'
+import { ToolPreparation } from './ui/ToolsPreparation'
 import { getServerUrl } from './utils/video'
 
 const router = createRouter({
@@ -44,5 +45,9 @@ const rootElement = document.getElementById('app')!
 
 if (!rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement)
-  root.render(<RouterProvider router={router} />)
+  root.render(
+    <ToolPreparation>
+      <RouterProvider router={router} />
+    </ToolPreparation>,
+  )
 }

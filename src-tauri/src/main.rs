@@ -100,6 +100,9 @@ impl PendingFiles {
 }
 
 fn show_main_window(app_handle: &tauri::AppHandle) {
+    if !core::tool_bundle::is_ready(app_handle) {
+        return;
+    }
     if let Some(window) = app_handle.get_webview_window("main") {
         if !window.is_visible().unwrap_or(false) {
             let _ = window.show();
@@ -248,6 +251,18 @@ fn urls_from_launch_args(args: &[String], cwd: Option<&str>) -> Vec<Url> {
 fn on_second_instance(app_handle: &tauri::AppHandle, args: Vec<String>, cwd: String) {
     log::info!("Another launch of the app, bringing this one forward");
 
+    if !core::tool_bundle::is_ready(app_handle) {
+        if let Some(window) = app_handle.get_webview_window("preparation") {
+            let _ = window.set_focus();
+        }
+        #[cfg(any(windows, target_os = "linux"))]
+        {
+            let urls = urls_from_launch_args(&args, Some(&cwd));
+            let _ = handle_open_with_app(app_handle, urls);
+        }
+        return;
+    }
+
     // Also when the main window was closed, while the app keeps running in the tray
     #[cfg(any(target_os = "macos", windows))]
     if let Err(e) = tauri_commands::tray::focus_or_create_main_window(app_handle) {
@@ -307,6 +322,14 @@ async fn main() {
                 .build(),
         )
         .plugin(tauri_plugin_updater::Builder::new().build())
+        .on_window_event(|window, event| {
+            if window.label() == "preparation"
+                && matches!(event, tauri::WindowEvent::CloseRequested { .. })
+                && !core::tool_bundle::is_ready(window.app_handle())
+            {
+                window.app_handle().exit(0);
+            }
+        })
         .setup(|app| {
             // Log files, so problems can be looked into (see `sys::logging`); added here, as the
             // log folder is the app's
@@ -319,18 +342,11 @@ async fn main() {
                 Err(e) => eprintln!("Failed to start logging: {}", e),
             }
             sys::logging::log_app_start(app.handle());
+            app.manage(core::tool_bundle::ToolBundleState::default());
+            core::tool_bundle::prepare_tools(app.handle().clone());
             app.manage(PendingFiles::new());
             app.manage(FrontendReady::new());
             app.manage(CompressionStatusState(Mutex::new(Default::default())));
-
-            // Finds the graphics card's video encoders in the background, so the first compression
-            // does not wait for it
-            {
-                let app_handle = app.handle().clone();
-                tauri::async_runtime::spawn(async move {
-                    core::hardware_encoder::available_encoders(&app_handle).await;
-                });
-            }
 
             #[cfg(target_os = "macos")]
             quit::install_macos_quit_confirmation(app.handle());
@@ -429,6 +445,8 @@ async fn main() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            core::tool_bundle::get_tool_status,
+            core::tool_bundle::prepare_tools,
             compress_video,
             compress_videos_batch,
             compress_images_batch,

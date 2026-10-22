@@ -20,7 +20,6 @@ use std::{
     sync::Arc,
 };
 use tauri::{AppHandle, Emitter, Listener, Manager};
-use tauri_plugin_shell::ShellExt;
 
 pub struct FFMPEG {
     app: AppHandle,
@@ -71,7 +70,7 @@ static FFMPEG_ENCODERS: tokio::sync::OnceCell<String> = tokio::sync::OnceCell::c
 async fn has_encoder(app: &AppHandle, name: &str) -> bool {
     let encoders = FFMPEG_ENCODERS
         .get_or_init(|| async {
-            let Ok(command) = app.shell().sidecar("compresso_ffmpeg") else {
+            let Ok(mut command) = super::tool_bundle::command(app, "ffmpeg").map(tokio::process::Command::from) else {
                 return String::new();
             };
             command
@@ -118,10 +117,7 @@ impl FFMPEG {
     }
 
     pub fn get_ffmpeg_command(&self) -> Result<Command, String> {
-        self.app
-            .shell()
-            .sidecar("compresso_ffmpeg")
-            .map(Command::from)
+        super::tool_bundle::command(&self.app, "ffmpeg")
             .map_err(|e| format!("Failed to create ffmpeg command: {}", e))
     }
 

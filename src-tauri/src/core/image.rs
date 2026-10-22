@@ -26,7 +26,6 @@ use std::path::PathBuf;
 use std::process::Command;
 use std::sync::Arc;
 use tauri::{AppHandle, Emitter, Listener};
-use tauri_plugin_shell::ShellExt;
 
 pub const EXTENSIONS: [&str; 7] = ["png", "jpg", "jpeg", "webp", "gif", "svg", "avif"];
 
@@ -61,26 +60,17 @@ impl ImageCompressor {
     }
 
     pub fn get_pngquant_command(&self) -> Result<Command, String> {
-        self.app
-            .shell()
-            .sidecar("compresso_pngquant")
-            .map(Command::from)
+        super::tool_bundle::command(&self.app, "pngquant")
             .map_err(|e| format!("Failed to create pngquant command: {}", e))
     }
 
     pub fn get_jpegoptim_command(&self) -> Result<Command, String> {
-        self.app
-            .shell()
-            .sidecar("compresso_jpegoptim")
-            .map(Command::from)
+        super::tool_bundle::command(&self.app, "jpegoptim")
             .map_err(|e| format!("Failed to create jpegoptim command: {}", e))
     }
 
     pub fn get_gifski_command(&self) -> Result<Command, String> {
-        self.app
-            .shell()
-            .sidecar("compresso_gifski")
-            .map(Command::from)
+        super::tool_bundle::command(&self.app, "gifski")
             .map_err(|e| format!("Failed to create gifski command: {}", e))
     }
 

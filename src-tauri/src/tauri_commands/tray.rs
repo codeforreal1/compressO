@@ -297,6 +297,13 @@ pub fn handle_tray_icon_menu_event(app_handle: &AppHandle, event: MenuEvent) {
 /// Shows & focuses the main window, recreating it if it was closed (the app keeps running while
 /// the tray is alive)
 pub fn focus_or_create_main_window(app_handle: &AppHandle) -> Result<(), String> {
+    if !crate::core::tool_bundle::is_ready(app_handle) {
+        if let Some(window) = app_handle.get_webview_window("preparation") {
+            window.show().map_err(|e| e.to_string())?;
+            window.set_focus().map_err(|e| e.to_string())?;
+        }
+        return Ok(());
+    }
     match app_handle.get_webview_window(MAIN_WINDOW_LABEL) {
         Some(window) => {
             window.unminimize().map_err(|e| e.to_string())?;

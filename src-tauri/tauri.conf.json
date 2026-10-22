@@ -4,7 +4,7 @@
   "version": "4.0.0",
   "identifier": "com.compresso.app",
   "build": {
-    "beforeBuildCommand": "pnpm vite:build",
+    "beforeBuildCommand": "node scripts/prepare-tools.mjs && pnpm vite:build",
     "frontendDist": "../dist",
     "devUrl": "http://localhost:3001"
   },
@@ -15,13 +15,6 @@
     "category": "Video",
     "copyright": "Code For Real",
     "targets": ["deb", "appimage", "nsis", "dmg", "app"],
-    "externalBin": [
-      "./bin/compresso_ffmpeg",
-      "./bin/compresso_ffprobe",
-      "./bin/compresso_pngquant",
-      "./bin/compresso_jpegoptim",
-      "./bin/compresso_gifski"
-    ],
     "fileAssociations": [
       {
         "ext": ["mp4"],
@@ -158,7 +151,10 @@
       "providerShortName": null,
       "signingIdentity": null
     },
-    "resources": { "../LICENSES/": "" },
+    "resources": {
+      "../LICENSES/": "",
+      "tool-bundle/": "tool-bundle/"
+    },
     "linux": {
       "appimage": {
         "bundleMediaFramework": true

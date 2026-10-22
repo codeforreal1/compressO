@@ -85,9 +85,9 @@ jobs:
           - name: macOS, Apple Silicon
             os: macos-latest
             target: aarch64-apple-darwin
-          # Built on Apple Silicon too (see `swift_build_command` in src-tauri/build.rs)
+          # lrzip and its libraries must match the release architecture.
           - name: macOS, Intel
-            os: macos-latest
+            os: macos-15-intel
             target: x86_64-apple-darwin
           - name: Windows
             os: windows-latest
@@ -177,6 +177,7 @@ jobs:
           case "$TARGET" in
             *-apple-darwin)
               arch=$([ "$TARGET" = aarch64-apple-darwin ] && echo aarch64 || echo x64)
+              cp "src-tauri/.toolchain-cache/toolchain-sources-${TARGET}.tar.gz" release-files/
               cp "$bundle/dmg/CompressO_${VERSION}_${arch}.dmg" release-files/
               cp "$bundle/macos/CompressO.app.tar.gz" "release-files/CompressO_${VERSION}_${arch}.app.tar.gz"
               cp "$bundle/macos/CompressO.app.tar.gz.sig" "release-files/CompressO_${VERSION}_${arch}.app.tar.gz.sig"
