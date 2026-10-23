@@ -290,7 +290,7 @@ function SettingsDialog({ onClose, hasNewVersion }: SettingsDialogProps) {
           isClearable
           onClear={() => setSearch('')}
           startContent={
-            <Icon name="search" size={16} className="text-zinc-500" />
+            <Icon name="search" size={20} className="text-zinc-500" />
           }
           onKeyDown={(evt) => {
             // The first result, as with a search on the web
