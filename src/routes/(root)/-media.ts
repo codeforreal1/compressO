@@ -15,6 +15,7 @@ import {
 } from '@/tauri/commands/fs'
 import {
   convertSvgToPng,
+  getWebImageDimensions,
   needsImagePreview,
   prepareImagePreview,
 } from '@/tauri/commands/image'
@@ -270,17 +271,30 @@ export async function addMedia(selection: MediaSelection | MediaSelection[]) {
       }
       return videoState
     } else if (mediaType === 'image') {
-      const imageDimension = await (path.endsWith('.svg')
-        ? getSvgDimensionSilently(path)
-        : getImageDimension(path))
+      let previewPath = path
+      let imageDimension: [number, number] | null
+      if (needsImagePreview(path)) {
+        try {
+          imageDimension = await getWebImageDimensions(
+            core.convertFileSrc(path),
+          )
+        } catch {
+          previewPath = await prepareImagePreview(path)
+          imageDimension = await getImageDimension(previewPath)
+        }
+      } else {
+        imageDimension = await (path.endsWith('.svg')
+          ? getSvgDimensionSilently(path)
+          : getImageDimension(path))
+      }
       const imageState: Image & { type: 'image' } = {
         type: 'image',
         id: createMediaId(),
         pathRaw: path,
         path: core.convertFileSrc(path),
         relativeDir,
-        thumbnailPathRaw: path,
-        thumbnailPath: core.convertFileSrc(path),
+        thumbnailPathRaw: previewPath,
+        thumbnailPath: core.convertFileSrc(previewPath),
         fileName: fileMetadata?.fileName,
         mimeType: fileMetadata?.mimeType,
         sizeInBytes: fileMetadata?.size,
@@ -291,12 +305,6 @@ export async function addMedia(selection: MediaSelection | MediaSelection[]) {
           width: imageDimension?.[0] ?? 0,
           height: imageDimension?.[1] ?? 0,
         },
-      }
-
-      if (needsImagePreview(path)) {
-        const preview = await prepareImagePreview(path)
-        imageState.thumbnailPathRaw = preview
-        imageState.thumbnailPath = core.convertFileSrc(preview)
       }
 
       // input-only formats can't be written back, so default to lossless png

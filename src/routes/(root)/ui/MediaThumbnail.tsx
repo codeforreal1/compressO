@@ -348,6 +348,7 @@ function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
       ? (compressedFile?.savedPath ?? compressedFile?.pathRaw)
       : undefined,
     compressedFile,
+    thumbnailPath,
   )
   const compressedFileSrc = useMemo(
     () =>

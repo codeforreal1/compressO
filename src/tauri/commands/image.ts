@@ -39,3 +39,12 @@ export function needsImagePreview(path: string) {
 export function prepareImagePreview(imagePath: string): Promise<string> {
   return core.invoke('prepare_image_preview', { imagePath })
 }
+
+export function getWebImageDimensions(src: string): Promise<[number, number]> {
+  return new Promise((resolve, reject) => {
+    const image = new window.Image()
+    image.onload = () => resolve([image.naturalWidth, image.naturalHeight])
+    image.onerror = () => reject(new Error('WebView cannot display this image'))
+    image.src = src
+  })
+}

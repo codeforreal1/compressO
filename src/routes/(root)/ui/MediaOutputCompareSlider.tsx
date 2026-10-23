@@ -60,6 +60,7 @@ function MediaOutputCompareSlider({
           mediaFile.compressedFile?.pathRaw)
       : undefined,
     mediaFile?.compressedFile,
+    mediaFile?.thumbnailPath,
   )
   const id = useId()
 
@@ -159,6 +160,9 @@ function MediaOutputCompareSlider({
     (mediaFile?.compressedFile?.isSaved && mediaFile.compressedFile.savedPath
       ? `${core.convertFileSrc(mediaFile.compressedFile.savedPath)}?v=${mediaFile.compressedFile.sizeInBytes ?? 0}`
       : mediaFile?.compressedFile?.path)
+  const imageOutputPath = outputPath
+    ? `${outputPath}${outputPath.includes('?') ? '&' : '?'}id=${id}`
+    : ''
 
   return (
     <div id={id} className="rounded-3xl overflow-hidden px-4">
@@ -201,7 +205,7 @@ function MediaOutputCompareSlider({
                       isOriginal: false,
                     },
                   )
-              : renderImage(`${outputPath!}?id={${id}}`, {
+              : renderImage(imageOutputPath, {
                   isOriginal: false,
                 })
           }
