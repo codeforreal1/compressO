@@ -1,4 +1,18 @@
 {
+  "toolPreparation": {
+    "title": "Preparando CompressO",
+    "checking": "Comprobando las herramientas de compresión…",
+    "verifying": "Verificando las herramientas de compresión…",
+    "extracting": "Extrayendo las herramientas de compresión…",
+    "validating": "Validando las herramientas de compresión…",
+    "failed": "No se pudieron preparar las herramientas de compresión. Consulta los registros para obtener detalles.",
+    "statusUnavailable": "No se pudo comprobar el estado de las herramientas. Inténtalo de nuevo.",
+    "retry": "Reintentar",
+    "exit": "Salir",
+    "showLogs": "Mostrar registros",
+    "logOpenFailed": "No se pudo abrir el archivo de registro.",
+    "included": "Todo está incluido. No es necesario descargar nada."
+  },
   "settings": {
     "general": {
       "startup": {
@@ -151,6 +165,9 @@
           "description_linux": "Los archivos nuevos añadidos a estas carpetas, como grabaciones de pantalla o descargas, se comprimen automáticamente mientras CompressO está abierto."
         },
         "watch": "Vigilar {{name}}",
+        "missing": "La carpeta no existe. No se está supervisando.",
+        "stillMissing": "La carpeta aún no existe. Vuelve a crearla antes de activar la supervisión.",
+        "checkFailed": "No se pudo comprobar si existe esta carpeta. Inténtalo de nuevo.",
         "remove": "Dejar de vigilar",
         "preset_video": "Vídeos",
         "preset_image": "Imágenes",

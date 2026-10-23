@@ -1,4 +1,18 @@
 {
+  "toolPreparation": {
+    "title": "CompressO hazırlanıyor",
+    "checking": "Sıkıştırma araçları kontrol ediliyor…",
+    "verifying": "Sıkıştırma araçları doğrulanıyor…",
+    "extracting": "Sıkıştırma araçları çıkarılıyor…",
+    "validating": "Sıkıştırma araçları geçerlilik kontrolünden geçiriliyor…",
+    "failed": "Sıkıştırma araçları hazırlanamadı. Ayrıntılar için günlükleri görüntüleyin.",
+    "statusUnavailable": "Araçların durumu kontrol edilemedi. Tekrar deneyin.",
+    "retry": "Tekrar dene",
+    "exit": "Çıkış",
+    "showLogs": "Günlükleri göster",
+    "logOpenFailed": "Günlük dosyası açılamadı.",
+    "included": "Her şey dahildir. İndirme gerekmez."
+  },
   "settings": {
     "general": {
       "startup": {
@@ -151,6 +165,9 @@
           "description_linux": "Bu klasörlere eklenen yeni medya, örneğin ekran kayıtları veya indirmeler, CompressO açıkken otomatik olarak sıkıştırılır."
         },
         "watch": "{{name}} klasörünü izle",
+        "missing": "Klasör mevcut değil. İzlenmiyor.",
+        "stillMissing": "Klasör henüz mevcut değil. İzlemeyi açmadan önce klasörü yeniden oluşturun.",
+        "checkFailed": "Bu klasörün mevcut olup olmadığı kontrol edilemedi. Tekrar deneyin.",
         "remove": "İzlemeyi durdur",
         "preset_video": "Videolar",
         "preset_image": "Görüntüler",

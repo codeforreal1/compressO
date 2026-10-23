@@ -151,7 +151,7 @@ fn show_preparation(app: &AppHandle) -> Result<(), String> {
         return Ok(());
     }
     WebviewWindowBuilder::new(app, "preparation", WebviewUrl::App("index.html".into()))
-        .title("Preparing CompressO")
+        .title("CompressO")
         .inner_size(460.0, 340.0)
         .resizable(false)
         .decorations(true)

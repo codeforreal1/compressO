@@ -1,4 +1,18 @@
 {
+  "toolPreparation": {
+    "title": "Preparazione di CompressO",
+    "checking": "Controllo degli strumenti di compressione…",
+    "verifying": "Verifica degli strumenti di compressione…",
+    "extracting": "Estrazione degli strumenti di compressione…",
+    "validating": "Convalida degli strumenti di compressione…",
+    "failed": "Impossibile preparare gli strumenti di compressione. Consulta i log per i dettagli.",
+    "statusUnavailable": "Impossibile controllare lo stato degli strumenti. Riprova.",
+    "retry": "Riprova",
+    "exit": "Esci",
+    "showLogs": "Mostra log",
+    "logOpenFailed": "Impossibile aprire il file di log.",
+    "included": "È tutto incluso. Non serve scaricare nulla."
+  },
   "settings": {
     "general": {
       "startup": {
@@ -151,6 +165,9 @@
           "description_linux": "I nuovi file aggiunti a queste cartelle, come registrazioni dello schermo o download, vengono compressi automaticamente finché CompressO è aperto."
         },
         "watch": "Monitora {{name}}",
+        "missing": "La cartella non esiste. Non viene monitorata.",
+        "stillMissing": "La cartella non esiste ancora. Ricreala prima di attivare il monitoraggio.",
+        "checkFailed": "Impossibile verificare se questa cartella esiste. Riprova.",
         "remove": "Interrompi il monitoraggio",
         "preset_video": "Video",
         "preset_image": "Immagini",

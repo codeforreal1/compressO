@@ -1,4 +1,18 @@
 {
+  "toolPreparation": {
+    "title": "Preparando o CompressO",
+    "checking": "Verificando as ferramentas de compressão…",
+    "verifying": "Conferindo as ferramentas de compressão…",
+    "extracting": "Extraindo as ferramentas de compressão…",
+    "validating": "Validando as ferramentas de compressão…",
+    "failed": "Não foi possível preparar as ferramentas de compressão. Consulte os logs para obter detalhes.",
+    "statusUnavailable": "Não foi possível verificar o status das ferramentas. Tente novamente.",
+    "retry": "Tentar novamente",
+    "exit": "Sair",
+    "showLogs": "Mostrar logs",
+    "logOpenFailed": "Não foi possível abrir o arquivo de log.",
+    "included": "Tudo está incluído. Nenhum download é necessário."
+  },
   "settings": {
     "general": {
       "startup": {
@@ -151,6 +165,9 @@
           "description_linux": "As novas mídias adicionadas a estas pastas, como gravações de tela ou downloads, são comprimidas automaticamente enquanto o CompressO estiver aberto."
         },
         "watch": "Monitorar {{name}}",
+        "missing": "A pasta não existe e não está sendo monitorada.",
+        "stillMissing": "A pasta ainda não existe. Recrie-a antes de ativar o monitoramento.",
+        "checkFailed": "Não foi possível verificar se esta pasta existe. Tente novamente.",
         "remove": "Parar de monitorar",
         "preset_video": "Vídeos",
         "preset_image": "Imagens",

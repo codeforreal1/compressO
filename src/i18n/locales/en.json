@@ -1,4 +1,18 @@
 {
+  "toolPreparation": {
+    "title": "Preparing CompressO",
+    "checking": "Checking compression tools…",
+    "verifying": "Verifying compression tools…",
+    "extracting": "Extracting compression tools…",
+    "validating": "Validating compression tools…",
+    "failed": "Could not prepare compression tools. Show logs for details.",
+    "statusUnavailable": "Could not check tool status. Try again.",
+    "retry": "Retry",
+    "exit": "Exit",
+    "showLogs": "Show logs",
+    "logOpenFailed": "Could not open the log file.",
+    "included": "Everything is included. No download is needed."
+  },
   "settings": {
     "general": {
       "startup": {
@@ -151,6 +165,9 @@
           "description_linux": "New media added to these folders, such as screen recordings or downloads, is compressed automatically while CompressO is open."
         },
         "watch": "Watch {{name}}",
+        "missing": "Folder does not exist. It is not being watched.",
+        "stillMissing": "Folder does not exist yet. Recreate it before turning on watching.",
+        "checkFailed": "Could not check whether this folder exists. Try again.",
         "remove": "Stop watching",
         "preset_video": "Videos",
         "preset_image": "Images",

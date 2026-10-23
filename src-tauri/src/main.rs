@@ -457,6 +457,7 @@ async fn main() {
             compress_media_batch,
             estimate_video_size,
             sys::watch_folders::set_watched_folders,
+            sys::watch_folders::missing_watched_folders,
             sys::history::get_history,
             sys::history::add_history_entries,
             sys::history::set_history_output,

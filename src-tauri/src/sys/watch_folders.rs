@@ -61,6 +61,22 @@ pub fn init(app_handle: &AppHandle) {
     let _ = APP_HANDLE.set(app_handle.clone());
 }
 
+/// Paths that no longer name directories. Checked when Watch Folder settings open and before a
+/// folder is enabled, since the operating system may not report removal of the watched root.
+#[tauri::command]
+pub async fn missing_watched_folders(paths: Vec<String>) -> Vec<String> {
+    let mut missing = Vec::new();
+    for path in paths {
+        match tokio::fs::metadata(&path).await {
+            Ok(metadata) if metadata.is_dir() => {}
+            Ok(_) => missing.push(path),
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => missing.push(path),
+            Err(error) => log::warn!("[watch-folders] Could not check {}: {}", path, error),
+        }
+    }
+    missing
+}
+
 /// The files directly in a folder (not in its subfolders)
 fn files_in(path: &Path) -> HashSet<PathBuf> {
     std::fs::read_dir(path)

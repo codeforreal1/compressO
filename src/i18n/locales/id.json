@@ -1,4 +1,18 @@
 {
+  "toolPreparation": {
+    "title": "Menyiapkan CompressO",
+    "checking": "Memeriksa alat kompresi…",
+    "verifying": "Memverifikasi alat kompresi…",
+    "extracting": "Mengekstrak alat kompresi…",
+    "validating": "Memvalidasi alat kompresi…",
+    "failed": "Tidak dapat menyiapkan alat kompresi. Lihat log untuk detailnya.",
+    "statusUnavailable": "Tidak dapat memeriksa status alat. Coba lagi.",
+    "retry": "Coba lagi",
+    "exit": "Keluar",
+    "showLogs": "Tampilkan log",
+    "logOpenFailed": "Tidak dapat membuka berkas log.",
+    "included": "Semuanya sudah disertakan. Tidak perlu mengunduh."
+  },
   "settings": {
     "general": {
       "startup": {
@@ -151,6 +165,9 @@
           "description_linux": "Media baru yang ditambahkan ke folder ini, seperti rekaman layar atau unduhan, dikompres secara otomatis selama CompressO terbuka."
         },
         "watch": "Pantau {{name}}",
+        "missing": "Folder tidak ada. Folder ini tidak dipantau.",
+        "stillMissing": "Folder belum ada. Buat kembali sebelum mengaktifkan pemantauan.",
+        "checkFailed": "Tidak dapat memeriksa apakah folder ini ada. Coba lagi.",
         "remove": "Berhenti memantau",
         "preset_video": "Video",
         "preset_image": "Gambar",

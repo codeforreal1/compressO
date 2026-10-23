@@ -1,4 +1,18 @@
 {
+  "toolPreparation": {
+    "title": "CompressO wird vorbereitet",
+    "checking": "Komprimierungswerkzeuge werden geprüft…",
+    "verifying": "Komprimierungswerkzeuge werden verifiziert…",
+    "extracting": "Komprimierungswerkzeuge werden entpackt…",
+    "validating": "Komprimierungswerkzeuge werden validiert…",
+    "failed": "Die Komprimierungswerkzeuge konnten nicht vorbereitet werden. Weitere Informationen stehen in den Protokollen.",
+    "statusUnavailable": "Der Werkzeugstatus konnte nicht geprüft werden. Versuche es erneut.",
+    "retry": "Erneut versuchen",
+    "exit": "Beenden",
+    "showLogs": "Protokolle anzeigen",
+    "logOpenFailed": "Die Protokolldatei konnte nicht geöffnet werden.",
+    "included": "Alles ist enthalten. Es ist kein Download erforderlich."
+  },
   "settings": {
     "general": {
       "startup": {
@@ -151,6 +165,9 @@
           "description_linux": "Neue Medien in diesen Ordnern, etwa Bildschirmaufnahmen oder Downloads, werden automatisch komprimiert, solange CompressO geöffnet ist."
         },
         "watch": "{{name}} überwachen",
+        "missing": "Der Ordner ist nicht vorhanden und wird nicht überwacht.",
+        "stillMissing": "Der Ordner ist noch nicht vorhanden. Erstelle ihn erneut, bevor du die Überwachung einschaltest.",
+        "checkFailed": "Es konnte nicht geprüft werden, ob der Ordner vorhanden ist. Versuche es erneut.",
         "remove": "Nicht mehr überwachen",
         "preset_video": "Videos",
         "preset_image": "Bilder",

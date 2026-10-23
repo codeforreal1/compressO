@@ -1,4 +1,18 @@
 {
+  "toolPreparation": {
+    "title": "正在準備 CompressO",
+    "checking": "正在檢查壓縮工具…",
+    "verifying": "正在驗證壓縮工具…",
+    "extracting": "正在解壓縮壓縮工具…",
+    "validating": "正在確認壓縮工具可用…",
+    "failed": "無法準備壓縮工具。請查看記錄以瞭解詳情。",
+    "statusUnavailable": "無法檢查工具狀態。請再試一次。",
+    "retry": "重試",
+    "exit": "結束",
+    "showLogs": "顯示記錄",
+    "logOpenFailed": "無法開啟記錄檔。",
+    "included": "所有工具均已包含，無須下載。"
+  },
   "settings": {
     "general": {
       "startup": {
@@ -151,6 +165,9 @@
           "description_linux": "在 CompressO 開啟時，加入這些資料夾的新媒體（例如螢幕錄影或下載內容）會被自動壓縮。"
         },
         "watch": "監看 {{name}}",
+        "missing": "資料夾不存在，目前未受監控。",
+        "stillMissing": "資料夾尚不存在。請先重新建立，再開啟監控。",
+        "checkFailed": "無法檢查此資料夾是否存在。請再試一次。",
         "remove": "停止監看",
         "preset_video": "影片",
         "preset_image": "圖片",

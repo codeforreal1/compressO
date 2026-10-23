@@ -1,6 +1,7 @@
 // The item must be HeroUI's own (not a wrapper) so the Select can build its collection
 import { SelectItem } from '@heroui/react'
 import { open } from '@tauri-apps/plugin-dialog'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
@@ -15,6 +16,8 @@ import { getFolderName } from '@/hooks/useAutoCompressSync'
 import { t } from '@/i18n'
 import { presetsStore } from '@/stores/presetsStore'
 import { settingsStore, type WatchedFolder } from '@/stores/settingsStore'
+import { logError } from '@/tauri/commands/app'
+import { getMissingWatchedFolders } from '@/tauri/commands/dropQueue'
 import { showItemInFileManager } from '@/tauri/commands/fs'
 import {
   type Preset,
@@ -91,6 +94,28 @@ function FolderPresetSelect({
 function WatchedFolders() {
   const { t } = useTranslation()
   const { watchedFolders, showMenuBarIcon } = useSnapshot(settingsStore)
+  const [missingPaths, setMissingPaths] = useState<string[]>([])
+  const [checkingFolderId, setCheckingFolderId] = useState<string | null>(null)
+
+  useEffect(() => {
+    let isMounted = true
+    const paths = settingsStore.watchedFolders.map((folder) => folder.path)
+    getMissingWatchedFolders(paths)
+      .then((missing) => {
+        if (!isMounted) return
+        setMissingPaths(missing)
+        const missingSet = new Set(missing)
+        for (const folder of settingsStore.watchedFolders) {
+          if (folder.isEnabled && missingSet.has(folder.path)) {
+            folder.isEnabled = false
+          }
+        }
+      })
+      .catch((error) => logError('Could not check watched folders', error))
+    return () => {
+      isMounted = false
+    }
+  }, [])
   // On macOS & Windows, the menu bar's (or tray's) window compresses their media, so it needs its
   // icon; on Linux, the main window does, while it is open
   const isUnavailable = hasTray && !showMenuBarIcon
@@ -107,12 +132,48 @@ function WatchedFolders() {
       path,
       isEnabled: true,
     })
+    setMissingPaths((current) => current.filter((missing) => missing !== path))
   }
 
   const removeFolder = (id: string) => {
+    const path = getStoredFolder(id)?.path
     settingsStore.watchedFolders = settingsStore.watchedFolders.filter(
       (folder) => folder.id !== id,
     )
+    if (path) {
+      setMissingPaths((current) =>
+        current.filter((missing) => missing !== path),
+      )
+    }
+  }
+
+  const setFolderEnabled = async (id: string, isEnabled: boolean) => {
+    const folder = getStoredFolder(id)
+    if (!folder) return
+    if (!isEnabled) {
+      folder.isEnabled = false
+      return
+    }
+    const path = folder.path
+    setCheckingFolderId(id)
+    try {
+      const missing = await getMissingWatchedFolders([path])
+      if (missing.includes(path)) {
+        setMissingPaths((current) => [...new Set([...current, path])])
+        toast.error(t('settings.dropZone.watchedFolders.stillMissing'))
+        return
+      }
+      setMissingPaths((current) =>
+        current.filter((missingPath) => missingPath !== path),
+      )
+      const current = getStoredFolder(id)
+      if (current?.path === path) current.isEnabled = true
+    } catch (error) {
+      logError('Could not check watched folder', error)
+      toast.error(t('settings.dropZone.watchedFolders.checkFailed'))
+    } finally {
+      setCheckingFolderId(null)
+    }
   }
 
   return (
@@ -142,6 +203,8 @@ function WatchedFolders() {
       {watchedFolders.map((folder) => {
         const name = getFolderName(folder.path)
         const isDisabled = isUnavailable || !folder.isEnabled
+        const isMissing = missingPaths.includes(folder.path)
+        const missingMessage = t('settings.dropZone.watchedFolders.missing')
         return (
           <div key={folder.id} className="py-4">
             <div className="flex items-center gap-3">
@@ -151,6 +214,17 @@ function WatchedFolders() {
                   {folder.path}
                 </p>
               </div>
+              {isMissing ? (
+                <Tooltip content={missingMessage} delay={150}>
+                  <span
+                    tabIndex={0}
+                    aria-label={missingMessage}
+                    className="flex items-center text-warning-400"
+                  >
+                    <Icon name="warning" size={20} />
+                  </span>
+                </Tooltip>
+              ) : null}
               <Tooltip
                 content={t('common.showInFileManager')}
                 aria-label={t('common.showInFileManager')}
@@ -175,10 +249,9 @@ function WatchedFolders() {
                   name,
                 })}
                 isSelected={folder.isEnabled}
-                isDisabled={isUnavailable}
+                isDisabled={isUnavailable || checkingFolderId === folder.id}
                 onValueChange={(isSelected) => {
-                  const target = getStoredFolder(folder.id)
-                  if (target) target.isEnabled = isSelected
+                  setFolderEnabled(folder.id, isSelected)
                 }}
               />
               <Tooltip

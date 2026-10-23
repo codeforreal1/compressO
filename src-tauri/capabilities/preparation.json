@@ -3,5 +3,5 @@
   "identifier": "preparation",
   "description": "Offline compression tool preparation window",
   "windows": ["preparation"],
-  "permissions": ["core:window:allow-close"]
+  "permissions": ["core:window:allow-close", "core:window:allow-set-title"]
 }

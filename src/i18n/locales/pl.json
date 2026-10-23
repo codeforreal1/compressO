@@ -1,4 +1,18 @@
 {
+  "toolPreparation": {
+    "title": "Przygotowywanie CompressO",
+    "checking": "Sprawdzanie narzędzi do kompresji…",
+    "verifying": "Weryfikowanie narzędzi do kompresji…",
+    "extracting": "Wypakowywanie narzędzi do kompresji…",
+    "validating": "Sprawdzanie poprawności narzędzi do kompresji…",
+    "failed": "Nie udało się przygotować narzędzi do kompresji. Szczegóły znajdziesz w dziennikach.",
+    "statusUnavailable": "Nie udało się sprawdzić stanu narzędzi. Spróbuj ponownie.",
+    "retry": "Ponów próbę",
+    "exit": "Wyjdź",
+    "showLogs": "Pokaż dzienniki",
+    "logOpenFailed": "Nie udało się otworzyć pliku dziennika.",
+    "included": "Wszystko jest dołączone. Pobieranie nie jest potrzebne."
+  },
   "settings": {
     "general": {
       "startup": {
@@ -151,6 +165,9 @@
           "description_linux": "Nowe multimedia dodane do tych folderów, np. nagrania ekranu lub pobrane pliki, są kompresowane automatycznie, gdy CompressO jest otwarty."
         },
         "watch": "Obserwuj {{name}}",
+        "missing": "Folder nie istnieje i nie jest obserwowany.",
+        "stillMissing": "Folder jeszcze nie istnieje. Utwórz go ponownie przed włączeniem obserwowania.",
+        "checkFailed": "Nie udało się sprawdzić, czy folder istnieje. Spróbuj ponownie.",
         "remove": "Przestań obserwować",
         "preset_video": "Wideo",
         "preset_image": "Obrazy",

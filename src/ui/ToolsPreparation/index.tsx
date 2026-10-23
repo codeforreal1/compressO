@@ -1,6 +1,7 @@
 import { invoke } from '@tauri-apps/api/core'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { type ReactNode, useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import Button from '@/components/Button'
 import Spinner from '@/components/Spinner'
@@ -20,6 +21,7 @@ const preparationWindow = getCurrentWindow().label === 'preparation'
 // Mount the router only after Rust has verified the tools. This also gates tray hooks,
 // watched folders, encoder probing, and frontend-ready/open-with delivery.
 export function ToolPreparation({ children }: { children: ReactNode }) {
+  const { t } = useTranslation()
   const [status, setStatus] = useState<ToolStatus | null>(null)
   const [connectionError, setConnectionError] = useState<string | null>(null)
   const [logAccessError, setLogAccessError] = useState<string | null>(null)
@@ -49,23 +51,41 @@ export function ToolPreparation({ children }: { children: ReactNode }) {
     }
   }, [])
 
+  useEffect(() => {
+    if (preparationWindow) {
+      getCurrentWindow()
+        .setTitle(t('toolPreparation.title'))
+        .catch(() => {})
+    }
+  }, [t])
+
   if (status?.ready && !preparationWindow) return children
   // The main window remains hidden; only the separate preparation window shows progress.
   if (!preparationWindow) return null
 
   const error = connectionError || status?.error
+  const progress =
+    status?.phase === 'verifying'
+      ? t('toolPreparation.verifying')
+      : status?.phase === 'extracting'
+        ? t('toolPreparation.extracting')
+        : status?.phase === 'validating'
+          ? t('toolPreparation.validating')
+          : t('toolPreparation.checking')
   return (
     <UIProvider>
       <main className="flex h-screen flex-col items-center justify-center gap-5 px-8 text-center text-neutral-900 dark:text-neutral-100">
         <img src="/logo.png" width="48" height="48" alt="" />
-        <h1 className="text-xl font-semibold">Preparing CompressO</h1>
+        <h1 className="text-xl font-semibold">{t('toolPreparation.title')}</h1>
         {error ? (
           <>
             <p
               role="alert"
               className="max-h-24 overflow-auto text-sm text-red-600 dark:text-red-400"
             >
-              {error}
+              {connectionError
+                ? t('toolPreparation.statusUnavailable')
+                : t('toolPreparation.failed')}
             </p>
             <div className="flex items-center gap-3">
               <Button
@@ -79,7 +99,7 @@ export function ToolPreparation({ children }: { children: ReactNode }) {
                   )
                 }}
               >
-                Retry
+                {t('toolPreparation.retry')}
               </Button>
               <Button
                 size="sm"
@@ -89,7 +109,7 @@ export function ToolPreparation({ children }: { children: ReactNode }) {
                   )
                 }}
               >
-                Exit
+                {t('toolPreparation.exit')}
               </Button>
               <Button
                 size="sm"
@@ -99,13 +119,11 @@ export function ToolPreparation({ children }: { children: ReactNode }) {
                     await showItemInFileManager(await getLogFilePath())
                   } catch (reason) {
                     logError('Could not show tool preparation logs', reason)
-                    setLogAccessError(
-                      `Could not open the log file: ${String(reason)}`,
-                    )
+                    setLogAccessError(String(reason))
                   }
                 }}
               >
-                Show logs
+                {t('toolPreparation.showLogs')}
               </Button>
             </div>
             {logAccessError ? (
@@ -113,22 +131,22 @@ export function ToolPreparation({ children }: { children: ReactNode }) {
                 role="alert"
                 className="max-h-12 overflow-auto text-xs text-red-600 dark:text-red-400"
               >
-                {logAccessError}
+                {t('toolPreparation.logOpenFailed')}
               </p>
             ) : null}
           </>
         ) : (
           <>
-            <Spinner aria-label="Preparing compression tools" />
+            <Spinner aria-label={t('toolPreparation.title')} />
             <p
               role="status"
               aria-live="polite"
               className="text-sm text-neutral-600 dark:text-neutral-300"
             >
-              {status?.message || 'Checking compression tools…'}
+              {progress}
             </p>
             <p className="text-xs text-neutral-500">
-              Everything is included. No download is needed.
+              {t('toolPreparation.included')}
             </p>
           </>
         )}

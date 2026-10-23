@@ -1,4 +1,18 @@
 {
+  "toolPreparation": {
+    "title": "Préparation de CompressO",
+    "checking": "Vérification des outils de compression…",
+    "verifying": "Contrôle des outils de compression…",
+    "extracting": "Extraction des outils de compression…",
+    "validating": "Validation des outils de compression…",
+    "failed": "Impossible de préparer les outils de compression. Consultez les journaux pour en savoir plus.",
+    "statusUnavailable": "Impossible de vérifier l’état des outils. Réessayez.",
+    "retry": "Réessayer",
+    "exit": "Quitter",
+    "showLogs": "Afficher les journaux",
+    "logOpenFailed": "Impossible d’ouvrir le fichier journal.",
+    "included": "Tout est inclus. Aucun téléchargement n’est nécessaire."
+  },
   "settings": {
     "general": {
       "startup": {
@@ -151,6 +165,9 @@
           "description_linux": "Les nouveaux médias ajoutés à ces dossiers, comme les enregistrements d’écran ou les téléchargements, sont compressés automatiquement tant que CompressO est ouvert."
         },
         "watch": "Surveiller {{name}}",
+        "missing": "Le dossier n’existe pas. Il n’est pas surveillé.",
+        "stillMissing": "Le dossier n’existe pas encore. Recréez-le avant d’activer la surveillance.",
+        "checkFailed": "Impossible de vérifier si ce dossier existe. Réessayez.",
         "remove": "Arrêter la surveillance",
         "preset_video": "Vidéos",
         "preset_image": "Images",

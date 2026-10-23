@@ -1,4 +1,18 @@
 {
+  "toolPreparation": {
+    "title": "CompressO 준비 중",
+    "checking": "압축 도구 확인 중…",
+    "verifying": "압축 도구 검증 중…",
+    "extracting": "압축 도구 추출 중…",
+    "validating": "압축 도구 유효성 검사 중…",
+    "failed": "압축 도구를 준비할 수 없습니다. 자세한 내용은 로그를 확인하세요.",
+    "statusUnavailable": "도구 상태를 확인할 수 없습니다. 다시 시도하세요.",
+    "retry": "다시 시도",
+    "exit": "종료",
+    "showLogs": "로그 보기",
+    "logOpenFailed": "로그 파일을 열 수 없습니다.",
+    "included": "필요한 파일이 모두 포함되어 있습니다. 다운로드할 필요가 없습니다."
+  },
   "settings": {
     "general": {
       "startup": {
@@ -151,6 +165,9 @@
           "description_linux": "CompressO가 열려 있는 동안 이 폴더에 추가된 새 미디어(화면 녹화, 다운로드 등)는 자동으로 압축됩니다."
         },
         "watch": "{{name}} 감시",
+        "missing": "폴더가 존재하지 않아 감시하지 않습니다.",
+        "stillMissing": "폴더가 아직 없습니다. 감시를 켜기 전에 다시 만드세요.",
+        "checkFailed": "이 폴더가 존재하는지 확인할 수 없습니다. 다시 시도하세요.",
         "remove": "감시 중지",
         "preset_video": "비디오",
         "preset_image": "이미지",

@@ -126,3 +126,8 @@ export function setWatchedFolders(
     supportedExtensions,
   })
 }
+
+/** Configured paths that no longer exist as directories. */
+export function getMissingWatchedFolders(paths: string[]) {
+  return core.invoke<string[]>('missing_watched_folders', { paths })
+}

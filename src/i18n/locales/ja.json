@@ -1,4 +1,18 @@
 {
+  "toolPreparation": {
+    "title": "CompressO を準備中",
+    "checking": "圧縮ツールを確認中…",
+    "verifying": "圧縮ツールを検証中…",
+    "extracting": "圧縮ツールを展開中…",
+    "validating": "圧縮ツールの動作を確認中…",
+    "failed": "圧縮ツールを準備できませんでした。詳細はログを確認してください。",
+    "statusUnavailable": "ツールの状態を確認できませんでした。もう一度お試しください。",
+    "retry": "再試行",
+    "exit": "終了",
+    "showLogs": "ログを表示",
+    "logOpenFailed": "ログファイルを開けませんでした。",
+    "included": "必要なものはすべて含まれています。ダウンロードは不要です。"
+  },
   "settings": {
     "general": {
       "startup": {
@@ -151,6 +165,9 @@
           "description_linux": "CompressO が開いている間、これらのフォルダに追加された新しいメディア（画面収録やダウンロードなど）は自動で圧縮されます。"
         },
         "watch": "{{name}} を監視",
+        "missing": "フォルダーが存在しないため、監視していません。",
+        "stillMissing": "フォルダーがまだ存在しません。監視をオンにする前に作成し直してください。",
+        "checkFailed": "フォルダーの存在を確認できませんでした。もう一度お試しください。",
         "remove": "監視を停止",
         "preset_video": "ビデオ",
         "preset_image": "画像",

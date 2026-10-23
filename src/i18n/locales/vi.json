@@ -1,4 +1,18 @@
 {
+  "toolPreparation": {
+    "title": "Đang chuẩn bị CompressO",
+    "checking": "Đang kiểm tra công cụ nén…",
+    "verifying": "Đang xác minh công cụ nén…",
+    "extracting": "Đang giải nén công cụ nén…",
+    "validating": "Đang kiểm tra tính hợp lệ của công cụ nén…",
+    "failed": "Không thể chuẩn bị công cụ nén. Xem nhật ký để biết chi tiết.",
+    "statusUnavailable": "Không thể kiểm tra trạng thái công cụ. Hãy thử lại.",
+    "retry": "Thử lại",
+    "exit": "Thoát",
+    "showLogs": "Hiện nhật ký",
+    "logOpenFailed": "Không thể mở tệp nhật ký.",
+    "included": "Mọi thứ đã được bao gồm. Không cần tải xuống."
+  },
   "settings": {
     "general": {
       "startup": {
@@ -151,6 +165,9 @@
           "description_linux": "Phương tiện mới được thêm vào các thư mục này, như bản ghi màn hình hoặc tệp tải xuống, sẽ được nén tự động khi CompressO đang mở."
         },
         "watch": "Theo dõi {{name}}",
+        "missing": "Thư mục không tồn tại nên hiện không được theo dõi.",
+        "stillMissing": "Thư mục chưa tồn tại. Hãy tạo lại trước khi bật theo dõi.",
+        "checkFailed": "Không thể kiểm tra thư mục này có tồn tại hay không. Hãy thử lại.",
         "remove": "Ngừng theo dõi",
         "preset_video": "Video",
         "preset_image": "Hình ảnh",

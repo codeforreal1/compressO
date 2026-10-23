@@ -1,4 +1,18 @@
 {
+  "toolPreparation": {
+    "title": "正在准备 CompressO",
+    "checking": "正在检查压缩工具…",
+    "verifying": "正在验证压缩工具…",
+    "extracting": "正在解压压缩工具…",
+    "validating": "正在确认压缩工具可用…",
+    "failed": "无法准备压缩工具。请查看日志了解详情。",
+    "statusUnavailable": "无法检查工具状态。请重试。",
+    "retry": "重试",
+    "exit": "退出",
+    "showLogs": "显示日志",
+    "logOpenFailed": "无法打开日志文件。",
+    "included": "所有工具均已包含，无需下载。"
+  },
   "settings": {
     "general": {
       "startup": {
@@ -151,6 +165,9 @@
           "description_linux": "在 CompressO 打开时，添加到这些文件夹的新媒体（例如屏幕录制或下载内容）会被自动压缩。"
         },
         "watch": "监视 {{name}}",
+        "missing": "文件夹不存在，当前未监视。",
+        "stillMissing": "文件夹尚不存在。请先重新创建，再开启监视。",
+        "checkFailed": "无法检查此文件夹是否存在。请重试。",
         "remove": "停止监视",
         "preset_video": "视频",
         "preset_image": "图片",
