@@ -40,6 +40,14 @@ export function hasReplacedOriginal(item: DropQueueItem) {
   return !!item.savedPath && normalize(item.savedPath) === normalize(item.path)
 }
 
+/**
+ * Whether a compressing item's progress is not known yet: images report none, & videos only once
+ * encoding starts (e.g. not while their target size is worked out)
+ */
+export function isProgressUnknown(item: DropQueueItem) {
+  return item.status === 'compressing' && item.progress <= 0
+}
+
 export function getSummary(items: readonly DropQueueItem[], isPaused = false) {
   const pendingCount = items.filter(
     (item) => item.status === 'waiting' || item.status === 'compressing',
@@ -127,6 +135,7 @@ function QueueItem({
             aria-label={t('queue.compressingName', { name })}
             size="sm"
             value={item.progress}
+            isIndeterminate={isProgressUnknown(item)}
             classNames={{ base: 'mt-1', track: 'h-1', indicator: 'h-1' }}
           />
         ) : (
@@ -173,6 +182,8 @@ function QueueItem({
           className={cn(
             'tabular-nums text-zinc-500 dark:text-zinc-400',
             isCompact ? 'text-[10px]' : 'text-xs',
+            // Its space is kept, so nothing moves when the percentage shows
+            isProgressUnknown(item) && 'invisible',
           )}
         >
           {Math.round(item.progress)}%

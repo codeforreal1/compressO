@@ -23,7 +23,11 @@ import { generateVideoThumbnail } from '@/tauri/commands/ffmpeg'
 import { deleteFile, showItemInFileManager } from '@/tauri/commands/fs'
 import { needsImagePreview, prepareImagePreview } from '@/tauri/commands/image'
 import { inputExtensions, isAudioFileExtension } from '@/types/compression'
-import { getSummary, hasReplacedOriginal } from '@/ui/DropQueueList'
+import {
+  getSummary,
+  hasReplacedOriginal,
+  isProgressUnknown,
+} from '@/ui/DropQueueList'
 import { formatBytes, getPlatform } from '@/utils/fs'
 import { isOverlayOpen, isTextEntryElement } from '@/utils/keyboard'
 import { cn } from '@/utils/tailwind'
@@ -181,7 +185,8 @@ function IslandTile({
           <CircularProgress
             aria-label={t('queue.compressingName', { name })}
             value={item.progress}
-            showValueLabel
+            isIndeterminate={isProgressUnknown(item)}
+            showValueLabel={!isProgressUnknown(item)}
             strokeWidth={3}
             classNames={{
               svg: 'w-11 h-11',
@@ -427,14 +432,17 @@ function DropZoneIsland() {
   const [isExpanded, setIsExpanded] = useState(false)
   const islandRef = useRef<HTMLDivElement>(null)
 
-  const compressingItem = items.find((item) => item.status === 'compressing')
   const pendingCount = items.filter(
     (item) => item.status === 'waiting' || item.status === 'compressing',
   ).length
   const finishedCount = items.length - pendingCount
+  // Up to one of each kind of media at a time (see `runDropQueue`)
+  const compressingProgress = items
+    .filter((item) => item.status === 'compressing')
+    .reduce((total, item) => total + item.progress, 0)
   // Progress of the whole queue
   const progress = items.length
-    ? (finishedCount * 100 + (compressingItem?.progress ?? 0)) / items.length
+    ? (finishedCount * 100 + compressingProgress) / items.length
     : 0
 
   // Collapses when clicking outside it or with Escape
