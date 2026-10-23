@@ -30,6 +30,15 @@ function getName(path: string) {
 }
 
 /** What the queue is doing, e.g. "Compressing 2 of 5" */
+/**
+ * Whether a done item's output took its original's place (Settings -> Output -> Replace original
+ * files), which is then in the Trash: compressing it again would compress the output
+ */
+export function hasReplacedOriginal(item: DropQueueItem) {
+  const normalize = (path: string) => path.replaceAll('\\', '/')
+  return !!item.savedPath && normalize(item.savedPath) === normalize(item.path)
+}
+
 export function getSummary(items: readonly DropQueueItem[], isPaused = false) {
   const pendingCount = items.filter(
     (item) => item.status === 'waiting' || item.status === 'compressing',
@@ -212,7 +221,7 @@ function QueueItem({
           changing its preset), keeping the output saved before */}
       {item.status === 'failed' ||
       item.status === 'cancelled' ||
-      item.status === 'done' ? (
+      (item.status === 'done' && !hasReplacedOriginal(item)) ? (
         <Tooltip
           content={
             item.status === 'done'

@@ -202,6 +202,11 @@
           "title": "Pomijaj większe wyniki",
           "description": "Nie zapisuj skompresowanego pliku, jeśli jest większy niż oryginał."
         },
+        "replaceOriginal": {
+          "title": "Zastępuj oryginalne pliki",
+          "description": "Gdy skompresowany plik jest zapisywany pod tą samą nazwą w tym samym folderze co oryginał, oryginał zostaje przeniesiony do Kosza i zachowany zostaje tylko skompresowany plik.",
+          "description_windows": "Gdy skompresowany plik jest zapisywany pod tą samą nazwą w tym samym folderze co oryginał, oryginał zostaje przeniesiony do Kosza i zachowany zostaje tylko skompresowany plik."
+        },
         "prefix": {
           "title": "Prefiks nazwy pliku",
           "placeholder": "Bez prefiksu",

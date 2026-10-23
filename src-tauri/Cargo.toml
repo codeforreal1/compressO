@@ -57,6 +57,7 @@ notify-debouncer-mini = "0.4.1"
 sha2 = "0.10.8"
 tar = "0.4"
 xz2 = { version = "0.1.7", features = ["static"] }
+trash = "5.2.3"
 
 [target.'cfg(unix)'.dependencies]
 libc = "0.2"

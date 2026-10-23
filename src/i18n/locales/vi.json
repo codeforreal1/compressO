@@ -202,6 +202,11 @@
           "title": "Bỏ qua đầu ra lớn hơn",
           "description": "Không lưu tệp đã nén nếu nó lớn hơn tệp gốc."
         },
+        "replaceOriginal": {
+          "title": "Thay thế tệp gốc",
+          "description": "Khi tệp đã nén được lưu cùng tên trong cùng thư mục với tệp gốc, tệp gốc sẽ được chuyển vào Thùng rác và chỉ giữ lại tệp đã nén.",
+          "description_windows": "Khi tệp đã nén được lưu cùng tên trong cùng thư mục với tệp gốc, tệp gốc sẽ được chuyển vào Thùng rác và chỉ giữ lại tệp đã nén."
+        },
         "prefix": {
           "title": "Tiền tố tên tệp",
           "placeholder": "Không có tiền tố",

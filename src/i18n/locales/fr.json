@@ -202,6 +202,11 @@
           "title": "Ignorer les sorties plus volumineuses",
           "description": "Ne pas enregistrer le média compressé s’il est plus volumineux que l’original."
         },
+        "replaceOriginal": {
+          "title": "Remplacer les fichiers originaux",
+          "description": "Lorsqu’un fichier compressé est enregistré sous le même nom dans le même dossier que l’original, l’original est déplacé vers la Corbeille et seul le fichier compressé est conservé.",
+          "description_windows": "Lorsqu’un fichier compressé est enregistré sous le même nom dans le même dossier que l’original, l’original est déplacé vers la Corbeille et seul le fichier compressé est conservé."
+        },
         "prefix": {
           "title": "Préfixe du nom de fichier",
           "placeholder": "Aucun préfixe",

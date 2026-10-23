@@ -33,7 +33,8 @@ function getMediaOutput(media: Pick<Media, 'config'>) {
  * structure" is off (Settings -> Output); with `keepFolderStructure` off (also next to their
  * originals), each file is saved straight into its base directory. Only files get the
  * prefix. Existing files & folders are never replaced; numbered names like
- * `clip (1).mp4` or `Vacation (1)` are used instead. Each file is saved independently, so one failure doesn't
+ * `clip (1).mp4` or `Vacation (1)` are used instead, except an original saved over with "Replace
+ * original files" on (Settings -> Output), which goes to the Trash. Each file is saved independently, so one failure doesn't
  * stop the rest; failed files stay unsaved for the Save button.
  */
 async function saveCompressedMedia(
@@ -94,6 +95,11 @@ async function saveCompressedMedia(
       const savedPath = await moveFile(
         compressedFile.pathRaw,
         `${destinationDirectory}/${prefix}${compressedFile.fileNameToDisplay || mediaFile.fileName}`,
+        {
+          replaceOriginal: settingsStore.replaceOriginalFiles
+            ? mediaFile.pathRaw
+            : null,
+        },
       )
       savedLocations.add(location)
       lastSavedPath = savedPath
@@ -228,10 +234,16 @@ export async function saveCompressedMediaWithPrompt() {
   if (!pathToSave) return
 
   // The dialog gives the exact path (the name may have been edited), so it's used as is. Even if
-  // "Replace" was confirmed in it, an existing file isn't replaced; a numbered name is used instead.
+  // "Replace" was confirmed in it, an existing file isn't replaced; a numbered name is used instead,
+  // except the original with "Replace original files" on (Settings -> Output), which goes to the
+  // Trash.
   appProxy.state.isSaving = true
   try {
-    const savedPath = await moveFile(compressedFile.pathRaw, pathToSave)
+    const savedPath = await moveFile(compressedFile.pathRaw, pathToSave, {
+      replaceOriginal: settingsStore.replaceOriginalFiles
+        ? mediaFile.pathRaw
+        : null,
+    })
     appProxy.state.savedPath = savedPath
     appProxy.state.media[0].compressedFile = {
       ...(snapshot(appProxy).state.media[0].compressedFile ?? {}),
@@ -434,6 +446,11 @@ export async function saveQueueOutput(
     const savedPath = await moveFile(
       output.outputPath,
       `${destinationDirectory}/${outputFilePrefix}${output.outputFileName}`,
+      {
+        replaceOriginal: settingsStore.replaceOriginalFiles
+          ? output.sourcePath
+          : null,
+      },
     )
     return { savedPath }
   } catch {

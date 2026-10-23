@@ -31,8 +31,20 @@ export function getSvgDimension(imagePath: string): Promise<[number, number]> {
  * Moves a file without ever replacing an existing one (uses a numbered name like `clip (1).mp4`
  * instead). Resolves to the path the file was saved to.
  */
-export function moveFile(from: string, to: string) {
-  return core.invoke<string>('move_file', { from, to })
+/**
+ * Moves a file, never replacing an existing one (a numbered name is used instead), except
+ * `replaceOriginal`: when `to` is that original, it is moved to the Trash & the file takes its place
+ */
+export function moveFile(
+  from: string,
+  to: string,
+  { replaceOriginal }: { replaceOriginal?: string | null } = {},
+) {
+  return core.invoke<string>('move_file', {
+    from,
+    to,
+    replaceOriginal: replaceOriginal ?? null,
+  })
 }
 
 /** First unused path for `path`, numbered like `name (1)` if it already exists */

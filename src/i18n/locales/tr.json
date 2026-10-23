@@ -202,6 +202,11 @@
           "title": "Daha büyük çıktıları atla",
           "description": "Sıkıştırılan medya orijinalinden büyükse kaydetmeyin."
         },
+        "replaceOriginal": {
+          "title": "Orijinal dosyaları değiştir",
+          "description": "Sıkıştırılan dosya, orijinaliyle aynı klasöre aynı adla kaydedildiğinde orijinal dosya Çöp Kutusu’na taşınır ve yalnızca sıkıştırılan dosya tutulur.",
+          "description_windows": "Sıkıştırılan dosya, orijinaliyle aynı klasöre aynı adla kaydedildiğinde orijinal dosya Geri Dönüşüm Kutusu’na taşınır ve yalnızca sıkıştırılan dosya tutulur."
+        },
         "prefix": {
           "title": "Dosya adı öneki",
           "placeholder": "Önek yok",

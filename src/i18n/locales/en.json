@@ -202,6 +202,11 @@
           "title": "Skip larger outputs",
           "description": "Do not save the compressed media when it is larger than the original."
         },
+        "replaceOriginal": {
+          "title": "Replace original files",
+          "description": "When a compressed file is saved with the same name in the same folder as its original, the original is moved to the Trash and only the compressed file is kept.",
+          "description_windows": "When a compressed file is saved with the same name in the same folder as its original, the original is moved to the Recycle Bin and only the compressed file is kept."
+        },
         "prefix": {
           "title": "File name prefix",
           "placeholder": "No prefix",

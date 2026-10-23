@@ -202,6 +202,11 @@
           "title": "Ignora gli output più grandi",
           "description": "Non salvare il contenuto compresso quando è più grande dell’originale."
         },
+        "replaceOriginal": {
+          "title": "Sostituisci i file originali",
+          "description": "Quando un file compresso viene salvato con lo stesso nome nella stessa cartella dell’originale, l’originale viene spostato nel Cestino e viene conservato solo il file compresso.",
+          "description_windows": "Quando un file compresso viene salvato con lo stesso nome nella stessa cartella dell’originale, l’originale viene spostato nel Cestino e viene conservato solo il file compresso."
+        },
         "prefix": {
           "title": "Prefisso del nome file",
           "placeholder": "Nessun prefisso",

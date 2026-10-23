@@ -58,6 +58,12 @@ export type SettingsState = {
    * such outputs are left for the Save button.
    */
   saveLargerOutputs: boolean
+  /**
+   * When an output is saved under its original's exact path (same folder, no prefix, same format),
+   * move the original to the Trash & keep only the output (off by default). When off, a numbered
+   * name is used instead, as for any existing file.
+   */
+  replaceOriginalFiles: boolean
   /** Copy the output to the clipboard after compression */
   copyOutputToClipboard: boolean
   /** With `copyOutputToClipboard`, also copy all outputs of a batch (on by default) */
@@ -137,6 +143,8 @@ function readSettings(): SettingsState {
     // Only an explicit opt-out turns it off
     saveLargerOutputs:
       localStorage.getItem(constants.saveLargerOutputs) !== 'false',
+    replaceOriginalFiles:
+      localStorage.getItem(constants.replaceOriginalFiles) === 'true',
     copyOutputToClipboard:
       localStorage.getItem(constants.copyOutputToClipboard) === 'true',
     copyBatchOutputToClipboard:
@@ -230,6 +238,10 @@ subscribe(settingsStore, () => {
   localStorage.setItem(
     constants.saveLargerOutputs,
     String(settingsStore.saveLargerOutputs),
+  )
+  localStorage.setItem(
+    constants.replaceOriginalFiles,
+    String(settingsStore.replaceOriginalFiles),
   )
   localStorage.setItem(
     constants.copyOutputToClipboard,

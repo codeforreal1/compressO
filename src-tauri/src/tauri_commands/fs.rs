@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 #[cfg(not(target_os = "linux"))]
 use clipboard_rs::{common::RustImage, Clipboard, ClipboardContext};
@@ -41,13 +41,33 @@ pub async fn get_svg_dimension(image_path: &str) -> Result<(u32, u32), String> {
 /// Moves a file without ever replacing an existing one: if `to` exists, a numbered name like
 /// `clip (1).mp4` is used instead. Returns the path the file was saved to.
 ///
+/// With `replace_original` (the original of the output), when `to` is that very file, the original
+/// is moved to the Trash & the output takes its place (Settings -> Output -> Replace original
+/// files). If that fails, the numbered name is used, so the original is never lost.
+///
 /// A failed or interrupted move never leaves a truncated file under the destination name.
 pub async fn move_file(
     app_handle: tauri::AppHandle,
     from: &str,
     to: &str,
+    replace_original: Option<String>,
 ) -> Result<String, String> {
-    let to = fs::get_available_path(&PathBuf::from(to), false);
+    let requested = PathBuf::from(to);
+    if let Some(original) = replace_original {
+        if is_same_file(&requested, Path::new(&original)).await {
+            // Not moved at all on an error, so it is saved as usual below
+            match replace_file(from, &requested).await {
+                Ok(saved_path) => return Ok(allow_saved_file(&app_handle, &saved_path)),
+                Err(err) => log::error!(
+                    "[save] Could not move the output beside {}: {}",
+                    requested.display(),
+                    err
+                ),
+            }
+        }
+    }
+
+    let to = fs::get_available_path(&requested, false);
     let parent = to.parent().map(|p| p.to_path_buf()).unwrap_or_default();
 
     // Destination folders may not exist yet, e.g. when mirroring a dropped folder's structure. Only
@@ -64,36 +84,117 @@ pub async fn move_file(
         }
     }
 
-    // Same drive: an instant, atomic rename
-    if tokio::fs::rename(from, &to).await.is_ok() {
-        return Ok(allow_saved_file(&app_handle, &to));
-    }
-
-    // Different drive: copy to a temporary file first and only give it the real name once complete
-    let temp_path = parent.join(format!(
-        ".{}.part",
-        to.file_name().unwrap_or_default().to_string_lossy()
-    ));
-    let copy_result = async {
-        tokio::fs::copy(from, &temp_path).await?;
-        tokio::fs::rename(&temp_path, &to).await
-    }
-    .await;
-    if let Err(err) = copy_result {
+    if let Err(err) = move_into(from, &to).await {
         log::error!(
             "[save] Could not save {} to {}: {}",
             from,
             to.display(),
             err
         );
-        let _ = tokio::fs::remove_file(&temp_path).await;
         return Err(err.to_string());
     }
+    Ok(allow_saved_file(&app_handle, &to))
+}
 
+/// Moves `from` to `to`, which must not exist: an instant rename on the same drive, otherwise a copy
+/// to a temporary file given the real name once complete (the cached copy is then deleted)
+async fn move_into(from: &str, to: &Path) -> std::io::Result<()> {
+    if tokio::fs::rename(from, to).await.is_ok() {
+        return Ok(());
+    }
+    let parent = to.parent().map(|p| p.to_path_buf()).unwrap_or_default();
+    let temp_path = parent.join(format!(
+        ".{}.part",
+        to.file_name().unwrap_or_default().to_string_lossy()
+    ));
+    let copy_result = async {
+        tokio::fs::copy(from, &temp_path).await?;
+        tokio::fs::rename(&temp_path, to).await
+    }
+    .await;
+    if let Err(err) = copy_result {
+        let _ = tokio::fs::remove_file(&temp_path).await;
+        return Err(err);
+    }
     // The output is saved; failing to clean up the cached copy isn't an error
     let _ = fs::delete_file(from).await;
+    Ok(())
+}
 
-    Ok(allow_saved_file(&app_handle, &to))
+/// Whether both paths are the same existing file
+async fn is_same_file(a: &Path, b: &Path) -> bool {
+    let is_file = tokio::fs::metadata(a)
+        .await
+        .map(|metadata| metadata.is_file())
+        .unwrap_or(false);
+    if !is_file {
+        return false;
+    }
+    match (
+        tokio::fs::canonicalize(a).await,
+        tokio::fs::canonicalize(b).await,
+    ) {
+        (Ok(a), Ok(b)) => a == b,
+        _ => false,
+    }
+}
+
+/// Puts the output (`from`) in place of `original`, which goes to the Trash, & returns where the
+/// output was saved. The output is first moved next to it under a hidden name, so the original is
+/// only trashed once the output is there; if trashing fails, the output gets a numbered name
+/// instead. An error means the output was not moved.
+async fn replace_file(from: &str, original: &Path) -> Result<PathBuf, String> {
+    let parent = original.parent().ok_or("No parent folder")?;
+    let staged = fs::get_available_path(
+        &parent.join(format!(
+            ".{}.compresso",
+            original.file_name().unwrap_or_default().to_string_lossy()
+        )),
+        false,
+    );
+    move_into(from, &staged).await.map_err(|e| e.to_string())?;
+
+    let original_path = original.to_path_buf();
+    let trashed = tokio::task::spawn_blocking(move || move_to_trash(&original_path))
+        .await
+        .map_err(|e| e.to_string())
+        .and_then(|result| result);
+    let destination = match trashed {
+        Ok(()) => original.to_path_buf(),
+        Err(err) => {
+            log::error!(
+                "[save] Could not move {} to the Trash: {}",
+                original.display(),
+                err
+            );
+            fs::get_available_path(original, false)
+        }
+    };
+    match tokio::fs::rename(&staged, &destination).await {
+        Ok(()) => Ok(destination),
+        Err(err) => {
+            // Still saved, under its hidden name, rather than lost
+            log::error!(
+                "[save] Could not rename {} to {}: {}",
+                staged.display(),
+                destination.display(),
+                err
+            );
+            Ok(staged)
+        }
+    }
+}
+
+fn move_to_trash(path: &Path) -> Result<(), String> {
+    #[allow(unused_mut)]
+    let mut context = trash::TrashContext::default();
+    // Without asking Finder, which would need the Automation permission
+    #[cfg(target_os = "macos")]
+    {
+        use trash::macos::{DeleteMethod, TrashContextExtMacos};
+        context.set_delete_method(DeleteMethod::NsFileManager);
+    }
+    context.delete(path).map_err(|e| e.to_string())
 }
 
 /// Lets the frontend load a saved file (e.g. to preview it), since the asset protocol scope only

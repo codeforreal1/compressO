@@ -202,6 +202,11 @@
           "title": "Größere Ausgaben überspringen",
           "description": "Die komprimierten Medien nicht speichern, wenn sie größer als das Original sind."
         },
+        "replaceOriginal": {
+          "title": "Originaldateien ersetzen",
+          "description": "Wird eine komprimierte Datei mit demselben Namen im selben Ordner wie das Original gespeichert, wird das Original in den Papierkorb verschoben und nur die komprimierte Datei behalten.",
+          "description_windows": "Wird eine komprimierte Datei mit demselben Namen im selben Ordner wie das Original gespeichert, wird das Original in den Papierkorb verschoben und nur die komprimierte Datei behalten."
+        },
         "prefix": {
           "title": "Dateinamenpräfix",
           "placeholder": "Kein Präfix",

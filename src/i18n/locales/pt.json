@@ -202,6 +202,11 @@
           "title": "Ignorar resultados maiores",
           "description": "Não salvar a mídia comprimida quando ela for maior que o original."
         },
+        "replaceOriginal": {
+          "title": "Substituir arquivos originais",
+          "description": "Quando um arquivo comprimido é salvo com o mesmo nome na mesma pasta do original, o original é movido para a Lixeira e apenas o arquivo comprimido é mantido.",
+          "description_windows": "Quando um arquivo comprimido é salvo com o mesmo nome na mesma pasta do original, o original é movido para a Lixeira e apenas o arquivo comprimido é mantido."
+        },
         "prefix": {
           "title": "Prefixo do nome do arquivo",
           "placeholder": "Sem prefixo",

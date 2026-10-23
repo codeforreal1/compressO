@@ -22,7 +22,7 @@ import { generateVideoThumbnail } from '@/tauri/commands/ffmpeg'
 import { deleteFile, showItemInFileManager } from '@/tauri/commands/fs'
 import { needsImagePreview, prepareImagePreview } from '@/tauri/commands/image'
 import { inputExtensions, isAudioFileExtension } from '@/types/compression'
-import { getSummary } from '@/ui/DropQueueList'
+import { getSummary, hasReplacedOriginal } from '@/ui/DropQueueList'
 import { formatBytes, getPlatform } from '@/utils/fs'
 import { isOverlayOpen, isTextEntryElement } from '@/utils/keyboard'
 import { cn } from '@/utils/tailwind'
@@ -266,7 +266,7 @@ function IslandTile({
             changing its preset), keeping the output saved before */}
         {item.status === 'failed' ||
         item.status === 'cancelled' ||
-        item.status === 'done' ? (
+        (item.status === 'done' && !hasReplacedOriginal(item)) ? (
           <Tooltip
             content={
               item.status === 'done'

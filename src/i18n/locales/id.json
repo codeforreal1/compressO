@@ -202,6 +202,11 @@
           "title": "Lewati output yang lebih besar",
           "description": "Jangan simpan media yang dikompresi jika ukurannya lebih besar dari aslinya."
         },
+        "replaceOriginal": {
+          "title": "Ganti file asli",
+          "description": "Jika file terkompresi disimpan dengan nama yang sama di folder yang sama dengan file aslinya, file asli dipindahkan ke Tempat Sampah dan hanya file terkompresi yang disimpan.",
+          "description_windows": "Jika file terkompresi disimpan dengan nama yang sama di folder yang sama dengan file aslinya, file asli dipindahkan ke Recycle Bin dan hanya file terkompresi yang disimpan."
+        },
         "prefix": {
           "title": "Awalan nama file",
           "placeholder": "Tanpa awalan",

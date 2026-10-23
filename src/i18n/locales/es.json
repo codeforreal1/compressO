@@ -202,6 +202,11 @@
           "title": "Omitir resultados más grandes",
           "description": "No guardar el archivo comprimido cuando sea más grande que el original."
         },
+        "replaceOriginal": {
+          "title": "Reemplazar archivos originales",
+          "description": "Cuando un archivo comprimido se guarda con el mismo nombre en la misma carpeta que el original, el original se mueve a la Papelera y solo se conserva el archivo comprimido.",
+          "description_windows": "Cuando un archivo comprimido se guarda con el mismo nombre en la misma carpeta que el original, el original se mueve a la Papelera de reciclaje y solo se conserva el archivo comprimido."
+        },
         "prefix": {
           "title": "Prefijo del nombre de archivo",
           "placeholder": "Sin prefijo",

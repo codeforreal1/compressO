@@ -19,6 +19,7 @@ import {
   settingsStore,
 } from '@/stores/settingsStore'
 import { deleteCache as invokeDeleteCache } from '@/tauri/commands/fs'
+import { getPlatform } from '@/utils/fs'
 import { pickSaveFolder, SAVE_LOCATION_OPTIONS } from './PresetOutputFields'
 import { SettingsRow, SettingsSection } from './SettingsLayout'
 import { appProxy } from '../../-state'
@@ -38,6 +39,7 @@ function Output() {
   const [isCacheDeleting, setIsCacheDeleting] = React.useState(false)
   const {
     saveLargerOutputs,
+    replaceOriginalFiles,
     preserveFolderStructure,
     copyOutputToClipboard,
     copyBatchOutputToClipboard,
@@ -174,6 +176,21 @@ function Output() {
             isSelected={!saveLargerOutputs}
             onValueChange={(isSelected) => {
               settingsStore.saveLargerOutputs = !isSelected
+            }}
+          />
+        </SettingsRow>
+        <SettingsRow
+          title={t('settings.output.saving.replaceOriginal.title')}
+          // The Recycle Bin on Windows, the Trash elsewhere
+          description={t('settings.output.saving.replaceOriginal.description', {
+            context: getPlatform().isWindows ? 'windows' : undefined,
+          })}
+        >
+          <Switch
+            aria-label={t('settings.output.saving.replaceOriginal.title')}
+            isSelected={replaceOriginalFiles}
+            onValueChange={(isSelected) => {
+              settingsStore.replaceOriginalFiles = isSelected
             }}
           />
         </SettingsRow>
