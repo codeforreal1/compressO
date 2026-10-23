@@ -227,7 +227,7 @@
         },
         "retryTargetSizeOnCpu": {
           "title": "Zielgrößen ohne Beschleunigung erreichen",
-          "description": "Wenn ein Video seine Zielgröße verfehlt, wird es ohne Hardwarebeschleunigung erneut komprimiert. Das ist langsamer, trifft die Größe aber genauer."
+          "description": "Gilt nur für „Zielgröße“. Wenn ein Video seine Zielgröße verfehlt, wird es ohne Hardwarebeschleunigung erneut komprimiert. Das ist langsamer, trifft die Größe aber genauer."
         }
       },
       "storage": {

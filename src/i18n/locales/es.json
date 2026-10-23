@@ -227,7 +227,7 @@
         },
         "retryTargetSizeOnCpu": {
           "title": "Alcanzar tamaños objetivo sin aceleración",
-          "description": "Cuando un vídeo no alcanza su tamaño objetivo, se vuelve a comprimir sin aceleración por hardware, lo que es más lento pero más cercano al tamaño."
+          "description": "Solo se aplica a «Tamaño objetivo». Cuando un vídeo no alcanza su tamaño objetivo, se vuelve a comprimir sin aceleración por hardware, lo que es más lento pero más cercano al tamaño."
         }
       },
       "storage": {

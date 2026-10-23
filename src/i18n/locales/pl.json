@@ -227,7 +227,7 @@
         },
         "retryTargetSizeOnCpu": {
           "title": "Osiągaj rozmiar docelowy bez przyspieszenia",
-          "description": "Gdy wideo nie osiągnie rozmiaru docelowego, jest kompresowane ponownie bez przyspieszenia sprzętowego, co jest wolniejsze, ale dokładniejsze."
+          "description": "Dotyczy tylko trybu „Rozmiar docelowy”. Gdy wideo nie osiągnie rozmiaru docelowego, jest kompresowane ponownie bez przyspieszenia sprzętowego, co jest wolniejsze, ale dokładniejsze."
         }
       },
       "storage": {

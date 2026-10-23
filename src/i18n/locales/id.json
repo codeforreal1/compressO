@@ -227,7 +227,7 @@
         },
         "retryTargetSizeOnCpu": {
           "title": "Capai ukuran target tanpa akselerasi",
-          "description": "Jika video tidak mencapai ukuran targetnya, video dikompres ulang tanpa akselerasi perangkat keras, yang lebih lambat tetapi lebih mendekati ukurannya."
+          "description": "Hanya berlaku untuk \"Ukuran target\". Jika video tidak mencapai ukuran targetnya, video dikompres ulang tanpa akselerasi perangkat keras, yang lebih lambat tetapi lebih mendekati ukurannya."
         }
       },
       "storage": {

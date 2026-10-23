@@ -227,7 +227,7 @@
         },
         "retryTargetSizeOnCpu": {
           "title": "Hedef boyutlara hızlandırma olmadan ulaş",
-          "description": "Bir video hedef boyutunu tutturamazsa donanım hızlandırma olmadan yeniden sıkıştırılır; bu daha yavaştır ama boyuta daha yakındır."
+          "description": "Yalnızca \"Hedef boyut\" için geçerlidir. Bir video hedef boyutunu tutturamazsa donanım hızlandırma olmadan yeniden sıkıştırılır; bu daha yavaştır ama boyuta daha yakındır."
         }
       },
       "storage": {

@@ -227,7 +227,7 @@
         },
         "retryTargetSizeOnCpu": {
           "title": "Reach target sizes without acceleration",
-          "description": "When a video misses its target size, it is compressed again without hardware acceleration, which is slower but closer to the size."
+          "description": "Applies only to Target Size. When a video misses its target size, it is compressed again without hardware acceleration, which is slower but closer to the size."
         }
       },
       "storage": {

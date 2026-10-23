@@ -227,7 +227,7 @@
         },
         "retryTargetSizeOnCpu": {
           "title": "Atteindre les tailles cibles sans accélération",
-          "description": "Lorsqu’une vidéo manque sa taille cible, elle est compressée à nouveau sans accélération matérielle, ce qui est plus lent mais plus proche de la taille."
+          "description": "S’applique uniquement à « Taille cible ». Lorsqu’une vidéo manque sa taille cible, elle est compressée à nouveau sans accélération matérielle, ce qui est plus lent mais plus proche de la taille."
         }
       },
       "storage": {

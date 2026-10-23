@@ -227,7 +227,7 @@
         },
         "retryTargetSizeOnCpu": {
           "title": "Raggiungere le dimensioni obiettivo senza accelerazione",
-          "description": "Quando un video non raggiunge la dimensione obiettivo, viene compresso di nuovo senza accelerazione hardware: è più lento ma più vicino alla dimensione."
+          "description": "Si applica solo a \"Dimensione obiettivo\". Quando un video non raggiunge la dimensione obiettivo, viene compresso di nuovo senza accelerazione hardware: è più lento ma più vicino alla dimensione."
         }
       },
       "storage": {

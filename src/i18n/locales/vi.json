@@ -227,7 +227,7 @@
         },
         "retryTargetSizeOnCpu": {
           "title": "Đạt kích thước mục tiêu không dùng tăng tốc",
-          "description": "Khi video không đạt kích thước mục tiêu, nó được nén lại không dùng tăng tốc phần cứng, chậm hơn nhưng sát kích thước hơn."
+          "description": "Chỉ áp dụng cho \"Kích thước mục tiêu\". Khi video không đạt kích thước mục tiêu, nó được nén lại không dùng tăng tốc phần cứng, chậm hơn nhưng sát kích thước hơn."
         }
       },
       "storage": {
