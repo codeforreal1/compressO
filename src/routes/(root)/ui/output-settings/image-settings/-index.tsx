@@ -76,7 +76,16 @@ function ImageSettings({ mediaIndex }: ImageSettingsProps) {
                 image?.extension as ImageExtensionType,
               ) &&
               (
-                ['png', 'jpg', 'jpeg', 'webp', 'avif'] as ImageExtensionType[]
+                [
+                  'png',
+                  'jpg',
+                  'jpeg',
+                  'webp',
+                  'avif',
+                  'jxl',
+                  'heic',
+                  'heif',
+                ] as ImageExtensionType[]
               ).includes(convertToExtension as ImageExtensionType) ? (
                 <div>
                   <SvgScaleFactor mediaIndex={mediaIndex} />
@@ -91,6 +100,9 @@ function ImageSettings({ mediaIndex }: ImageSettingsProps) {
                 'webp',
                 'gif',
                 'avif',
+                'jxl',
+                'heic',
+                'heif',
                 'bmp',
                 'tiff',
                 'tif',

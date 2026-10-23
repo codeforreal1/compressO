@@ -54,7 +54,7 @@ function SavePresetModal({
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="md">
+    <Modal isOpen={isOpen} onClose={onClose} size="sm">
       {/* Normal weight throughout, like the settings dialog (only section headings are bold) */}
       <ModalContent className="rounded-2xl settings-dialog">
         <ModalHeader className="pb-1">

@@ -48,7 +48,11 @@ pub fn reset_clipboard_dir(app_handle: &tauri::AppHandle) -> Result<PathBuf, Str
 /// Makes `file_path` available as `<dir>/<unique folder>/<file_name>` without copying its data (a
 /// hard link, or a copy if linking fails). Each file gets its own folder, so equal names in a batch
 /// don't clash.
-pub fn link_file_with_name(dir: &Path, file_path: &str, file_name: &str) -> Result<PathBuf, String> {
+pub fn link_file_with_name(
+    dir: &Path,
+    file_path: &str,
+    file_name: &str,
+) -> Result<PathBuf, String> {
     // Only the name itself, so it can't point outside `dir`
     let file_name = Path::new(file_name)
         .file_name()
@@ -98,7 +102,18 @@ pub fn get_file_metadata(path: &str) -> Result<FileMetadata, String> {
             .to_string(),
         mime_type: match mime_type {
             Some(m) => m.to_string(),
-            None => String::from(""),
+            None => match file_path
+                .extension()
+                .and_then(|ext| ext.to_str())
+                .unwrap_or_default()
+                .to_ascii_lowercase()
+                .as_str()
+            {
+                "jxl" => "image/jxl".into(),
+                "heic" => "image/heic".into(),
+                "heif" => "image/heif".into(),
+                _ => String::new(),
+            },
         },
         extension: file_path
             .extension()

@@ -13,7 +13,11 @@ import {
   isPermissionDeniedError,
   readFilesFromPaths,
 } from '@/tauri/commands/fs'
-import { convertSvgToPng } from '@/tauri/commands/image'
+import {
+  convertSvgToPng,
+  needsImagePreview,
+  prepareImagePreview,
+} from '@/tauri/commands/image'
 import { Image, Video } from '@/types/app'
 import {
   extensions,
@@ -287,6 +291,12 @@ export async function addMedia(selection: MediaSelection | MediaSelection[]) {
           width: imageDimension?.[0] ?? 0,
           height: imageDimension?.[1] ?? 0,
         },
+      }
+
+      if (needsImagePreview(path)) {
+        const preview = await prepareImagePreview(path)
+        imageState.thumbnailPathRaw = preview
+        imageState.thumbnailPath = core.convertFileSrc(preview)
       }
 
       // input-only formats can't be written back, so default to lossless png

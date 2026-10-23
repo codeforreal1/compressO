@@ -31,3 +31,11 @@ export function getImageColorInfo(imagePath: string): Promise<ImageColorInfo> {
 export function getExifInfo(imagePath: string): Promise<ExifInfo> {
   return core.invoke('get_exif_info', { imagePath })
 }
+
+export function needsImagePreview(path: string) {
+  return /\.(jxl|heic|heif)$/i.test(path)
+}
+
+export function prepareImagePreview(imagePath: string): Promise<string> {
+  return core.invoke('prepare_image_preview', { imagePath })
+}

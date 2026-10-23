@@ -25,6 +25,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+
       - id: version
         name: Read the version
         run: |
@@ -54,22 +58,19 @@ jobs:
           done
           # The release text: .github/release-template.md, with the version and its CHANGELOG.md
           # section (as in latest.json, see scripts/generate-latest-json.mts) filled in
-          body=$(python3 - <<'PY'
-          import os
-          version = os.environ['VERSION']
-          lines = open('CHANGELOG.md', encoding='utf-8').read().split('\n')
-          start = next((i for i, line in enumerate(lines) if line.strip().startswith(f'### {version}')), None)
-          section = []
-          if start is not None:
-              for line in lines[start + 1:]:
-                  if line.startswith('###') and not line.startswith('####'):
-                      break
-                  section.append(line)
-          changelog = '\n'.join(section).strip() or 'No changelog available'
-          template = open('.github/release-template.md', encoding='utf-8').read()
-          print(template.replace('{{version}}', version).replace('{{changelog}}', changelog))
-          PY
-          )
+          body=$(node --input-type=module -e '
+            import { readFileSync } from "node:fs";
+            const lines = readFileSync("CHANGELOG.md", "utf8").split("\n");
+            const start = lines.findIndex((line) => line.trim().startsWith(`### ${process.env.VERSION}`));
+            const section = start < 0 ? [] : lines.slice(start + 1).filter((line, index, rest) => {
+              const nextHeading = rest.findIndex((entry) => entry.startsWith("###") && !entry.startsWith("####"));
+              return nextHeading < 0 || index < nextHeading;
+            });
+            const changelog = section.join("\n").trim() || "No changelog available";
+            process.stdout.write(readFileSync(".github/release-template.md", "utf8")
+              .replace("{{version}}", process.env.VERSION)
+              .replace("{{changelog}}", changelog));
+          ')
           gh api -X POST "repos/$GITHUB_REPOSITORY/releases" \
             -f tag_name="$VERSION" -f target_commitish="$GITHUB_SHA" -f name="$VERSION" \
             -f body="$body" -F draft=true > /dev/null
@@ -174,6 +175,9 @@ jobs:
         run: |
           bundle="src-tauri/target/$TARGET/release/bundle"
           mkdir release-files
+          if [ -f "src-tauri/tool-sources/image-codecs-${TARGET}.tar.gz" ]; then
+            cp "src-tauri/tool-sources/image-codecs-${TARGET}.tar.gz" release-files/
+          fi
           case "$TARGET" in
             *-apple-darwin)
               arch=$([ "$TARGET" = aarch64-apple-darwin ] && echo aarch64 || echo x64)

@@ -14,7 +14,35 @@ use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindowBuilder};
 
 const EMBEDDED_MANIFEST: &str = include_str!(concat!(env!("OUT_DIR"), "/tool-manifest.json"));
 const TARGET: &str = env!("COMPRESSO_TARGET");
-const TOOLS: [&str; 5] = ["ffmpeg", "ffprobe", "pngquant", "jpegoptim", "gifski"];
+#[cfg(not(target_os = "linux"))]
+const TOOLS: [&str; 10] = [
+    "ffmpeg",
+    "ffprobe",
+    "pngquant",
+    "jpegoptim",
+    "gifski",
+    "cjxl",
+    "djxl",
+    "jxlinfo",
+    "heif-dec",
+    "heif-enc",
+];
+#[cfg(target_os = "linux")]
+const TOOLS: [&str; 9] = [
+    "ffmpeg",
+    "ffprobe",
+    "pngquant",
+    "jpegoptim",
+    "gifski",
+    "cjxl",
+    "djxl",
+    "jxlinfo",
+    "magick",
+];
+const IMAGE_SOURCES: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../LICENSES/image-codecs/SOURCES.json"
+));
 
 #[derive(Clone, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -35,6 +63,23 @@ struct Manifest {
     tar_size: u64,
     files: Vec<ToolFile>,
     bootstrap: Vec<ToolFile>,
+}
+
+#[derive(Deserialize)]
+struct ImageSources {
+    targets: std::collections::HashMap<String, ImageSourceTarget>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct ImageSourceTarget {
+    #[serde(default)]
+    extra_files: Vec<ImageExtraFile>,
+}
+
+#[derive(Deserialize)]
+struct ImageExtraFile {
+    file: String,
 }
 
 #[derive(Clone, Serialize)]
@@ -178,10 +223,16 @@ fn manifest() -> Result<Option<Manifest>, String> {
     }
     let manifest: Manifest = serde_json::from_str(EMBEDDED_MANIFEST).map_err(|e| e.to_string())?;
     let suffix = if cfg!(windows) { ".exe" } else { "" };
-    let expected: HashSet<String> = TOOLS
+    let mut expected: HashSet<String> = TOOLS
         .iter()
         .map(|tool| format!("compresso_{tool}{suffix}"))
         .collect();
+    let sources: ImageSources = serde_json::from_str(IMAGE_SOURCES).map_err(|e| e.to_string())?;
+    let extras = sources
+        .targets
+        .get(TARGET)
+        .ok_or("Missing image codec target metadata")?;
+    expected.extend(extras.extra_files.iter().map(|file| file.file.clone()));
     let actual: HashSet<String> = manifest
         .files
         .iter()
@@ -190,7 +241,7 @@ fn manifest() -> Result<Option<Manifest>, String> {
     if manifest.schema != 1
         || manifest.target != TARGET
         || actual != expected
-        || manifest.files.len() != TOOLS.len()
+        || manifest.files.len() != expected.len()
         || manifest.sha256.len() != 64
         || !manifest.sha256.bytes().all(|byte| byte.is_ascii_hexdigit())
         || !matches!(manifest.format.as_str(), "lrz" | "xz")
@@ -206,7 +257,7 @@ fn install(app: &AppHandle) -> Result<PathBuf, String> {
         // `cargo run`/Tauri dev can use checked-in binaries without a release packaging step.
         let directory = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("bin");
         for tool in TOOLS {
-            let path = directory.join(development_name(tool));
+            let path = development_path(tool);
             regular_file(&path)
                 .map_err(|e| format!("Missing development tool {}: {e}", path.display()))?;
         }
@@ -240,6 +291,12 @@ fn development_name(tool: &str) -> String {
     )
 }
 
+fn development_path(tool: &str) -> PathBuf {
+    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("bin")
+        .join(development_name(tool))
+}
+
 /// No caller-supplied paths or PATH lookups: all tools come from one verified installation.
 pub fn command(app: &AppHandle, tool: &str) -> Result<Command, String> {
     if !TOOLS.contains(&tool) {
@@ -260,7 +317,17 @@ pub fn command(app: &AppHandle, tool: &str) -> Result<Command, String> {
             if cfg!(windows) { ".exe" } else { "" }
         )
     };
-    Ok(process_command(directory.join(name)))
+    let path = if cfg!(debug_assertions) && EMBEDDED_MANIFEST.trim() == "{}" {
+        development_path(tool)
+    } else {
+        directory.join(name)
+    };
+    let mut command = process_command(path);
+    if cfg!(target_os = "linux") && tool == "magick" {
+        // AppImage self-extraction avoids a libfuse dependency on the user's machine.
+        command.env("APPIMAGE_EXTRACT_AND_RUN", "1");
+    }
+    Ok(command)
 }
 
 fn process_command(path: PathBuf) -> Command {
@@ -742,6 +809,8 @@ mod tests {
         for tool in TOOLS {
             let flag = if tool.starts_with("ff") {
                 "-version"
+            } else if tool == "jxlinfo" {
+                "--help"
             } else {
                 "--version"
             };
@@ -749,10 +818,12 @@ mod tests {
                 "compresso_{tool}{}",
                 if cfg!(windows) { ".exe" } else { "" }
             );
-            let output = Command::new(directory.join(name))
-                .arg(flag)
-                .output()
-                .unwrap();
+            let mut command = Command::new(directory.join(name));
+            command.arg(flag);
+            if cfg!(target_os = "linux") && tool == "magick" {
+                command.env("APPIMAGE_EXTRACT_AND_RUN", "1");
+            }
+            let output = command.output().unwrap();
             assert!(
                 output.status.success(),
                 "{tool}: {}",

@@ -17,7 +17,7 @@ fn prepare_tool_manifest() {
     let source = std::path::Path::new("tool-bundle/manifest.json");
     println!("cargo:rerun-if-changed=tool-bundle/manifest.json");
     let manifest = std::fs::read_to_string(source).ok().filter(|text| {
-        text.contains(&format!("\"target\": \"{target}\""))
+        text.contains(&format!("\"target\": \"{target}\"")) && text.contains("compresso_cjxl")
     });
     let manifest = manifest.unwrap_or_else(|| {
         if std::env::var("PROFILE").unwrap() == "release" {

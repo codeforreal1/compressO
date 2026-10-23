@@ -16,6 +16,7 @@ import Popover, { PopoverContent, PopoverTrigger } from '@/components/Popover'
 import useTimelineEngine from '@/components/Timeline/useTimelineEngine'
 import Tooltip from '@/components/Tooltip'
 import VideoPlayer, { VideoPlayerRef } from '@/components/VideoPlayer'
+import { useImagePreview } from '@/hooks/useImagePreview'
 import { usePlayPauseOnSpace } from '@/hooks/usePlayPauseOnSpace'
 import { generateVideoThumbnail } from '@/tauri/commands/ffmpeg'
 import { copyFileToClipboard } from '@/tauri/commands/fs'
@@ -321,7 +322,8 @@ function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
 
   const thumbnailPath =
     (gifTransformPreview ? undefined : transformedThumbnailPreview) ??
-    (mediaFile?.type === 'video' ? videoThumbnailPath : mediaPath)
+    mediaFile?.thumbnailPath ??
+    mediaPath
 
   // The compressed output already has the transforms applied
   const videoTransformHistory =
@@ -341,16 +343,23 @@ function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
 
   // Re-compressing writes to the same output file, so give each result a unique url to
   // bypass the webview's image cache (otherwise a previous result can be shown)
+  const outputImagePreview = useImagePreview(
+    mediaFile?.type === 'image'
+      ? (compressedFile?.savedPath ?? compressedFile?.pathRaw)
+      : undefined,
+    compressedFile,
+  )
   const compressedFileSrc = useMemo(
     () =>
-      compressedFile?.path ? `${compressedFile.path}?v=${Date.now()}` : '',
-    [compressedFile],
+      outputImagePreview ??
+      (compressedFile?.path ? `${compressedFile.path}?v=${Date.now()}` : ''),
+    [compressedFile, outputImagePreview],
   )
 
   // Saving moves the output out of the cache, so saved outputs are loaded from where they were saved
   const savedOutputSrc =
     compressedFile?.isSaved && compressedFile.savedPath
-      ? core.convertFileSrc(compressedFile.savedPath)
+      ? (outputImagePreview ?? core.convertFileSrc(compressedFile.savedPath))
       : null
 
   // Audio extracted from a video: show the video's thumbnail with an audio player

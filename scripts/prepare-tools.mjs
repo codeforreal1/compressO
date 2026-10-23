@@ -8,6 +8,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { buildLrzip } from './build-lrzip.mjs'
+import { getImageTools } from './image-tools.mjs'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const run = (program, args, options = {}) =>
@@ -15,6 +16,8 @@ const run = (program, args, options = {}) =>
 const host = run('rustc', ['-vV']).match(/^host: (.+)$/m)?.[1]
 const target = process.env.TAURI_ENV_TARGET_TRIPLE || process.env.TARGET || host
 const names = ['ffmpeg', 'ffprobe', 'pngquant', 'jpegoptim', 'gifski']
+const imageCodecs = getImageTools(target)
+const imageTools = imageCodecs.names
 const isMac = target?.endsWith('apple-darwin')
 const isWindows = target?.includes('windows')
 const useLrzip = isMac || isWindows
@@ -22,13 +25,20 @@ const extension = isWindows ? '.exe' : ''
 const destination = path.join(root, 'src-tauri/tool-bundle')
 const sha256 = (file) =>
   createHash('sha256').update(fs.readFileSync(file)).digest('hex')
-const sources = names.map((name) => ({
-  name: `compresso_${name}${extension}`,
-  source: path.join(
-    root,
-    `src-tauri/bin/compresso_${name}-${target}${extension}`,
-  ),
-}))
+const sources = [
+  ...[...names, ...imageTools].map((name) => ({
+    name: `compresso_${name}${extension}`,
+    source: path.join(
+      root,
+      'src-tauri/bin',
+      `compresso_${name}-${target}${extension}`,
+    ),
+  })),
+  ...imageCodecs.extraFiles.map(({ file }) => ({
+    name: file,
+    source: path.join(imageCodecs.directory, file),
+  })),
+]
 for (const { source } of sources) {
   if (!fs.existsSync(source))
     throw new Error(`Missing tool for ${target}: ${source}`)
@@ -85,6 +95,7 @@ const inputHash = createHash('sha256')
   .update(
     JSON.stringify({
       script: sha256(fileURLToPath(import.meta.url)),
+      imageCodecs: sha256(path.join(root, 'scripts/image-tools.mjs')),
       packer: ['Cargo.toml', 'Cargo.lock', 'src/main.rs'].map((file) =>
         sha256(path.join(root, 'scripts/tool-archive', file)),
       ),
@@ -137,6 +148,9 @@ try {
     return { name, size: fs.statSync(file).size, sha256: sha256(file) }
   })
   const bootstrap = []
+  const codecLicenseDir = path.join(output, 'licenses/image-codecs')
+  fs.mkdirSync(codecLicenseDir, { recursive: true })
+  fs.cpSync(imageCodecs.licenses, codecLicenseDir, { recursive: true })
   if (lrzip) {
     const helperDir = path.join(output, 'bootstrap')
     fs.mkdirSync(helperDir)
@@ -155,7 +169,7 @@ try {
   }
   if (isMac) {
     const licenseDir = path.join(output, 'licenses')
-    fs.mkdirSync(licenseDir)
+    fs.mkdirSync(licenseDir, { recursive: true })
     for (const license of toolchain.licenses) {
       fs.copyFileSync(license.path, path.join(licenseDir, license.name))
     }

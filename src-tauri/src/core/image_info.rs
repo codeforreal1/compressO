@@ -27,6 +27,12 @@ impl ImageInfo {
             "WEBP" => ("WebP Image", "image/webp".to_string()),
             "BMP" => ("Bitmap Image", "image/bmp".to_string()),
             "TIFF" => ("Tagged Image File Format", "image/tiff".to_string()),
+            "JXL" => ("JPEG XL", "image/jxl".to_string()),
+            "HEIC" => ("High Efficiency Image", "image/heic".to_string()),
+            "HEIF" => (
+                "High Efficiency Image File Format",
+                "image/heif".to_string(),
+            ),
             "AVIF" => ("AV1 Image File Format", "image/avif".to_string()),
             "ICO" => ("Icon Image", "image/x-icon".to_string()),
             "PNM" => ("Portable Any Map", "image/x-portable-anymap".to_string()),
@@ -207,6 +213,10 @@ impl ImageInfo {
     }
 
     fn detect_format(path: &str) -> Result<String, String> {
+        let extension = super::image_codecs::extension(path);
+        if super::image_codecs::is_modern(&extension) {
+            return Ok(extension.to_uppercase());
+        }
         let file = File::open(path).map_err(|e| e.to_string())?;
         let reader = BufReader::new(file);
         let format = image::ImageReader::new(reader)

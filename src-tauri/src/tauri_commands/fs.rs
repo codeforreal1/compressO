@@ -17,7 +17,11 @@ pub async fn get_file_metadata(file_path: &str) -> Result<FileMetadata, String> 
 }
 
 #[tauri::command]
-pub async fn get_image_dimension(image_path: &str) -> Result<(u32, u32), String> {
+pub async fn get_image_dimension(app: AppHandle, image_path: &str) -> Result<(u32, u32), String> {
+    if crate::core::image_codecs::is_modern(&crate::core::image_codecs::extension(image_path)) {
+        let path = crate::core::image_codecs::decoded_png(&app, image_path, "main", &[]).await?;
+        return fs::get_image_dimension(path.to_str().ok_or("Invalid cache path")?);
+    }
     fs::get_image_dimension(image_path)
 }
 
@@ -69,7 +73,12 @@ pub async fn move_file(
     }
     .await;
     if let Err(err) = copy_result {
-        log::error!("[save] Could not save {} to {}: {}", from, to.display(), err);
+        log::error!(
+            "[save] Could not save {} to {}: {}",
+            from,
+            to.display(),
+            err
+        );
         let _ = tokio::fs::remove_file(&temp_path).await;
         return Err(err.to_string());
     }
@@ -271,7 +280,8 @@ pub fn save_clipboard_image(
     let image_path = assets_dir.join(&filename);
     let image_path = image_path.to_str().ok_or("Invalid image path")?.to_string();
 
-    img.save_to_path(&image_path).map_err(|err| err.to_string())?;
+    img.save_to_path(&image_path)
+        .map_err(|err| err.to_string())?;
 
     let fs_scope = app_handle.fs_scope();
     let asset_scope = app_handle.asset_protocol_scope();

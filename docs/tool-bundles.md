@@ -1,6 +1,6 @@
 # Offline tool bundles
 
-Release builds ship one target-specific compressed archive instead of five uncompressed Tauri
+Release builds ship one target-specific compressed archive containing the platform's tools instead of uncompressed Tauri
 sidecars. **All 20 original binaries in `src-tauri/bin/` remain tracked and unchanged.** Packaging
 copies them into a temporary directory; it never signs, replaces, or removes the originals.
 
@@ -15,7 +15,9 @@ Run the usual `pnpm tauri:build`. The Tauri before-build hook runs
 `TAURI_ENV_TARGET_TRIPLE` (provided by Tauri), then `TARGET`, then the Rust host target.
 For a standalone packaging run, set `TARGET` explicitly when preparing another architecture.
 
-Build prerequisites are Node, Rust, and the normal platform build tools; Python is not required.
+Build prerequisites are Node, Rust, and the normal platform build tools. Added image codecs are
+checked-in prebuilt executables, verified by SHA-256; see [image-codecs.md](image-codecs.md).
+No Python installation is required for codec or archive preparation.
 The isolated Rust helper in `scripts/tool-archive/` creates deterministic TAR/XZ archives using
 the same TAR and statically linked XZ libraries as the app. It builds for the host architecture,
 even when packaging tools for a different target, and is never included in the app download.
@@ -72,7 +74,7 @@ manifest and cannot silently fall back to source binaries.
 ## Startup and repair
 
 Rust embeds the expected manifest in the application executable. On every launch, it checks all
-five installed files' SHA-256 hashes, sizes, and executable permissions before making their paths
+installed files' SHA-256 hashes, sizes, and executable permissions before making their paths
 available to compression code. A completion marker alone is never sufficient.
 
 The installation path is Tauri's `app_local_data_dir()/tools/<target>/<archive-sha256>/`.
@@ -119,7 +121,7 @@ cargo test core::tool_bundle::tests -- --include-ignored --nocapture
 
 The regular tests cover XZ installation/reuse, same-size corruption, missing files, interrupted
 extraction, missing completion markers, damaged archives, expanded size bounds, and invalid TAR
-entries. The explicit smoke tests extract the actual target archive and execute all five tools,
+entries. The explicit smoke tests extract the actual target archive and execute all ten tools,
 then generate a video, read its metadata, transcode it, and verify progress/error capture using
 the executor's `SharedChild::spawn` pattern.
 

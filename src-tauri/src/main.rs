@@ -48,7 +48,7 @@ use tauri_commands::{
     },
     image::{
         compress_images_batch, convert_svg_to_png, get_exif_info, get_image_basic_info,
-        get_image_color_info, get_image_dimensions,
+        get_image_color_info, get_image_dimensions, prepare_image_preview,
     },
     hardware_encoder::{get_hardware_encoders, set_hardware_encoding_enabled},
     media::{compress_media_batch, estimate_video_size, set_batch_paused},
@@ -489,6 +489,7 @@ async fn main() {
             convert_svg_to_png,
             get_image_basic_info,
             get_image_dimensions,
+            prepare_image_preview,
             get_image_color_info,
             get_exif_info,
             set_window_tint,

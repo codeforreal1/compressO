@@ -9,7 +9,7 @@ use crate::core::media_process::MediaProcessExecutorBuilder;
 use crate::core::orientation::{get_image_orientation, reset_exif_orientation, write_upright_copy};
 use crate::sys::fs::{ensure_assets_dir, get_file_metadata, get_image_dimension};
 use crate::utils::event::EventListenerGuard;
-use image::{ImageEncoder, ImageReader};
+use image::{ImageDecoder, ImageEncoder, ImageReader};
 use img_parts::{
     jpeg::Jpeg,
     png::{Png, PngChunk},
@@ -27,7 +27,9 @@ use std::process::Command;
 use std::sync::Arc;
 use tauri::{AppHandle, Emitter, Listener};
 
-pub const EXTENSIONS: [&str; 7] = ["png", "jpg", "jpeg", "webp", "gif", "svg", "avif"];
+pub const EXTENSIONS: [&str; 10] = [
+    "png", "jpg", "jpeg", "webp", "gif", "svg", "avif", "jxl", "heic", "heif",
+];
 
 /// Formats accepted as input but never written; they're converted to PNG by default.
 pub const INPUT_ONLY_EXTENSIONS: [&str; 3] = ["bmp", "tiff", "tif"];
@@ -102,6 +104,26 @@ impl ImageCompressor {
             convert_to_extension
         };
         let output_extension = convert_to_extension;
+
+        if super::image_codecs::is_modern(&original_extension)
+            || super::image_codecs::is_modern(output_extension)
+        {
+            return self
+                .compress_modern_image(
+                    input_path,
+                    output_extension,
+                    svg_scale_factor,
+                    is_lossless,
+                    quality,
+                    image_id,
+                    batch_id,
+                    strip_metadata,
+                    svg_config,
+                    dimensions,
+                    transform_history,
+                )
+                .await;
+        }
 
         let supported = EXTENSIONS.iter().any(|&ext| ext == output_extension);
         if !supported {
@@ -191,8 +213,7 @@ impl ImageCompressor {
         let transform_input_path = if !original_extension.eq("svg")
             && (dimensions.is_some() || transform_history.is_some())
         {
-            let transform_temp_filename =
-                format!("{}_transformed.{}", image_id, working_extension);
+            let transform_temp_filename = format!("{}_transformed.{}", image_id, working_extension);
             let transform_temp_path: PathBuf = [
                 self.assets_dir.clone(),
                 PathBuf::from(&transform_temp_filename),
@@ -724,6 +745,187 @@ impl ImageCompressor {
         Ok(())
     }
 
+    async fn compress_modern_image(
+        &mut self,
+        input: &str,
+        format: &str,
+        svg_scale: Option<f32>,
+        lossless: Option<bool>,
+        quality: u8,
+        image_id: &str,
+        batch_id: Option<&str>,
+        strip_metadata: Option<bool>,
+        svg_config: Option<SvgConfig>,
+        dimensions: Option<(f64, f64)>,
+        transforms: Option<&MediaTransformHistory>,
+    ) -> Result<ImageCompressionResult, String> {
+        let work = super::image_codecs::Workspace::new(&self.app)?;
+        let cancel_ids = vec![
+            image_id.to_string(),
+            batch_id.unwrap_or(image_id).to_string(),
+        ];
+        let ext = super::image_codecs::extension(input);
+        if format == "jxl"
+            && matches!(ext.as_str(), "jpg" | "jpeg")
+            && lossless.unwrap_or(true)
+            && dimensions.is_none()
+            && transforms.is_none()
+            && get_image_orientation(input).is_none()
+        {
+            let output_filename = format!("{image_id}.jxl");
+            let output = self.assets_dir.join(&output_filename);
+            super::image_codecs::transcode_jpeg(
+                &self.app,
+                input,
+                output.to_str().unwrap(),
+                strip_metadata.unwrap_or(true),
+                &self.owner_window,
+                &cancel_ids,
+            )
+            .await?;
+            return Ok(ImageCompressionResult {
+                image_id: image_id.to_string(),
+                file_name: output_filename,
+                file_path: output.to_string_lossy().into_owned(),
+                file_metadata: Some(get_file_metadata(output.to_str().unwrap())?),
+            });
+        }
+        let decoded = if super::image_codecs::is_modern(&ext) {
+            super::image_codecs::decoded_png(&self.app, input, &self.owner_window, &cancel_ids)
+                .await?
+        } else if ext == "svg" {
+            let path = work.0.join("source.png");
+            self.convert_svg_to_raster_img(
+                input,
+                path.to_str().ok_or("Invalid cache path")?,
+                "png",
+                svg_scale,
+            )?;
+            path
+        } else if ext == "avif" {
+            let path = work.0.join("source.png");
+            self.decode_avif_to_png(input, path.to_str().ok_or("Invalid cache path")?)
+                .await?;
+            path
+        } else if ext == "gif" {
+            return Err("Converting GIF to JPEG XL or HEIC/HEIF is not supported yet; export a still image first".into());
+        } else {
+            PathBuf::from(input)
+        };
+        let decoded_str = decoded.to_str().ok_or("Invalid image path")?;
+        if !super::image_codecs::is_modern(format) {
+            return Box::pin(self.compress_image(
+                decoded_str,
+                format,
+                svg_scale,
+                lossless,
+                quality,
+                image_id,
+                batch_id,
+                strip_metadata,
+                svg_config,
+                dimensions,
+                transforms,
+            ))
+            .await;
+        }
+        // Normalize all supported raster sources to lossless PNG, never recompress the source
+        // JPEG/WebP at the requested output quality before the final encode.
+        let orientation = get_image_orientation(decoded_str);
+        let normalized = work.0.join("normalized.png");
+        let profile = {
+            let mut decoder = ImageReader::open(&decoded)
+                .map_err(|e| e.to_string())?
+                .with_guessed_format()
+                .map_err(|e| e.to_string())?
+                .into_decoder()
+                .map_err(|e| e.to_string())?;
+            let profile = decoder.icc_profile().map_err(|e| e.to_string())?;
+            let exif = if !strip_metadata.unwrap_or(true) {
+                let mut exif = decoder.exif_metadata().map_err(|e| e.to_string())?;
+                if let Some(data) = &mut exif {
+                    let _ = image::metadata::Orientation::remove_from_exif_chunk(data);
+                }
+                exif
+            } else {
+                None
+            };
+            let mut pixels =
+                image::DynamicImage::from_decoder(decoder).map_err(|e| e.to_string())?;
+            if let Some(orientation) = orientation {
+                pixels.apply_orientation(orientation);
+            }
+            let mut encoder = image::codecs::png::PngEncoder::new(
+                fs::File::create(&normalized).map_err(|e| e.to_string())?,
+            );
+            if let Some(profile) = &profile {
+                encoder
+                    .set_icc_profile(profile.clone())
+                    .map_err(|e| e.to_string())?;
+            }
+            if let Some(exif) = exif {
+                encoder.set_exif_metadata(exif).map_err(|e| e.to_string())?;
+            }
+            pixels
+                .write_with_encoder(encoder)
+                .map_err(|e| e.to_string())?;
+            profile
+        };
+        super::image_codecs::preserve_png_color(&decoded, &normalized)?;
+        let transformed = work.0.join("transformed.png");
+        let source = if dimensions.is_some() || transforms.is_some() {
+            self.apply_spatial_transformations(
+                normalized.to_str().unwrap(),
+                transformed.to_str().unwrap(),
+                dimensions,
+                transforms,
+            )
+            .await?;
+            if let Some(profile) = profile {
+                let pixels = image::open(&transformed).map_err(|e| e.to_string())?;
+                let mut encoder = image::codecs::png::PngEncoder::new(
+                    fs::File::create(&transformed).map_err(|e| e.to_string())?,
+                );
+                encoder
+                    .set_icc_profile(profile)
+                    .map_err(|e| e.to_string())?;
+                pixels
+                    .write_with_encoder(encoder)
+                    .map_err(|e| e.to_string())?;
+            }
+            super::image_codecs::preserve_png_color(&normalized, &transformed)?;
+            if !strip_metadata.unwrap_or(true) {
+                self.copy_image_metadata(
+                    ImageContainer::Png,
+                    normalized.to_str().unwrap(),
+                    transformed.to_str().unwrap(),
+                )?;
+            }
+            &transformed
+        } else {
+            &normalized
+        };
+        let output_filename = format!("{image_id}.{format}");
+        let output = self.assets_dir.join(&output_filename);
+        super::image_codecs::encode(
+            &self.app,
+            source.to_str().unwrap(),
+            output.to_str().unwrap(),
+            format,
+            quality,
+            lossless.unwrap_or(true),
+            &self.owner_window,
+            &cancel_ids,
+        )
+        .await?;
+        Ok(ImageCompressionResult {
+            image_id: image_id.to_string(),
+            file_name: output_filename,
+            file_path: output.to_string_lossy().into_owned(),
+            file_metadata: Some(get_file_metadata(output.to_str().unwrap())?),
+        })
+    }
+
     async fn compress_webp(
         &mut self,
         input_path: &str,
@@ -807,7 +1009,7 @@ impl ImageCompressor {
             ffmpeg_cmd.args(&cmd_args);
 
             let executor = MediaProcessExecutorBuilder::new(self.app.clone())
-            .owner_window(&self.owner_window)
+                .owner_window(&self.owner_window)
                 .command(ffmpeg_cmd)
                 .build()?;
 
@@ -1240,7 +1442,24 @@ impl ImageCompressor {
             .unwrap_or_default()
             .to_lowercase();
         if !filters.is_empty() && !["jpg", "jpeg", "gif"].contains(&extension.as_str()) {
-            filters.insert(0, "format=rgba".to_string());
+            let high_depth = ImageReader::open(input_path)
+                .ok()
+                .and_then(|reader| reader.with_guessed_format().ok())
+                .and_then(|reader| reader.into_decoder().ok())
+                .is_some_and(|decoder| {
+                    decoder.color_type().bits_per_pixel()
+                        / decoder.color_type().channel_count() as u16
+                        > 8
+                });
+            filters.insert(
+                0,
+                if high_depth {
+                    "format=rgba64le"
+                } else {
+                    "format=rgba"
+                }
+                .to_string(),
+            );
         }
         let filter_complex = filters.join(",");
 

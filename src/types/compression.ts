@@ -20,6 +20,9 @@ export const extensions = {
     gif: 'gif',
     svg: 'svg',
     avif: 'avif',
+    jxl: 'jxl',
+    heic: 'heic',
+    heif: 'heif',
   },
   // Audio extracted from a video
   audio: {

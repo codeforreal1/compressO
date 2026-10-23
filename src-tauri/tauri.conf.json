@@ -6,7 +6,11 @@
   "build": {
     "beforeBuildCommand": "node scripts/prepare-tools.mjs && pnpm vite:build",
     "frontendDist": "../dist",
-    "devUrl": "http://localhost:3001"
+    "devUrl": "http://localhost:3001",
+    "beforeDevCommand": {
+      "script": "node scripts/image-tools.mjs",
+      "wait": true
+    }
   },
   "bundle": {
     "longDescription": "Compress any video/image file to a tiny size.",
@@ -129,6 +133,24 @@
       {
         "ext": ["aiff", "aif"],
         "mimeType": "audio/aiff",
+        "role": "Editor"
+      },
+      {
+        "ext": ["jxl"],
+        "mimeType": "image/jxl",
+        "name": "JPEG XL",
+        "role": "Editor"
+      },
+      {
+        "ext": ["heic"],
+        "mimeType": "image/heic",
+        "name": "HEIC Image",
+        "role": "Editor"
+      },
+      {
+        "ext": ["heif"],
+        "mimeType": "image/heif",
+        "name": "HEIF Image",
         "role": "Editor"
       }
     ],

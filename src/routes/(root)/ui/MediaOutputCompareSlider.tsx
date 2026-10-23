@@ -11,6 +11,8 @@ import Icon from '@/components/Icon'
 import ImageViewer from '@/components/ImageViewer'
 import Tooltip from '@/components/Tooltip'
 import VideoPlayer from '@/components/VideoPlayer'
+import { useImagePreview } from '@/hooks/useImagePreview'
+import { needsImagePreview } from '@/tauri/commands/image'
 import { getPlatform } from '@/utils/fs'
 import { cn } from '@/utils/tailwind'
 import { appProxy } from '../-state'
@@ -52,6 +54,13 @@ function MediaOutputCompareSlider({
   } = useSnapshot(appProxy)
   const mediaFile = media[mediaIndex]
 
+  const outputPreview = useImagePreview(
+    mediaFile?.type === 'image'
+      ? (mediaFile.compressedFile?.savedPath ??
+          mediaFile.compressedFile?.pathRaw)
+      : undefined,
+    mediaFile?.compressedFile,
+  )
   const id = useId()
 
   const renderImage = useCallback(
@@ -146,9 +155,10 @@ function MediaOutputCompareSlider({
   // (with its size, as another output of a target size can replace it there, see
   // `chooseOutputOption`)
   const outputPath =
-    mediaFile?.compressedFile?.isSaved && mediaFile.compressedFile.savedPath
+    outputPreview ??
+    (mediaFile?.compressedFile?.isSaved && mediaFile.compressedFile.savedPath
       ? `${core.convertFileSrc(mediaFile.compressedFile.savedPath)}?v=${mediaFile.compressedFile.sizeInBytes ?? 0}`
-      : mediaFile?.compressedFile?.path
+      : mediaFile?.compressedFile?.path)
 
   return (
     <div id={id} className="rounded-3xl overflow-hidden px-4">
@@ -169,7 +179,13 @@ function MediaOutputCompareSlider({
           itemOne={
             mediaFile?.type === 'video'
               ? renderVideo(mediaFile?.path!)
-              : renderImage(mediaFile?.path!)
+              : renderImage(
+                  mediaFile?.pathRaw &&
+                    needsImagePreview(mediaFile.pathRaw) &&
+                    mediaFile.thumbnailPathRaw
+                    ? core.convertFileSrc(mediaFile.thumbnailPathRaw)
+                    : mediaFile?.path!,
+                )
           }
           itemTwo={
             mediaFile?.type === 'video'

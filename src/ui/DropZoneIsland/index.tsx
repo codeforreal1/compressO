@@ -19,6 +19,7 @@ import {
 } from '@/tauri/commands/dropQueue'
 import { generateVideoThumbnail } from '@/tauri/commands/ffmpeg'
 import { deleteFile, showItemInFileManager } from '@/tauri/commands/fs'
+import { needsImagePreview, prepareImagePreview } from '@/tauri/commands/image'
 import { inputExtensions, isAudioFileExtension } from '@/types/compression'
 import { getSummary } from '@/ui/DropQueueList'
 import { formatBytes } from '@/utils/fs'
@@ -73,7 +74,7 @@ function deleteUnusedThumbnails(items: readonly DropQueueItem[]) {
 
 function useThumbnail(item: DropQueueItem) {
   const kind = getMediaKind(item.path)
-  const hasGeneratedThumbnail = kind !== 'image'
+  const hasGeneratedThumbnail = kind !== 'image' || needsImagePreview(item.path)
   const [src, setSrc] = useState<string | null>(() =>
     hasGeneratedThumbnail ? null : core.convertFileSrc(item.path),
   )
@@ -84,9 +85,13 @@ function useThumbnail(item: DropQueueItem) {
     let thumbnail = videoThumbnails.get(item.path)
     if (!thumbnail) {
       // An audio file's cover art is its only picture, at the start
-      thumbnail = generateVideoThumbnail(
-        item.path,
-        kind === 'audio' ? '00:00:00.00' : undefined,
+      thumbnail = (
+        kind === 'image'
+          ? prepareImagePreview(item.path).then((filePath) => ({ filePath }))
+          : generateVideoThumbnail(
+              item.path,
+              kind === 'audio' ? '00:00:00.00' : undefined,
+            )
       )
         .then((result) => ({
           path: result.filePath,
