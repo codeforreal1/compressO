@@ -270,6 +270,9 @@ export async function autoSaveCompressedMedia() {
     return
   }
 
+  // Keep the output preview on its thumbnail while the save destination is resolved and the
+  // cached file is moved. The player must not open the soon-to-be-removed cache path.
+  appProxy.state.isSaving = true
   const appDataDirectory = await appDataDir().catch(() => null)
   let largerCount = 0
 

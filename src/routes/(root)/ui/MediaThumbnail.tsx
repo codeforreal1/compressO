@@ -18,6 +18,7 @@ import Tooltip from '@/components/Tooltip'
 import VideoPlayer, { VideoPlayerRef } from '@/components/VideoPlayer'
 import { useImagePreview } from '@/hooks/useImagePreview'
 import { usePlayPauseOnSpace } from '@/hooks/usePlayPauseOnSpace'
+import { logError } from '@/tauri/commands/app'
 import { generateVideoThumbnail } from '@/tauri/commands/ffmpeg'
 import { copyFileToClipboard } from '@/tauri/commands/fs'
 import { isAudioExtension } from '@/types/compression'
@@ -26,6 +27,7 @@ import VideoTrimmerTimeline, {
   scales,
   VideoTrimmerTimelineRef,
 } from '@/ui/VideoTrimmerTimeline'
+import { isOutputPreviewPending } from '@/utils/outputPreview'
 import { formatDuration } from '@/utils/string'
 import { getTransformPreview, renderTransformPreview } from '@/utils/transform'
 import { constructVideoUrl, isVideoPreviewAvailable } from '@/utils/video'
@@ -43,9 +45,13 @@ function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
   if (mediaIndex < 0) return
 
   const {
-    state: { media },
+    state: { media, isCompressing, isSaving },
   } = useSnapshot(appProxy)
   const mediaFile = media.length > 0 ? media[mediaIndex] : null
+  const outputPreviewPending = isOutputPreviewPending(mediaFile, {
+    isCompressing,
+    isSaving,
+  })
   const {
     path: mediaPath,
     pathRaw: mediaPathRaw,
@@ -68,6 +74,7 @@ function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
   const trimmerRef = useRef<VideoTrimmerTimelineRef | null>(null)
   const trimConfigSetDebounceRef = useRef<NodeJS.Timeout | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
+  const lastPreviewSourceRef = useRef(mediaPathRaw)
   const [isAudioPlaying, setIsAudioPlaying] = useState(false)
   const thumbnailCacheRef = useRef<Record<string, string>>({})
   const [isCopyingFrame, setIsCopyingFrame] = useState(false)
@@ -344,7 +351,7 @@ function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
   // Re-compressing writes to the same output file, so give each result a unique url to
   // bypass the webview's image cache (otherwise a previous result can be shown)
   const outputImagePreview = useImagePreview(
-    mediaFile?.type === 'image'
+    mediaFile?.type === 'image' && !outputPreviewPending
       ? (compressedFile?.savedPath ?? compressedFile?.pathRaw)
       : undefined,
     compressedFile,
@@ -363,9 +370,40 @@ function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
       ? (outputImagePreview ?? core.convertFileSrc(compressedFile.savedPath))
       : null
 
+  // The source and compressed output can have different playback support. Retry video once for
+  // each new file, after any automatic save has finished moving it out of the cache.
+  const playbackSourcePath = isProcessCompleted
+    ? (compressedFile?.savedPath ?? compressedFile?.pathRaw)
+    : mediaPathRaw
+  const isPlaybackSourceStable = !outputPreviewPending
+  useEffect(() => {
+    if (
+      mediaFile?.type !== 'video' ||
+      !isVideoPreviewAvailable ||
+      !isPlaybackSourceStable ||
+      !playbackSourcePath ||
+      lastPreviewSourceRef.current === playbackSourcePath
+    ) {
+      return
+    }
+    lastPreviewSourceRef.current = playbackSourcePath
+    const current = appProxy.state.media[mediaIndex]
+    if (current?.type === 'video' && current.pathRaw === mediaPathRaw) {
+      current.previewMode = 'video'
+    }
+  }, [
+    mediaFile?.type,
+    mediaIndex,
+    mediaPathRaw,
+    isPlaybackSourceStable,
+    playbackSourcePath,
+  ])
+
   // Audio extracted from a video: show the video's thumbnail with an audio player
   const isAudioOutput =
-    !!isProcessCompleted && isAudioExtension(compressedFile?.extension)
+    !!isProcessCompleted &&
+    !outputPreviewPending &&
+    isAudioExtension(compressedFile?.extension)
   const audioOutputSrc = isAudioOutput
     ? (savedOutputSrc ?? compressedFileSrc)
     : undefined
@@ -422,13 +460,14 @@ function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
     </div>
   ) : null
 
-  const imageToRenderSrc = isProcessCompleted
-    ? mediaFile?.type === 'video' &&
-      mediaFile?.previewMode === 'image' &&
-      mediaFile?.compressedFile?.extension !== 'gif'
-      ? mediaFile?.thumbnailPath!
-      : (savedOutputSrc ?? compressedFileSrc)
-    : thumbnailPath!
+  const imageToRenderSrc =
+    isProcessCompleted && !outputPreviewPending
+      ? mediaFile?.type === 'video' &&
+        mediaFile?.previewMode === 'image' &&
+        mediaFile?.compressedFile?.extension !== 'gif'
+        ? mediaFile?.thumbnailPath!
+        : (savedOutputSrc ?? compressedFileSrc)
+      : thumbnailPath!
 
   return (
     <>
@@ -437,6 +476,7 @@ function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
           {mediaFile?.type === 'video' &&
           mediaFile.previewMode === 'video' &&
           mediaPath &&
+          isPlaybackSourceStable &&
           !isAudioOutput &&
           (mediaFile?.isProcessCompleted
             ? mediaFile?.compressedFile?.extension !== 'gif'
@@ -507,13 +547,26 @@ function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
                 disableClosedCaptions
                 onError={(error: any) => {
                   if (error.name !== 'AbortError') {
+                    const current = appProxy.state.media[mediaIndex]
+                    if (
+                      appProxy.state.isCompressing ||
+                      appProxy.state.isSaving ||
+                      current?.compressedFile?.isSaving
+                    ) {
+                      return
+                    }
+                    const playerError = error?.target?.error ?? error
+                    logError(
+                      'Video preview playback failed',
+                      `source=${playbackSourcePath}, code=${playerError?.code ?? 'unknown'}, message=${playerError?.message ?? String(error)}`,
+                    )
                     toast.warning(
                       isAudioFile
                         ? t('thumbnail.audioUnplayable')
                         : t('thumbnail.switchingToImage'),
                     )
-                    if (appProxy.state.media[mediaIndex].type === 'video') {
-                      appProxy.state.media[mediaIndex].previewMode = 'image'
+                    if (current?.type === 'video') {
+                      current.previewMode = 'image'
                     }
                   }
                 }}

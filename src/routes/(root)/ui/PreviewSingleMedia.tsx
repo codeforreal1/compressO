@@ -21,6 +21,7 @@ import { Ripple } from '@/ui/Patterns/Ripple'
 import { slideUpTransition, zoomInTransition } from '@/utils/animation'
 import { formatBytes } from '@/utils/fs'
 import { isOverlayOpen, isTextEntryElement } from '@/utils/keyboard'
+import { isOutputPreviewPending } from '@/utils/outputPreview'
 import { formatDuration } from '@/utils/string'
 import { cn } from '@/utils/tailwind'
 import ExitMedia from './ExitMedia'
@@ -63,6 +64,7 @@ function PreviewSingleMedia({
       media,
       isProcessCompleted,
       isCompressing,
+      isSaving,
       showMediaInfo,
       isLoadingMediaFiles,
       isWaitingForDropZone,
@@ -113,9 +115,14 @@ function PreviewSingleMedia({
   const [compareOutput, setCompareOutput] = useState(
     () => localStorage.getItem(constants.compareOutput) === 'true',
   )
+  const outputPreviewPending = isOutputPreviewPending(mediaFile, {
+    isCompressing,
+    isSaving,
+  })
   // The original & the output side by side, for a video (in its video preview) or an image
   const canCompare =
     isProcessCompleted &&
+    !outputPreviewPending &&
     !isAudioExtension(mediaFile?.compressedFile?.extension) &&
     ((mediaFile?.type === 'video' && mediaFile?.previewMode === 'video') ||
       mediaFile?.type === 'image')
