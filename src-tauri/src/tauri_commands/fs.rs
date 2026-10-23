@@ -19,7 +19,14 @@ pub async fn get_file_metadata(file_path: &str) -> Result<FileMetadata, String> 
 #[tauri::command]
 pub async fn get_image_dimension(app: AppHandle, image_path: &str) -> Result<(u32, u32), String> {
     if crate::core::image_codecs::is_modern(&crate::core::image_codecs::extension(image_path)) {
-        let path = crate::core::image_codecs::decoded_png(&app, image_path, "main", &[]).await?;
+        // Keep the decoder future out of Tauri's IPC dispatch stack on Windows.
+        let path = Box::pin(crate::core::image_codecs::decoded_png(
+            &app,
+            image_path,
+            "main",
+            &[],
+        ))
+        .await?;
         return fs::get_image_dimension(path.to_str().ok_or("Invalid cache path")?);
     }
     fs::get_image_dimension(image_path)

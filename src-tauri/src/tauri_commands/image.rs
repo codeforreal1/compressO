@@ -74,7 +74,13 @@ pub async fn get_image_dimensions(
     image_path: &str,
 ) -> Result<ImageDimensions, String> {
     if crate::core::image_codecs::is_modern(&crate::core::image_codecs::extension(image_path)) {
-        let path = crate::core::image_codecs::decoded_png(&app, image_path, "main", &[]).await?;
+        let path = Box::pin(crate::core::image_codecs::decoded_png(
+            &app,
+            image_path,
+            "main",
+            &[],
+        ))
+        .await?;
         return ImageInfo::get_dimensions(path.to_str().ok_or("Invalid cache path")?);
     }
     ImageInfo::get_dimensions(image_path)
@@ -86,7 +92,13 @@ pub async fn get_image_color_info(
     image_path: &str,
 ) -> Result<ImageColorInfo, String> {
     if crate::core::image_codecs::is_modern(&crate::core::image_codecs::extension(image_path)) {
-        let path = crate::core::image_codecs::decoded_png(&app, image_path, "main", &[]).await?;
+        let path = Box::pin(crate::core::image_codecs::decoded_png(
+            &app,
+            image_path,
+            "main",
+            &[],
+        ))
+        .await?;
         return ImageInfo::get_color_info(path.to_str().ok_or("Invalid cache path")?);
     }
     ImageInfo::get_color_info(image_path)
@@ -97,7 +109,12 @@ pub async fn prepare_image_preview(
     app: tauri::AppHandle,
     image_path: &str,
 ) -> Result<String, String> {
-    crate::core::image_codecs::decoded_png(&app, image_path, "main", &[])
+    Box::pin(crate::core::image_codecs::decoded_png(
+        &app,
+        image_path,
+        "main",
+        &[],
+    ))
         .await
         .map(|path| path.to_string_lossy().into_owned())
 }
