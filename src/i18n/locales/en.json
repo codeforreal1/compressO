@@ -32,8 +32,8 @@
           "title_windows": "Open in the system tray only",
           "description_macos": "Do not show the main window when opened at login. Media can still be compressed from the menu bar.",
           "description_windows": "Do not show the main window when opened at login. Media can still be compressed from the system tray.",
-          "needsTrayIcon_macos": "Turn on Show menu bar icon to use this, as the app is opened from there.",
-          "needsTrayIcon_windows": "Turn on Show system tray icon to use this, as the app is opened from there."
+          "needsTrayIcon_macos": "Turn on <setting>Show menu bar icon</setting> to use this, as the app is opened from there.",
+          "needsTrayIcon_windows": "Turn on <setting>Show system tray icon</setting> to use this, as the app is opened from there."
         }
       },
       "appearance": {
@@ -123,20 +123,20 @@
       "empty_image": "There are no image presets yet. Adjust the settings of an image and select the plus button next to the Preset menu to save them as a preset.",
       "empty_audio": "There are no audio presets yet. Adjust the settings of an audio file and select the plus button next to the Preset menu to save them as a preset.",
       "mediaType": "Media type",
-      "standardOutput": "Its save location and file name prefix are set in Output.",
+      "standardOutput": "Its save location and file name prefix are set in <setting>Output</setting>.",
       "cannotDeleteStandard": "The Standard preset cannot be deleted."
     },
     "dropZone": {
-      "needsTrayIcon_macos": "The drop zone is in the menu bar, so it only works when Show menu bar icon is turned on in General.",
-      "needsTrayIcon_windows": "The drop zone is in the system tray, so it only works when Show system tray icon is turned on in General.",
-      "turnOnTrayIcon_macos": "The drop zone is in the menu bar. Turn on Show menu bar icon in General first.",
-      "turnOnTrayIcon_windows": "The drop zone is in the system tray. Turn on Show system tray icon in General first.",
+      "needsTrayIcon_macos": "The drop zone is in the menu bar, so it only works when <setting>Show menu bar icon</setting> is turned on in General.",
+      "needsTrayIcon_windows": "The drop zone is in the system tray, so it only works when <setting>Show system tray icon</setting> is turned on in General.",
+      "turnOnTrayIcon_macos": "The drop zone is in the menu bar. Turn on <setting>Show menu bar icon</setting> in General first.",
+      "turnOnTrayIcon_windows": "The drop zone is in the system tray. Turn on <setting>Show system tray icon</setting> in General first.",
       "compression": {
         "title": "Compression",
         "autoCompress": {
           "title": "Compress automatically",
           "description": "Compress media as soon as it is added to the drop zone, one at a time, and save it to the save location of its preset.",
-          "needsSaveLocation": "Choose a save location other than Ask every time, in Output or in a preset of the drop zone, so the compressed media can be saved without asking."
+          "needsSaveLocation": "Choose a save location other than Ask every time, in <setting>Output</setting> or in a preset of the drop zone, so the compressed media can be saved without asking."
         }
       },
       "preset": {
@@ -166,8 +166,8 @@
         },
         "watch": "Watch {{name}}",
         "missing": "Folder does not exist. It is not being watched.",
-        "needsSaveLocation": "Choose a save location other than Ask every time, in Output or in one of its presets, so its media can be saved without asking. It is not being watched.",
-        "presetAsks": "Its save location is Ask every time. Choose another one, in Output or in this preset, so this folder can be watched.",
+        "needsSaveLocation": "Choose a save location other than Ask every time, in <setting>Output</setting> or in one of its presets, so its media can be saved without asking. It is not being watched.",
+        "presetAsks": "Its save location is Ask every time. Choose another one, in <setting>Output</setting> or in this preset, so this folder can be watched.",
         "stillMissing": "Folder does not exist yet. Recreate it before turning on watching.",
         "checkFailed": "Could not check whether this folder exists. Try again.",
         "remove": "Stop watching",
@@ -253,6 +253,11 @@
       }
     },
     "open": "Open Settings",
+    "search": {
+      "label": "Search settings",
+      "results": "Search results",
+      "noResults": "No settings found."
+    },
     "groups": {
       "settings": "Settings",
       "app": "CompressO"
@@ -388,7 +393,7 @@
       "placeholder_image": "e.g. Web",
       "placeholder_audio": "e.g. Podcast",
       "nameTaken": "A preset with this name already exists.",
-      "hint": "Presets can be renamed, reordered and deleted in Settings, under Presets."
+      "hint": "Presets can be renamed, reordered and deleted in Settings, under <setting>Presets</setting>."
     },
     "updated": "The preset \"{{name}}\" was updated.",
     "saved": "The preset \"{{name}}\" was saved.",
@@ -425,11 +430,12 @@
     "remove": "Remove {{name}}",
     "storedBusy": "Stored. Open the app to compress them after the current media.",
     "storedIdle": "Drop more media, or open the app to start compression.",
-    "needsSaveLocation": "Choose a save location in Settings, under Output or in a preset of the drop zone, so the compressed media can be saved without asking."
+    "needsSaveLocation": "Choose a save location in Settings, under <setting>Output</setting> or in a preset of the drop zone, so the compressed media can be saved without asking."
   },
   "queue": {
     "notSavedLarger": "Not saved, as it is larger than the original.",
     "noSaveLocation": "Choose a save location for its preset, in Settings.",
+    "chooseSaveLocation": "Choose a save location",
     "saveFailed": "The compressed media could not be saved.",
     "compressFailed": "The media could not be compressed.",
     "summary": {
@@ -685,7 +691,7 @@
     "pauseAudio": "Pause audio",
     "playAudio": "Play audio",
     "videoUnplayable": "This video is unable to play by this app because it contains advanced codec/configurations. Such videos require dedicated media players like VLC.",
-    "previewsOff": "Video previews are turned off. They can be turned on in Settings, under General.",
+    "previewsOff": "Video previews are turned off. They can be turned on in Settings, under <setting>General</setting>.",
     "stillCompressible": "Rest assured, you can still apply the output settings and perform all the conversions.",
     "enlarge": "Enlarge image",
     "select": "Select thumbnail image.",

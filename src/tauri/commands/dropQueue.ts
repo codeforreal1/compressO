@@ -43,6 +43,8 @@ export type DropQueueItem = {
   message: string | null
   /** It failed as the system did not allow opening it (e.g. macOS privacy settings) */
   isAccessDenied: boolean
+  /** It was compressed, but its preset asks where to save, which nothing in the queue can */
+  needsSaveLocation: boolean
   /**
    * The watched folder it landed in (see `watch_folders.rs`), `null` for media dropped, pasted or
    * copied, which is compressed first
@@ -63,6 +65,7 @@ export type DropQueueItemUpdate = Partial<
     | 'outputPath'
     | 'message'
     | 'isAccessDenied'
+    | 'needsSaveLocation'
   >
 >
 

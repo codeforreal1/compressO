@@ -2,13 +2,14 @@
 import { SelectItem } from '@heroui/react'
 import { open } from '@tauri-apps/plugin-dialog'
 import { useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
 import Button from '@/components/Button'
 import Icon from '@/components/Icon'
 import InfoTooltip from '@/components/InfoTooltip'
 import Select from '@/components/Select'
+import SettingLink from '@/components/SettingLink'
 import Switch from '@/components/Switch'
 import { toast } from '@/components/Toast'
 import Tooltip from '@/components/Tooltip'
@@ -86,8 +87,16 @@ function FolderPresetSelect({
           <InfoTooltip
             variant="warning"
             content={
-              asksWhereToSave &&
-              t('settings.dropZone.watchedFolders.presetAsks')
+              asksWhereToSave && (
+                <Trans
+                  i18nKey="settings.dropZone.watchedFolders.presetAsks"
+                  components={{
+                    setting: (
+                      <SettingLink target={{ settingId: 'saveLocation' }} />
+                    ),
+                  }}
+                />
+              )
             }
           />
         </span>
@@ -204,6 +213,7 @@ function WatchedFolders() {
   return (
     <SettingsSection title={t('settings.watchedFolders.folders')}>
       <SettingsRow
+        settingId="watchFolder"
         title={t('settings.dropZone.watchedFolders.add.title')}
         description={
           hasTray
@@ -216,8 +226,17 @@ function WatchedFolders() {
         <div className="flex items-center gap-2">
           <InfoTooltip
             content={
-              isUnavailable &&
-              t('settings.dropZone.turnOnTrayIcon', { context: TRAY_CONTEXT })
+              isUnavailable && (
+                <Trans
+                  i18nKey="settings.dropZone.turnOnTrayIcon"
+                  context={TRAY_CONTEXT}
+                  components={{
+                    setting: (
+                      <SettingLink target={{ settingId: 'showTrayIcon' }} />
+                    ),
+                  }}
+                />
+              )
             }
           />
           <Button size="sm" isDisabled={isUnavailable} onPress={addFolder}>
@@ -238,9 +257,16 @@ function WatchedFolders() {
         const isDisabled = isUnavailable || (!folder.isEnabled && canSave)
         const warning = isMissing
           ? t('settings.dropZone.watchedFolders.missing')
-          : !canSave
-            ? t('settings.dropZone.watchedFolders.needsSaveLocation')
-            : null
+          : !canSave && (
+              <Trans
+                i18nKey="settings.dropZone.watchedFolders.needsSaveLocation"
+                components={{
+                  setting: (
+                    <SettingLink target={{ settingId: 'saveLocation' }} />
+                  ),
+                }}
+              />
+            )
         return (
           <div key={folder.id} className="py-4">
             <div className="flex items-center gap-3">

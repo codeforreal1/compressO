@@ -1,12 +1,13 @@
 import { SelectItem } from '@heroui/react'
 import React from 'react'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
 import Button from '@/components/Button'
 import ColorPicker from '@/components/ColorPicker'
 import InfoTooltip from '@/components/InfoTooltip'
 import Select from '@/components/Select'
+import SettingLink from '@/components/SettingLink'
 import Slider from '@/components/Slider'
 import Switch from '@/components/Switch'
 import { ThemeSwitcher } from '@/components/ThemeSwitcher'
@@ -72,6 +73,7 @@ function StartupSection() {
   return (
     <SettingsSection title={t('settings.general.startup.title')}>
       <SettingsRow
+        settingId="openAtLogin"
         title={t('settings.general.startup.openAtLogin.title')}
         description={t('settings.general.startup.openAtLogin.description')}
       >
@@ -98,6 +100,7 @@ function StartupSection() {
         </Button>
       </SettingsRow>
       <SettingsRow
+        settingId="openInTrayOnly"
         isVisible={hasTray && isOpenAtLogin}
         isNested
         title={t('settings.general.startup.openInTrayOnly.title', {
@@ -110,10 +113,17 @@ function StartupSection() {
         <div className="flex items-center gap-2">
           <InfoTooltip
             content={
-              !showMenuBarIcon &&
-              t('settings.general.startup.openInTrayOnly.needsTrayIcon', {
-                context: TRAY_CONTEXT,
-              })
+              !showMenuBarIcon && (
+                <Trans
+                  i18nKey="settings.general.startup.openInTrayOnly.needsTrayIcon"
+                  context={TRAY_CONTEXT}
+                  components={{
+                    setting: (
+                      <SettingLink target={{ settingId: 'showTrayIcon' }} />
+                    ),
+                  }}
+                />
+              )
             }
           />
           <Switch
@@ -182,18 +192,21 @@ function General() {
     <>
       <SettingsSection title={t('settings.general.appearance.title')}>
         <SettingsRow
+          settingId="language"
           title={t('settings.general.appearance.language.title')}
           description={t('settings.general.appearance.language.description')}
         >
           <LanguageSelect />
         </SettingsRow>
         <SettingsRow
+          settingId="theme"
           title={t('settings.general.appearance.theme.title')}
           description={t('settings.general.appearance.theme.description')}
         >
           <ThemeSwitcher />
         </SettingsRow>
         <SettingsRow
+          settingId="accentColor"
           title={t('settings.general.appearance.accentColor.title')}
           description={t('settings.general.appearance.accentColor.description')}
         >
@@ -201,6 +214,7 @@ function General() {
         </SettingsRow>
         {isWindowTintSupported ? (
           <SettingsRow
+            settingId="tintedWindow"
             title={t('settings.general.appearance.tintedWindow.title')}
             description={t(
               'settings.general.appearance.tintedWindow.description',
@@ -216,6 +230,7 @@ function General() {
           </SettingsRow>
         ) : null}
         <SettingsRow
+          settingId="tintOpacity"
           isVisible={isWindowTintSupported && tintedWindow}
           isNested
           title={t('settings.general.appearance.tintOpacity.title')}
@@ -243,6 +258,7 @@ function General() {
           title={t('settings.general.tray.title', { context: TRAY_CONTEXT })}
         >
           <SettingsRow
+            settingId="showTrayIcon"
             title={t('settings.general.tray.showIcon.title', {
               context: TRAY_CONTEXT,
             })}
@@ -274,6 +290,7 @@ function General() {
       {isLinux ? (
         <SettingsSection title={t('settings.general.preview.title')}>
           <SettingsRow
+            settingId="videoPreviews"
             title={t('settings.general.preview.videoPreviews.title')}
             description={t(
               'settings.general.preview.videoPreviews.description',
@@ -311,6 +328,7 @@ function General() {
       <StartupSection />
       <SettingsSection title={t('settings.general.sleep.title')}>
         <SettingsRow
+          settingId="preventSleep"
           title={t('settings.general.sleep.preventSleep.title')}
           description={t('settings.general.sleep.preventSleep.description')}
         >
@@ -323,6 +341,7 @@ function General() {
           />
         </SettingsRow>
         <SettingsRow
+          settingId="keepScreenOn"
           isVisible={preventSleepWhileCompressing}
           isNested
           title={t('settings.general.sleep.keepScreenOn.title')}
@@ -339,6 +358,7 @@ function General() {
       </SettingsSection>
       <SettingsSection title={t('settings.general.sound.title')}>
         <SettingsRow
+          settingId="completionSound"
           title={t('settings.general.sound.completionSound.title')}
           description={t('settings.general.sound.completionSound.description')}
         >
@@ -355,6 +375,7 @@ function General() {
       </SettingsSection>
       <SettingsSection title={t('settings.general.troubleshooting.title')}>
         <SettingsRow
+          settingId="logFiles"
           title={t('settings.general.troubleshooting.logFiles.title')}
           description={t(
             'settings.general.troubleshooting.logFiles.description',

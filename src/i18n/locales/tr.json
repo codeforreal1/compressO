@@ -32,8 +32,8 @@
           "title_windows": "Yalnızca sistem tepsisinde aç",
           "description_macos": "Oturum açılınca açıldığında ana pencereyi göstermeyin. Medya yine de menü çubuğundan sıkıştırılabilir.",
           "description_windows": "Oturum açılınca açıldığında ana pencereyi göstermeyin. Medya yine de sistem tepsisinden sıkıştırılabilir.",
-          "needsTrayIcon_macos": "Bunu kullanmak için “Menü çubuğu simgesini göster” seçeneğini açın, çünkü uygulama oradan açılır.",
-          "needsTrayIcon_windows": "Bunu kullanmak için “Sistem tepsisi simgesini göster” seçeneğini açın, çünkü uygulama oradan açılır."
+          "needsTrayIcon_macos": "Bunu kullanmak için “<setting>Menü çubuğu simgesini göster</setting>” seçeneğini açın, çünkü uygulama oradan açılır.",
+          "needsTrayIcon_windows": "Bunu kullanmak için “<setting>Sistem tepsisi simgesini göster</setting>” seçeneğini açın, çünkü uygulama oradan açılır."
         }
       },
       "appearance": {
@@ -123,20 +123,20 @@
       "empty_image": "Henüz görüntü ön ayarı yok. Bir görüntünün ayarlarını düzenleyin ve bunları ön ayar olarak kaydetmek için Ön ayar menüsünün yanındaki artı düğmesini seçin.",
       "empty_audio": "Henüz ses ön ayarı yok. Bir ses dosyasının ayarlarını düzenleyin ve bunları ön ayar olarak kaydetmek için Ön ayar menüsünün yanındaki artı düğmesini seçin.",
       "mediaType": "Medya türü",
-      "standardOutput": "Kaydetme konumu ve dosya adı öneki Çıktı bölümünde ayarlanır.",
+      "standardOutput": "Kaydetme konumu ve dosya adı öneki <setting>Çıktı</setting> bölümünde ayarlanır.",
       "cannotDeleteStandard": "Standart ön ayar silinemez."
     },
     "dropZone": {
-      "needsTrayIcon_macos": "Bırakma alanı menü çubuğundadır; bu nedenle yalnızca Genel’de “Menü çubuğu simgesini göster” açıkken çalışır.",
-      "needsTrayIcon_windows": "Bırakma alanı sistem tepsisindedir; bu nedenle yalnızca Genel’de “Sistem tepsisi simgesini göster” açıkken çalışır.",
-      "turnOnTrayIcon_macos": "Bırakma alanı menü çubuğundadır. Önce Genel’de “Menü çubuğu simgesini göster” seçeneğini açın.",
-      "turnOnTrayIcon_windows": "Bırakma alanı sistem tepsisindedir. Önce Genel’de “Sistem tepsisi simgesini göster” seçeneğini açın.",
+      "needsTrayIcon_macos": "Bırakma alanı menü çubuğundadır; bu nedenle yalnızca Genel’de “<setting>Menü çubuğu simgesini göster</setting>” açıkken çalışır.",
+      "needsTrayIcon_windows": "Bırakma alanı sistem tepsisindedir; bu nedenle yalnızca Genel’de “<setting>Sistem tepsisi simgesini göster</setting>” açıkken çalışır.",
+      "turnOnTrayIcon_macos": "Bırakma alanı menü çubuğundadır. Önce Genel’de “<setting>Menü çubuğu simgesini göster</setting>” seçeneğini açın.",
+      "turnOnTrayIcon_windows": "Bırakma alanı sistem tepsisindedir. Önce Genel’de “<setting>Sistem tepsisi simgesini göster</setting>” seçeneğini açın.",
       "compression": {
         "title": "Sıkıştırma",
         "autoCompress": {
           "title": "Otomatik sıkıştır",
           "description": "Medyayı bırakma alanına eklenir eklenmez tek tek sıkıştırır ve ön ayarının kaydetme konumuna kaydeder.",
-          "needsSaveLocation": "Sıkıştırılan medyanın sormadan kaydedilebilmesi için Çıktı bölümünde veya bırakma alanının bir ön ayarında Her seferinde sor dışında bir kaydetme konumu seçin."
+          "needsSaveLocation": "Sıkıştırılan medyanın sormadan kaydedilebilmesi için <setting>Çıktı</setting> bölümünde veya bırakma alanının bir ön ayarında Her seferinde sor dışında bir kaydetme konumu seçin."
         }
       },
       "preset": {
@@ -166,8 +166,8 @@
         },
         "watch": "{{name}} klasörünü izle",
         "missing": "Klasör mevcut değil. İzlenmiyor.",
-        "needsSaveLocation": "Medyasının sormadan kaydedilebilmesi için Çıktı bölümünde veya ön ayarlarından birinde \"Her seferinde sor\" dışında bir kaydetme konumu seçin. Şu anda izlenmiyor.",
-        "presetAsks": "Kaydetme konumu Her seferinde sor olarak ayarlı. Bu klasörün izlenebilmesi için Çıktı bölümünde veya bu ön ayarda başka bir konum seçin.",
+        "needsSaveLocation": "Medyasının sormadan kaydedilebilmesi için <setting>Çıktı</setting> bölümünde veya ön ayarlarından birinde \"Her seferinde sor\" dışında bir kaydetme konumu seçin. Şu anda izlenmiyor.",
+        "presetAsks": "Kaydetme konumu Her seferinde sor olarak ayarlı. Bu klasörün izlenebilmesi için <setting>Çıktı</setting> bölümünde veya bu ön ayarda başka bir konum seçin.",
         "stillMissing": "Klasör henüz mevcut değil. İzlemeyi açmadan önce klasörü yeniden oluşturun.",
         "checkFailed": "Bu klasörün mevcut olup olmadığı kontrol edilemedi. Tekrar deneyin.",
         "remove": "İzlemeyi durdur",
@@ -253,6 +253,11 @@
       }
     },
     "open": "Ayarları Aç",
+    "search": {
+      "label": "Ayarlarda ara",
+      "results": "Arama sonuçları",
+      "noResults": "Ayar bulunamadı."
+    },
     "groups": {
       "settings": "Ayarlar",
       "app": "CompressO"
@@ -388,7 +393,7 @@
       "placeholder_image": "ör. Web",
       "placeholder_audio": "ör. Podcast",
       "nameTaken": "Bu ada sahip bir ön ayar zaten var.",
-      "hint": "Ön ayarlar, Ayarlar’da Ön Ayarlar altında yeniden adlandırılabilir, yeniden sıralanabilir ve silinebilir."
+      "hint": "Ön ayarlar, Ayarlar’da <setting>Ön Ayarlar</setting> altında yeniden adlandırılabilir, yeniden sıralanabilir ve silinebilir."
     },
     "updated": "“{{name}}” ön ayarı güncellendi.",
     "saved": "“{{name}}” ön ayarı kaydedildi.",
@@ -425,11 +430,12 @@
     "remove": "{{name}} öğesini kaldır",
     "storedBusy": "Saklandı. Geçerli medyadan sonra sıkıştırmak için uygulamayı açın.",
     "storedIdle": "Daha fazla medya bırakın veya sıkıştırmayı başlatmak için uygulamayı açın.",
-    "needsSaveLocation": "Sıkıştırılan medyanın sormadan kaydedilebilmesi için Ayarlar’da, Çıktı bölümünde veya bırakma alanının bir ön ayarında bir kaydetme konumu seçin."
+    "needsSaveLocation": "Sıkıştırılan medyanın sormadan kaydedilebilmesi için Ayarlar’da, <setting>Çıktı</setting> bölümünde veya bırakma alanının bir ön ayarında bir kaydetme konumu seçin."
   },
   "queue": {
     "notSavedLarger": "Orijinalinden büyük olduğu için kaydedilmedi.",
     "noSaveLocation": "Ayarlar’da ön ayarı için bir kaydetme konumu seçin.",
+    "chooseSaveLocation": "Kaydetme konumu seçin",
     "saveFailed": "Sıkıştırılan medya kaydedilemedi.",
     "compressFailed": "Medya sıkıştırılamadı.",
     "summary": {
@@ -685,7 +691,7 @@
     "pauseAudio": "Sesi duraklat",
     "playAudio": "Sesi oynat",
     "videoUnplayable": "Bu video gelişmiş codec’ler veya yapılandırmalar içerdiğinden bu uygulama tarafından oynatılamıyor. Bu tür videolar VLC gibi özel oynatıcılar gerektirir.",
-    "previewsOff": "Video önizlemeleri kapalı. Ayarlar’da Genel altından açılabilir.",
+    "previewsOff": "Video önizlemeleri kapalı. Ayarlar’da <setting>Genel</setting> altından açılabilir.",
     "stillCompressible": "Yine de çıktı ayarlarını uygulayabilir ve tüm dönüştürmeleri gerçekleştirebilirsiniz.",
     "enlarge": "Görüntüyü büyüt",
     "select": "Küçük resim görüntüsünü seçin.",

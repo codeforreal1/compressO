@@ -37,6 +37,7 @@ import Power from '@/assets/icons/power.svg?react'
 import Question from '@/assets/icons/question.svg?react'
 import Redo from '@/assets/icons/redo.svg?react'
 import RotateLeft from '@/assets/icons/rotate-left.svg?react'
+import Search from '@/assets/icons/search.svg?react'
 import Setting from '@/assets/icons/setting.svg?react'
 import Star from '@/assets/icons/star.svg?react'
 import Stop from '@/assets/icons/stop.svg?react'
@@ -83,6 +84,7 @@ const registry = asRegistry({
   flipHorizontal: FlipHorizontal,
   expand: Expand,
   zoom: Zoom,
+  search: Search,
   pencil: Pencil,
   back: Back,
   pause: Pause,

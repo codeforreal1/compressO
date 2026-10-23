@@ -2,12 +2,13 @@ import { Tab } from '@heroui/react'
 import { AnimatePresence, motion } from 'framer-motion'
 import cloneDeep from 'lodash/cloneDeep'
 import React from 'react'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
 import AnimatedLabel from '@/components/AnimatedLabel'
 import Button from '@/components/Button'
 import Icon from '@/components/Icon'
+import SettingLink from '@/components/SettingLink'
 import Tabs from '@/components/Tabs'
 import TextInput from '@/components/TextInput'
 import Tooltip from '@/components/Tooltip'
@@ -237,7 +238,12 @@ function PresetCard({ preset, isFirst, isLast, isDefault }: PresetCardProps) {
       {isStandard ? (
         // The Standard preset's output is in Output (for videos, images & audio alike)
         <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-2">
-          {t('settings.presets.standardOutput')}
+          <Trans
+            i18nKey="settings.presets.standardOutput"
+            components={{
+              setting: <SettingLink target={{ settingId: 'saveLocation' }} />,
+            }}
+          />
         </p>
       ) : (
         <div className="mt-3 max-w-[560px]">

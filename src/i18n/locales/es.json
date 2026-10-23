@@ -32,8 +32,8 @@
           "title_windows": "Abrir solo en la bandeja del sistema",
           "description_macos": "No mostrar la ventana principal al abrirse al iniciar sesión. Los archivos multimedia se pueden seguir comprimiendo desde la barra de menús.",
           "description_windows": "No mostrar la ventana principal al abrirse al iniciar sesión. Los archivos multimedia se pueden seguir comprimiendo desde la bandeja del sistema.",
-          "needsTrayIcon_macos": "Active «Mostrar icono en la barra de menús» para usar esta opción, ya que la app se abre desde allí.",
-          "needsTrayIcon_windows": "Active «Mostrar icono en la bandeja del sistema» para usar esta opción, ya que la app se abre desde allí."
+          "needsTrayIcon_macos": "Active «<setting>Mostrar icono en la barra de menús</setting>» para usar esta opción, ya que la app se abre desde allí.",
+          "needsTrayIcon_windows": "Active «<setting>Mostrar icono en la bandeja del sistema</setting>» para usar esta opción, ya que la app se abre desde allí."
         }
       },
       "appearance": {
@@ -123,20 +123,20 @@
       "empty_image": "Aún no hay ajustes preestablecidos de imagen. Ajuste la configuración de una imagen y seleccione el botón más junto al menú Ajuste preestablecido para guardarla como ajuste preestablecido.",
       "empty_audio": "Aún no hay ajustes preestablecidos de audio. Ajuste la configuración de un archivo de audio y seleccione el botón más junto al menú Ajuste preestablecido para guardarla como ajuste preestablecido.",
       "mediaType": "Tipo de archivo",
-      "standardOutput": "Su ubicación de guardado y su prefijo de nombre de archivo se configuran en Salida.",
+      "standardOutput": "Su ubicación de guardado y su prefijo de nombre de archivo se configuran en <setting>Salida</setting>.",
       "cannotDeleteStandard": "El ajuste preestablecido Estándar no se puede eliminar."
     },
     "dropZone": {
-      "needsTrayIcon_macos": "La zona de arrastre está en la barra de menús, por lo que solo funciona cuando «Mostrar icono en la barra de menús» está activado en General.",
-      "needsTrayIcon_windows": "La zona de arrastre está en la bandeja del sistema, por lo que solo funciona cuando «Mostrar icono en la bandeja del sistema» está activado en General.",
-      "turnOnTrayIcon_macos": "La zona de arrastre está en la barra de menús. Active primero «Mostrar icono en la barra de menús» en General.",
-      "turnOnTrayIcon_windows": "La zona de arrastre está en la bandeja del sistema. Active primero «Mostrar icono en la bandeja del sistema» en General.",
+      "needsTrayIcon_macos": "La zona de arrastre está en la barra de menús, por lo que solo funciona cuando «<setting>Mostrar icono en la barra de menús</setting>» está activado en General.",
+      "needsTrayIcon_windows": "La zona de arrastre está en la bandeja del sistema, por lo que solo funciona cuando «<setting>Mostrar icono en la bandeja del sistema</setting>» está activado en General.",
+      "turnOnTrayIcon_macos": "La zona de arrastre está en la barra de menús. Active primero «<setting>Mostrar icono en la barra de menús</setting>» en General.",
+      "turnOnTrayIcon_windows": "La zona de arrastre está en la bandeja del sistema. Active primero «<setting>Mostrar icono en la bandeja del sistema</setting>» en General.",
       "compression": {
         "title": "Compresión",
         "autoCompress": {
           "title": "Comprimir automáticamente",
           "description": "Comprime los archivos en cuanto se añaden a la zona de soltar, uno a uno, y los guarda en la ubicación de su ajuste preestablecido.",
-          "needsSaveLocation": "Elija una ubicación distinta de Preguntar cada vez, en Salida o en un ajuste preestablecido de la zona de soltar, para que los archivos comprimidos se guarden sin preguntar."
+          "needsSaveLocation": "Elija una ubicación distinta de Preguntar cada vez, en <setting>Salida</setting> o en un ajuste preestablecido de la zona de soltar, para que los archivos comprimidos se guarden sin preguntar."
         }
       },
       "preset": {
@@ -166,8 +166,8 @@
         },
         "watch": "Vigilar {{name}}",
         "missing": "La carpeta no existe. No se está supervisando.",
-        "needsSaveLocation": "Elija una ubicación de guardado distinta de «Preguntar cada vez», en Salida o en uno de sus ajustes preestablecidos, para que sus archivos se puedan guardar sin preguntar. No se está vigilando.",
-        "presetAsks": "Su ubicación de guardado es Preguntar cada vez. Elija otra, en Salida o en este ajuste preestablecido, para que esta carpeta se pueda vigilar.",
+        "needsSaveLocation": "Elija una ubicación de guardado distinta de «Preguntar cada vez», en <setting>Salida</setting> o en uno de sus ajustes preestablecidos, para que sus archivos se puedan guardar sin preguntar. No se está vigilando.",
+        "presetAsks": "Su ubicación de guardado es Preguntar cada vez. Elija otra, en <setting>Salida</setting> o en este ajuste preestablecido, para que esta carpeta se pueda vigilar.",
         "stillMissing": "La carpeta aún no existe. Vuelve a crearla antes de activar la supervisión.",
         "checkFailed": "No se pudo comprobar si existe esta carpeta. Inténtalo de nuevo.",
         "remove": "Dejar de vigilar",
@@ -253,6 +253,11 @@
       }
     },
     "open": "Abrir Ajustes",
+    "search": {
+      "label": "Buscar ajustes",
+      "results": "Resultados de la búsqueda",
+      "noResults": "No se encontraron ajustes."
+    },
     "groups": {
       "settings": "Ajustes",
       "app": "CompressO"
@@ -388,7 +393,7 @@
       "placeholder_image": "p. ej., Web",
       "placeholder_audio": "p. ej., Pódcast",
       "nameTaken": "Ya existe un ajuste preestablecido con este nombre.",
-      "hint": "Los ajustes preestablecidos se pueden renombrar, reordenar y eliminar en Ajustes, en Ajustes preestablecidos."
+      "hint": "Los ajustes preestablecidos se pueden renombrar, reordenar y eliminar en Ajustes, en <setting>Ajustes preestablecidos</setting>."
     },
     "updated": "Se ha actualizado el ajuste preestablecido «{{name}}».",
     "saved": "Se ha guardado el ajuste preestablecido «{{name}}».",
@@ -426,11 +431,12 @@
     "remove": "Quitar {{name}}",
     "storedBusy": "Guardados. Abra la app para comprimirlos después de los archivos actuales.",
     "storedIdle": "Arrastre más archivos o abra la app para iniciar la compresión.",
-    "needsSaveLocation": "Elija una ubicación de guardado en Ajustes, en Salida o en un ajuste preestablecido de la zona de soltar, para que los archivos comprimidos se guarden sin preguntar."
+    "needsSaveLocation": "Elija una ubicación de guardado en Ajustes, en <setting>Salida</setting> o en un ajuste preestablecido de la zona de soltar, para que los archivos comprimidos se guarden sin preguntar."
   },
   "queue": {
     "notSavedLarger": "No se ha guardado, ya que es más grande que el original.",
     "noSaveLocation": "Elija una ubicación de guardado para su ajuste preestablecido, en Ajustes.",
+    "chooseSaveLocation": "Elegir una ubicación de guardado",
     "saveFailed": "No se pudo guardar el archivo comprimido.",
     "compressFailed": "No se pudo comprimir el archivo.",
     "summary": {
@@ -691,7 +697,7 @@
     "pauseAudio": "Pausar el audio",
     "playAudio": "Reproducir el audio",
     "videoUnplayable": "Esta app no puede reproducir este vídeo porque contiene códecs o configuraciones avanzados. Estos vídeos requieren reproductores específicos como VLC.",
-    "previewsOff": "La vista previa de vídeos está desactivada. Se puede activar en Ajustes, en General.",
+    "previewsOff": "La vista previa de vídeos está desactivada. Se puede activar en Ajustes, en <setting>General</setting>.",
     "stillCompressible": "No obstante, puede aplicar la configuración de salida y realizar todas las conversiones.",
     "enlarge": "Ampliar imagen",
     "select": "Seleccione la imagen de la miniatura.",

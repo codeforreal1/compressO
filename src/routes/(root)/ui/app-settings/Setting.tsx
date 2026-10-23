@@ -1,15 +1,26 @@
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { proxy, useSnapshot } from 'valtio'
+import { useSnapshot } from 'valtio'
 
 import Badge from '@/components/Badge'
 import Button from '@/components/Button'
 import Icon, { IconProps } from '@/components/Icon'
 import Modal, { ModalContent } from '@/components/Modal'
 import ScrollShadow from '@/components/ScrollShadow'
+import TextInput from '@/components/TextInput'
 import Tooltip from '@/components/Tooltip'
+import {
+  SETTINGS_INDEX,
+  type SettingId,
+  type SettingsPageId,
+} from '@/constants/settingsIndex'
 import type { Translation } from '@/i18n'
+import {
+  listenForSettingsRequests,
+  settingsDialogStore,
+  showSettings,
+} from '@/stores/settingsDialogStore'
 import { updateStore } from '@/stores/updateStore'
 import { getPlatform } from '@/utils/fs'
 import { glassBorder } from '@/utils/glass'
@@ -25,7 +36,7 @@ import Presets from './Presets'
 import WatchedFolders from './WatchedFolders'
 
 type SettingsPage = {
-  id: keyof Translation['settings']['pages']
+  id: SettingsPageId
   // TODO: replace with dedicated icons
   icon: IconProps['name']
   Component: React.ComponentType
@@ -101,8 +112,6 @@ const SETTINGS_GROUPS: {
 
 const ALL_PAGES = SETTINGS_GROUPS.flatMap((group) => group.pages)
 
-const settingsDialogProxy = proxy({ isOpen: false })
-
 /** Sent by the backend when "Settings…" is chosen in the app menu */
 const OPEN_SETTINGS_EVENT = 'open-settings'
 
@@ -120,7 +129,7 @@ function Setting() {
         size="sm"
         variant="light"
         onPress={() => {
-          settingsDialogProxy.isOpen = true
+          showSettings()
         }}
       >
         <Tooltip
@@ -148,7 +157,7 @@ function Setting() {
  * opened with Ctrl+, (or ⌘+, on macOS) while media is being edited.
  */
 export function SettingsDialogHost() {
-  const { isOpen } = useSnapshot(settingsDialogProxy)
+  const { isOpen } = useSnapshot(settingsDialogStore)
   const { isUpdateAvailable, latestVersion } = useSnapshot(updateStore)
 
   const hasNewVersion = !!(isUpdateAvailable && latestVersion)
@@ -162,26 +171,30 @@ export function SettingsDialogHost() {
         !e.shiftKey
       if (isShortcut) {
         e.preventDefault()
-        settingsDialogProxy.isOpen = true
+        showSettings()
       }
     }
     window.addEventListener('keydown', handleKeyDown)
+    // Asked for by other windows, e.g. the drop zone's
+    const stopListeningForRequests = listenForSettingsRequests()
 
     // "Settings…" in the app menu (macOS)
     const unlistenPromise = getCurrentWebviewWindow().listen(
       OPEN_SETTINGS_EVENT,
       () => {
-        settingsDialogProxy.isOpen = true
+        showSettings()
       },
     )
     return () => {
       window.removeEventListener('keydown', handleKeyDown)
+      stopListeningForRequests()
       unlistenPromise.then((unlisten) => unlisten())
     }
   }, [])
 
   const close = () => {
-    settingsDialogProxy.isOpen = false
+    settingsDialogStore.isOpen = false
+    settingsDialogStore.highlight = null
   }
 
   return (
@@ -206,53 +219,151 @@ type SettingsDialogProps = {
   hasNewVersion: boolean
 }
 
+type SearchResult =
+  | { settingId: SettingId; title: string; pageId: SettingsPageId }
+  | { settingId?: undefined; title: string; pageId: SettingsPageId }
+
+/** Settings & pages whose text has every word searched for */
+function useSearchResults(query: string): SearchResult[] {
+  const { t } = useTranslation()
+  return React.useMemo(() => {
+    const words = query.toLowerCase().split(/\s+/).filter(Boolean)
+    if (!words.length) return []
+    const matches = (texts: string[]) => {
+      const text = texts.join(' ').toLowerCase()
+      return words.every((word) => text.includes(word))
+    }
+    const pageIds = new Set(ALL_PAGES.map((page) => page.id))
+    const pages: SearchResult[] = ALL_PAGES.filter((page) =>
+      matches([t(`settings.pages.${page.id}`)]),
+    ).map((page) => ({
+      title: t(`settings.pages.${page.id}`),
+      pageId: page.id,
+    }))
+    const settings: SearchResult[] = (
+      Object.entries(SETTINGS_INDEX) as [
+        SettingId,
+        (typeof SETTINGS_INDEX)[SettingId],
+      ][]
+    )
+      .filter(
+        ([, setting]) =>
+          ('isAvailable' in setting ? setting.isAvailable : true) &&
+          pageIds.has(setting.page) &&
+          // Found by the name of its page too, e.g. "output prefix"
+          matches([...setting.getText(t), t(`settings.pages.${setting.page}`)]),
+      )
+      .map(([settingId, setting]) => ({
+        settingId,
+        title: setting.getText(t)[0],
+        pageId: setting.page,
+      }))
+    return [...pages, ...settings]
+  }, [query, t])
+}
+
 function SettingsDialog({ onClose, hasNewVersion }: SettingsDialogProps) {
   const { t } = useTranslation()
-  const [selectedPageId, setSelectedPageId] = React.useState(ALL_PAGES[0].id)
+  const { pageId } = useSnapshot(settingsDialogStore)
+  const [search, setSearch] = React.useState('')
+  const results = useSearchResults(search)
+  const isSearching = search.trim() !== ''
   const selectedPage =
-    ALL_PAGES.find((page) => page.id === selectedPageId) ?? ALL_PAGES[0]
+    ALL_PAGES.find((page) => page.id === pageId) ?? ALL_PAGES[0]
+
+  const openResult = (result: SearchResult) => {
+    showSettings(
+      result.settingId
+        ? { settingId: result.settingId }
+        : { page: result.pageId },
+    )
+  }
 
   return (
     <div className="relative flex w-full h-full">
       <aside className="w-[240px] flex-shrink-0 flex flex-col border-r border-zinc-400 dark:border-zinc-800 p-3">
+        <TextInput
+          aria-label={t('settings.search.label')}
+          placeholder={t('settings.search.label')}
+          value={search}
+          onValueChange={setSearch}
+          isClearable
+          onClear={() => setSearch('')}
+          startContent={
+            <Icon name="search" size={16} className="text-zinc-500" />
+          }
+          onKeyDown={(evt) => {
+            // The first result, as with a search on the web
+            if (evt.key === 'Enter' && results[0]) openResult(results[0])
+          }}
+          className="mt-2"
+        />
         <ScrollShadow className="flex-1" hideScrollBar>
-          {SETTINGS_GROUPS.map((group) => (
-            <nav key={group.id} className="mt-5 first:mt-2">
-              <p className="px-3 mb-1 text-xs text-zinc-500">
-                {t(`settings.groups.${group.id}`)}
-              </p>
-              {group.pages.map((page) => (
-                <button
-                  key={page.id}
-                  type="button"
-                  onClick={() => setSelectedPageId(page.id)}
-                  className={cn([
-                    // A transparent border, so the chosen page's frosted glass (& its border)
-                    // does not move the text
-                    'w-full flex items-center gap-3 px-3 py-1 my-1 rounded-lg border border-transparent text-sm text-left transition-colors',
-                    page.id === selectedPage.id
-                      ? [
-                          'bg-zinc-100 dark:bg-zinc-700',
-                          glassBorder,
-                          'text-foreground font-medium',
-                        ]
-                      : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-900/[0.04] dark:hover:bg-white/[0.05]',
-                  ])}
-                >
-                  <Icon name={page.icon} size={18} />
-                  <span className="flex-1">
-                    {t(`settings.pages.${page.id}`)}
-                  </span>
-                  {page.id === 'about' && hasNewVersion ? (
-                    <span
-                      className="w-2 h-2 rounded-full bg-primary"
-                      aria-label={t('settings.about.updateAvailable')}
-                    />
-                  ) : null}
-                </button>
-              ))}
+          {isSearching ? (
+            <nav className="mt-4" aria-label={t('settings.search.results')}>
+              {results.length ? (
+                results.map((result) => (
+                  <button
+                    key={result.settingId ?? result.pageId}
+                    type="button"
+                    onClick={() => openResult(result)}
+                    className="w-full flex flex-col px-3 py-1.5 my-0.5 rounded-lg border border-transparent text-left transition-colors hover:bg-zinc-900/[0.04] dark:hover:bg-white/[0.05]"
+                  >
+                    <span className="text-sm text-foreground">
+                      {result.title}
+                    </span>
+                    {result.settingId ? (
+                      <span className="text-xs text-zinc-500">
+                        {t(`settings.pages.${result.pageId}`)}
+                      </span>
+                    ) : null}
+                  </button>
+                ))
+              ) : (
+                <p className="px-3 text-sm text-zinc-500">
+                  {t('settings.search.noResults')}
+                </p>
+              )}
             </nav>
-          ))}
+          ) : (
+            SETTINGS_GROUPS.map((group) => (
+              <nav key={group.id} className="mt-5 first:mt-4">
+                <p className="px-3 mb-1 text-xs text-zinc-500">
+                  {t(`settings.groups.${group.id}`)}
+                </p>
+                {group.pages.map((page) => (
+                  <button
+                    key={page.id}
+                    type="button"
+                    onClick={() => showSettings({ page: page.id })}
+                    className={cn([
+                      // A transparent border, so the chosen page's frosted glass (& its border)
+                      // does not move the text
+                      'w-full flex items-center gap-3 px-3 py-1 my-1 rounded-lg border border-transparent text-sm text-left transition-colors',
+                      page.id === selectedPage.id
+                        ? [
+                            'bg-zinc-100 dark:bg-zinc-700',
+                            glassBorder,
+                            'text-foreground font-medium',
+                          ]
+                        : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-900/[0.04] dark:hover:bg-white/[0.05]',
+                    ])}
+                  >
+                    <Icon name={page.icon} size={18} />
+                    <span className="flex-1">
+                      {t(`settings.pages.${page.id}`)}
+                    </span>
+                    {page.id === 'about' && hasNewVersion ? (
+                      <span
+                        className="w-2 h-2 rounded-full bg-primary"
+                        aria-label={t('settings.about.updateAvailable')}
+                      />
+                    ) : null}
+                  </button>
+                ))}
+              </nav>
+            ))
+          )}
         </ScrollShadow>
       </aside>
 
@@ -261,7 +372,12 @@ function SettingsDialog({ onClose, hasNewVersion }: SettingsDialogProps) {
           <selectedPage.Component />
         </div>
       ) : (
-        <ScrollShadow className="flex-1 px-10 py-12" hideScrollBar>
+        <ScrollShadow
+          // Each page from its top
+          key={selectedPage.id}
+          className="flex-1 px-10 py-12"
+          hideScrollBar
+        >
           <selectedPage.Component />
         </ScrollShadow>
       )}

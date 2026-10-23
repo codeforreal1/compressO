@@ -32,8 +32,8 @@
           "title_windows": "仅在系统托盘中打开",
           "description_macos": "登录时打开不显示主窗口。仍可通过菜单栏压缩媒体。",
           "description_windows": "登录时打开不显示主窗口。仍可通过系统托盘压缩媒体。",
-          "needsTrayIcon_macos": "请打开“显示菜单栏图标”以使用此功能，因为应用从那里打开。",
-          "needsTrayIcon_windows": "请打开“显示系统托盘图标”以使用此功能，因为应用从那里打开。"
+          "needsTrayIcon_macos": "请打开“<setting>显示菜单栏图标</setting>”以使用此功能，因为应用从那里打开。",
+          "needsTrayIcon_windows": "请打开“<setting>显示系统托盘图标</setting>”以使用此功能，因为应用从那里打开。"
         }
       },
       "appearance": {
@@ -123,20 +123,20 @@
       "empty_image": "尚无图像预设。调整某个图像的设置，然后选择“预设”菜单旁的加号按钮，即可将其保存为预设。",
       "empty_audio": "尚无音频预设。调整某个音频文件的设置，然后选择“预设”菜单旁的加号按钮，即可将其保存为预设。",
       "mediaType": "媒体类型",
-      "standardOutput": "其保存位置和文件名前缀在“输出”中设置。",
+      "standardOutput": "其保存位置和文件名前缀在“<setting>输出</setting>”中设置。",
       "cannotDeleteStandard": "无法删除标准预设。"
     },
     "dropZone": {
-      "needsTrayIcon_macos": "拖放区位于菜单栏中，因此只有在“通用”中打开“显示菜单栏图标”后才能使用。",
-      "needsTrayIcon_windows": "拖放区位于系统托盘中，因此只有在“通用”中打开“显示系统托盘图标”后才能使用。",
-      "turnOnTrayIcon_macos": "拖放区位于菜单栏中。请先在“通用”中打开“显示菜单栏图标”。",
-      "turnOnTrayIcon_windows": "拖放区位于系统托盘中。请先在“通用”中打开“显示系统托盘图标”。",
+      "needsTrayIcon_macos": "拖放区位于菜单栏中，因此只有在“通用”中打开“<setting>显示菜单栏图标</setting>”后才能使用。",
+      "needsTrayIcon_windows": "拖放区位于系统托盘中，因此只有在“通用”中打开“<setting>显示系统托盘图标</setting>”后才能使用。",
+      "turnOnTrayIcon_macos": "拖放区位于菜单栏中。请先在“通用”中打开“<setting>显示菜单栏图标</setting>”。",
+      "turnOnTrayIcon_windows": "拖放区位于系统托盘中。请先在“通用”中打开“<setting>显示系统托盘图标</setting>”。",
       "compression": {
         "title": "压缩",
         "autoCompress": {
           "title": "自动压缩",
           "description": "媒体添加到投放区后立即逐个压缩，并保存到其预设的保存位置。",
-          "needsSaveLocation": "请在“输出”或投放区的预设中选择“每次询问”以外的保存位置，以便无需询问即可保存压缩后的媒体。"
+          "needsSaveLocation": "请在“<setting>输出</setting>”或投放区的预设中选择“每次询问”以外的保存位置，以便无需询问即可保存压缩后的媒体。"
         }
       },
       "preset": {
@@ -166,8 +166,8 @@
         },
         "watch": "监视 {{name}}",
         "missing": "文件夹不存在，当前未监视。",
-        "needsSaveLocation": "请在“输出”或其某个预设中选择“每次询问”以外的保存位置，以便无需询问即可保存其媒体。当前未监视此文件夹。",
-        "presetAsks": "保存位置为“每次询问”。请在“输出”或此预设中选择其他位置，以便监视此文件夹。",
+        "needsSaveLocation": "请在“<setting>输出</setting>”或其某个预设中选择“每次询问”以外的保存位置，以便无需询问即可保存其媒体。当前未监视此文件夹。",
+        "presetAsks": "保存位置为“每次询问”。请在“<setting>输出</setting>”或此预设中选择其他位置，以便监视此文件夹。",
         "stillMissing": "文件夹尚不存在。请先重新创建，再开启监视。",
         "checkFailed": "无法检查此文件夹是否存在。请重试。",
         "remove": "停止监视",
@@ -253,6 +253,11 @@
       }
     },
     "open": "打开设置",
+    "search": {
+      "label": "搜索设置",
+      "results": "搜索结果",
+      "noResults": "未找到设置。"
+    },
     "groups": {
       "settings": "设置",
       "app": "CompressO"
@@ -388,7 +393,7 @@
       "placeholder_image": "例如：网页",
       "placeholder_audio": "例如：播客",
       "nameTaken": "已存在同名预设。",
-      "hint": "可以在“设置”的“预设”中重命名、重新排序和删除预设。"
+      "hint": "可以在“设置”的“<setting>预设</setting>”中重命名、重新排序和删除预设。"
     },
     "updated": "预设“{{name}}”已更新。",
     "saved": "预设“{{name}}”已保存。",
@@ -424,11 +429,12 @@
     "remove": "移除 {{name}}",
     "storedBusy": "已暂存。打开应用，可在当前媒体之后压缩它们。",
     "storedIdle": "拖入更多媒体，或打开应用开始压缩。",
-    "needsSaveLocation": "请在“设置”的“输出”或投放区的预设中选择保存位置，以便无需询问即可保存压缩后的媒体。"
+    "needsSaveLocation": "请在“设置”的“<setting>输出</setting>”或投放区的预设中选择保存位置，以便无需询问即可保存压缩后的媒体。"
   },
   "queue": {
     "notSavedLarger": "未保存，因为比原文件更大。",
     "noSaveLocation": "请在“设置”中为其预设选择保存位置。",
+    "chooseSaveLocation": "选择保存位置",
     "saveFailed": "无法保存压缩后的媒体。",
     "compressFailed": "无法压缩该媒体。",
     "summary": {
@@ -679,7 +685,7 @@
     "pauseAudio": "暂停音频",
     "playAudio": "播放音频",
     "videoUnplayable": "此视频包含高级编解码器或配置，本应用无法播放。此类视频需要使用 VLC 等专用播放器。",
-    "previewsOff": "视频预览已关闭。可在“设置”的“通用”中打开。",
+    "previewsOff": "视频预览已关闭。可在“设置”的“<setting>通用</setting>”中打开。",
     "stillCompressible": "您仍可应用输出设置并执行所有转换。",
     "enlarge": "放大图像",
     "select": "选择缩略图图像。",

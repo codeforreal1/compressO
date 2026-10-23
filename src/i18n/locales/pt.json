@@ -32,8 +32,8 @@
           "title_windows": "Abrir somente na bandeja do sistema",
           "description_macos": "Não mostrar a janela principal ao abrir no início da sessão. As mídias ainda podem ser comprimidas pela barra de menus.",
           "description_windows": "Não mostrar a janela principal ao abrir no início da sessão. As mídias ainda podem ser comprimidas pela bandeja do sistema.",
-          "needsTrayIcon_macos": "Ative “Mostrar ícone na barra de menus” para usar esta opção, pois o app é aberto por lá.",
-          "needsTrayIcon_windows": "Ative “Mostrar ícone na bandeja do sistema” para usar esta opção, pois o app é aberto por lá."
+          "needsTrayIcon_macos": "Ative “<setting>Mostrar ícone na barra de menus</setting>” para usar esta opção, pois o app é aberto por lá.",
+          "needsTrayIcon_windows": "Ative “<setting>Mostrar ícone na bandeja do sistema</setting>” para usar esta opção, pois o app é aberto por lá."
         }
       },
       "appearance": {
@@ -123,20 +123,20 @@
       "empty_image": "Ainda não há predefinições de imagem. Ajuste as configurações de uma imagem e selecione o botão de adição ao lado do menu Predefinição para salvá-las como predefinição.",
       "empty_audio": "Ainda não há predefinições de áudio. Ajuste as configurações de um arquivo de áudio e selecione o botão de adição ao lado do menu Predefinição para salvá-las como predefinição.",
       "mediaType": "Tipo de mídia",
-      "standardOutput": "O seu local de salvamento e o prefixo do nome do arquivo são definidos em Saída.",
+      "standardOutput": "O seu local de salvamento e o prefixo do nome do arquivo são definidos em <setting>Saída</setting>.",
       "cannotDeleteStandard": "A predefinição Padrão não pode ser excluída."
     },
     "dropZone": {
-      "needsTrayIcon_macos": "A área de soltar fica na barra de menus, por isso só funciona quando “Mostrar ícone na barra de menus” está ativado em Geral.",
-      "needsTrayIcon_windows": "A área de soltar fica na bandeja do sistema, por isso só funciona quando “Mostrar ícone na bandeja do sistema” está ativado em Geral.",
-      "turnOnTrayIcon_macos": "A área de soltar fica na barra de menus. Ative primeiro “Mostrar ícone na barra de menus” em Geral.",
-      "turnOnTrayIcon_windows": "A área de soltar fica na bandeja do sistema. Ative primeiro “Mostrar ícone na bandeja do sistema” em Geral.",
+      "needsTrayIcon_macos": "A área de soltar fica na barra de menus, por isso só funciona quando “<setting>Mostrar ícone na barra de menus</setting>” está ativado em Geral.",
+      "needsTrayIcon_windows": "A área de soltar fica na bandeja do sistema, por isso só funciona quando “<setting>Mostrar ícone na bandeja do sistema</setting>” está ativado em Geral.",
+      "turnOnTrayIcon_macos": "A área de soltar fica na barra de menus. Ative primeiro “<setting>Mostrar ícone na barra de menus</setting>” em Geral.",
+      "turnOnTrayIcon_windows": "A área de soltar fica na bandeja do sistema. Ative primeiro “<setting>Mostrar ícone na bandeja do sistema</setting>” em Geral.",
       "compression": {
         "title": "Compressão",
         "autoCompress": {
           "title": "Comprimir automaticamente",
           "description": "Comprime as mídias assim que são adicionadas à zona de soltar, uma de cada vez, e as salva no local da sua predefinição.",
-          "needsSaveLocation": "Escolha um local diferente de Perguntar sempre, em Saída ou numa predefinição da zona de soltar, para que as mídias comprimidas sejam salvas sem perguntar."
+          "needsSaveLocation": "Escolha um local diferente de Perguntar sempre, em <setting>Saída</setting> ou numa predefinição da zona de soltar, para que as mídias comprimidas sejam salvas sem perguntar."
         }
       },
       "preset": {
@@ -166,8 +166,8 @@
         },
         "watch": "Monitorar {{name}}",
         "missing": "A pasta não existe e não está sendo monitorada.",
-        "needsSaveLocation": "Escolha um local de salvamento diferente de \"Perguntar sempre\", em Saída ou em uma de suas predefinições, para que suas mídias possam ser salvas sem perguntar. Ela não está sendo monitorada.",
-        "presetAsks": "O local de salvamento é Perguntar sempre. Escolha outro, em Saída ou nesta predefinição, para que esta pasta possa ser monitorada.",
+        "needsSaveLocation": "Escolha um local de salvamento diferente de \"Perguntar sempre\", em <setting>Saída</setting> ou em uma de suas predefinições, para que suas mídias possam ser salvas sem perguntar. Ela não está sendo monitorada.",
+        "presetAsks": "O local de salvamento é Perguntar sempre. Escolha outro, em <setting>Saída</setting> ou nesta predefinição, para que esta pasta possa ser monitorada.",
         "stillMissing": "A pasta ainda não existe. Recrie-a antes de ativar o monitoramento.",
         "checkFailed": "Não foi possível verificar se esta pasta existe. Tente novamente.",
         "remove": "Parar de monitorar",
@@ -253,6 +253,11 @@
       }
     },
     "open": "Abrir Ajustes",
+    "search": {
+      "label": "Pesquisar ajustes",
+      "results": "Resultados da pesquisa",
+      "noResults": "Nenhum ajuste encontrado."
+    },
     "groups": {
       "settings": "Ajustes",
       "app": "CompressO"
@@ -388,7 +393,7 @@
       "placeholder_image": "ex.: Web",
       "placeholder_audio": "ex.: Podcast",
       "nameTaken": "Já existe uma predefinição com este nome.",
-      "hint": "As predefinições podem ser renomeadas, reordenadas e apagadas em Ajustes, em Predefinições."
+      "hint": "As predefinições podem ser renomeadas, reordenadas e apagadas em Ajustes, em <setting>Predefinições</setting>."
     },
     "updated": "A predefinição “{{name}}” foi atualizada.",
     "saved": "A predefinição “{{name}}” foi salva.",
@@ -426,11 +431,12 @@
     "remove": "Remover {{name}}",
     "storedBusy": "Guardadas. Abra o app para comprimi-las depois das mídias atuais.",
     "storedIdle": "Solte mais mídias ou abra o app para iniciar a compressão.",
-    "needsSaveLocation": "Escolha um local de salvamento nas Configurações, em Saída ou numa predefinição da zona de soltar, para que as mídias comprimidas sejam salvas sem perguntar."
+    "needsSaveLocation": "Escolha um local de salvamento nas Configurações, em <setting>Saída</setting> ou numa predefinição da zona de soltar, para que as mídias comprimidas sejam salvas sem perguntar."
   },
   "queue": {
     "notSavedLarger": "Não salvo, pois é maior que o original.",
     "noSaveLocation": "Escolha um local de salvamento para a sua predefinição, nas Configurações.",
+    "chooseSaveLocation": "Escolher um local de salvamento",
     "saveFailed": "Não foi possível salvar a mídia comprimida.",
     "compressFailed": "Não foi possível comprimir a mídia.",
     "summary": {
@@ -691,7 +697,7 @@
     "pauseAudio": "Pausar o áudio",
     "playAudio": "Reproduzir o áudio",
     "videoUnplayable": "Este app não consegue reproduzir este vídeo porque ele contém codecs ou configurações avançados. Esses vídeos exigem reprodutores dedicados, como o VLC.",
-    "previewsOff": "A pré-visualização de vídeos está desativada. Ela pode ser ativada em Ajustes, em Geral.",
+    "previewsOff": "A pré-visualização de vídeos está desativada. Ela pode ser ativada em Ajustes, em <setting>Geral</setting>.",
     "stillCompressible": "Ainda assim, você pode aplicar as configurações de saída e fazer todas as conversões.",
     "enlarge": "Ampliar imagem",
     "select": "Selecione a imagem da miniatura.",

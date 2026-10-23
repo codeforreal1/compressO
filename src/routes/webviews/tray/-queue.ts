@@ -309,6 +309,7 @@ async function compressQueueItem(item: DropQueueItem) {
           saved.reason === 'no-save-location'
             ? t('queue.noSaveLocation')
             : t('queue.saveFailed'),
+        needsSaveLocation: saved.reason === 'no-save-location',
       })
     }
     return true

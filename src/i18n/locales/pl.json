@@ -32,8 +32,8 @@
           "title_windows": "Otwieraj tylko w zasobniku systemowym",
           "description_macos": "Nie pokazuj głównego okna przy otwieraniu po zalogowaniu. Multimedia nadal można kompresować z paska menu.",
           "description_windows": "Nie pokazuj głównego okna przy otwieraniu po zalogowaniu. Multimedia nadal można kompresować z zasobnika systemowego.",
-          "needsTrayIcon_macos": "Włącz opcję „Pokazuj ikonę na pasku menu”, aby z tego korzystać, ponieważ aplikacja jest otwierana właśnie stamtąd.",
-          "needsTrayIcon_windows": "Włącz opcję „Pokazuj ikonę w zasobniku systemowym”, aby z tego korzystać, ponieważ aplikacja jest otwierana właśnie stamtąd."
+          "needsTrayIcon_macos": "Włącz opcję „<setting>Pokazuj ikonę na pasku menu</setting>”, aby z tego korzystać, ponieważ aplikacja jest otwierana właśnie stamtąd.",
+          "needsTrayIcon_windows": "Włącz opcję „<setting>Pokazuj ikonę w zasobniku systemowym</setting>”, aby z tego korzystać, ponieważ aplikacja jest otwierana właśnie stamtąd."
         }
       },
       "appearance": {
@@ -123,20 +123,20 @@
       "empty_image": "Nie ma jeszcze ustawień wstępnych obrazów. Dostosuj ustawienia obrazu i wybierz przycisk plusa obok menu Ustawienie wstępne, aby zapisać je jako ustawienie wstępne.",
       "empty_audio": "Nie ma jeszcze ustawień wstępnych audio. Dostosuj ustawienia pliku audio i wybierz przycisk plusa obok menu Ustawienie wstępne, aby zapisać je jako ustawienie wstępne.",
       "mediaType": "Typ multimediów",
-      "standardOutput": "Jego miejsce zapisu i prefiks nazwy pliku ustawia się w sekcji Wyjście.",
+      "standardOutput": "Jego miejsce zapisu i prefiks nazwy pliku ustawia się w sekcji <setting>Wyjście</setting>.",
       "cannotDeleteStandard": "Nie można usunąć ustawienia Standardowego."
     },
     "dropZone": {
-      "needsTrayIcon_macos": "Strefa upuszczania znajduje się na pasku menu, więc działa tylko wtedy, gdy w sekcji Ogólne włączona jest opcja „Pokazuj ikonę na pasku menu”.",
-      "needsTrayIcon_windows": "Strefa upuszczania znajduje się w zasobniku systemowym, więc działa tylko wtedy, gdy w sekcji Ogólne włączona jest opcja „Pokazuj ikonę w zasobniku systemowym”.",
-      "turnOnTrayIcon_macos": "Strefa upuszczania znajduje się na pasku menu. Najpierw włącz opcję „Pokazuj ikonę na pasku menu” w sekcji Ogólne.",
-      "turnOnTrayIcon_windows": "Strefa upuszczania znajduje się w zasobniku systemowym. Najpierw włącz opcję „Pokazuj ikonę w zasobniku systemowym” w sekcji Ogólne.",
+      "needsTrayIcon_macos": "Strefa upuszczania znajduje się na pasku menu, więc działa tylko wtedy, gdy w sekcji Ogólne włączona jest opcja „<setting>Pokazuj ikonę na pasku menu</setting>”.",
+      "needsTrayIcon_windows": "Strefa upuszczania znajduje się w zasobniku systemowym, więc działa tylko wtedy, gdy w sekcji Ogólne włączona jest opcja „<setting>Pokazuj ikonę w zasobniku systemowym</setting>”.",
+      "turnOnTrayIcon_macos": "Strefa upuszczania znajduje się na pasku menu. Najpierw włącz opcję „<setting>Pokazuj ikonę na pasku menu</setting>” w sekcji Ogólne.",
+      "turnOnTrayIcon_windows": "Strefa upuszczania znajduje się w zasobniku systemowym. Najpierw włącz opcję „<setting>Pokazuj ikonę w zasobniku systemowym</setting>” w sekcji Ogólne.",
       "compression": {
         "title": "Kompresja",
         "autoCompress": {
           "title": "Kompresuj automatycznie",
           "description": "Kompresuj multimedia od razu po dodaniu do strefy upuszczania, po kolei, i zapisuj je w miejscu zapisu ich ustawienia.",
-          "needsSaveLocation": "Wybierz miejsce zapisu inne niż Pytaj za każdym razem, w sekcji Wyjście lub w ustawieniu strefy upuszczania, aby skompresowane multimedia były zapisywane bez pytania."
+          "needsSaveLocation": "Wybierz miejsce zapisu inne niż Pytaj za każdym razem, w sekcji <setting>Wyjście</setting> lub w ustawieniu strefy upuszczania, aby skompresowane multimedia były zapisywane bez pytania."
         }
       },
       "preset": {
@@ -166,8 +166,8 @@
         },
         "watch": "Obserwuj {{name}}",
         "missing": "Folder nie istnieje i nie jest obserwowany.",
-        "needsSaveLocation": "Wybierz lokalizację zapisu inną niż „Pytaj za każdym razem”, w sekcji Wyjście lub w jednym z jego ustawień wstępnych, aby jego multimedia mogły być zapisywane bez pytania. Nie jest obserwowany.",
-        "presetAsks": "Miejsce zapisu to Pytaj za każdym razem. Wybierz inne, w sekcji Wyjście lub w tym ustawieniu, aby ten folder mógł być obserwowany.",
+        "needsSaveLocation": "Wybierz lokalizację zapisu inną niż „Pytaj za każdym razem”, w sekcji <setting>Wyjście</setting> lub w jednym z jego ustawień wstępnych, aby jego multimedia mogły być zapisywane bez pytania. Nie jest obserwowany.",
+        "presetAsks": "Miejsce zapisu to Pytaj za każdym razem. Wybierz inne, w sekcji <setting>Wyjście</setting> lub w tym ustawieniu, aby ten folder mógł być obserwowany.",
         "stillMissing": "Folder jeszcze nie istnieje. Utwórz go ponownie przed włączeniem obserwowania.",
         "checkFailed": "Nie udało się sprawdzić, czy folder istnieje. Spróbuj ponownie.",
         "remove": "Przestań obserwować",
@@ -253,6 +253,11 @@
       }
     },
     "open": "Otwórz ustawienia",
+    "search": {
+      "label": "Szukaj w ustawieniach",
+      "results": "Wyniki wyszukiwania",
+      "noResults": "Nie znaleziono ustawień."
+    },
     "groups": {
       "settings": "Ustawienia",
       "app": "CompressO"
@@ -388,7 +393,7 @@
       "placeholder_image": "np. Web",
       "placeholder_audio": "np. Podcast",
       "nameTaken": "Ustawienie wstępne o tej nazwie już istnieje.",
-      "hint": "Ustawienia wstępne można zmieniać, porządkować i usuwać w Ustawieniach, w sekcji Ustawienia wstępne."
+      "hint": "Ustawienia wstępne można zmieniać, porządkować i usuwać w Ustawieniach, w sekcji <setting>Ustawienia wstępne</setting>."
     },
     "updated": "Zaktualizowano ustawienie wstępne „{{name}}”.",
     "saved": "Zapisano ustawienie wstępne „{{name}}”.",
@@ -427,11 +432,12 @@
     "remove": "Usuń {{name}}",
     "storedBusy": "Przechowano. Otwórz aplikację, aby skompresować je po bieżących multimediach.",
     "storedIdle": "Upuść więcej multimediów lub otwórz aplikację, aby rozpocząć kompresję.",
-    "needsSaveLocation": "Wybierz miejsce zapisu w Ustawieniach, w sekcji Wyjście lub w ustawieniu strefy upuszczania, aby skompresowane multimedia były zapisywane bez pytania."
+    "needsSaveLocation": "Wybierz miejsce zapisu w Ustawieniach, w sekcji <setting>Wyjście</setting> lub w ustawieniu strefy upuszczania, aby skompresowane multimedia były zapisywane bez pytania."
   },
   "queue": {
     "notSavedLarger": "Nie zapisano, ponieważ plik jest większy niż oryginał.",
     "noSaveLocation": "Wybierz miejsce zapisu dla jego ustawienia, w Ustawieniach.",
+    "chooseSaveLocation": "Wybierz miejsce zapisu",
     "saveFailed": "Nie udało się zapisać skompresowanego pliku.",
     "compressFailed": "Nie udało się skompresować pliku.",
     "summary": {
@@ -697,7 +703,7 @@
     "pauseAudio": "Wstrzymaj dźwięk",
     "playAudio": "Odtwórz dźwięk",
     "videoUnplayable": "Ta aplikacja nie może odtworzyć tego filmu, ponieważ zawiera on zaawansowane kodeki lub konfiguracje. Takie filmy wymagają specjalnych odtwarzaczy, np. VLC.",
-    "previewsOff": "Podgląd wideo jest wyłączony. Można go włączyć w Ustawieniach, w sekcji Ogólne.",
+    "previewsOff": "Podgląd wideo jest wyłączony. Można go włączyć w Ustawieniach, w sekcji <setting>Ogólne</setting>.",
     "stillCompressible": "Mimo to można zastosować ustawienia wyjściowe i wykonać wszystkie konwersje.",
     "enlarge": "Powiększ obraz",
     "select": "Wybierz obraz miniatury.",

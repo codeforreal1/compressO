@@ -32,8 +32,8 @@
           "title_windows": "시스템 트레이에서만 열기",
           "description_macos": "로그인 시 열릴 때 기본 창을 표시하지 않습니다. 메뉴 막대에서 계속 미디어를 압축할 수 있습니다.",
           "description_windows": "로그인 시 열릴 때 기본 창을 표시하지 않습니다. 시스템 트레이에서 계속 미디어를 압축할 수 있습니다.",
-          "needsTrayIcon_macos": "앱이 메뉴 막대에서 열리므로 이 기능을 사용하려면 '메뉴 막대 아이콘 표시'를 켜십시오.",
-          "needsTrayIcon_windows": "앱이 시스템 트레이에서 열리므로 이 기능을 사용하려면 '시스템 트레이 아이콘 표시'를 켜십시오."
+          "needsTrayIcon_macos": "앱이 메뉴 막대에서 열리므로 이 기능을 사용하려면 '<setting>메뉴 막대 아이콘 표시</setting>'를 켜십시오.",
+          "needsTrayIcon_windows": "앱이 시스템 트레이에서 열리므로 이 기능을 사용하려면 '<setting>시스템 트레이 아이콘 표시</setting>'를 켜십시오."
         }
       },
       "appearance": {
@@ -123,20 +123,20 @@
       "empty_image": "아직 이미지 프리셋이 없습니다. 이미지의 설정을 조정한 다음 프리셋 메뉴 옆의 더하기 버튼을 선택하여 프리셋으로 저장하십시오.",
       "empty_audio": "아직 오디오 프리셋이 없습니다. 오디오 파일의 설정을 조정한 다음 프리셋 메뉴 옆의 더하기 버튼을 선택하여 프리셋으로 저장하십시오.",
       "mediaType": "미디어 유형",
-      "standardOutput": "저장 위치와 파일 이름 접두사는 [출력]에서 설정합니다.",
+      "standardOutput": "저장 위치와 파일 이름 접두사는 [<setting>출력</setting>]에서 설정합니다.",
       "cannotDeleteStandard": "표준 프리셋은 삭제할 수 없습니다."
     },
     "dropZone": {
-      "needsTrayIcon_macos": "드롭 영역은 메뉴 막대에 있으므로 일반에서 '메뉴 막대 아이콘 표시'가 켜져 있을 때만 작동합니다.",
-      "needsTrayIcon_windows": "드롭 영역은 시스템 트레이에 있으므로 일반에서 '시스템 트레이 아이콘 표시'가 켜져 있을 때만 작동합니다.",
-      "turnOnTrayIcon_macos": "드롭 영역은 메뉴 막대에 있습니다. 먼저 일반에서 '메뉴 막대 아이콘 표시'를 켜십시오.",
-      "turnOnTrayIcon_windows": "드롭 영역은 시스템 트레이에 있습니다. 먼저 일반에서 '시스템 트레이 아이콘 표시'를 켜십시오.",
+      "needsTrayIcon_macos": "드롭 영역은 메뉴 막대에 있으므로 일반에서 '<setting>메뉴 막대 아이콘 표시</setting>'가 켜져 있을 때만 작동합니다.",
+      "needsTrayIcon_windows": "드롭 영역은 시스템 트레이에 있으므로 일반에서 '<setting>시스템 트레이 아이콘 표시</setting>'가 켜져 있을 때만 작동합니다.",
+      "turnOnTrayIcon_macos": "드롭 영역은 메뉴 막대에 있습니다. 먼저 일반에서 '<setting>메뉴 막대 아이콘 표시</setting>'를 켜십시오.",
+      "turnOnTrayIcon_windows": "드롭 영역은 시스템 트레이에 있습니다. 먼저 일반에서 '<setting>시스템 트레이 아이콘 표시</setting>'를 켜십시오.",
       "compression": {
         "title": "압축",
         "autoCompress": {
           "title": "자동으로 압축",
           "description": "드롭 존에 추가된 미디어를 바로 하나씩 압축하고, 해당 프리셋의 저장 위치에 저장합니다.",
-          "needsSaveLocation": "압축된 미디어를 묻지 않고 저장할 수 있도록 [출력] 또는 드롭 존의 프리셋에서 [매번 묻기] 이외의 저장 위치를 선택하세요."
+          "needsSaveLocation": "압축된 미디어를 묻지 않고 저장할 수 있도록 [<setting>출력</setting>] 또는 드롭 존의 프리셋에서 [매번 묻기] 이외의 저장 위치를 선택하세요."
         }
       },
       "preset": {
@@ -166,8 +166,8 @@
         },
         "watch": "{{name}} 감시",
         "missing": "폴더가 존재하지 않아 감시하지 않습니다.",
-        "needsSaveLocation": "미디어를 묻지 않고 저장할 수 있도록 [출력] 또는 이 폴더의 프리셋에서 [매번 묻기] 이외의 저장 위치를 선택하세요. 현재 감시되지 않습니다.",
-        "presetAsks": "저장 위치가 [매번 묻기]로 설정되어 있습니다. 이 폴더를 감시할 수 있도록 [출력] 또는 이 프리셋에서 다른 저장 위치를 선택하세요.",
+        "needsSaveLocation": "미디어를 묻지 않고 저장할 수 있도록 [<setting>출력</setting>] 또는 이 폴더의 프리셋에서 [매번 묻기] 이외의 저장 위치를 선택하세요. 현재 감시되지 않습니다.",
+        "presetAsks": "저장 위치가 [매번 묻기]로 설정되어 있습니다. 이 폴더를 감시할 수 있도록 [<setting>출력</setting>] 또는 이 프리셋에서 다른 저장 위치를 선택하세요.",
         "stillMissing": "폴더가 아직 없습니다. 감시를 켜기 전에 다시 만드세요.",
         "checkFailed": "이 폴더가 존재하는지 확인할 수 없습니다. 다시 시도하세요.",
         "remove": "감시 중지",
@@ -253,6 +253,11 @@
       }
     },
     "open": "설정 열기",
+    "search": {
+      "label": "설정 검색",
+      "results": "검색 결과",
+      "noResults": "설정을 찾을 수 없습니다."
+    },
     "groups": {
       "settings": "설정",
       "app": "CompressO"
@@ -388,7 +393,7 @@
       "placeholder_image": "예: 웹",
       "placeholder_audio": "예: 팟캐스트",
       "nameTaken": "같은 이름의 프리셋이 이미 있습니다.",
-      "hint": "프리셋은 설정의 프리셋에서 이름 변경, 순서 변경 및 삭제할 수 있습니다."
+      "hint": "프리셋은 설정의 <setting>프리셋</setting>에서 이름 변경, 순서 변경 및 삭제할 수 있습니다."
     },
     "updated": "'{{name}}' 프리셋을 업데이트했습니다.",
     "saved": "'{{name}}' 프리셋을 저장했습니다.",
@@ -424,11 +429,12 @@
     "remove": "{{name}} 제거",
     "storedBusy": "보관했습니다. 앱을 열면 현재 미디어 다음에 압축합니다.",
     "storedIdle": "미디어를 더 드롭하거나 앱을 열어 압축을 시작하십시오.",
-    "needsSaveLocation": "압축된 미디어를 묻지 않고 저장할 수 있도록 설정의 [출력] 또는 드롭 존의 프리셋에서 저장 위치를 선택하세요."
+    "needsSaveLocation": "압축된 미디어를 묻지 않고 저장할 수 있도록 설정의 [<setting>출력</setting>] 또는 드롭 존의 프리셋에서 저장 위치를 선택하세요."
   },
   "queue": {
     "notSavedLarger": "원본보다 크기 때문에 저장하지 않았습니다.",
     "noSaveLocation": "설정에서 해당 프리셋의 저장 위치를 선택하세요.",
+    "chooseSaveLocation": "저장 위치 선택",
     "saveFailed": "압축된 미디어를 저장할 수 없습니다.",
     "compressFailed": "미디어를 압축할 수 없습니다.",
     "summary": {
@@ -679,7 +685,7 @@
     "pauseAudio": "오디오 일시정지",
     "playAudio": "오디오 재생",
     "videoUnplayable": "이 비디오에는 고급 코덱 또는 구성이 포함되어 있어 이 앱에서 재생할 수 없습니다. 이러한 비디오에는 VLC 같은 전용 플레이어가 필요합니다.",
-    "previewsOff": "비디오 미리보기가 꺼져 있습니다. 설정의 일반에서 켤 수 있습니다.",
+    "previewsOff": "비디오 미리보기가 꺼져 있습니다. 설정의 <setting>일반</setting>에서 켤 수 있습니다.",
     "stillCompressible": "그래도 출력 설정을 적용하고 모든 변환을 수행할 수 있습니다.",
     "enlarge": "이미지 확대",
     "select": "썸네일 이미지를 선택하십시오.",

@@ -9,6 +9,7 @@ import ScrollShadow from '@/components/ScrollShadow'
 import Tooltip from '@/components/Tooltip'
 import { useDropQueuePaused } from '@/hooks/useDropQueue'
 import { t } from '@/i18n'
+import { openSettings } from '@/stores/settingsDialogStore'
 import { openFilesAccessSettings } from '@/tauri/commands/app'
 import {
   cancelDropQueue,
@@ -211,6 +212,27 @@ function QueueItem({
             className={iconButtonClassName}
             onPress={() => {
               openFilesAccessSettings().catch(() => {})
+            }}
+          >
+            <Icon name="setting" size={14} />
+          </Button>
+        </Tooltip>
+      ) : null}
+      {/* Its preset asks where to save: its save location, in the main window's settings */}
+      {item.status === 'failed' && item.needsSaveLocation ? (
+        <Tooltip
+          content={t('queue.chooseSaveLocation')}
+          aria-label={t('queue.chooseSaveLocation')}
+        >
+          <Button
+            isIconOnly
+            size="sm"
+            variant="light"
+            radius="full"
+            aria-label={t('queue.chooseSaveLocation')}
+            className={iconButtonClassName}
+            onPress={() => {
+              openSettings({ settingId: 'saveLocation' }).catch(() => {})
             }}
           >
             <Icon name="setting" size={14} />

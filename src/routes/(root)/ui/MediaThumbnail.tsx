@@ -3,7 +3,7 @@ import { core } from '@tauri-apps/api'
 import { motion } from 'framer-motion'
 import isEqual from 'lodash/isEqual'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { PhotoView } from 'react-photo-view'
 import { OnProgressProps } from 'react-player/base'
 import { toast } from 'sonner'
@@ -13,6 +13,7 @@ import Icon from '@/components/Icon'
 import Image from '@/components/Image'
 import ImageViewer from '@/components/ImageViewer'
 import Popover, { PopoverContent, PopoverTrigger } from '@/components/Popover'
+import SettingLink from '@/components/SettingLink'
 import useTimelineEngine from '@/components/Timeline/useTimelineEngine'
 import Tooltip from '@/components/Tooltip'
 import VideoPlayer, { VideoPlayerRef } from '@/components/VideoPlayer'
@@ -691,7 +692,18 @@ function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
                           {isVideoPreviewAvailable ? (
                             <p>{t('thumbnail.videoUnplayable')}</p>
                           ) : (
-                            <p>{t('thumbnail.previewsOff')}</p>
+                            <p>
+                              <Trans
+                                i18nKey="thumbnail.previewsOff"
+                                components={{
+                                  setting: (
+                                    <SettingLink
+                                      target={{ settingId: 'videoPreviews' }}
+                                    />
+                                  ),
+                                }}
+                              />
+                            </p>
                           )}
                           {!isProcessCompleted ? (
                             <>

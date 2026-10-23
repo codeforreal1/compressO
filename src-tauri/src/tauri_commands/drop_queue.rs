@@ -86,6 +86,8 @@ pub struct DropQueueItem {
     pub message: Option<String>,
     /// It failed as the system did not allow opening it (e.g. macOS privacy settings)
     pub is_access_denied: bool,
+    /// It was compressed, but its preset asks where to save, which nothing in the queue can
+    pub needs_save_location: bool,
     /// The watched folder it landed in (see `watch_folders`); `None` for media dropped, pasted or
     /// copied, which is compressed first
     pub watch_folder_id: Option<String>,
@@ -111,6 +113,7 @@ pub struct DropQueueItemUpdate {
     pub output_path: Option<String>,
     pub message: Option<String>,
     pub is_access_denied: Option<bool>,
+    pub needs_save_location: Option<bool>,
 }
 
 #[derive(Default)]
@@ -246,6 +249,7 @@ pub fn add_to_queue_from(
                 output_path: None,
                 message: None,
                 is_access_denied: false,
+                needs_save_location: false,
                 watch_folder_id: source.as_ref().map(|source| source.folder_id.clone()),
                 watch_folder_name: source.as_ref().map(|source| source.folder_name.clone()),
             });
@@ -301,6 +305,9 @@ pub fn update_drop_queue_item(app_handle: AppHandle, id: String, update: DropQue
         if let Some(is_access_denied) = update.is_access_denied {
             item.is_access_denied = is_access_denied;
         }
+        if let Some(needs_save_location) = update.needs_save_location {
+            item.needs_save_location = needs_save_location;
+        }
     });
 }
 
@@ -321,6 +328,7 @@ pub fn retry_drop_queue_item(app_handle: AppHandle, id: String) {
         item.saved_path = None;
         item.message = None;
         item.is_access_denied = false;
+        item.needs_save_location = false;
         delete_unsaved_output(item);
     });
 }

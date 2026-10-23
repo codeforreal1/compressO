@@ -1,6 +1,9 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import React from 'react'
+import { useSnapshot } from 'valtio'
 
+import type { SettingId } from '@/constants/settingsIndex'
+import { settingsDialogStore } from '@/stores/settingsDialogStore'
 import { slideDownTransition } from '@/utils/animation'
 import { cn } from '@/utils/tailwind'
 
@@ -52,20 +55,63 @@ type SettingsRowProps = {
    * when this changes, like the output settings, instead of appearing at once
    */
   isVisible?: boolean
+  /** Lets search & links elsewhere open it (see `openSettings`), flashing it once shown */
+  settingId?: SettingId
   className?: string
 }
 
+/** How long a setting opened from elsewhere is highlighted */
+const HIGHLIGHT_DURATION_S = 1.4
+
 /** A single setting: title & description on the left, its control on the right */
 export function SettingsRow(props: SettingsRowProps) {
-  const { title, description, children, isNested, isVisible, className } = props
+  const {
+    title,
+    description,
+    children,
+    isNested,
+    isVisible,
+    settingId,
+    className,
+  } = props
+  const contentRef = React.useRef<HTMLDivElement>(null)
+  const { highlight } = useSnapshot(settingsDialogStore)
+  const [highlightKey, setHighlightKey] = React.useState<number | null>(null)
+
+  React.useEffect(() => {
+    if (!settingId || highlight?.settingId !== settingId) return
+    // Shown once: not again when its page is opened later
+    settingsDialogStore.highlight = null
+    setHighlightKey(highlight.key)
+    contentRef.current?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+  }, [highlight, settingId])
+
   const rowClassName = cn([
     // A thread from the setting above (see `global.css`)
     isNested && 'settings-row-nested',
     className,
   ])
-  // The padding is inside, so a row sliding out shrinks to nothing
+  // The padding is inside, so a row sliding out shrinks to nothing. Its own stacking context keeps
+  // the highlight behind its content.
   const content = (
-    <div className="flex items-center justify-between gap-8 py-4 [:first-child>&]:pt-1">
+    <div
+      ref={contentRef}
+      className="relative isolate flex items-center justify-between gap-8 py-4 [:first-child>&]:pt-1"
+    >
+      {highlightKey != null ? (
+        <motion.div
+          key={highlightKey}
+          aria-hidden
+          className="pointer-events-none absolute -inset-x-3 inset-y-1 -z-10 rounded-lg bg-primary/15"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: [0, 1, 1, 0] }}
+          transition={{
+            duration: HIGHLIGHT_DURATION_S,
+            times: [0, 0.15, 0.7, 1],
+          }}
+          onAnimationComplete={() => setHighlightKey(null)}
+        />
+      ) : null}
       <div className="min-w-0">
         <p className="text-sm text-foreground">{title}</p>
         {description ? (

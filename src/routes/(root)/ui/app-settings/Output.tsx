@@ -92,6 +92,7 @@ function Output() {
         description={t('settings.output.saving.appliesTo')}
       >
         <SettingsRow
+          settingId="saveLocation"
           title={t('settings.output.saving.location.title')}
           description={t('settings.output.saving.location.description', {
             context: saveLocation,
@@ -118,6 +119,7 @@ function Output() {
           </Select>
         </SettingsRow>
         <SettingsRow
+          settingId="saveFolder"
           isVisible={saveLocation === 'fixedFolder'}
           isNested
           title={t('settings.output.saving.folder.title')}
@@ -138,6 +140,7 @@ function Output() {
           </Button>
         </SettingsRow>
         <SettingsRow
+          settingId="filePrefix"
           title={t('settings.output.saving.prefix.title')}
           description={t('settings.output.saving.prefix.description')}
         >
@@ -156,6 +159,7 @@ function Output() {
       {/* How outputs are saved, for every preset */}
       <SettingsSection title={t('settings.output.savedFiles.title')}>
         <SettingsRow
+          settingId="preserveFolders"
           title={t('settings.output.saving.preserveFolders.title')}
           description={t('settings.output.saving.preserveFolders.description')}
         >
@@ -168,6 +172,7 @@ function Output() {
           />
         </SettingsRow>
         <SettingsRow
+          settingId="skipLarger"
           title={t('settings.output.saving.skipLarger.title')}
           description={t('settings.output.saving.skipLarger.description')}
         >
@@ -180,6 +185,7 @@ function Output() {
           />
         </SettingsRow>
         <SettingsRow
+          settingId="replaceOriginal"
           title={t('settings.output.saving.replaceOriginal.title')}
           // The Recycle Bin on Windows, the Trash elsewhere
           description={t('settings.output.saving.replaceOriginal.description', {
@@ -198,6 +204,7 @@ function Output() {
 
       <SettingsSection title={t('settings.output.clipboard.title')}>
         <SettingsRow
+          settingId="copyOutput"
           title={t('settings.output.clipboard.copyOutput.title')}
           description={t('settings.output.clipboard.copyOutput.description')}
         >
@@ -212,6 +219,7 @@ function Output() {
           />
         </SettingsRow>
         <SettingsRow
+          settingId="copyBatchOutput"
           isVisible={copyOutputToClipboard}
           isNested
           title={t('settings.output.clipboard.includeBatch.title')}
@@ -229,6 +237,7 @@ function Output() {
 
       <SettingsSection title={t('settings.output.performance.title')}>
         <SettingsRow
+          settingId="hardwareAcceleration"
           title={t('settings.output.performance.hardwareAcceleration.title')}
           description={t(
             'settings.output.performance.hardwareAcceleration.description',
@@ -256,6 +265,7 @@ function Output() {
           </div>
         </SettingsRow>
         <SettingsRow
+          settingId="retryTargetSizeOnCpu"
           isVisible={useHardwareAcceleration && hasHardwareAcceleration}
           isNested
           title={t('settings.output.performance.retryTargetSizeOnCpu.title')}
@@ -277,6 +287,7 @@ function Output() {
 
       <SettingsSection title={t('settings.output.storage.title')}>
         <SettingsRow
+          settingId="clearCache"
           title={t('settings.output.storage.clearCache.title')}
           description={t('settings.output.storage.clearCache.description')}
         >

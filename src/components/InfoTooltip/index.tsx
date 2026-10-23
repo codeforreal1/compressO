@@ -1,3 +1,4 @@
+import type React from 'react'
 import { useRef } from 'react'
 
 import Icon from '@/components/Icon'
@@ -5,8 +6,11 @@ import Tooltip from '@/components/Tooltip'
 import { cn } from '@/utils/tailwind'
 
 type InfoTooltipProps = {
-  /** Text shown on hover (e.g. why the control beside it is disabled); nothing is shown without one */
-  content?: string | null | false
+  /**
+   * Text shown on hover (e.g. why the control beside it is disabled); nothing is shown without one.
+   * It can have links (e.g. a `SettingLink` to the setting to change), which stay reachable.
+   */
+  content?: React.ReactNode
   /** `warning` for something to fix (e.g. a setting that stops a feature from working) */
   variant?: 'info' | 'warning'
   className?: string
@@ -41,15 +45,20 @@ function InfoTooltip({
     >
       {shownContent ? (
         <Tooltip
-          content={shownContent}
+          // One block, so text with a link flows as one paragraph (the tooltip lays out its children
+          // as a column)
+          content={<div>{shownContent}</div>}
           isDisabled={!content}
           delay={150}
-          closeDelay={0}
+          // Text with links stays open long enough to move onto it (it stays open while hovered)
+          closeDelay={typeof shownContent === 'string' ? 0 : 300}
         >
           <span
             // Focusable, so the text can also be read with the keyboard
             tabIndex={content ? 0 : -1}
-            aria-label={shownContent}
+            aria-label={
+              typeof shownContent === 'string' ? shownContent : undefined
+            }
             className="flex items-center justify-center text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 outline-none"
           >
             {variant === 'warning' ? (

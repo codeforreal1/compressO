@@ -3,7 +3,7 @@ import { event } from '@tauri-apps/api'
 import { getCurrentWebview } from '@tauri-apps/api/webview'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
 import Button from '@/components/Button'
@@ -11,6 +11,7 @@ import DashedBorder from '@/components/DashedBorder'
 import Icon from '@/components/Icon'
 import InfoTooltip from '@/components/InfoTooltip'
 import ScrollShadow from '@/components/ScrollShadow'
+import SettingLink from '@/components/SettingLink'
 import Switch from '@/components/Switch'
 import { toast } from '@/components/Toast'
 import { useIsAutoCompressAvailable } from '@/hooks/useAutoCompressSync'
@@ -609,7 +610,16 @@ function AutoCompressSwitch() {
         {t('settings.dropZone.compression.autoCompress.title')}
       </Switch>
       <InfoTooltip
-        content={!canAutoCompress && t('dropZone.needsSaveLocation')}
+        content={
+          !canAutoCompress && (
+            <Trans
+              i18nKey="dropZone.needsSaveLocation"
+              components={{
+                setting: <SettingLink target={{ settingId: 'saveLocation' }} />,
+              }}
+            />
+          )
+        }
       />
     </div>
   )

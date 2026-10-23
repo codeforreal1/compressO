@@ -32,8 +32,8 @@
           "title_windows": "Apri solo nell’area di notifica",
           "description_macos": "Non mostrare la finestra principale quando l’app si apre al login. I contenuti multimediali possono comunque essere compressi dalla barra dei menu.",
           "description_windows": "Non mostrare la finestra principale quando l’app si apre al login. I contenuti multimediali possono comunque essere compressi dall’area di notifica.",
-          "needsTrayIcon_macos": "Attivi «Mostra icona nella barra dei menu» per usare questa opzione, poiché l’app viene aperta da lì.",
-          "needsTrayIcon_windows": "Attivi «Mostra icona nell’area di notifica» per usare questa opzione, poiché l’app viene aperta da lì."
+          "needsTrayIcon_macos": "Attivi «<setting>Mostra icona nella barra dei menu</setting>» per usare questa opzione, poiché l’app viene aperta da lì.",
+          "needsTrayIcon_windows": "Attivi «<setting>Mostra icona nell’area di notifica</setting>» per usare questa opzione, poiché l’app viene aperta da lì."
         }
       },
       "appearance": {
@@ -123,20 +123,20 @@
       "empty_image": "Non ci sono ancora preset immagine. Regoli le impostazioni di un’immagine e selezioni il pulsante più accanto al menu Preset per salvarle come preset.",
       "empty_audio": "Non ci sono ancora preset audio. Regoli le impostazioni di un file audio e selezioni il pulsante più accanto al menu Preset per salvarle come preset.",
       "mediaType": "Tipo di file",
-      "standardOutput": "La posizione di salvataggio e il prefisso del nome del file si impostano in Output.",
+      "standardOutput": "La posizione di salvataggio e il prefisso del nome del file si impostano in <setting>Output</setting>.",
       "cannotDeleteStandard": "La preimpostazione Standard non può essere eliminata."
     },
     "dropZone": {
-      "needsTrayIcon_macos": "La zona di rilascio si trova nella barra dei menu, quindi funziona solo quando «Mostra icona nella barra dei menu» è attivo in Generali.",
-      "needsTrayIcon_windows": "La zona di rilascio si trova nell’area di notifica, quindi funziona solo quando «Mostra icona nell’area di notifica» è attivo in Generali.",
-      "turnOnTrayIcon_macos": "La zona di rilascio si trova nella barra dei menu. Attivi prima «Mostra icona nella barra dei menu» in Generali.",
-      "turnOnTrayIcon_windows": "La zona di rilascio si trova nell’area di notifica. Attivi prima «Mostra icona nell’area di notifica» in Generali.",
+      "needsTrayIcon_macos": "La zona di rilascio si trova nella barra dei menu, quindi funziona solo quando «<setting>Mostra icona nella barra dei menu</setting>» è attivo in Generali.",
+      "needsTrayIcon_windows": "La zona di rilascio si trova nell’area di notifica, quindi funziona solo quando «<setting>Mostra icona nell’area di notifica</setting>» è attivo in Generali.",
+      "turnOnTrayIcon_macos": "La zona di rilascio si trova nella barra dei menu. Attivi prima «<setting>Mostra icona nella barra dei menu</setting>» in Generali.",
+      "turnOnTrayIcon_windows": "La zona di rilascio si trova nell’area di notifica. Attivi prima «<setting>Mostra icona nell’area di notifica</setting>» in Generali.",
       "compression": {
         "title": "Compressione",
         "autoCompress": {
           "title": "Comprimi automaticamente",
           "description": "Comprimi i file appena vengono aggiunti alla zona di rilascio, uno alla volta, e salvali nella posizione della loro preimpostazione.",
-          "needsSaveLocation": "Scegli una posizione diversa da Chiedi ogni volta, in Output o in una preimpostazione della zona di rilascio, così i file compressi vengono salvati senza chiedere."
+          "needsSaveLocation": "Scegli una posizione diversa da Chiedi ogni volta, in <setting>Output</setting> o in una preimpostazione della zona di rilascio, così i file compressi vengono salvati senza chiedere."
         }
       },
       "preset": {
@@ -166,8 +166,8 @@
         },
         "watch": "Monitora {{name}}",
         "missing": "La cartella non esiste. Non viene monitorata.",
-        "needsSaveLocation": "Scegli una posizione diversa da Chiedi ogni volta, in Output o in una delle sue preimpostazioni, così i suoi file vengono salvati senza chiedere. Non è monitorata.",
-        "presetAsks": "La sua posizione di salvataggio è Chiedi ogni volta. Scegline un’altra, in Output o in questa preimpostazione, così questa cartella può essere monitorata.",
+        "needsSaveLocation": "Scegli una posizione diversa da Chiedi ogni volta, in <setting>Output</setting> o in una delle sue preimpostazioni, così i suoi file vengono salvati senza chiedere. Non è monitorata.",
+        "presetAsks": "La sua posizione di salvataggio è Chiedi ogni volta. Scegline un’altra, in <setting>Output</setting> o in questa preimpostazione, così questa cartella può essere monitorata.",
         "stillMissing": "La cartella non esiste ancora. Ricreala prima di attivare il monitoraggio.",
         "checkFailed": "Impossibile verificare se questa cartella esiste. Riprova.",
         "remove": "Interrompi il monitoraggio",
@@ -253,6 +253,11 @@
       }
     },
     "open": "Apri Impostazioni",
+    "search": {
+      "label": "Cerca nelle impostazioni",
+      "results": "Risultati della ricerca",
+      "noResults": "Nessuna impostazione trovata."
+    },
     "groups": {
       "settings": "Impostazioni",
       "app": "CompressO"
@@ -388,7 +393,7 @@
       "placeholder_image": "ad es. Web",
       "placeholder_audio": "ad es. Podcast",
       "nameTaken": "Esiste già un preset con questo nome.",
-      "hint": "I preset possono essere rinominati, riordinati ed eliminati in Impostazioni, in Preset."
+      "hint": "I preset possono essere rinominati, riordinati ed eliminati in Impostazioni, in <setting>Preset</setting>."
     },
     "updated": "Il preset «{{name}}» è stato aggiornato.",
     "saved": "Il preset «{{name}}» è stato salvato.",
@@ -426,11 +431,12 @@
     "remove": "Rimuovi {{name}}",
     "storedBusy": "Conservati. Apra l’app per comprimerli dopo i contenuti attuali.",
     "storedIdle": "Rilasci altri contenuti o apra l’app per avviare la compressione.",
-    "needsSaveLocation": "Scegli una posizione di salvataggio nelle Impostazioni, in Output o in una preimpostazione della zona di rilascio, così i file compressi vengono salvati senza chiedere."
+    "needsSaveLocation": "Scegli una posizione di salvataggio nelle Impostazioni, in <setting>Output</setting> o in una preimpostazione della zona di rilascio, così i file compressi vengono salvati senza chiedere."
   },
   "queue": {
     "notSavedLarger": "Non salvato, perché è più grande dell’originale.",
     "noSaveLocation": "Scegli una posizione di salvataggio per la sua preimpostazione, nelle Impostazioni.",
+    "chooseSaveLocation": "Scegli una posizione di salvataggio",
     "saveFailed": "Non è stato possibile salvare il contenuto compresso.",
     "compressFailed": "Non è stato possibile comprimere il contenuto.",
     "summary": {
@@ -691,7 +697,7 @@
     "pauseAudio": "Metti in pausa l’audio",
     "playAudio": "Riproduci l’audio",
     "videoUnplayable": "Questa app non può riprodurre questo video perché contiene codec o configurazioni avanzati. Questi video richiedono lettori dedicati come VLC.",
-    "previewsOff": "Le anteprime video sono disattivate. Possono essere attivate in Impostazioni, in Generali.",
+    "previewsOff": "Le anteprime video sono disattivate. Possono essere attivate in Impostazioni, in <setting>Generali</setting>.",
     "stillCompressible": "Può comunque applicare le impostazioni di output ed eseguire tutte le conversioni.",
     "enlarge": "Ingrandisci l’immagine",
     "select": "Selezioni l’immagine della miniatura.",

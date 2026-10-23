@@ -1,10 +1,11 @@
 // The item must be HeroUI's own (not a wrapper) so the Select can build its collection
 import { SelectItem } from '@heroui/react'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
 import InfoTooltip from '@/components/InfoTooltip'
 import Select from '@/components/Select'
+import SettingLink from '@/components/SettingLink'
 import Switch from '@/components/Switch'
 import { useIsAutoCompressAvailable } from '@/hooks/useAutoCompressSync'
 import { presetsStore } from '@/stores/presetsStore'
@@ -61,11 +62,18 @@ function DropZone() {
       {/* Only needed while the drop zone cannot be used */}
       {!showMenuBarIcon ? (
         <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-8">
-          {t('settings.dropZone.needsTrayIcon', { context: TRAY_CONTEXT })}
+          <Trans
+            i18nKey="settings.dropZone.needsTrayIcon"
+            context={TRAY_CONTEXT}
+            components={{
+              setting: <SettingLink target={{ settingId: 'showTrayIcon' }} />,
+            }}
+          />
         </p>
       ) : null}
       <SettingsSection title={t('settings.dropZone.compression.title')}>
         <SettingsRow
+          settingId="autoCompress"
           title={t('settings.dropZone.compression.autoCompress.title')}
           description={t(
             'settings.dropZone.compression.autoCompress.description',
@@ -74,15 +82,26 @@ function DropZone() {
           <div className="flex items-center gap-2">
             <InfoTooltip
               content={
-                !showMenuBarIcon
-                  ? t('settings.dropZone.turnOnTrayIcon', {
-                      context: TRAY_CONTEXT,
-                    })
-                  : !canAutoCompress
-                    ? t(
-                        'settings.dropZone.compression.autoCompress.needsSaveLocation',
-                      )
-                    : null
+                !showMenuBarIcon ? (
+                  <Trans
+                    i18nKey="settings.dropZone.turnOnTrayIcon"
+                    context={TRAY_CONTEXT}
+                    components={{
+                      setting: (
+                        <SettingLink target={{ settingId: 'showTrayIcon' }} />
+                      ),
+                    }}
+                  />
+                ) : !canAutoCompress ? (
+                  <Trans
+                    i18nKey="settings.dropZone.compression.autoCompress.needsSaveLocation"
+                    components={{
+                      setting: (
+                        <SettingLink target={{ settingId: 'saveLocation' }} />
+                      ),
+                    }}
+                  />
+                ) : null
               }
             />
             <Switch
@@ -96,6 +115,7 @@ function DropZone() {
           </div>
         </SettingsRow>
         <SettingsRow
+          settingId="dropZoneVideoPreset"
           isVisible={autoCompress && canAutoCompress}
           isNested
           title={t('settings.dropZone.preset.title_video')}
@@ -104,6 +124,7 @@ function DropZone() {
           <DropZonePresetSelect mediaType="video" />
         </SettingsRow>
         <SettingsRow
+          settingId="dropZoneImagePreset"
           isVisible={autoCompress && canAutoCompress}
           isNested
           title={t('settings.dropZone.preset.title_image')}
@@ -112,6 +133,7 @@ function DropZone() {
           <DropZonePresetSelect mediaType="image" />
         </SettingsRow>
         <SettingsRow
+          settingId="dropZoneAudioPreset"
           isVisible={autoCompress && canAutoCompress}
           isNested
           title={t('settings.dropZone.preset.title_audio')}
@@ -122,6 +144,7 @@ function DropZone() {
       </SettingsSection>
       <SettingsSection title={t('settings.dropZone.clipboard.title')}>
         <SettingsRow
+          settingId="watchClipboard"
           title={t('settings.dropZone.clipboard.watch.title')}
           description={t('settings.dropZone.clipboard.watch.description', {
             context: TRAY_CONTEXT,
@@ -130,8 +153,17 @@ function DropZone() {
           <div className="flex items-center gap-2">
             <InfoTooltip
               content={
-                !showMenuBarIcon &&
-                t('settings.dropZone.turnOnTrayIcon', { context: TRAY_CONTEXT })
+                !showMenuBarIcon && (
+                  <Trans
+                    i18nKey="settings.dropZone.turnOnTrayIcon"
+                    context={TRAY_CONTEXT}
+                    components={{
+                      setting: (
+                        <SettingLink target={{ settingId: 'showTrayIcon' }} />
+                      ),
+                    }}
+                  />
+                )
               }
             />
             <Switch

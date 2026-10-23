@@ -9,6 +9,7 @@ import Icon from '@/components/Icon'
 import { CircularProgress } from '@/components/Progress'
 import Tooltip from '@/components/Tooltip'
 import { useDropQueue, useDropQueuePaused } from '@/hooks/useDropQueue'
+import { openSettings } from '@/stores/settingsDialogStore'
 import { openFilesAccessSettings } from '@/tauri/commands/app'
 import {
   cancelDropQueue,
@@ -256,6 +257,26 @@ function IslandTile({
               className="min-w-6 w-6 h-6 bg-black/60 text-white"
               onPress={() => {
                 openFilesAccessSettings().catch(() => {})
+              }}
+            >
+              <Icon name="setting" size={14} />
+            </Button>
+          </Tooltip>
+        ) : null}
+        {/* Its preset asks where to save: its save location, in the main window's settings */}
+        {item.status === 'failed' && item.needsSaveLocation ? (
+          <Tooltip
+            content={t('queue.chooseSaveLocation')}
+            aria-label={t('queue.chooseSaveLocation')}
+          >
+            <Button
+              isIconOnly
+              size="sm"
+              radius="full"
+              aria-label={t('queue.chooseSaveLocation')}
+              className="min-w-6 w-6 h-6 bg-black/60 text-white"
+              onPress={() => {
+                openSettings({ settingId: 'saveLocation' }).catch(() => {})
               }}
             >
               <Icon name="setting" size={14} />

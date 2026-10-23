@@ -32,8 +32,8 @@
           "title_windows": "Buka hanya di baki sistem",
           "description_macos": "Jangan tampilkan jendela utama saat dibuka ketika masuk. Media tetap dapat dikompresi dari bar menu.",
           "description_windows": "Jangan tampilkan jendela utama saat dibuka ketika masuk. Media tetap dapat dikompresi dari baki sistem.",
-          "needsTrayIcon_macos": "Aktifkan “Tampilkan ikon bar menu” untuk menggunakan ini, karena aplikasi dibuka dari sana.",
-          "needsTrayIcon_windows": "Aktifkan “Tampilkan ikon baki sistem” untuk menggunakan ini, karena aplikasi dibuka dari sana."
+          "needsTrayIcon_macos": "Aktifkan “<setting>Tampilkan ikon bar menu</setting>” untuk menggunakan ini, karena aplikasi dibuka dari sana.",
+          "needsTrayIcon_windows": "Aktifkan “<setting>Tampilkan ikon baki sistem</setting>” untuk menggunakan ini, karena aplikasi dibuka dari sana."
         }
       },
       "appearance": {
@@ -123,20 +123,20 @@
       "empty_image": "Belum ada preset gambar. Sesuaikan pengaturan sebuah gambar, lalu pilih tombol plus di samping menu Preset untuk menyimpannya sebagai preset.",
       "empty_audio": "Belum ada preset audio. Sesuaikan pengaturan sebuah file audio, lalu pilih tombol plus di samping menu Preset untuk menyimpannya sebagai preset.",
       "mediaType": "Jenis media",
-      "standardOutput": "Lokasi penyimpanan dan awalan nama filenya diatur di Keluaran.",
+      "standardOutput": "Lokasi penyimpanan dan awalan nama filenya diatur di <setting>Keluaran</setting>.",
       "cannotDeleteStandard": "Preset Standar tidak dapat dihapus."
     },
     "dropZone": {
-      "needsTrayIcon_macos": "Zona taruh berada di bar menu, sehingga hanya berfungsi jika “Tampilkan ikon bar menu” diaktifkan di Umum.",
-      "needsTrayIcon_windows": "Zona taruh berada di baki sistem, sehingga hanya berfungsi jika “Tampilkan ikon baki sistem” diaktifkan di Umum.",
-      "turnOnTrayIcon_macos": "Zona taruh berada di bar menu. Aktifkan terlebih dahulu “Tampilkan ikon bar menu” di Umum.",
-      "turnOnTrayIcon_windows": "Zona taruh berada di baki sistem. Aktifkan terlebih dahulu “Tampilkan ikon baki sistem” di Umum.",
+      "needsTrayIcon_macos": "Zona taruh berada di bar menu, sehingga hanya berfungsi jika “<setting>Tampilkan ikon bar menu</setting>” diaktifkan di Umum.",
+      "needsTrayIcon_windows": "Zona taruh berada di baki sistem, sehingga hanya berfungsi jika “<setting>Tampilkan ikon baki sistem</setting>” diaktifkan di Umum.",
+      "turnOnTrayIcon_macos": "Zona taruh berada di bar menu. Aktifkan terlebih dahulu “<setting>Tampilkan ikon bar menu</setting>” di Umum.",
+      "turnOnTrayIcon_windows": "Zona taruh berada di baki sistem. Aktifkan terlebih dahulu “<setting>Tampilkan ikon baki sistem</setting>” di Umum.",
       "compression": {
         "title": "Kompresi",
         "autoCompress": {
           "title": "Kompresi otomatis",
           "description": "Kompres media segera setelah ditambahkan ke zona letak, satu per satu, dan simpan ke lokasi penyimpanan presetnya.",
-          "needsSaveLocation": "Pilih lokasi penyimpanan selain Tanyakan setiap kali, di Keluaran atau di preset zona letak, agar media terkompresi dapat disimpan tanpa bertanya."
+          "needsSaveLocation": "Pilih lokasi penyimpanan selain Tanyakan setiap kali, di <setting>Keluaran</setting> atau di preset zona letak, agar media terkompresi dapat disimpan tanpa bertanya."
         }
       },
       "preset": {
@@ -166,8 +166,8 @@
         },
         "watch": "Pantau {{name}}",
         "missing": "Folder tidak ada. Folder ini tidak dipantau.",
-        "needsSaveLocation": "Pilih lokasi penyimpanan selain Tanyakan setiap kali, di Keluaran atau di salah satu presetnya, agar medianya dapat disimpan tanpa bertanya. Folder ini tidak sedang dipantau.",
-        "presetAsks": "Lokasi penyimpanannya adalah Tanyakan setiap kali. Pilih lokasi lain, di Keluaran atau di preset ini, agar folder ini dapat dipantau.",
+        "needsSaveLocation": "Pilih lokasi penyimpanan selain Tanyakan setiap kali, di <setting>Keluaran</setting> atau di salah satu presetnya, agar medianya dapat disimpan tanpa bertanya. Folder ini tidak sedang dipantau.",
+        "presetAsks": "Lokasi penyimpanannya adalah Tanyakan setiap kali. Pilih lokasi lain, di <setting>Keluaran</setting> atau di preset ini, agar folder ini dapat dipantau.",
         "stillMissing": "Folder belum ada. Buat kembali sebelum mengaktifkan pemantauan.",
         "checkFailed": "Tidak dapat memeriksa apakah folder ini ada. Coba lagi.",
         "remove": "Berhenti memantau",
@@ -253,6 +253,11 @@
       }
     },
     "open": "Buka Pengaturan",
+    "search": {
+      "label": "Cari pengaturan",
+      "results": "Hasil pencarian",
+      "noResults": "Pengaturan tidak ditemukan."
+    },
     "groups": {
       "settings": "Pengaturan",
       "app": "CompressO"
@@ -388,7 +393,7 @@
       "placeholder_image": "mis. Web",
       "placeholder_audio": "mis. Podcast",
       "nameTaken": "Preset dengan nama ini sudah ada.",
-      "hint": "Preset dapat diganti namanya, diurutkan ulang, dan dihapus di Pengaturan, pada Preset."
+      "hint": "Preset dapat diganti namanya, diurutkan ulang, dan dihapus di Pengaturan, pada <setting>Preset</setting>."
     },
     "updated": "Preset “{{name}}” telah diperbarui.",
     "saved": "Preset “{{name}}” telah disimpan.",
@@ -424,11 +429,12 @@
     "remove": "Hapus {{name}}",
     "storedBusy": "Disimpan sementara. Buka aplikasi untuk mengompresinya setelah media saat ini.",
     "storedIdle": "Taruh media lainnya, atau buka aplikasi untuk memulai kompresi.",
-    "needsSaveLocation": "Pilih lokasi penyimpanan di Pengaturan, di Keluaran atau di preset zona letak, agar media terkompresi dapat disimpan tanpa bertanya."
+    "needsSaveLocation": "Pilih lokasi penyimpanan di Pengaturan, di <setting>Keluaran</setting> atau di preset zona letak, agar media terkompresi dapat disimpan tanpa bertanya."
   },
   "queue": {
     "notSavedLarger": "Tidak disimpan, karena ukurannya lebih besar dari aslinya.",
     "noSaveLocation": "Pilih lokasi penyimpanan untuk presetnya, di Pengaturan.",
+    "chooseSaveLocation": "Pilih lokasi penyimpanan",
     "saveFailed": "Media yang dikompresi tidak dapat disimpan.",
     "compressFailed": "Media tidak dapat dikompresi.",
     "summary": {
@@ -679,7 +685,7 @@
     "pauseAudio": "Jeda audio",
     "playAudio": "Putar audio",
     "videoUnplayable": "Video ini tidak dapat diputar oleh aplikasi ini karena berisi codec atau konfigurasi lanjutan. Video seperti ini memerlukan pemutar khusus seperti VLC.",
-    "previewsOff": "Pratinjau video dinonaktifkan. Pratinjau dapat diaktifkan di Pengaturan, pada Umum.",
+    "previewsOff": "Pratinjau video dinonaktifkan. Pratinjau dapat diaktifkan di Pengaturan, pada <setting>Umum</setting>.",
     "stillCompressible": "Anda tetap dapat menerapkan pengaturan output dan melakukan semua konversi.",
     "enlarge": "Perbesar gambar",
     "select": "Pilih gambar thumbnail.",

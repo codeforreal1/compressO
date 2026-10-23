@@ -32,8 +32,8 @@
           "title_windows": "Nur im Infobereich öffnen",
           "description_macos": "Das Hauptfenster bei der Anmeldung nicht anzeigen. Medien können weiterhin über die Menüleiste komprimiert werden.",
           "description_windows": "Das Hauptfenster bei der Anmeldung nicht anzeigen. Medien können weiterhin über den Infobereich komprimiert werden.",
-          "needsTrayIcon_macos": "Aktivieren Sie „Symbol in der Menüleiste anzeigen“, um dies zu nutzen, da die App von dort geöffnet wird.",
-          "needsTrayIcon_windows": "Aktivieren Sie „Symbol im Infobereich anzeigen“, um dies zu nutzen, da die App von dort geöffnet wird."
+          "needsTrayIcon_macos": "Aktivieren Sie „<setting>Symbol in der Menüleiste anzeigen</setting>“, um dies zu nutzen, da die App von dort geöffnet wird.",
+          "needsTrayIcon_windows": "Aktivieren Sie „<setting>Symbol im Infobereich anzeigen</setting>“, um dies zu nutzen, da die App von dort geöffnet wird."
         }
       },
       "appearance": {
@@ -123,20 +123,20 @@
       "empty_image": "Es gibt noch keine Bild-Voreinstellungen. Passen Sie die Einstellungen eines Bildes an und wählen Sie die Plus-Schaltfläche neben dem Menü „Voreinstellung“, um sie als Voreinstellung zu speichern.",
       "empty_audio": "Es gibt noch keine Audio-Voreinstellungen. Passen Sie die Einstellungen einer Audiodatei an und wählen Sie die Plus-Schaltfläche neben dem Menü „Voreinstellung“, um sie als Voreinstellung zu speichern.",
       "mediaType": "Medientyp",
-      "standardOutput": "Speicherort und Dateinamenpräfix werden unter „Ausgabe“ festgelegt.",
+      "standardOutput": "Speicherort und Dateinamenpräfix werden unter „<setting>Ausgabe</setting>“ festgelegt.",
       "cannotDeleteStandard": "Die Standard-Voreinstellung kann nicht gelöscht werden."
     },
     "dropZone": {
-      "needsTrayIcon_macos": "Die Ablagezone befindet sich in der Menüleiste und funktioniert daher nur, wenn „Symbol in der Menüleiste anzeigen“ unter „Allgemein“ aktiviert ist.",
-      "needsTrayIcon_windows": "Die Ablagezone befindet sich im Infobereich und funktioniert daher nur, wenn „Symbol im Infobereich anzeigen“ unter „Allgemein“ aktiviert ist.",
-      "turnOnTrayIcon_macos": "Die Ablagezone befindet sich in der Menüleiste. Aktivieren Sie zuerst „Symbol in der Menüleiste anzeigen“ unter „Allgemein“.",
-      "turnOnTrayIcon_windows": "Die Ablagezone befindet sich im Infobereich. Aktivieren Sie zuerst „Symbol im Infobereich anzeigen“ unter „Allgemein“.",
+      "needsTrayIcon_macos": "Die Ablagezone befindet sich in der Menüleiste und funktioniert daher nur, wenn „<setting>Symbol in der Menüleiste anzeigen</setting>“ unter „Allgemein“ aktiviert ist.",
+      "needsTrayIcon_windows": "Die Ablagezone befindet sich im Infobereich und funktioniert daher nur, wenn „<setting>Symbol im Infobereich anzeigen</setting>“ unter „Allgemein“ aktiviert ist.",
+      "turnOnTrayIcon_macos": "Die Ablagezone befindet sich in der Menüleiste. Aktivieren Sie zuerst „<setting>Symbol in der Menüleiste anzeigen</setting>“ unter „Allgemein“.",
+      "turnOnTrayIcon_windows": "Die Ablagezone befindet sich im Infobereich. Aktivieren Sie zuerst „<setting>Symbol im Infobereich anzeigen</setting>“ unter „Allgemein“.",
       "compression": {
         "title": "Komprimierung",
         "autoCompress": {
           "title": "Automatisch komprimieren",
           "description": "Medien komprimieren, sobald sie zur Ablagezone hinzugefügt werden, eines nach dem anderen, und am Speicherort ihrer Voreinstellung speichern.",
-          "needsSaveLocation": "Wählen Sie unter „Ausgabe“ oder in einer Voreinstellung der Ablagezone einen anderen Speicherort als „Jedes Mal fragen“, damit die komprimierten Medien ohne Nachfrage gespeichert werden können."
+          "needsSaveLocation": "Wählen Sie unter „<setting>Ausgabe</setting>“ oder in einer Voreinstellung der Ablagezone einen anderen Speicherort als „Jedes Mal fragen“, damit die komprimierten Medien ohne Nachfrage gespeichert werden können."
         }
       },
       "preset": {
@@ -166,8 +166,8 @@
         },
         "watch": "{{name}} überwachen",
         "missing": "Der Ordner ist nicht vorhanden und wird nicht überwacht.",
-        "needsSaveLocation": "Wählen Sie einen anderen Speicherort als „Jedes Mal fragen“, unter Ausgabe oder in einer seiner Voreinstellungen, damit seine Medien ohne Nachfrage gespeichert werden können. Er wird nicht überwacht.",
-        "presetAsks": "Der Speicherort ist „Jedes Mal fragen“. Wählen Sie unter „Ausgabe“ oder in dieser Voreinstellung einen anderen, damit dieser Ordner überwacht werden kann.",
+        "needsSaveLocation": "Wählen Sie einen anderen Speicherort als „Jedes Mal fragen“, unter <setting>Ausgabe</setting> oder in einer seiner Voreinstellungen, damit seine Medien ohne Nachfrage gespeichert werden können. Er wird nicht überwacht.",
+        "presetAsks": "Der Speicherort ist „Jedes Mal fragen“. Wählen Sie unter „<setting>Ausgabe</setting>“ oder in dieser Voreinstellung einen anderen, damit dieser Ordner überwacht werden kann.",
         "stillMissing": "Der Ordner ist noch nicht vorhanden. Erstelle ihn erneut, bevor du die Überwachung einschaltest.",
         "checkFailed": "Es konnte nicht geprüft werden, ob der Ordner vorhanden ist. Versuche es erneut.",
         "remove": "Nicht mehr überwachen",
@@ -253,6 +253,11 @@
       }
     },
     "open": "Einstellungen öffnen",
+    "search": {
+      "label": "Einstellungen durchsuchen",
+      "results": "Suchergebnisse",
+      "noResults": "Keine Einstellungen gefunden."
+    },
     "groups": {
       "settings": "Einstellungen",
       "app": "CompressO"
@@ -388,7 +393,7 @@
       "placeholder_image": "z. B. Web",
       "placeholder_audio": "z. B. Podcast",
       "nameTaken": "Eine Voreinstellung mit diesem Namen existiert bereits.",
-      "hint": "Voreinstellungen können in den Einstellungen unter „Voreinstellungen“ umbenannt, neu angeordnet und gelöscht werden."
+      "hint": "Voreinstellungen können in den Einstellungen unter „<setting>Voreinstellungen</setting>“ umbenannt, neu angeordnet und gelöscht werden."
     },
     "updated": "Die Voreinstellung „{{name}}“ wurde aktualisiert.",
     "saved": "Die Voreinstellung „{{name}}“ wurde gespeichert.",
@@ -425,11 +430,12 @@
     "remove": "{{name}} entfernen",
     "storedBusy": "Gesammelt. Öffnen Sie die App, um sie nach den aktuellen Medien zu komprimieren.",
     "storedIdle": "Legen Sie weitere Medien ab oder öffnen Sie die App, um die Komprimierung zu starten.",
-    "needsSaveLocation": "Wählen Sie in den Einstellungen unter „Ausgabe“ oder in einer Voreinstellung der Ablagezone einen Speicherort, damit die komprimierten Medien ohne Nachfrage gespeichert werden können."
+    "needsSaveLocation": "Wählen Sie in den Einstellungen unter „<setting>Ausgabe</setting>“ oder in einer Voreinstellung der Ablagezone einen Speicherort, damit die komprimierten Medien ohne Nachfrage gespeichert werden können."
   },
   "queue": {
     "notSavedLarger": "Nicht gespeichert, da größer als das Original.",
     "noSaveLocation": "Wählen Sie in den Einstellungen einen Speicherort für ihre Voreinstellung.",
+    "chooseSaveLocation": "Speicherort wählen",
     "saveFailed": "Die komprimierten Medien konnten nicht gespeichert werden.",
     "compressFailed": "Die Medien konnten nicht komprimiert werden.",
     "summary": {
@@ -685,7 +691,7 @@
     "pauseAudio": "Audio pausieren",
     "playAudio": "Audio abspielen",
     "videoUnplayable": "Dieses Video kann von dieser App nicht abgespielt werden, da es erweiterte Codecs oder Konfigurationen enthält. Solche Videos erfordern spezielle Mediaplayer wie VLC.",
-    "previewsOff": "Die Videovorschau ist ausgeschaltet. Sie kann in den Einstellungen unter „Allgemein“ eingeschaltet werden.",
+    "previewsOff": "Die Videovorschau ist ausgeschaltet. Sie kann in den Einstellungen unter „<setting>Allgemein</setting>“ eingeschaltet werden.",
     "stillCompressible": "Sie können die Ausgabeeinstellungen dennoch anwenden und alle Konvertierungen durchführen.",
     "enlarge": "Bild vergrößern",
     "select": "Vorschaubild auswählen.",

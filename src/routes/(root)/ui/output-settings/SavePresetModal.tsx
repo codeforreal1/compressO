@@ -1,5 +1,5 @@
 import React from 'react'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 
 import Button from '@/components/Button'
 import Modal, {
@@ -8,6 +8,7 @@ import Modal, {
   ModalFooter,
   ModalHeader,
 } from '@/components/Modal'
+import SettingLink from '@/components/SettingLink'
 import TextInput from '@/components/TextInput'
 import { presetsStore } from '@/stores/presetsStore'
 import type { PresetMediaType, PresetOutput } from '@/types/preset'
@@ -75,7 +76,12 @@ function SavePresetModal({
             }}
           />
           <p className="text-xs text-zinc-500 dark:text-zinc-400">
-            {t('presets.save.hint')}
+            <Trans
+              i18nKey="presets.save.hint"
+              components={{
+                setting: <SettingLink target={{ page: 'presets' }} />,
+              }}
+            />
           </p>
           <PresetOutputFields value={output} onChange={setOutput} />
         </ModalBody>

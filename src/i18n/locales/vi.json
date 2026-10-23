@@ -32,8 +32,8 @@
           "title_windows": "Chỉ mở trong khay hệ thống",
           "description_macos": "Không hiển thị cửa sổ chính khi mở lúc đăng nhập. Vẫn có thể nén tệp phương tiện từ thanh menu.",
           "description_windows": "Không hiển thị cửa sổ chính khi mở lúc đăng nhập. Vẫn có thể nén tệp phương tiện từ khay hệ thống.",
-          "needsTrayIcon_macos": "Bật “Hiển thị biểu tượng trên thanh menu” để sử dụng tính năng này, vì ứng dụng được mở từ đó.",
-          "needsTrayIcon_windows": "Bật “Hiển thị biểu tượng trong khay hệ thống” để sử dụng tính năng này, vì ứng dụng được mở từ đó."
+          "needsTrayIcon_macos": "Bật “<setting>Hiển thị biểu tượng trên thanh menu</setting>” để sử dụng tính năng này, vì ứng dụng được mở từ đó.",
+          "needsTrayIcon_windows": "Bật “<setting>Hiển thị biểu tượng trong khay hệ thống</setting>” để sử dụng tính năng này, vì ứng dụng được mở từ đó."
         }
       },
       "appearance": {
@@ -123,20 +123,20 @@
       "empty_image": "Chưa có cài đặt sẵn cho hình ảnh. Hãy điều chỉnh cài đặt của một hình ảnh và chọn nút dấu cộng bên cạnh menu Cài đặt sẵn để lưu thành cài đặt sẵn.",
       "empty_audio": "Chưa có cài đặt sẵn cho âm thanh. Hãy điều chỉnh cài đặt của một tệp âm thanh và chọn nút dấu cộng bên cạnh menu Cài đặt sẵn để lưu thành cài đặt sẵn.",
       "mediaType": "Loại phương tiện",
-      "standardOutput": "Vị trí lưu và tiền tố tên tệp của nó được đặt trong Đầu ra.",
+      "standardOutput": "Vị trí lưu và tiền tố tên tệp của nó được đặt trong <setting>Đầu ra</setting>.",
       "cannotDeleteStandard": "Không thể xóa cài đặt sẵn Tiêu chuẩn."
     },
     "dropZone": {
-      "needsTrayIcon_macos": "Vùng thả nằm trên thanh menu, nên chỉ hoạt động khi “Hiển thị biểu tượng trên thanh menu” được bật trong Chung.",
-      "needsTrayIcon_windows": "Vùng thả nằm trong khay hệ thống, nên chỉ hoạt động khi “Hiển thị biểu tượng trong khay hệ thống” được bật trong Chung.",
-      "turnOnTrayIcon_macos": "Vùng thả nằm trên thanh menu. Trước tiên, hãy bật “Hiển thị biểu tượng trên thanh menu” trong Chung.",
-      "turnOnTrayIcon_windows": "Vùng thả nằm trong khay hệ thống. Trước tiên, hãy bật “Hiển thị biểu tượng trong khay hệ thống” trong Chung.",
+      "needsTrayIcon_macos": "Vùng thả nằm trên thanh menu, nên chỉ hoạt động khi “<setting>Hiển thị biểu tượng trên thanh menu</setting>” được bật trong Chung.",
+      "needsTrayIcon_windows": "Vùng thả nằm trong khay hệ thống, nên chỉ hoạt động khi “<setting>Hiển thị biểu tượng trong khay hệ thống</setting>” được bật trong Chung.",
+      "turnOnTrayIcon_macos": "Vùng thả nằm trên thanh menu. Trước tiên, hãy bật “<setting>Hiển thị biểu tượng trên thanh menu</setting>” trong Chung.",
+      "turnOnTrayIcon_windows": "Vùng thả nằm trong khay hệ thống. Trước tiên, hãy bật “<setting>Hiển thị biểu tượng trong khay hệ thống</setting>” trong Chung.",
       "compression": {
         "title": "Nén",
         "autoCompress": {
           "title": "Tự động nén",
           "description": "Nén phương tiện ngay khi được thêm vào vùng thả, lần lượt từng tệp, và lưu vào vị trí lưu của cài đặt sẵn tương ứng.",
-          "needsSaveLocation": "Hãy chọn vị trí lưu khác Hỏi mỗi lần, trong Đầu ra hoặc trong một cài đặt sẵn của vùng thả, để phương tiện đã nén được lưu mà không cần hỏi."
+          "needsSaveLocation": "Hãy chọn vị trí lưu khác Hỏi mỗi lần, trong <setting>Đầu ra</setting> hoặc trong một cài đặt sẵn của vùng thả, để phương tiện đã nén được lưu mà không cần hỏi."
         }
       },
       "preset": {
@@ -166,8 +166,8 @@
         },
         "watch": "Theo dõi {{name}}",
         "missing": "Thư mục không tồn tại nên hiện không được theo dõi.",
-        "needsSaveLocation": "Hãy chọn vị trí lưu khác \"Hỏi mỗi lần\", trong Đầu ra hoặc trong một cài đặt sẵn của thư mục, để tệp phương tiện được lưu mà không cần hỏi. Thư mục này hiện không được theo dõi.",
-        "presetAsks": "Vị trí lưu đang là Hỏi mỗi lần. Hãy chọn vị trí khác, trong Đầu ra hoặc trong cài đặt sẵn này, để thư mục này có thể được theo dõi.",
+        "needsSaveLocation": "Hãy chọn vị trí lưu khác \"Hỏi mỗi lần\", trong <setting>Đầu ra</setting> hoặc trong một cài đặt sẵn của thư mục, để tệp phương tiện được lưu mà không cần hỏi. Thư mục này hiện không được theo dõi.",
+        "presetAsks": "Vị trí lưu đang là Hỏi mỗi lần. Hãy chọn vị trí khác, trong <setting>Đầu ra</setting> hoặc trong cài đặt sẵn này, để thư mục này có thể được theo dõi.",
         "stillMissing": "Thư mục chưa tồn tại. Hãy tạo lại trước khi bật theo dõi.",
         "checkFailed": "Không thể kiểm tra thư mục này có tồn tại hay không. Hãy thử lại.",
         "remove": "Ngừng theo dõi",
@@ -253,6 +253,11 @@
       }
     },
     "open": "Mở Cài đặt",
+    "search": {
+      "label": "Tìm kiếm cài đặt",
+      "results": "Kết quả tìm kiếm",
+      "noResults": "Không tìm thấy cài đặt nào."
+    },
     "groups": {
       "settings": "Cài đặt",
       "app": "CompressO"
@@ -388,7 +393,7 @@
       "placeholder_image": "ví dụ: Web",
       "placeholder_audio": "ví dụ: Podcast",
       "nameTaken": "Đã có cài đặt sẵn mang tên này.",
-      "hint": "Có thể đổi tên, sắp xếp lại và xóa cài đặt sẵn trong Cài đặt, mục Cài đặt sẵn."
+      "hint": "Có thể đổi tên, sắp xếp lại và xóa cài đặt sẵn trong Cài đặt, mục <setting>Cài đặt sẵn</setting>."
     },
     "updated": "Đã cập nhật cài đặt sẵn “{{name}}”.",
     "saved": "Đã lưu cài đặt sẵn “{{name}}”.",
@@ -424,11 +429,12 @@
     "remove": "Xóa {{name}}",
     "storedBusy": "Đã lưu tạm. Mở ứng dụng để nén các tệp này sau tệp phương tiện hiện tại.",
     "storedIdle": "Thả thêm tệp phương tiện hoặc mở ứng dụng để bắt đầu nén.",
-    "needsSaveLocation": "Hãy chọn vị trí lưu trong Cài đặt, ở Đầu ra hoặc trong một cài đặt sẵn của vùng thả, để phương tiện đã nén được lưu mà không cần hỏi."
+    "needsSaveLocation": "Hãy chọn vị trí lưu trong Cài đặt, ở <setting>Đầu ra</setting> hoặc trong một cài đặt sẵn của vùng thả, để phương tiện đã nén được lưu mà không cần hỏi."
   },
   "queue": {
     "notSavedLarger": "Không được lưu vì lớn hơn tệp gốc.",
     "noSaveLocation": "Hãy chọn vị trí lưu cho cài đặt sẵn của nó, trong Cài đặt.",
+    "chooseSaveLocation": "Chọn vị trí lưu",
     "saveFailed": "Không thể lưu tệp đã nén.",
     "compressFailed": "Không thể nén tệp phương tiện.",
     "summary": {
@@ -679,7 +685,7 @@
     "pauseAudio": "Tạm dừng âm thanh",
     "playAudio": "Phát âm thanh",
     "videoUnplayable": "Ứng dụng này không thể phát video vì video chứa codec hoặc cấu hình nâng cao. Những video như vậy cần trình phát chuyên dụng như VLC.",
-    "previewsOff": "Xem trước video đang tắt. Có thể bật trong Cài đặt, mục Chung.",
+    "previewsOff": "Xem trước video đang tắt. Có thể bật trong Cài đặt, mục <setting>Chung</setting>.",
     "stillCompressible": "Bạn vẫn có thể áp dụng cài đặt đầu ra và thực hiện mọi chuyển đổi.",
     "enlarge": "Phóng to hình ảnh",
     "select": "Chọn hình ảnh làm ảnh thu nhỏ.",

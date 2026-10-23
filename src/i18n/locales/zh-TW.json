@@ -32,8 +32,8 @@
           "title_windows": "僅在系統匣中開啟",
           "description_macos": "登入時開啟不顯示主視窗。仍可透過選單列壓縮媒體。",
           "description_windows": "登入時開啟不顯示主視窗。仍可透過系統匣壓縮媒體。",
-          "needsTrayIcon_macos": "請開啟「顯示選單列圖示」以使用此功能，因為 App 是從那裡開啟的。",
-          "needsTrayIcon_windows": "請開啟「顯示系統匣圖示」以使用此功能，因為 App 是從那裡開啟的。"
+          "needsTrayIcon_macos": "請開啟「<setting>顯示選單列圖示</setting>」以使用此功能，因為 App 是從那裡開啟的。",
+          "needsTrayIcon_windows": "請開啟「<setting>顯示系統匣圖示</setting>」以使用此功能，因為 App 是從那裡開啟的。"
         }
       },
       "appearance": {
@@ -123,20 +123,20 @@
       "empty_image": "尚無影像預設。調整某張影像的設定，然後選擇「預設」選單旁的加號按鈕，即可儲存為預設。",
       "empty_audio": "尚無音訊預設。調整某個音訊檔案的設定，然後選擇「預設」選單旁的加號按鈕，即可儲存為預設。",
       "mediaType": "媒體類型",
-      "standardOutput": "其儲存位置和檔名前綴在「輸出」中設定。",
+      "standardOutput": "其儲存位置和檔名前綴在「<setting>輸出</setting>」中設定。",
       "cannotDeleteStandard": "無法刪除標準預設。"
     },
     "dropZone": {
-      "needsTrayIcon_macos": "拖放區位於選單列中，因此只有在「一般」中開啟「顯示選單列圖示」後才能使用。",
-      "needsTrayIcon_windows": "拖放區位於系統匣中，因此只有在「一般」中開啟「顯示系統匣圖示」後才能使用。",
-      "turnOnTrayIcon_macos": "拖放區位於選單列中。請先在「一般」中開啟「顯示選單列圖示」。",
-      "turnOnTrayIcon_windows": "拖放區位於系統匣中。請先在「一般」中開啟「顯示系統匣圖示」。",
+      "needsTrayIcon_macos": "拖放區位於選單列中，因此只有在「一般」中開啟「<setting>顯示選單列圖示</setting>」後才能使用。",
+      "needsTrayIcon_windows": "拖放區位於系統匣中，因此只有在「一般」中開啟「<setting>顯示系統匣圖示</setting>」後才能使用。",
+      "turnOnTrayIcon_macos": "拖放區位於選單列中。請先在「一般」中開啟「<setting>顯示選單列圖示</setting>」。",
+      "turnOnTrayIcon_windows": "拖放區位於系統匣中。請先在「一般」中開啟「<setting>顯示系統匣圖示</setting>」。",
       "compression": {
         "title": "壓縮",
         "autoCompress": {
           "title": "自動壓縮",
           "description": "媒體加入投放區後立即逐一壓縮，並儲存到其預設的儲存位置。",
-          "needsSaveLocation": "請在「輸出」或投放區的預設中選擇「每次詢問」以外的儲存位置，以便無需詢問即可儲存壓縮後的媒體。"
+          "needsSaveLocation": "請在「<setting>輸出</setting>」或投放區的預設中選擇「每次詢問」以外的儲存位置，以便無需詢問即可儲存壓縮後的媒體。"
         }
       },
       "preset": {
@@ -166,8 +166,8 @@
         },
         "watch": "監看 {{name}}",
         "missing": "資料夾不存在，目前未受監控。",
-        "needsSaveLocation": "請在「輸出」或其某個預設中選擇「每次詢問」以外的儲存位置，以便無需詢問即可儲存其媒體。目前未監看此資料夾。",
-        "presetAsks": "儲存位置為「每次詢問」。請在「輸出」或此預設中選擇其他位置，以便監看此資料夾。",
+        "needsSaveLocation": "請在「<setting>輸出</setting>」或其某個預設中選擇「每次詢問」以外的儲存位置，以便無需詢問即可儲存其媒體。目前未監看此資料夾。",
+        "presetAsks": "儲存位置為「每次詢問」。請在「<setting>輸出</setting>」或此預設中選擇其他位置，以便監看此資料夾。",
         "stillMissing": "資料夾尚不存在。請先重新建立，再開啟監控。",
         "checkFailed": "無法檢查此資料夾是否存在。請再試一次。",
         "remove": "停止監看",
@@ -253,6 +253,11 @@
       }
     },
     "open": "打開設定",
+    "search": {
+      "label": "搜尋設定",
+      "results": "搜尋結果",
+      "noResults": "找不到設定。"
+    },
     "groups": {
       "settings": "設定",
       "app": "CompressO"
@@ -388,7 +393,7 @@
       "placeholder_image": "例如：網頁",
       "placeholder_audio": "例如：Podcast",
       "nameTaken": "已有同名的預設。",
-      "hint": "可在「設定」的「預設」中重新命名、重新排序及刪除預設。"
+      "hint": "可在「設定」的「<setting>預設</setting>」中重新命名、重新排序及刪除預設。"
     },
     "updated": "預設「{{name}}」已更新。",
     "saved": "預設「{{name}}」已儲存。",
@@ -424,11 +429,12 @@
     "remove": "移除 {{name}}",
     "storedBusy": "已暫存。開啟 App，即可在目前的媒體之後壓縮它們。",
     "storedIdle": "拖入更多媒體，或開啟 App 開始壓縮。",
-    "needsSaveLocation": "請在「設定」的「輸出」或投放區的預設中選擇儲存位置，以便無需詢問即可儲存壓縮後的媒體。"
+    "needsSaveLocation": "請在「設定」的「<setting>輸出</setting>」或投放區的預設中選擇儲存位置，以便無需詢問即可儲存壓縮後的媒體。"
   },
   "queue": {
     "notSavedLarger": "未儲存，因為比原始檔案大。",
     "noSaveLocation": "請在「設定」中為其預設選擇儲存位置。",
+    "chooseSaveLocation": "選擇儲存位置",
     "saveFailed": "無法儲存壓縮後的媒體。",
     "compressFailed": "無法壓縮該媒體。",
     "summary": {
@@ -679,7 +685,7 @@
     "pauseAudio": "暫停音訊",
     "playAudio": "播放音訊",
     "videoUnplayable": "此影片包含進階的編解碼器或設定，本 App 無法播放。此類影片需要使用 VLC 等專用播放器。",
-    "previewsOff": "影片預覽已關閉。可在「設定」的「一般」中開啟。",
+    "previewsOff": "影片預覽已關閉。可在「設定」的「<setting>一般</setting>」中開啟。",
     "stillCompressible": "您仍可套用輸出設定並執行所有轉換。",
     "enlarge": "放大影像",
     "select": "選擇縮圖影像。",

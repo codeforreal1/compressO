@@ -32,8 +32,8 @@
           "title_windows": "Ouvrir uniquement dans la zone de notification",
           "description_macos": "Ne pas afficher la fenêtre principale à l’ouverture lors de la connexion. Les médias peuvent toujours être compressés depuis la barre des menus.",
           "description_windows": "Ne pas afficher la fenêtre principale à l’ouverture lors de la connexion. Les médias peuvent toujours être compressés depuis la zone de notification.",
-          "needsTrayIcon_macos": "Activez « Afficher l’icône dans la barre des menus » pour utiliser cette option, car l’app s’ouvre depuis cet endroit.",
-          "needsTrayIcon_windows": "Activez « Afficher l’icône dans la zone de notification » pour utiliser cette option, car l’app s’ouvre depuis cet endroit."
+          "needsTrayIcon_macos": "Activez « <setting>Afficher l’icône dans la barre des menus</setting> » pour utiliser cette option, car l’app s’ouvre depuis cet endroit.",
+          "needsTrayIcon_windows": "Activez « <setting>Afficher l’icône dans la zone de notification</setting> » pour utiliser cette option, car l’app s’ouvre depuis cet endroit."
         }
       },
       "appearance": {
@@ -123,20 +123,20 @@
       "empty_image": "Il n’y a encore aucun préréglage d’image. Ajustez les réglages d’une image et sélectionnez le bouton plus à côté du menu Préréglage pour les enregistrer comme préréglage.",
       "empty_audio": "Il n’y a encore aucun préréglage audio. Ajustez les réglages d’un fichier audio et sélectionnez le bouton plus à côté du menu Préréglage pour les enregistrer comme préréglage.",
       "mediaType": "Type de média",
-      "standardOutput": "Son emplacement d’enregistrement et son préfixe de nom de fichier se règlent dans Sortie.",
+      "standardOutput": "Son emplacement d’enregistrement et son préfixe de nom de fichier se règlent dans <setting>Sortie</setting>.",
       "cannotDeleteStandard": "Le préréglage Standard ne peut pas être supprimé."
     },
     "dropZone": {
-      "needsTrayIcon_macos": "La zone de dépôt se trouve dans la barre des menus ; elle ne fonctionne donc que si « Afficher l’icône dans la barre des menus » est activé dans Général.",
-      "needsTrayIcon_windows": "La zone de dépôt se trouve dans la zone de notification ; elle ne fonctionne donc que si « Afficher l’icône dans la zone de notification » est activé dans Général.",
-      "turnOnTrayIcon_macos": "La zone de dépôt se trouve dans la barre des menus. Activez d’abord « Afficher l’icône dans la barre des menus » dans Général.",
-      "turnOnTrayIcon_windows": "La zone de dépôt se trouve dans la zone de notification. Activez d’abord « Afficher l’icône dans la zone de notification » dans Général.",
+      "needsTrayIcon_macos": "La zone de dépôt se trouve dans la barre des menus ; elle ne fonctionne donc que si « <setting>Afficher l’icône dans la barre des menus</setting> » est activé dans Général.",
+      "needsTrayIcon_windows": "La zone de dépôt se trouve dans la zone de notification ; elle ne fonctionne donc que si « <setting>Afficher l’icône dans la zone de notification</setting> » est activé dans Général.",
+      "turnOnTrayIcon_macos": "La zone de dépôt se trouve dans la barre des menus. Activez d’abord « <setting>Afficher l’icône dans la barre des menus</setting> » dans Général.",
+      "turnOnTrayIcon_windows": "La zone de dépôt se trouve dans la zone de notification. Activez d’abord « <setting>Afficher l’icône dans la zone de notification</setting> » dans Général.",
       "compression": {
         "title": "Compression",
         "autoCompress": {
           "title": "Compresser automatiquement",
           "description": "Compresse les médias dès qu’ils sont ajoutés à la zone de dépôt, un par un, et les enregistre à l’emplacement de leur préréglage.",
-          "needsSaveLocation": "Choisissez un emplacement autre que Demander à chaque fois, dans Sortie ou dans un préréglage de la zone de dépôt, afin que les médias compressés soient enregistrés sans demande."
+          "needsSaveLocation": "Choisissez un emplacement autre que Demander à chaque fois, dans <setting>Sortie</setting> ou dans un préréglage de la zone de dépôt, afin que les médias compressés soient enregistrés sans demande."
         }
       },
       "preset": {
@@ -166,8 +166,8 @@
         },
         "watch": "Surveiller {{name}}",
         "missing": "Le dossier n’existe pas. Il n’est pas surveillé.",
-        "needsSaveLocation": "Choisissez un emplacement d’enregistrement autre que « Demander à chaque fois », dans Sortie ou dans l’un de ses préréglages, afin que ses médias puissent être enregistrés sans demander. Il n’est pas surveillé.",
-        "presetAsks": "Son emplacement d’enregistrement est Demander à chaque fois. Choisissez-en un autre, dans Sortie ou dans ce préréglage, afin que ce dossier puisse être surveillé.",
+        "needsSaveLocation": "Choisissez un emplacement d’enregistrement autre que « Demander à chaque fois », dans <setting>Sortie</setting> ou dans l’un de ses préréglages, afin que ses médias puissent être enregistrés sans demander. Il n’est pas surveillé.",
+        "presetAsks": "Son emplacement d’enregistrement est Demander à chaque fois. Choisissez-en un autre, dans <setting>Sortie</setting> ou dans ce préréglage, afin que ce dossier puisse être surveillé.",
         "stillMissing": "Le dossier n’existe pas encore. Recréez-le avant d’activer la surveillance.",
         "checkFailed": "Impossible de vérifier si ce dossier existe. Réessayez.",
         "remove": "Arrêter la surveillance",
@@ -253,6 +253,11 @@
       }
     },
     "open": "Ouvrir les réglages",
+    "search": {
+      "label": "Rechercher dans les réglages",
+      "results": "Résultats de la recherche",
+      "noResults": "Aucun réglage trouvé."
+    },
     "groups": {
       "settings": "Réglages",
       "app": "CompressO"
@@ -388,7 +393,7 @@
       "placeholder_image": "p. ex. Web",
       "placeholder_audio": "p. ex. Podcast",
       "nameTaken": "Un préréglage portant ce nom existe déjà.",
-      "hint": "Les préréglages peuvent être renommés, réorganisés et supprimés dans les Réglages, sous Préréglages."
+      "hint": "Les préréglages peuvent être renommés, réorganisés et supprimés dans les Réglages, sous <setting>Préréglages</setting>."
     },
     "updated": "Le préréglage « {{name}} » a été mis à jour.",
     "saved": "Le préréglage « {{name}} » a été enregistré.",
@@ -426,11 +431,12 @@
     "remove": "Retirer {{name}}",
     "storedBusy": "Conservés. Ouvrez l’app pour les compresser après les médias en cours.",
     "storedIdle": "Déposez d’autres médias, ou ouvrez l’app pour lancer la compression.",
-    "needsSaveLocation": "Choisissez un emplacement d’enregistrement dans les Réglages, sous Sortie ou dans un préréglage de la zone de dépôt, afin que les médias compressés soient enregistrés sans demande."
+    "needsSaveLocation": "Choisissez un emplacement d’enregistrement dans les Réglages, sous <setting>Sortie</setting> ou dans un préréglage de la zone de dépôt, afin que les médias compressés soient enregistrés sans demande."
   },
   "queue": {
     "notSavedLarger": "Non enregistré, car plus volumineux que l’original.",
     "noSaveLocation": "Choisissez un emplacement d’enregistrement pour son préréglage, dans les Réglages.",
+    "chooseSaveLocation": "Choisir un emplacement d’enregistrement",
     "saveFailed": "Le média compressé n’a pas pu être enregistré.",
     "compressFailed": "Le média n’a pas pu être compressé.",
     "summary": {
@@ -691,7 +697,7 @@
     "pauseAudio": "Mettre l’audio en pause",
     "playAudio": "Lire l’audio",
     "videoUnplayable": "Cette vidéo ne peut pas être lue par cette app, car elle utilise des codecs ou des configurations avancés. Ces vidéos nécessitent un lecteur dédié tel que VLC.",
-    "previewsOff": "Les aperçus vidéo sont désactivés. Ils peuvent être activés dans les Réglages, sous Général.",
+    "previewsOff": "Les aperçus vidéo sont désactivés. Ils peuvent être activés dans les Réglages, sous <setting>Général</setting>.",
     "stillCompressible": "Vous pouvez néanmoins appliquer les réglages de sortie et effectuer toutes les conversions.",
     "enlarge": "Agrandir l’image",
     "select": "Sélectionner une image de vignette.",
