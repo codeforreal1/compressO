@@ -1016,6 +1016,7 @@ dependencies = [
  "image 0.25.9",
  "img-parts",
  "infer 0.15.0",
+ "libc",
  "log",
  "nanoid",
  "notify-debouncer-mini",

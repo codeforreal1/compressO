@@ -100,10 +100,19 @@ pub async fn run(
                 }
             }
         }))
-        .build()?
+        .build()
+        .map_err(|err| {
+            log::error!("[image_codec] Could not prepare codec process: {err}");
+            err
+        })?
         .spawn_and_wait()
-        .await?;
+        .await
+        .map_err(|err| {
+            log::error!("[image_codec] Codec process failed: {err}");
+            err
+        })?;
     if !result.success() {
+        log::error!("[image_codec] Codec exited with status {}", result.code());
         return Err("Image codec failed. See the app log for decoder/encoder diagnostics.".into());
     }
     let text = output.lock().map_err(|e| e.to_string())?.clone();
@@ -121,6 +130,7 @@ pub async fn decoded_png(
     if !is_modern(&ext) {
         return Err("This image does not need a codec preview".into());
     }
+    log::info!("[image_codec] Preparing {ext} preview");
     let mut file = fs::File::open(input).map_err(|e| e.to_string())?;
     let mut hash = Sha256::new();
     hash.update(b"compresso-image-preview-v1");
@@ -161,6 +171,7 @@ pub async fn decoded_png(
     } else {
         command.args(["--quiet", &source, "output.png"]);
     }
+    log::info!("[image_codec] Running {decoder} to decode {ext}");
     run(app, command, owner, cancel_ids).await?;
     // Check the actual pixels, not only the tool's exit code, before publishing the preview.
     image::image_dimensions(work.0.join("output.png"))
@@ -177,6 +188,7 @@ pub async fn decoded_png(
             }
         })
         .map_err(|e| e.to_string())?;
+    log::info!("[image_codec] Finished decoding {ext}");
     Ok(destination)
 }
 

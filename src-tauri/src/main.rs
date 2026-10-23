@@ -342,6 +342,9 @@ async fn main() {
                 Err(e) => eprintln!("Failed to start logging: {}", e),
             }
             sys::logging::log_app_start(app.handle());
+            if let Err(err) = sys::logging::start_crash_reporting() {
+                log::error!("Failed to start crash reporting: {}", err);
+            }
             app.manage(core::tool_bundle::ToolBundleState::default());
             core::tool_bundle::prepare_tools(app.handle().clone());
             app.manage(PendingFiles::new());
@@ -629,6 +632,7 @@ async fn main() {
                 // with the app
                 if let tauri::RunEvent::Exit = event {
                     core::media_process::kill_running_processes();
+                    sys::logging::finish_crash_reporting();
                 }
 
                 // Quitting (e.g. from the menu bar popover) cancels the compression or discards unsaved
