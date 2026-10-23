@@ -76,6 +76,12 @@ function QueueItem({
 }) {
   const { t } = useTranslation()
   const name = getName(item.path)
+  const reduction =
+    item.originalSize && item.outputSize != null
+      ? Math.round(
+          ((item.originalSize - item.outputSize) * 100) / item.originalSize,
+        )
+      : null
   const iconButtonClassName = isCompact ? 'min-w-4 w-4 h-4' : 'min-w-6 w-6 h-6'
 
   return (
@@ -122,15 +128,33 @@ function QueueItem({
             )}
             title={item.message ?? undefined}
           >
-            {item.status === 'waiting'
-              ? t('queue.status.waiting')
-              : item.status === 'cancelled'
-                ? t('queue.status.cancelled')
-                : item.status === 'failed'
-                  ? (item.message ?? t('queue.compressFailed'))
-                  : item.originalSize != null && item.outputSize != null
-                    ? `${t('common.sizeChange', { from: formatBytes(item.originalSize), to: formatBytes(item.outputSize) })}${item.message ? `. ${item.message}` : ''}`
-                    : (item.message ?? t('queue.status.done'))}
+            {item.status === 'waiting' ? (
+              t('queue.status.waiting')
+            ) : item.status === 'cancelled' ? (
+              t('queue.status.cancelled')
+            ) : item.status === 'failed' ? (
+              (item.message ?? t('queue.compressFailed'))
+            ) : item.originalSize != null && item.outputSize != null ? (
+              <>
+                {t('common.sizeChange', {
+                  from: formatBytes(item.originalSize),
+                  to: formatBytes(item.outputSize),
+                })}
+                {reduction != null && reduction > 0 ? (
+                  <>
+                    ,{' '}
+                    <span className="text-primary">
+                      {t('queue.status.smaller', {
+                        value: reduction,
+                      })}
+                    </span>
+                  </>
+                ) : null}
+                {item.message ? `. ${item.message}` : null}
+              </>
+            ) : (
+              (item.message ?? t('queue.status.done'))
+            )}
           </p>
         )}
       </div>
@@ -155,7 +179,7 @@ function QueueItem({
             variant="light"
             radius="full"
             aria-label={t('common.showNameInFileManager', { name })}
-            className={cn(iconButtonClassName, 'text-success')}
+            className={iconButtonClassName}
             onPress={() => {
               showItemInFileManager(item.savedPath!).catch(() => {})
             }}
@@ -175,10 +199,7 @@ function QueueItem({
             variant="light"
             radius="full"
             aria-label={t('media.openSettings')}
-            className={cn(
-              iconButtonClassName,
-              'text-zinc-500 dark:text-zinc-400',
-            )}
+            className={iconButtonClassName}
             onPress={() => {
               openFilesAccessSettings().catch(() => {})
             }}
@@ -214,10 +235,7 @@ function QueueItem({
                 ? t('queue.compressNameAgain', { name })
                 : t('queue.tryNameAgain', { name })
             }
-            className={cn(
-              iconButtonClassName,
-              'text-zinc-500 dark:text-zinc-400',
-            )}
+            className={iconButtonClassName}
             onPress={() => {
               retryDropQueueItem(item.id).catch(() => {})
             }}
@@ -233,10 +251,7 @@ function QueueItem({
           variant="light"
           radius="full"
           aria-label={t('dropZone.remove', { name })}
-          className={cn(
-            iconButtonClassName,
-            'text-zinc-500 dark:text-zinc-400',
-          )}
+          className={iconButtonClassName}
           onPress={() => {
             removeDropQueueItem(item.id).catch(() => {})
           }}

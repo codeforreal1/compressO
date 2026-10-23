@@ -9,6 +9,7 @@ import Icon from '@/components/Icon'
 import { CircularProgress } from '@/components/Progress'
 import Tooltip from '@/components/Tooltip'
 import { useDropQueue, useDropQueuePaused } from '@/hooks/useDropQueue'
+import { openFilesAccessSettings } from '@/tauri/commands/app'
 import {
   cancelDropQueue,
   clearFinishedDropQueue,
@@ -22,9 +23,11 @@ import { deleteFile, showItemInFileManager } from '@/tauri/commands/fs'
 import { needsImagePreview, prepareImagePreview } from '@/tauri/commands/image'
 import { inputExtensions, isAudioFileExtension } from '@/types/compression'
 import { getSummary } from '@/ui/DropQueueList'
-import { formatBytes } from '@/utils/fs'
+import { formatBytes, getPlatform } from '@/utils/fs'
 import { isOverlayOpen, isTextEntryElement } from '@/utils/keyboard'
 import { cn } from '@/utils/tailwind'
+
+const { isMacOS } = getPlatform()
 
 /** The island morphs between the pill & the panel with the same spring, like iOS' */
 const ISLAND_SPRING = { type: 'spring', stiffness: 380, damping: 32 } as const
@@ -108,7 +111,10 @@ function useThumbnail(item: DropQueueItem) {
     }
   }, [hasGeneratedThumbnail, kind, item.path])
 
-  return { src, kind }
+  // A file that cannot be read (e.g. not allowed on macOS) shows no picture, not a broken one
+  const onError = () => setSrc(null)
+
+  return { src, kind, onError }
 }
 
 function IslandTile({
@@ -120,7 +126,7 @@ function IslandTile({
   style: React.CSSProperties
 }) {
   const { t } = useTranslation()
-  const { src, kind } = useThumbnail(item)
+  const { src, kind, onError } = useThumbnail(item)
   const name = getName(item.path)
   const reduction =
     item.originalSize && item.outputSize != null
@@ -149,13 +155,15 @@ function IslandTile({
           alt=""
           // Decoded off the main thread, so scrolling stays smooth
           decoding="async"
+          onError={onError}
           className={cn(
             'w-full h-full object-cover',
             (item.status === 'waiting' || item.status === 'cancelled') &&
               'opacity-40',
           )}
         />
-      ) : (
+      ) : item.status === 'failed' ? null : (
+        // Not under a failed one's label, which is in the same place
         <div className="w-full h-full flex items-center justify-center text-white/50">
           <Icon
             name={
@@ -232,6 +240,25 @@ function IslandTile({
               }}
             >
               <Icon name="fileExplorer" size={12} />
+            </Button>
+          </Tooltip>
+        ) : null}
+        {item.status === 'failed' && item.isAccessDenied && isMacOS ? (
+          <Tooltip
+            content={t('media.openSettings')}
+            aria-label={t('media.openSettings')}
+          >
+            <Button
+              isIconOnly
+              size="sm"
+              radius="full"
+              aria-label={t('media.openSettings')}
+              className="min-w-6 w-6 h-6 bg-black/60 text-white"
+              onPress={() => {
+                openFilesAccessSettings().catch(() => {})
+              }}
+            >
+              <Icon name="setting" size={14} />
             </Button>
           </Tooltip>
         ) : null}
