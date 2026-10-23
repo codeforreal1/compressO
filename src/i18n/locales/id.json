@@ -166,6 +166,8 @@
         },
         "watch": "Pantau {{name}}",
         "missing": "Folder tidak ada. Folder ini tidak dipantau.",
+        "needsSaveLocation": "Pilih lokasi penyimpanan selain Tanyakan setiap kali, di Keluaran atau di salah satu presetnya, agar medianya dapat disimpan tanpa bertanya. Folder ini tidak sedang dipantau.",
+        "presetAsks": "Lokasi penyimpanannya adalah Tanyakan setiap kali. Pilih lokasi lain, di Keluaran atau di preset ini, agar folder ini dapat dipantau.",
         "stillMissing": "Folder belum ada. Buat kembali sebelum mengaktifkan pemantauan.",
         "checkFailed": "Tidak dapat memeriksa apakah folder ini ada. Coba lagi.",
         "remove": "Berhenti memantau",

@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { subscribe, useSnapshot } from 'valtio'
 
 import { presetsStore } from '@/stores/presetsStore'
-import { settingsStore } from '@/stores/settingsStore'
+import { settingsStore, type WatchedFolder } from '@/stores/settingsStore'
 import {
   setAutoCompressEnabled,
   setWatchedFolders,
@@ -38,6 +38,22 @@ export function useIsAutoCompressAvailable() {
   return isAutoCompressAvailable(
     settings as typeof settingsStore,
     presets as typeof presetsStore.presets,
+  )
+}
+
+/**
+ * Whether a watched folder's media can be saved: when each of its presets (Standard by default)
+ * saves without asking where, as nothing can ask
+ */
+export function canWatchedFolderSave(
+  folder: Pick<WatchedFolder, 'presetIds'>,
+  settings: typeof settingsStore = settingsStore,
+  presets: typeof presetsStore.presets = presetsStore.presets,
+) {
+  return (['video', 'image', 'audio'] as const).every((mediaType) =>
+    savesAutomatically(
+      getPresetOutput(folder.presetIds?.[mediaType], { presets, settings }),
+    ),
   )
 }
 
@@ -77,9 +93,9 @@ const WATCHED_EXTENSIONS = [
 ]
 
 /**
- * Tells the backend which folders to watch (Settings -> Watched folders): the enabled ones, while
- * their media can be compressed: with the menu bar's (or tray's) icon on macOS & Windows, whose
- * window compresses it, & always on Linux, where the main window does
+ * Tells the backend which folders to watch (Settings -> Watched folders): the enabled ones whose
+ * media can be saved, while it can be compressed: with the menu bar's (or tray's) icon on macOS &
+ * Windows, whose window compresses it, & always on Linux, where the main window does
  */
 export function useWatchedFoldersSync() {
   useEffect(() => {
@@ -88,7 +104,9 @@ export function useWatchedFoldersSync() {
       const folders =
         !hasTray || settingsStore.showMenuBarIcon
           ? settingsStore.watchedFolders
-              .filter((folder) => folder.isEnabled)
+              .filter(
+                (folder) => folder.isEnabled && canWatchedFolderSave(folder),
+              )
               .map((folder) => ({
                 id: folder.id,
                 path: folder.path,
@@ -101,6 +119,12 @@ export function useWatchedFoldersSync() {
       setWatchedFolders(folders, WATCHED_EXTENSIONS).catch(() => {})
     }
     apply()
-    return subscribe(settingsStore, apply)
+    // The folders, & their presets' outputs (or the Standard one, in the settings)
+    const unsubscribeSettings = subscribe(settingsStore, apply)
+    const unsubscribePresets = subscribe(presetsStore, apply)
+    return () => {
+      unsubscribeSettings()
+      unsubscribePresets()
+    }
   }, [])
 }

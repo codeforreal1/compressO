@@ -166,6 +166,8 @@
         },
         "watch": "Surveiller {{name}}",
         "missing": "Le dossier n’existe pas. Il n’est pas surveillé.",
+        "needsSaveLocation": "Choisissez un emplacement d’enregistrement autre que « Demander à chaque fois », dans Sortie ou dans l’un de ses préréglages, afin que ses médias puissent être enregistrés sans demander. Il n’est pas surveillé.",
+        "presetAsks": "Son emplacement d’enregistrement est Demander à chaque fois. Choisissez-en un autre, dans Sortie ou dans ce préréglage, afin que ce dossier puisse être surveillé.",
         "stillMissing": "Le dossier n’existe pas encore. Recréez-le avant d’activer la surveillance.",
         "checkFailed": "Impossible de vérifier si ce dossier existe. Réessayez.",
         "remove": "Arrêter la surveillance",

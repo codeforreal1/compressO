@@ -166,6 +166,8 @@
         },
         "watch": "Monitora {{name}}",
         "missing": "La cartella non esiste. Non viene monitorata.",
+        "needsSaveLocation": "Scegli una posizione diversa da Chiedi ogni volta, in Output o in una delle sue preimpostazioni, così i suoi file vengono salvati senza chiedere. Non è monitorata.",
+        "presetAsks": "La sua posizione di salvataggio è Chiedi ogni volta. Scegline un’altra, in Output o in questa preimpostazione, così questa cartella può essere monitorata.",
         "stillMissing": "La cartella non esiste ancora. Ricreala prima di attivare il monitoraggio.",
         "checkFailed": "Impossibile verificare se questa cartella esiste. Riprova.",
         "remove": "Interrompi il monitoraggio",

@@ -166,6 +166,8 @@
         },
         "watch": "Vigilar {{name}}",
         "missing": "La carpeta no existe. No se está supervisando.",
+        "needsSaveLocation": "Elija una ubicación de guardado distinta de «Preguntar cada vez», en Salida o en uno de sus ajustes preestablecidos, para que sus archivos se puedan guardar sin preguntar. No se está vigilando.",
+        "presetAsks": "Su ubicación de guardado es Preguntar cada vez. Elija otra, en Salida o en este ajuste preestablecido, para que esta carpeta se pueda vigilar.",
         "stillMissing": "La carpeta aún no existe. Vuelve a crearla antes de activar la supervisión.",
         "checkFailed": "No se pudo comprobar si existe esta carpeta. Inténtalo de nuevo.",
         "remove": "Dejar de vigilar",

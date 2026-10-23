@@ -12,7 +12,10 @@ import Select from '@/components/Select'
 import Switch from '@/components/Switch'
 import { toast } from '@/components/Toast'
 import Tooltip from '@/components/Tooltip'
-import { getFolderName } from '@/hooks/useAutoCompressSync'
+import {
+  canWatchedFolderSave,
+  getFolderName,
+} from '@/hooks/useAutoCompressSync'
 import { t } from '@/i18n'
 import { presetsStore } from '@/stores/presetsStore'
 import { settingsStore, type WatchedFolder } from '@/stores/settingsStore'
@@ -24,6 +27,7 @@ import {
   type PresetMediaType,
   STANDARD_PRESET_ID,
 } from '@/types/preset'
+import { getPresetOutput, savesAutomatically } from '@/utils/presetOutput'
 import { hasTray, TRAY_CONTEXT } from '@/utils/tray'
 import { SettingsRow, SettingsSection } from './SettingsLayout'
 import { getPresets } from '../../-presets'
@@ -56,6 +60,7 @@ function FolderPresetSelect({
   isDisabled,
 }: FolderPresetSelectProps) {
   const { t } = useTranslation()
+  const settings = useSnapshot(settingsStore)
   const { presets } = useSnapshot(presetsStore)
   const options = getPresets(mediaType, presets as Preset[])
   // The Standard preset unless another is chosen (also for a deleted one)
@@ -63,12 +68,30 @@ function FolderPresetSelect({
   const selectedKey = options.some((preset) => preset.id === presetId)
     ? presetId!
     : STANDARD_PRESET_ID
+  // Asks where to save, which stops the folder from being watched
+  const asksWhereToSave = !savesAutomatically(
+    getPresetOutput(selectedKey, {
+      presets: presets as Preset[],
+      settings: settings as typeof settingsStore,
+    }),
+  )
 
   return (
     <Select
-      label={t('settings.dropZone.watchedFolders.preset', {
-        context: mediaType,
-      })}
+      label={
+        <span className="inline-flex items-center gap-1">
+          {t('settings.dropZone.watchedFolders.preset', {
+            context: mediaType,
+          })}
+          <InfoTooltip
+            variant="warning"
+            content={
+              asksWhereToSave &&
+              t('settings.dropZone.watchedFolders.presetAsks')
+            }
+          />
+        </span>
+      }
       selectedKeys={[selectedKey]}
       disallowEmptySelection
       isDisabled={isDisabled}
@@ -93,7 +116,9 @@ function FolderPresetSelect({
  */
 function WatchedFolders() {
   const { t } = useTranslation()
-  const { watchedFolders, showMenuBarIcon } = useSnapshot(settingsStore)
+  const settings = useSnapshot(settingsStore)
+  const { watchedFolders, showMenuBarIcon } = settings
+  const { presets } = useSnapshot(presetsStore)
   const [missingPaths, setMissingPaths] = useState<string[]>([])
   const [checkingFolderId, setCheckingFolderId] = useState<string | null>(null)
 
@@ -202,9 +227,20 @@ function WatchedFolders() {
       </SettingsRow>
       {watchedFolders.map((folder) => {
         const name = getFolderName(folder.path)
-        const isDisabled = isUnavailable || !folder.isEnabled
         const isMissing = missingPaths.includes(folder.path)
-        const missingMessage = t('settings.dropZone.watchedFolders.missing')
+        // Kept on, but not watched, until its media can be saved
+        const canSave = canWatchedFolderSave(
+          folder,
+          settings as typeof settingsStore,
+          presets as typeof presetsStore.presets,
+        )
+        // Its presets stay open while it cannot save, to choose one that does
+        const isDisabled = isUnavailable || (!folder.isEnabled && canSave)
+        const warning = isMissing
+          ? t('settings.dropZone.watchedFolders.missing')
+          : !canSave
+            ? t('settings.dropZone.watchedFolders.needsSaveLocation')
+            : null
         return (
           <div key={folder.id} className="py-4">
             <div className="flex items-center gap-3">
@@ -214,17 +250,7 @@ function WatchedFolders() {
                   {folder.path}
                 </p>
               </div>
-              {isMissing ? (
-                <Tooltip content={missingMessage} delay={150}>
-                  <span
-                    tabIndex={0}
-                    aria-label={missingMessage}
-                    className="flex items-center text-warning-400"
-                  >
-                    <Icon name="warning" size={20} />
-                  </span>
-                </Tooltip>
-              ) : null}
+              <InfoTooltip variant="warning" content={warning} />
               <Tooltip
                 content={t('common.showInFileManager')}
                 aria-label={t('common.showInFileManager')}
@@ -248,8 +274,10 @@ function WatchedFolders() {
                 aria-label={t('settings.dropZone.watchedFolders.watch', {
                   name,
                 })}
-                isSelected={folder.isEnabled}
-                isDisabled={isUnavailable || checkingFolderId === folder.id}
+                isSelected={folder.isEnabled && canSave}
+                isDisabled={
+                  isUnavailable || !canSave || checkingFolderId === folder.id
+                }
                 onValueChange={(isSelected) => {
                   setFolderEnabled(folder.id, isSelected)
                 }}

@@ -166,6 +166,8 @@
         },
         "watch": "Theo dõi {{name}}",
         "missing": "Thư mục không tồn tại nên hiện không được theo dõi.",
+        "needsSaveLocation": "Hãy chọn vị trí lưu khác \"Hỏi mỗi lần\", trong Đầu ra hoặc trong một cài đặt sẵn của thư mục, để tệp phương tiện được lưu mà không cần hỏi. Thư mục này hiện không được theo dõi.",
+        "presetAsks": "Vị trí lưu đang là Hỏi mỗi lần. Hãy chọn vị trí khác, trong Đầu ra hoặc trong cài đặt sẵn này, để thư mục này có thể được theo dõi.",
         "stillMissing": "Thư mục chưa tồn tại. Hãy tạo lại trước khi bật theo dõi.",
         "checkFailed": "Không thể kiểm tra thư mục này có tồn tại hay không. Hãy thử lại.",
         "remove": "Ngừng theo dõi",

@@ -166,6 +166,8 @@
         },
         "watch": "{{name}} klasörünü izle",
         "missing": "Klasör mevcut değil. İzlenmiyor.",
+        "needsSaveLocation": "Medyasının sormadan kaydedilebilmesi için Çıktı bölümünde veya ön ayarlarından birinde \"Her seferinde sor\" dışında bir kaydetme konumu seçin. Şu anda izlenmiyor.",
+        "presetAsks": "Kaydetme konumu Her seferinde sor olarak ayarlı. Bu klasörün izlenebilmesi için Çıktı bölümünde veya bu ön ayarda başka bir konum seçin.",
         "stillMissing": "Klasör henüz mevcut değil. İzlemeyi açmadan önce klasörü yeniden oluşturun.",
         "checkFailed": "Bu klasörün mevcut olup olmadığı kontrol edilemedi. Tekrar deneyin.",
         "remove": "İzlemeyi durdur",

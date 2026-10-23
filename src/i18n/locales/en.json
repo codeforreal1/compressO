@@ -166,6 +166,8 @@
         },
         "watch": "Watch {{name}}",
         "missing": "Folder does not exist. It is not being watched.",
+        "needsSaveLocation": "Choose a save location other than Ask every time, in Output or in one of its presets, so its media can be saved without asking. It is not being watched.",
+        "presetAsks": "Its save location is Ask every time. Choose another one, in Output or in this preset, so this folder can be watched.",
         "stillMissing": "Folder does not exist yet. Recreate it before turning on watching.",
         "checkFailed": "Could not check whether this folder exists. Try again.",
         "remove": "Stop watching",

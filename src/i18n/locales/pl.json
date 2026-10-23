@@ -166,6 +166,8 @@
         },
         "watch": "Obserwuj {{name}}",
         "missing": "Folder nie istnieje i nie jest obserwowany.",
+        "needsSaveLocation": "Wybierz lokalizację zapisu inną niż „Pytaj za każdym razem”, w sekcji Wyjście lub w jednym z jego ustawień wstępnych, aby jego multimedia mogły być zapisywane bez pytania. Nie jest obserwowany.",
+        "presetAsks": "Miejsce zapisu to Pytaj za każdym razem. Wybierz inne, w sekcji Wyjście lub w tym ustawieniu, aby ten folder mógł być obserwowany.",
         "stillMissing": "Folder jeszcze nie istnieje. Utwórz go ponownie przed włączeniem obserwowania.",
         "checkFailed": "Nie udało się sprawdzić, czy folder istnieje. Spróbuj ponownie.",
         "remove": "Przestań obserwować",

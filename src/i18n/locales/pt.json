@@ -166,6 +166,8 @@
         },
         "watch": "Monitorar {{name}}",
         "missing": "A pasta não existe e não está sendo monitorada.",
+        "needsSaveLocation": "Escolha um local de salvamento diferente de \"Perguntar sempre\", em Saída ou em uma de suas predefinições, para que suas mídias possam ser salvas sem perguntar. Ela não está sendo monitorada.",
+        "presetAsks": "O local de salvamento é Perguntar sempre. Escolha outro, em Saída ou nesta predefinição, para que esta pasta possa ser monitorada.",
         "stillMissing": "A pasta ainda não existe. Recrie-a antes de ativar o monitoramento.",
         "checkFailed": "Não foi possível verificar se esta pasta existe. Tente novamente.",
         "remove": "Parar de monitorar",
