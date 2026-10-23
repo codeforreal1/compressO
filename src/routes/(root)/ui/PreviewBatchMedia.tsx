@@ -19,6 +19,7 @@ import { zoomInStaggerAnimation } from '@/utils/animation'
 import { formatBytes } from '@/utils/fs'
 import { formatDuration } from '@/utils/string'
 import { cn } from '@/utils/tailwind'
+import { getCompressionLane, type MediaFile } from '../-compression'
 import { pickMediaToAdd } from '../-media'
 import { appProxy } from '../-state'
 
@@ -46,7 +47,6 @@ function PreviewBatchMedia() {
       media,
       isCompressing,
       isProcessCompleted,
-      currentMediaIndex,
       isBatchPaused,
       totalSelectedMediaCount,
       isLoadingMediaFiles,
@@ -181,6 +181,17 @@ function PreviewBatchMedia() {
     [t],
   )
 
+  // The last media of each lane that started: the ones before it are done (or failed)
+  const lastStartedIndexes = useMemo(() => {
+    const indexes = new Map<ReturnType<typeof getCompressionLane>, number>()
+    media.forEach((mediaFile, index) => {
+      if (mediaFile.isCompressing || mediaFile.isProcessCompleted) {
+        indexes.set(getCompressionLane(mediaFile as MediaFile), index)
+      }
+    })
+    return indexes
+  }, [media])
+
   const filteredMedia = useMemo(
     () => media.filter((m) => isInTab(m, activeTab)),
     [media, activeTab],
@@ -303,6 +314,15 @@ function PreviewBatchMedia() {
               const originalIndex = media.findIndex(
                 (m) => m.id === mediaFile.id,
               )
+              // Done (or failed): finished, or a later media of its lane started
+              const isPast =
+                !!mediaFile.isProcessCompleted ||
+                originalIndex <
+                  (lastStartedIndexes.get(
+                    getCompressionLane(mediaFile as MediaFile),
+                  ) ?? -1)
+              const isMediaCompressing =
+                isCompressing && !!mediaFile.isCompressing && !isPast
 
               const compressedSizeDiff =
                 typeof mediaFile?.compressedFile?.sizeInBytes === 'number' &&
@@ -321,8 +341,7 @@ function PreviewBatchMedia() {
                   variants={zoomInStaggerAnimation.item}
                   className={cn([
                     'relative rounded-xl border-1 overflow-hidden',
-                    currentMediaIndex > originalIndex ||
-                    mediaFile.isProcessCompleted
+                    isPast
                       ? 'border-primary'
                       : 'border-zinc-200 dark:border-zinc-900',
                   ])}
@@ -477,7 +496,7 @@ function PreviewBatchMedia() {
                           </Button>
                         </>
                       ) : null}
-                      {isCompressing && currentMediaIndex === originalIndex ? (
+                      {isMediaCompressing ? (
                         <>
                           {mediaFile?.type === 'video' ? (
                             <CircularProgress
@@ -500,9 +519,7 @@ function PreviewBatchMedia() {
                       ) : null}
                       {/* Media not compressed yet: waits for its turn, or for the batch to resume */}
                       <AnimatePresence>
-                        {isCompressing &&
-                        originalIndex > currentMediaIndex &&
-                        !mediaFile.isProcessCompleted ? (
+                        {isCompressing && !isPast && !isMediaCompressing ? (
                           <motion.div
                             key={isBatchPaused ? 'paused' : 'waiting'}
                             initial={{ opacity: 0 }}

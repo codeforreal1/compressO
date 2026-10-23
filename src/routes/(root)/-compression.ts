@@ -43,6 +43,17 @@ export type MediaFile =
   | (Image & { type: 'image' })
 
 /**
+ * Which lane a media is compressed in: one video, one audio & one image at a time (see
+ * `compress_media_batch`), by its output, so a video saved as audio is in the audio lane
+ */
+export function getCompressionLane(
+  media: Pick<MediaFile, 'type' | 'config'>,
+): 'video' | 'audio' | 'image' {
+  if (media.type === 'image') return 'image'
+  return isAudioExtension(media.config?.convertToExtension) ? 'audio' : 'video'
+}
+
+/**
  * How long a video's output is, in milliseconds, which its progress is measured against (ffmpeg
  * reports how much of the output is written): only the trimmed parts, faster or slower with a
  * custom speed (as sent in `getMediaItemConfig`, clamped like the backend). A GIF is converted from

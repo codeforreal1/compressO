@@ -51,9 +51,10 @@ function CancelCompression() {
           appSnapShot.state.batchId,
         ],
       })
+      // Media done before the cancellation, in any lane (see `compress_media_batch`)
       if (
         appProxy.state.media.length > 1 &&
-        appProxy.state.currentMediaIndex > 0
+        appProxy.state.media.some((mediaFile) => mediaFile.isProcessCompleted)
       ) {
         appProxy.timeTravel('batchCompressionStep')
         appProxy.state.isProcessCompleted = true

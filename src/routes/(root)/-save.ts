@@ -394,7 +394,7 @@ export async function saveQueueOutput(
   {
     groupKey,
     topFolders,
-  }: { groupKey: string; topFolders: Map<string, string> },
+  }: { groupKey: string; topFolders: Map<string, Promise<string>> },
 ): Promise<
   { savedPath: string } | { reason: 'no-save-location' | 'larger' | 'failed' }
 > {
@@ -433,15 +433,23 @@ export async function saveQueueOutput(
       const [topFolder, ...subFolders] = output.relativeDir.split('/')
       // Existing folders are never merged into; a numbered name is used instead (once per drop)
       const topFolderKey = `${groupKey}\n${baseDirectory}\n${topFolder}`
+      // The lookup itself is shared: media saved at the same time (see `runDropQueue`'s lanes)
+      // get the same folder
       let destinationTopFolder = topFolders.get(topFolderKey)
       if (!destinationTopFolder) {
-        destinationTopFolder = await getAvailablePath(
+        destinationTopFolder = getAvailablePath(
           `${baseDirectory}/${topFolder}`,
           true,
-        )
+        ).catch((error) => {
+          // Tried again by the next media
+          topFolders.delete(topFolderKey)
+          throw error
+        })
         topFolders.set(topFolderKey, destinationTopFolder)
       }
-      destinationDirectory = [destinationTopFolder, ...subFolders].join('/')
+      destinationDirectory = [await destinationTopFolder, ...subFolders].join(
+        '/',
+      )
     }
     const savedPath = await moveFile(
       output.outputPath,
