@@ -8,7 +8,7 @@ a different codec.
 ## Runtime
 
 The offline tool bundle includes libjxl 0.12.0's `cjxl`, `djxl`, and `jxlinfo` on each supported
-target. Apple Silicon uses libheif 1.23.6's `heif-dec` and `heif-enc`; Windows x64 uses
+target. Both macOS architectures use libheif 1.23.6's `heif-dec` and `heif-enc`; Windows x64 uses
 statically linked libheif 1.23.6 executables; Linux x64 uses ImageMagick 7.1.2-34's AppImage,
 which contains libheif 1.23.6. Users do not install codecs or use a network service. The
 Windows HEIC executables are self-contained; no codec DLLs are included in the tool archive.
@@ -60,16 +60,21 @@ Windows ARM runs the x64 app and tools under Windows emulation. The static Windo
 import only Windows system DLLs and passed an encode/decode round trip in the Windows x64 build
 workflow. A Windows release installation with the new tools still needs testing. The Linux x64
 binaries are present and hash-verified;
-native x64 Linux release installation and HEIC encode/decode still need testing. Codec executables
-for macOS Intel have not been supplied yet, so the Intel release job will fail early until they
-are added.
+native x64 Linux release installation and HEIC encode/decode still need testing. The Intel macOS
+codec executables are checked in and hash-verified. They were built for x86-64 with a macOS 11
+deployment target, have no non-system dynamic-library dependencies, and passed JXL and HEIC
+encode/decode round trips under Rosetta. A native Intel release installation still needs testing.
 
 ## Sources and verification
 
 Each app includes available dependency notices under `tool-bundle/licenses/image-codecs/`.
 `SOURCES.json` pins the exact executable hashes and upstream package URLs and hashes. The Windows
 static build's metadata and libheif patch are kept with its notices. The Apple Silicon source
-archive is published separately from its installer. Before publishing other targets, verify that
+archive is published separately from its installer. The Intel macOS archive includes the pinned
+vcpkg snapshot, downloaded codec sources, the build script, and the Little CMS CMake overlay
+used to avoid Python in the source build. Rebuild it with
+`node scripts/build-image-tools.mjs x86_64-apple-darwin`; normal app builds only verify the
+checked-in executables. Before publishing other targets, verify that
 their corresponding source and license obligations are met. A replacement prebuilt executable
 requires an updated hash and an archive rebuild so the embedded manifest matches.
 

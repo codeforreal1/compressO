@@ -38,6 +38,43 @@
       ],
       "provenance": "Existing validated static libjxl 0.12.0 / libheif 1.23.6 tools; vcpkg revision 4f973280dd95e3902b3410933fb2ce108bb29d1d; macOS 11 deployment target."
     },
+    "x86_64-apple-darwin": {
+      "tools": [
+        {
+          "name": "cjxl",
+          "file": "compresso_cjxl-x86_64-apple-darwin",
+          "sha256": "ee12d0fc49bafded71c6dbec24addcafc121aefa1949d50fca986753fb36920a"
+        },
+        {
+          "name": "djxl",
+          "file": "compresso_djxl-x86_64-apple-darwin",
+          "sha256": "f6c65dd35eb8ee9619d02cb118720403c3689b6dbecb489fa746d401d80a3979"
+        },
+        {
+          "name": "jxlinfo",
+          "file": "compresso_jxlinfo-x86_64-apple-darwin",
+          "sha256": "4d9cb993bb1e7164e5580bdfe389bde2a836b537bd9493528c06ba33f2976141"
+        },
+        {
+          "name": "heif-dec",
+          "file": "compresso_heif-dec-x86_64-apple-darwin",
+          "sha256": "95c674e22994176fb22d70aad652116701e99d4abe1c705118f410af934c2d58"
+        },
+        {
+          "name": "heif-enc",
+          "file": "compresso_heif-enc-x86_64-apple-darwin",
+          "sha256": "e654aadee72fdca777af61c0d10b0113ebb7cb307d0d1a38f21bc70464d3790d"
+        }
+      ],
+      "licenses": "LICENSES/image-codecs/x86_64-apple-darwin",
+      "sources": [
+        {
+          "file": "src-tauri/tool-sources/image-codecs-x86_64-apple-darwin.tar.gz",
+          "sha256": "9c58be20f45e04e21cc20b657737092605f82d220b911f05570e2af469f857bf"
+        }
+      ],
+      "provenance": "libjxl 0.12.0 and libheif 1.23.6, built for x86-64 macOS 11 from pinned vcpkg revision 4f973280dd95e3902b3410933fb2ce108bb29d1d with static codec libraries and a CMake Little CMS overlay. Five x86-64 executables link only to macOS system libraries; JXL and HEIC encode/decode round trips passed under Rosetta."
+    },
     "x86_64-pc-windows-msvc": {
       "tools": [
         {
