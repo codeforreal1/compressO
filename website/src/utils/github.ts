@@ -10,23 +10,30 @@ export interface GitHubRelease {
 const REPO_OWNER = "codeforreal1";
 const REPO_NAME = "compressO";
 
+/** The latest release's page, which always offers the newest installers */
+export const LATEST_RELEASE_URL = `https://github.com/${REPO_OWNER}/${REPO_NAME}/releases/latest`;
+
+/**
+ * Fetches a JSON document from the GitHub API, or `undefined` when GitHub cannot be reached or
+ * refuses (e.g. its hourly limit for anonymous requests), so the site still builds.
+ */
+async function fetchGitHub<T>(path: string): Promise<T | undefined> {
+  try {
+    const response = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}${path}`);
+    if (response.ok) return (await response.json()) as T;
+    console.warn(`GitHub API ${path || "/"} answered ${response.status}; using the fallback.`);
+  } catch (error) {
+    console.warn(`GitHub API ${path || "/"} could not be reached; using the fallback.`, error);
+  }
+  return undefined;
+}
+
 /**
  * Fetch the latest release from GitHub
  * This runs at build time, so there's no runtime API call from the client
  */
-export async function getLatestRelease(): Promise<GitHubRelease> {
-  const response = await fetch(
-    `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases/latest`
-  );
-
-  if (!response.ok) {
-    if (import.meta.env.PROD) {
-      throw new Error("Failed to fetch latest release from GitHub.");
-    }
-    return {} as any
-  }
-
-  return response.json();
+export async function getLatestRelease(): Promise<GitHubRelease | undefined> {
+  return fetchGitHub<GitHubRelease>("/releases/latest");
 }
 
 /**
@@ -55,9 +62,18 @@ export interface DownloadAssets {
 }
 
 /**
- * Get all download URLs for the current version
+ * Get all download URLs for the current version. Without one (GitHub could not be reached), every
+ * link opens the latest release's page instead.
  */
-export function getDownloadAssets(version: string): DownloadAssets {
+export function getDownloadAssets(version: string | undefined): DownloadAssets {
+  if (!version) {
+    return {
+      version: "",
+      mac: { aarch64: LATEST_RELEASE_URL, x64: LATEST_RELEASE_URL },
+      linux: { appImage: LATEST_RELEASE_URL, deb: LATEST_RELEASE_URL },
+      windows: { x64: LATEST_RELEASE_URL },
+    };
+  }
   const baseUrl = `https://github.com/${REPO_OWNER}/${REPO_NAME}/releases/download/${version}`;
 
   return {
@@ -76,19 +92,8 @@ export function getDownloadAssets(version: string): DownloadAssets {
   };
 }
 
+/** The repository's star count, or `undefined` when GitHub cannot be reached (the count is hidden) */
 export async function fetchGitHubStars(): Promise<number | undefined> {
-  const response = await fetch(
-    "https://api.github.com/repos/codeforreal1/compressO",
-  );
-
-  if (!response.ok) {
-    if (import.meta.env.PROD) {
-      throw new Error("Failed to fetch latest stars from GitHub.");
-    }
-    return undefined;
-  }
-
-  const data = await response.json();
-  const stars = data.stargazers_count;
-  return stars;
+  const repository = await fetchGitHub<{ stargazers_count?: number }>("");
+  return repository?.stargazers_count;
 }
