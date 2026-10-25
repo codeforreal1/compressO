@@ -4,20 +4,23 @@
 
 Features:
 
+- **Target Size**: Compress a video to a chosen file size, such as 10 MB for an email or a chat app. CompressO estimates the size before compressing, keeps the resolution where it can and retries until the video fits. Every attempt is kept, so another one can be chosen under the result.
+- **Drop Zone**: Drop or paste media on the menu bar (macOS) or the system tray (Windows) to compress it without opening the app. It can compress automatically, and the queue can be paused, stopped and tried again. Each file shows how much smaller it became.
+- **Watch Folder**: Choose folders, such as screen recordings or downloads, whose new media is compressed automatically with their presets. Files made by CompressO are never compressed again.
+- **Compression History**: See every compression in Settings, with the space saved in total, and search it by name, folder or preset. Each original and output can be shown in its folder.
+- **Presets**: Save video, image and audio settings as presets, each with its own save location and file name prefix, choose the default preset for new media and manage presets in Settings.
 - **Languages**: CompressO is now available in Simplified and Traditional Chinese, Russian, Spanish, Portuguese, German, French, Japanese, Korean, Polish, Turkish, Italian, Indonesian, Vietnamese and Hindi, chosen in Settings.
-- **Drop Zone**: Drop or paste media on the menu bar (macOS) or the system tray (Windows) to compress it without opening the app. It can compress automatically, one file at a time, and the queue can be paused, stopped and tried again.
-- **Presets**: Save video, image and audio settings as presets, choose the default preset for new media and manage presets in Settings.
 - **Audio Compression**: Compress audio files, and extract the audio of videos.
 - **Hardware Acceleration**: Compress videos faster with the graphics card (Settings, under Output).
 - **Faster AV1**: AV1 videos are compressed much faster.
-- **Saving**: Save automatically to a chosen folder or next to the originals, keep the folder structure of dropped folders, skip outputs that are larger than the original and copy outputs to the clipboard.
+- **Saving**: Save automatically to a chosen folder or next to the originals, keep the folder structure of dropped folders, skip outputs that are larger than the original, replace the original files and copy outputs to the clipboard.
 - **Startup**: Open CompressO at login, optionally in the menu bar or system tray only.
-- **Batch Improvements**: Add more media to a selection, pause a batch, set one resolution for all videos and choose any video codec for mixed batches.
+- **Batch Improvements**: Add more media to a selection, pause a batch, set one resolution for all videos and choose any video codec for mixed batches. Videos, images and audio are compressed side by side, so images and audio no longer wait for videos.
 - **Transform Previews**: See rotations, flips and crops live, also for videos and animated GIFs, and keep them in presets.
-- **New Formats**: Support for M4V, MTS, M2TS, TS, AVIF, BMP and TIFF.
+- **New Formats**: Support for JPEG XL, HEIC, AVIF, BMP, TIFF, M4V, MTS, M2TS and TS.
 - **Completion Sound**: Play a sound when a compression completes.
 - **Keep Awake**: Prevent the computer from sleeping while compressing.
-- **Redesigned Settings**: Settings are now a dialog with a sidebar, available from the app menu and with Cmd/Ctrl + comma.
+- **Redesigned Settings**: Settings are now a dialog with a sidebar and a search field, available from the app menu and with Cmd/Ctrl + comma. Messages that mention a setting link to it.
 - **Keyboard Shortcuts**: Start and cancel a compression with Cmd/Ctrl + Shift + Enter, and reconfigure with Cmd/Ctrl + Shift + R.
 - **New Logo**: A new CompressO logo and app icon.
 
@@ -30,6 +33,9 @@ Enhancements:
 - Photos with an EXIF orientation are shown upright.
 - Log files are kept by date, and can be opened from Settings.
 - Video previews on Linux can be turned on in Settings.
+- Modern images, such as AVIF and HEIC, are previewed directly when the system supports them.
+- Update notes show what changed in every version since the installed one, and the changelog can be opened from Settings, under About.
+- The compression tools are checked when the app starts, and repaired when they are damaged.
 
 Bug Fixes:
 
@@ -39,6 +45,11 @@ Bug Fixes:
 - Fixed showing saved files in their folder on Windows.
 - Fixed a crash when a file is opened while the app launches.
 - Fixed audio playback and video previews on Linux.
+- Fixed the window flashing briefly after animations on Windows.
+- Fixed a crash with some images on Windows.
+- Fixed the app becoming unresponsive when the system denies access to a file.
+- Fixed copying, pasting and showing files in their folder on Linux.
+- Fixed the crop shape picked right before saving a transform being lost.
 
 ### 3.0.0
 
