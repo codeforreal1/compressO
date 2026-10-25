@@ -7,6 +7,12 @@
       "port": 4322
     },
     {
+      "name": "website-dev",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--dir", "website", "dev", "--port", "4322"],
+      "port": 4322
+    },
+    {
       "name": "app-web",
       "runtimeExecutable": "pnpm",
       "runtimeArgs": [
