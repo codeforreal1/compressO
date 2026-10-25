@@ -1,0 +1,245 @@
+---
+import { getCollection, render, type CollectionEntry } from "astro:content";
+
+import BaseHead from "../../components/BaseHead.astro";
+import Header from "../../components/Header.astro";
+import Footer from "../../components/Footer.astro";
+import Date from "../../components/Date.astro";
+import Icon from "../../components/Icon.astro";
+import ImageSlot from "../../components/ImageSlot.astro";
+import OGImage from "../../assets/og.jpg";
+
+export async function getStaticPaths() {
+  const posts = await getCollection("blogs");
+  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
+}
+
+interface Props {
+  post: CollectionEntry<"blogs">;
+}
+
+const { post } = Astro.props;
+const { title, description, publishedDate, updatedDate, heroImage, heroImageLabel } =
+  post.data;
+const { Content } = await render(post);
+
+// About 220 words a minute
+const minutes = Math.max(1, Math.round((post.body ?? "").split(/\s+/).length / 220));
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <BaseHead
+      title={`${title} | CompressO`}
+      description={description}
+      image={heroImage ?? OGImage}
+    />
+  </head>
+  <body>
+    <Header />
+    <main class="post-page">
+      <article>
+        <div class="container post-head">
+          <a href="/blog" class="back">
+            <Icon name="arrowRight" size={14} class="back-icon" />
+            All posts
+          </a>
+          <h1 class="section-title">{title}</h1>
+          <p class="section-subtitle">{description}</p>
+          <p class="meta">
+            <Date date={publishedDate} />
+            <span aria-hidden="true">·</span>
+            <span>{minutes} min read</span>
+            {
+              updatedDate ? (
+                <>
+                  <span aria-hidden="true">·</span>
+                  <span>
+                    Updated <Date date={updatedDate} />
+                  </span>
+                </>
+              ) : null
+            }
+          </p>
+        </div>
+        <div class="container post-hero">
+          <ImageSlot
+            label={heroImageLabel ?? title}
+            src={heroImage}
+            alt={title}
+            aspect="16 / 9"
+            loading="eager"
+          />
+        </div>
+        <div class="container">
+          <div class="prose">
+            <Content />
+          </div>
+        </div>
+      </article>
+    </main>
+    <Footer />
+  </body>
+</html>
+
+<style>
+  .post-page {
+    width: auto;
+    max-width: none;
+    padding: 152px 0 96px;
+  }
+  .post-head {
+    max-width: 808px;
+    text-align: center;
+  }
+  .back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 28px;
+    font-size: 14px;
+    color: var(--text-faint);
+    transition: color 0.15s ease;
+  }
+  .back:hover {
+    color: var(--text);
+  }
+  .back :global(.back-icon) {
+    transform: rotate(180deg);
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 24px;
+    font-size: 14px;
+    color: var(--text-faint);
+  }
+  .post-hero {
+    max-width: 1048px;
+    margin-top: 56px;
+  }
+
+  /* The post's text */
+  .prose {
+    max-width: 720px;
+    margin: 64px auto 0;
+    color: var(--text-muted);
+    font-size: 17px;
+    line-height: 1.75;
+  }
+  .prose :global(h2) {
+    margin: 64px 0 16px;
+    font-size: clamp(24px, 3vw, 30px);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+    color: var(--text);
+  }
+  .prose :global(h3) {
+    margin: 40px 0 12px;
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--text);
+  }
+  .prose :global(p) {
+    margin: 18px 0;
+  }
+  .prose :global(ul),
+  .prose :global(ol) {
+    margin: 18px 0;
+    padding-left: 22px;
+  }
+  .prose :global(ul) {
+    list-style: disc;
+  }
+  .prose :global(ol) {
+    list-style: decimal;
+  }
+  .prose :global(li) {
+    margin: 8px 0;
+    padding-left: 4px;
+  }
+  .prose :global(li::marker) {
+    color: var(--text-faint);
+  }
+  .prose :global(strong) {
+    font-weight: 600;
+    color: var(--text);
+  }
+  .prose :global(a) {
+    color: var(--brand);
+    text-decoration: underline;
+    text-decoration-color: var(--brand-line);
+    text-underline-offset: 3px;
+    transition: text-decoration-color 0.15s ease;
+  }
+  .prose :global(a:hover) {
+    text-decoration-color: var(--brand);
+  }
+  .prose :global(code) {
+    padding: 2px 7px;
+    border-radius: 6px;
+    background: var(--surface-raised);
+    font-size: 14px;
+    color: var(--text);
+  }
+  .prose :global(kbd) {
+    padding: 1px 7px;
+    border: 1px solid var(--border-strong);
+    border-bottom-width: 2px;
+    border-radius: 6px;
+    background: var(--surface-raised);
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--text);
+  }
+  .prose :global(pre) {
+    margin: 24px 0;
+    padding: 16px 20px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    overflow-x: auto;
+    font-size: 14px;
+    /* Over the code theme's own background, so blocks match the site */
+    background: var(--surface) !important;
+  }
+  .prose :global(pre code) {
+    padding: 0;
+    background: none;
+  }
+  .prose :global(blockquote) {
+    margin: 28px 0;
+    padding: 4px 0 4px 20px;
+    border-left: 2px solid var(--brand);
+    color: var(--text);
+  }
+  .prose :global(hr) {
+    margin: 56px 0;
+    border: none;
+    border-top: 1px solid var(--border);
+  }
+  /* Images (and their placeholders) run a little wider than the text */
+  .prose :global(.post-figure) {
+    margin: 32px -40px;
+  }
+  .prose :global(.post-figure figcaption) {
+    margin-top: 12px;
+    font-size: 14px;
+    text-align: center;
+    color: var(--text-faint);
+  }
+  @media (max-width: 860px) {
+    .prose :global(.post-figure) {
+      margin: 28px 0;
+    }
+  }
+  @media (max-width: 720px) {
+    .post-page {
+      padding-top: 120px;
+    }
+  }
+</style>

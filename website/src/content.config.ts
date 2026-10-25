@@ -11,6 +11,8 @@ const blogs = defineCollection({
       publishedDate: z.coerce.date(),
       updatedDate: z.coerce.date().optional(),
       heroImage: image().optional(),
+      /** What the hero image will show, labeling its placeholder until `heroImage` is set */
+      heroImageLabel: z.string().optional(),
     }),
 })
 

@@ -1,0 +1,22 @@
+---
+import type { ImageMetadata } from "astro";
+import ImageSlot from "../ImageSlot.astro";
+
+/**
+ * An image in a post, slightly wider than its text, with an optional caption. Without `src`, a
+ * placeholder labeled with what the image will show.
+ */
+interface Props {
+  label: string;
+  src?: ImageMetadata | string;
+  caption?: string;
+  aspect?: string;
+}
+
+const { label, src, caption, aspect = "16 / 9" } = Astro.props;
+---
+
+<figure class="post-figure">
+  <ImageSlot label={label} src={src} aspect={aspect} />
+  {caption ? <figcaption>{caption}</figcaption> : null}
+</figure>

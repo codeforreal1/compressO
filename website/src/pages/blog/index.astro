@@ -1,0 +1,72 @@
+---
+import { getCollection } from "astro:content";
+
+import BaseHead from "../../components/BaseHead.astro";
+import Header from "../../components/Header.astro";
+import Footer from "../../components/Footer.astro";
+import BlogPostCard from "../../components/blog/BlogPostCard.astro";
+import OGImage from "../../assets/og.jpg";
+
+// Newest first
+const posts = (await getCollection("blogs")).sort(
+  (a, b) => b.data.publishedDate.valueOf() - a.data.publishedDate.valueOf(),
+);
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <BaseHead
+      title="Blog | CompressO"
+      description="News, releases and stories from the CompressO team."
+      image={OGImage}
+    />
+  </head>
+  <body>
+    <Header />
+    <main class="blog-page">
+      <div class="container">
+        <header class="section-header">
+          <span class="eyebrow">Blog</span>
+          <h1 class="section-title">News from CompressO</h1>
+          <p class="section-subtitle">
+            Releases, new features and what we are working on next.
+          </p>
+        </header>
+        <div class="post-list">
+          {posts.map((post) => <BlogPostCard post={post} />)}
+        </div>
+        {
+          posts.length === 0 ? (
+            <p class="empty">The first post is on its way.</p>
+          ) : null
+        }
+      </div>
+    </main>
+    <Footer />
+  </body>
+</html>
+
+<style>
+  .blog-page {
+    width: auto;
+    max-width: none;
+    padding: 160px 0 96px;
+  }
+  .post-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+  .empty {
+    text-align: center;
+    color: var(--text-faint);
+  }
+  @media (max-width: 720px) {
+    .blog-page {
+      padding-top: 120px;
+    }
+  }
+</style>
