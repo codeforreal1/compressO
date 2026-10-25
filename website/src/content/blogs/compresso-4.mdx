@@ -1,6 +1,6 @@
 ---
 title: "CompressO 4.0: a redesigned app, and the features you asked for"
-description: "Compress videos to an exact size, from the menu bar, or automatically from a folder. CompressO 4.0 is our biggest release yet, with a new design from top to bottom."
+description: "Compress videos to an exact size, from the menu bar, or automatically from a folder. CompressO 4.0 is our biggest release yet: redesigned from top to bottom, and much smaller to download."
 publishedDate: 2026-10-25
 heroImageLabel: "CompressO 4.0, the redesigned app"
 ---
@@ -9,17 +9,15 @@ import Figure from "../../components/blog/Figure.astro";
 
 CompressO 4.0 is here, and it is the biggest update since the very first version.
 
-Over the past months, we rebuilt almost every part of the app. The design is new, the settings are new, and many of the features below started as suggestions from people like you. This release answers many of the most common requests.
+Over the past months, we rebuilt almost every part of the app. It has a new design, it is much smaller to download, and many of the features below started as suggestions from people like you. This release answers many of the most common requests.
 
 CompressO is still what it always was: free, open-source, and completely offline. Your files never leave your computer. Here is what is new.
 
 ## A fresh new look
 
-The first thing you will notice is the design. Every screen of CompressO has been redesigned, from the home screen to the smallest settings switch. Controls are calmer and easier to read, animations are smoother, and the app has a brand new logo and icon.
+The first thing you will notice is the design. Every screen of CompressO has been redesigned from the ground up. It is calmer, clearer and easier to use, and the app has a brand new logo and icon to go with it.
 
-Settings now live in one dialog with a sidebar, opened from the app menu or with <kbd>Cmd/Ctrl</kbd> + <kbd>,</kbd>. There is a search field too, so any setting is only a few keystrokes away, and messages that mention a setting now link straight to it. You can also pick your own accent color, and on macOS and Windows 11, let the desktop show softly through the window with the new tinted window.
-
-<Figure label="The redesigned home screen and settings" />
+<Figure label="The redesigned CompressO" />
 
 ## Compress to an exact size
 
@@ -35,7 +33,7 @@ CompressO then does the guessing for you. It estimates the result from short sam
 
 Sometimes you just want a file smaller, without opening an app. The new **drop zone** lives in the menu bar on macOS and in the system tray on Windows. Drop or paste files on it, and CompressO compresses them in the background while you keep working.
 
-The drop zone shows each file's progress and how much smaller it became. The queue can be paused, stopped and tried again, and it can even watch your clipboard, so copied files are compressed automatically.
+The drop zone shows each file's progress and how much smaller it became, and it can even watch your clipboard, so copied files are compressed automatically.
 
 <Figure label="The drop zone in the menu bar" aspect="4 / 3" />
 
@@ -49,42 +47,35 @@ CompressO is careful about it: it waits until a file has finished saving, skips 
 
 ## Presets
 
-Save the settings you use most as presets, for video, images and audio. Each preset can have its own save location and file name prefix, and you can choose which one applies to new media by default. Presets work everywhere: in the app, in the drop zone and in watched folders.
+Save the settings you use most as presets, for video, images and audio, each with its own save location. Presets work everywhere: in the app, in the drop zone and in watched folders.
 
 ## Batches that keep moving
 
-Batch compression got a lot of love. You can add more files to a batch, pause it at any time, set one resolution for all videos, and keep the folder structure of the folders you drop in.
-
-Videos, images and audio are now compressed side by side, so a long video no longer holds up a quick image. And if one file fails, the rest of the batch carries on.
+Batch compression got a lot of love. Drop in whole folders and CompressO keeps their structure. Videos, images and audio are now compressed side by side, so a long video no longer holds up a quick image, and if one file fails, the rest of the batch carries on.
 
 <Figure label="A batch of videos, images and audio" />
 
 ## Audio, and more formats
 
-CompressO now compresses **audio** too, and can extract the audio of a video. We also added support for many new formats, including **JPEG XL**, **HEIC**, AVIF, BMP, TIFF, M4V, MTS, M2TS and TS. Modern images like AVIF and HEIC are previewed directly when your system supports them.
+CompressO now compresses **audio** too, and can extract the audio of a video. We also added support for many new formats, including **JPEG XL**, **HEIC**, AVIF, BMP, TIFF, M4V, MTS, M2TS and TS.
 
 ## Faster than ever
 
 With **hardware acceleration**, CompressO can use your graphics card to compress videos much faster, on Mac, Windows and Linux. AV1 videos are also compressed far faster than before.
 
+## A much smaller download
+
+CompressO 4.0 is also much lighter. The download used to be around 75 to 80 MB. It is now about 45 to 50 MB, even though the app does far more than before.
+
+The compression tools inside CompressO are now packed much more tightly. They are unpacked and checked on the first launch, and repaired automatically if anything is ever damaged, so you get a smaller download without giving anything up.
+
 ## CompressO speaks your language
 
-CompressO is now available in 16 languages: English, Simplified and Traditional Chinese, Spanish, Portuguese, German, French, Russian, Japanese, Korean, Polish, Turkish, Italian, Indonesian, Vietnamese and Hindi. You can switch languages at any time in Settings.
+CompressO is now available in 16 languages: English, Simplified and Traditional Chinese, Spanish, Portuguese, German, French, Russian, Japanese, Korean, Polish, Turkish, Italian, Indonesian, Vietnamese and Hindi.
 
-## All the little things
+## And much more
 
-Some of the changes you asked for are small, but they make a real difference every day:
-
-- **Replace original files** with their compressed versions. The originals go to the Trash, so nothing is lost by accident.
-- **Skip outputs that are larger** than the original.
-- **Copy results to the clipboard**, ready to paste anywhere.
-- **Compression history**, with every file you have compressed and the space you have saved in total.
-- **Open at login**, optionally in the menu bar or system tray only.
-- **Keep the computer awake** while compressing, and hear a **sound** when it is done.
-- **Keyboard shortcuts** to start, cancel and reconfigure a compression.
-- **Release notes in the app**, so you always know what changed after an update.
-
-We also fixed a long list of bugs, including the window flashing during animations on Windows and several file issues on Linux. The full list is in the changelog.
+There is a lot more in this release, along with a long list of bug fixes. You can find every change in the [changelog](/changelog).
 
 ## Get CompressO 4.0
 
