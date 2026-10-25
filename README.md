@@ -153,6 +153,15 @@ xattr -cr /Applications/CompressO.app
 </p>
 </details>
 
+<details>
+<summary>
+  <strong>Linux: AppImage crashes on launch or displays white screen </strong>
+</summary>
+<p>
+    Try setting `WEBKIT_DISABLE_DMABUF_RENDERER=1` or `WEBKIT_DISABLE_COMPOSITING_MODE=1` if app crashes on launch or displays a blank screen.
+</p>
+</details>
+
 ### License 🚨
 
 The project is licensed under <a href="./LICENSE">AGPL 3.0</a>
