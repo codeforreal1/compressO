@@ -11,6 +11,8 @@ import Icon from "./Icon.astro";
       <span>CompressO</span>
     </a>
     <div class="nav-actions">
+      <a href="/blog" class="nav-link">Blog</a>
+      <a href="/changelog" class="nav-link">Changelog</a>
       <a
         href="https://github.com/codeforreal1/compressO"
         class="nav-icon"
@@ -92,6 +94,20 @@ import Icon from "./Icon.astro";
     align-items: center;
     gap: 6px;
   }
+  .nav-link {
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-muted);
+    transition:
+      color 0.15s ease,
+      background-color 0.15s ease;
+  }
+  .nav-link:hover {
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.06);
+  }
   .nav-icon {
     display: inline-flex;
     align-items: center;
@@ -107,5 +123,18 @@ import Icon from "./Icon.astro";
   .nav-icon:hover {
     color: var(--text);
     background: rgba(255, 255, 255, 0.06);
+  }
+  /* Phones: the logo alone, so the links & the download fit on one row */
+  @media (max-width: 520px) {
+    .brand span {
+      display: none;
+    }
+    .nav-actions {
+      gap: 2px;
+    }
+    .nav-link {
+      padding: 6px 8px;
+      font-size: 13px;
+    }
   }
 </style>
