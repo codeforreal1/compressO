@@ -211,6 +211,7 @@ const privacyPoints: { icon: IconName; title: string; description: string }[] = 
               Star on GitHub
               {githubStars ? (
                 <span class="star-count">
+                  <Icon name="star" size={14} />
                   <CountUp client:visible to={githubStars} separator="," duration={1.6} />
                 </span>
               ) : null}
@@ -615,6 +616,9 @@ const privacyPoints: { icon: IconName; title: string; description: string }[] = 
         margin-top: 36px;
       }
       .star-count {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
         padding-left: 10px;
         margin-left: 2px;
         border-left: 1px solid var(--border-strong);
