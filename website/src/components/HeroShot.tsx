@@ -37,7 +37,7 @@ function HeroShot({ src, alt }: HeroShotProps) {
     damping: 30,
     mass: 0.4,
   });
-  const rotateX = useTransform(progress, [0, 1], [18, 0]);
+  const rotateX = useTransform(progress, [0, 1], [8, 0]);
   const scale = useTransform(progress, [0, 1], [0.86, 1]);
   const y = useTransform(progress, [0, 1], [-40, 0]);
   const shadow = useTransform(

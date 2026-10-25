@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" width="640" height="360" role="img" aria-label="CompressO is available in 16 languages" font-family="Poppins, -apple-system, 'Segoe UI', 'Noto Sans', sans-serif">
+<defs>
+  <linearGradient id="pill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b2b2b"/><stop offset="1" stop-color="#191919"/></linearGradient>
+  <linearGradient id="brand" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffa04a"/><stop offset="1" stop-color="#ff7a00"/></linearGradient>
+  <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#ff8400" stop-opacity="0.45"/><stop offset="1" stop-color="#ff8400" stop-opacity="0"/></radialGradient>
+  <filter id="soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="8"/></filter>
+</defs>
+<rect width="640" height="360" fill="#000"/>
+<ellipse cx="320.0" cy="180.0" rx="250" ry="140" fill="url(#glow)" opacity="0.35"/>
+<rect x="107.2" y="121.0" width="132.8" height="54" rx="27.0" fill="#ff8400" opacity="0.4" filter="url(#soft)"/>
+<rect x="107.2" y="117.0" width="132.8" height="54" rx="27.0" fill="url(#brand)" stroke="#ffb066" stroke-opacity="0.7"/>
+<text x="173.6" y="151.0" text-anchor="middle" font-size="21" font-weight="500" fill="#fff">English</text>
+<rect x="254.5" y="117.5" width="131.8" height="53" rx="27.0" fill="url(#pill)" stroke="#fff" stroke-opacity="0.16"/>
+<text x="320.4" y="151.0" text-anchor="middle" font-size="21" font-weight="500" fill="#e9e7e4">Español</text>
+<rect x="401.3" y="117.5" width="131.0" height="53" rx="27.0" fill="url(#pill)" stroke="#fff" stroke-opacity="0.16"/>
+<text x="466.8" y="151.0" text-anchor="middle" font-size="21" font-weight="500" fill="#e9e7e4">简体中文</text>
+<rect x="182.1" y="189.5" width="125.1" height="53" rx="27.0" fill="url(#pill)" stroke="#fff" stroke-opacity="0.16"/>
+<text x="244.7" y="223.0" text-anchor="middle" font-size="21" font-weight="500" fill="#e9e7e4">हिन्दी</text>
+<rect x="322.5" y="189.8" width="135.1" height="52.5" rx="27.0" fill="none" stroke="#fff" stroke-opacity="0.22" stroke-dasharray="5 5"/>
+<text x="390.1" y="223.0" text-anchor="middle" font-size="21" font-weight="500" fill="#a9a5a0">+12 more</text>
+</svg>

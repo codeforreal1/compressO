@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 600" width="480" height="600" role="img" aria-label="Files stay on your computer and are never uploaded" font-family="Poppins, -apple-system, 'Segoe UI', sans-serif">
+<defs>
+  <linearGradient id="pill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b2b2b"/><stop offset="1" stop-color="#191919"/></linearGradient>
+  <linearGradient id="win" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1a1918"/><stop offset="1" stop-color="#0f0e0d"/></linearGradient>
+  <linearGradient id="brand" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffa04a"/><stop offset="1" stop-color="#ff7a00"/></linearGradient>
+  <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#ff8400" stop-opacity="0.45"/><stop offset="1" stop-color="#ff8400" stop-opacity="0"/></radialGradient>
+  <filter id="soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="8"/></filter>
+</defs>
+<rect width="480" height="600" fill="#000"/>
+<g transform="translate(194.0 46)" fill="none" stroke="#fff" stroke-opacity="0.35" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M24 64h48a20 20 0 0 0 2-40 28 28 0 0 0-53-6A20 20 0 0 0 24 64Z"/></g>
+<line x1="198.0" y1="44" x2="282.0" y2="118" stroke="#ff8400" stroke-width="4" stroke-linecap="round"/>
+<line x1="240.0" y1="214" x2="240.0" y2="132" stroke="#fff" stroke-opacity="0.25" stroke-width="2.5" stroke-dasharray="2 8" stroke-linecap="round"/>
+<rect x="182.0" y="156" width="116" height="32" rx="16" fill="url(#pill)" stroke="#fff" stroke-opacity="0.16"/>
+<text x="240.0" y="177" text-anchor="middle" font-size="13" font-weight="500" fill="#a9a5a0">No uploads</text>
+<ellipse cx="240.0" cy="380.0" rx="230" ry="190" fill="url(#glow)" opacity="0.5"/>
+<rect x="60.5" y="220.5" width="359" height="319" rx="18" fill="url(#win)" stroke="#fff" stroke-opacity="0.14"/>
+<circle cx="80" cy="239" r="4.5" fill="#ff5f57" opacity="0.85"/>
+<circle cx="95" cy="239" r="4.5" fill="#febc2e" opacity="0.85"/>
+<circle cx="110" cy="239" r="4.5" fill="#28c840" opacity="0.85"/>
+<line x1="60" y1="258" x2="420" y2="258" stroke="#fff" stroke-opacity="0.08"/>
+<rect x="206.0" y="264" width="68" height="68" rx="20" fill="#ff8400" opacity="0.5" filter="url(#soft)"/>
+<rect x="206.0" y="264" width="68" height="68" rx="20" fill="url(#brand)" stroke="#ffb066" stroke-opacity="0.7"/>
+<g transform="translate(223.0 280) scale(1.42)" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></g>
+<rect x="84" y="360" width="312" height="48" rx="14" fill="url(#pill)" stroke="#fff" stroke-opacity="0.12"/>
+<g transform="translate(100 373) scale(0.9166666666666666)" fill="none" stroke="#d8d5d1" stroke-width="2.0" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="13" height="14" rx="3"/><path d="m16 10 5-3v10l-5-3"/></g>
+<text x="136" y="389.5" font-size="14" font-weight="500" fill="#e9e7e4">holiday.mp4</text>
+<circle cx="370" cy="384" r="11" fill="#ff8400" fill-opacity="0.16"/>
+<g transform="translate(362 376) scale(0.6666666666666666)" fill="none" stroke="#ff9a3c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></g>
+<rect x="84" y="418" width="312" height="48" rx="14" fill="url(#pill)" stroke="#fff" stroke-opacity="0.12"/>
+<g transform="translate(100 431) scale(0.9166666666666666)" fill="none" stroke="#d8d5d1" stroke-width="2.0" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/></g>
+<text x="136" y="447.5" font-size="14" font-weight="500" fill="#e9e7e4">portrait.heic</text>
+<circle cx="370" cy="442" r="11" fill="#ff8400" fill-opacity="0.16"/>
+<g transform="translate(362 434) scale(0.6666666666666666)" fill="none" stroke="#ff9a3c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></g>
+<rect x="84" y="476" width="312" height="48" rx="14" fill="url(#pill)" stroke="#fff" stroke-opacity="0.12"/>
+<g transform="translate(100 489) scale(0.9166666666666666)" fill="none" stroke="#d8d5d1" stroke-width="2.0" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V6l11-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/></g>
+<text x="136" y="505.5" font-size="14" font-weight="500" fill="#e9e7e4">interview.flac</text>
+<circle cx="370" cy="500" r="11" fill="#ff8400" fill-opacity="0.16"/>
+<g transform="translate(362 492) scale(0.6666666666666666)" fill="none" stroke="#ff9a3c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></g>
+<text x="240.0" y="574" text-anchor="middle" font-size="13" fill="#7d7975">Everything happens on this computer</text>
+</svg>

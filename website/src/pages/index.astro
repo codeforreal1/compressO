@@ -1,4 +1,5 @@
 ---
+import type { ImageMetadata } from "astro";
 import BaseHead from "../components/BaseHead.astro";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
@@ -16,20 +17,23 @@ import {
   getLatestRelease,
   getDownloadAssets,
   fetchGitHubStars,
+  LATEST_RELEASE_URL,
 } from "../utils/github";
 import OGImage from "../assets/og.jpg";
 import heroImage from "../assets/hero-app.jpg";
+import targetSizeImage from "../assets/target-size.jpg";
+import dropZoneImage from "../assets/drop-zone.webp";
+import editImage from "../assets/edit-tools.png";
 
 const latestRelease = await getLatestRelease();
-const downloads = getDownloadAssets(latestRelease.tag_name);
+const downloads = getDownloadAssets(latestRelease?.tag_name);
 const githubStars = await fetchGitHubStars();
-const releaseUrl =
-  latestRelease.html_url ?? "https://github.com/codeforreal1/compressO/releases";
+const releaseUrl = latestRelease?.html_url ?? LATEST_RELEASE_URL;
 
 /** Every format CompressO opens, in the scrolling strip under the hero */
 const formats = [
-  "MP4", "MOV", "MKV", "WEBM", "AVI", "M4V", "MTS", "TS",
-  "JPG", "PNG", "WEBP", "GIF", "SVG", "AVIF", "BMP", "TIFF",
+  "MP4", "MOV", "MKV", "WEBM", "AVI", "M4V", "MTS", "M2TS", "TS",
+  "JPG", "PNG", "WEBP", "GIF", "SVG", "AVIF", "HEIC", "JXL", "BMP", "TIFF",
   "MP3", "AAC", "FLAC", "WAV", "OGG", "OPUS", "M4A", "AIFF",
 ];
 
@@ -39,30 +43,53 @@ const highlights: {
   title: string;
   description: string;
   image: string;
+  /** The screenshot (or an illustration in `public/features`); a placeholder labeled `image` without one */
+  src?: ImageMetadata | string;
   span: string;
 }[] = [
+  {
+    icon: "target",
+    title: "Compress to an exact size",
+    description:
+      "Need a video under 10 MB for an email or a chat app? Choose the size, and CompressO finds the best quality that fits. It estimates the result first, keeps the resolution where it can, and lets you pick another attempt if you prefer it.",
+    image: "The Target Size setting",
+    src: targetSizeImage,
+    span: "lg:col-span-7",
+  },
   {
     icon: "menuBar",
     title: "Compress from the menu bar",
     description:
-      "Drop or paste files on the menu bar on macOS, or the system tray on Windows. CompressO can compress them automatically, one after another, while you keep working.",
-    image: "Drop zone in the menu bar",
-    span: "lg:col-span-7",
+      "Drop or paste files on the menu bar on macOS, or the system tray on Windows. CompressO compresses them automatically while you keep working.",
+    image: "The drop zone in the menu bar",
+    src: dropZoneImage,
+    span: "lg:col-span-5",
+  },
+  {
+    icon: "folderWatch",
+    title: "Watch folders",
+    description:
+      "Choose a folder, such as your screen recordings or downloads, and every new file in it is compressed automatically.",
+    image: "New recordings in a watched folder, compressed automatically",
+    src: "/features/watch-folder.svg",
+    span: "lg:col-span-4",
   },
   {
     icon: "presets",
     title: "Presets",
     description:
-      "Save the settings you use most, and apply them to any video, image or audio file with one click.",
-    image: "Preset menu",
-    span: "lg:col-span-5",
+      "Save the settings you use most, each with its own save location, and apply them to any video, image or audio file.",
+    image: "The preset menu",
+    src: "/features/presets.svg",
+    span: "lg:col-span-4",
   },
   {
     icon: "folders",
     title: "Batch compression",
     description:
-      "Compress whole folders at once, keep their folder structure, and pause at any time.",
-    image: "Batch of media being compressed",
+      "Compress whole folders at once, keep their folder structure, and pause at any time. Videos, images and audio are compressed side by side.",
+    image: "Videos, images and audio compressing side by side",
+    src: "/features/batch.svg",
     span: "lg:col-span-4",
   },
   {
@@ -70,7 +97,8 @@ const highlights: {
     title: "Edit before you compress",
     description:
       "Trim, crop, rotate and flip videos and images, with a live preview.",
-    image: "Crop and trim editor",
+    image: "Crop ratios, rotate, flip and zoom controls",
+    src: editImage,
     span: "lg:col-span-4",
   },
   {
@@ -78,7 +106,8 @@ const highlights: {
     title: "Hardware acceleration",
     description:
       "Use the graphics card to compress videos faster, on Mac, Windows and Linux.",
-    image: "Hardware acceleration setting",
+    image: "Compressing faster with the graphics card",
+    src: "/features/hardware-acceleration.svg",
     span: "lg:col-span-4",
   },
   {
@@ -86,21 +115,16 @@ const highlights: {
     title: "Speaks your language",
     description:
       "Available in 16 languages, including Chinese, Spanish, German, Japanese and Hindi.",
-    image: "Language setting",
-    span: "lg:col-span-5",
-  },
-  {
-    icon: "compare",
-    title: "See the difference",
-    description:
-      "Compare the original and the compressed file side by side before saving it.",
-    image: "Comparison slider",
-    span: "lg:col-span-7",
+    image: "The 16 languages of CompressO",
+    src: "/features/languages.svg",
+    span: "lg:col-span-4",
   },
 ];
 
 /** Everything else, as a compact list */
 const moreFeatures = [
+  { title: "See the difference", description: "Compare the original and the compressed file before saving it." },
+  { title: "Compression history", description: "Every compression, and the space saved in total." },
   { title: "Format conversion", description: "Convert between video, image and audio formats." },
   { title: "Audio compression", description: "Compress audio files, or extract the audio of a video." },
   { title: "GIF tools", description: "Create GIFs from videos and compress existing GIFs." },
@@ -112,11 +136,11 @@ const moreFeatures = [
   { title: "Custom thumbnails", description: "Choose the thumbnail shown for a video." },
   { title: "Media information", description: "Streams, codecs, chapters and EXIF data." },
   { title: "Clipboard", description: "Paste files to compress, and copy the results." },
-  { title: "Saving your way", description: "Ask every time, save to a folder, or next to the original." },
+  { title: "Saving your way", description: "Ask every time, save to a folder, next to the original, or replace it." },
+  { title: "Modern image formats", description: "Open and convert JPEG XL, HEIC and AVIF images." },
   { title: "Open with CompressO", description: "Open files from Finder or File Explorer." },
   { title: "Keeps the computer awake", description: "Long compressions are not interrupted by sleep." },
   { title: "Completion sound", description: "Hear when a compression is done." },
-  { title: "Your colors", description: "Light and dark themes, and an accent color of your choice." },
 ];
 
 const privacyPoints: { icon: IconName; title: string; description: string }[] = [
@@ -164,7 +188,7 @@ const privacyPoints: { icon: IconName; title: string; description: string }[] = 
             <span class="announcement-tag">New in 4.0</span>
             <ShinyText
               client:load
-              text="Drop zone, presets and 16 languages"
+              text="Target size, watch folders and the drop zone"
               color="rgba(245, 244, 242, 0.62)"
               shineColor="#ffffff"
               speed={3}
@@ -174,7 +198,8 @@ const privacyPoints: { icon: IconName; title: string; description: string }[] = 
           <HeroAnimatedContent client:load />
           <p class="hero-subtitle">
             A free and open-source app to compress videos, images and audio on
-            Mac, Windows and Linux. No sign-up, no uploads, no tracking.
+            Mac, Windows and Linux, even to an exact file size. No sign-up, no
+            uploads, no tracking.
           </p>
           <div class="hero-actions">
             <a href="#download" class="btn btn-primary" id="hero-download">
@@ -231,7 +256,7 @@ const privacyPoints: { icon: IconName; title: string; description: string }[] = 
                     <h3>{item.title}</h3>
                     <p>{item.description}</p>
                   </div>
-                  <ImageSlot label={item.image} aspect="16 / 9" class="bento-image" />
+                  <ImageSlot label={item.image} src={item.src} aspect="16 / 9" class="bento-image" />
                 </SpotlightCard>
               ))
             }
@@ -289,7 +314,11 @@ const privacyPoints: { icon: IconName; title: string; description: string }[] = 
             </div>
           </div>
           <div class="reveal">
-            <ImageSlot label="Privacy illustration" aspect="4 / 5" />
+            <ImageSlot
+              label="Files stay on your computer and are never uploaded"
+              src="/features/privacy.svg"
+              aspect="4 / 5"
+            />
           </div>
         </div>
       </section>
@@ -322,7 +351,12 @@ const privacyPoints: { icon: IconName; title: string; description: string }[] = 
                 }
               </div>
             </div>
-            <ImageSlot label="Source code on GitHub" aspect="4 / 3" class="open-source-image" />
+            <ImageSlot
+              label="The CompressO source code, open on GitHub"
+              src="/features/open-source.svg"
+              aspect="4 / 3"
+              class="open-source-image"
+            />
           </div>
         </div>
       </section>
