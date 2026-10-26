@@ -719,6 +719,36 @@ mod tests {
     }
 
     #[test]
+    fn unix_lrzip_uses_absolute_resource_and_staging_paths() {
+        let temp = Fixture::new();
+        let staging = temp.0.join("User profile with spaces and 日本語");
+        let archive = temp.0.join("read only resources/tools.tar.lrz");
+        let helper = temp.0.join("read only resources/bootstrap/lrzip");
+        let command = lrzip_extraction_command(&helper, &archive, &staging, false).unwrap();
+        let arguments: Vec<_> = command.get_args().map(|arg| arg.to_owned()).collect();
+        assert_eq!(command.get_program(), helper.as_os_str());
+        assert_eq!(command.get_current_dir(), None);
+        assert_eq!(
+            arguments,
+            ["-d", "-q", "-p", "1", "-o"]
+                .map(std::ffi::OsString::from)
+                .into_iter()
+                .chain([
+                    staging.join("tools.tar").into_os_string(),
+                    archive.into_os_string()
+                ])
+                .collect::<Vec<_>>()
+        );
+        for key in ["TMPDIR", "TMP", "TEMP"] {
+            assert_eq!(
+                command.get_envs().find(|(name, _)| *name == key).unwrap().1,
+                Some(staging.as_os_str())
+            );
+        }
+        assert!(!staging.exists()); // Unix extraction must not copy the resource archive.
+    }
+
+    #[test]
     fn windows_lrzip_uses_relative_files_from_a_writable_staging_directory() {
         let temp = Fixture::new();
         let resources = temp.0.join("Program Files").join("CompressO");
@@ -772,7 +802,7 @@ mod tests {
         let manifest = manifest().unwrap().expect("prepare a tool archive first");
         if manifest.format != "lrz" {
             return;
-        } // Linux intentionally uses XZ.
+        }
         let temp = Fixture::new();
         let resources = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tool-bundle");
         let staging = temp.0.join("User profile with spaces and 日本語");

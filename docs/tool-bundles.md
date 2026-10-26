@@ -4,8 +4,8 @@ Release builds ship one target-specific compressed archive containing the platfo
 sidecars. **All 20 original binaries in `src-tauri/bin/` remain tracked and unchanged.** Packaging
 copies them into a temporary directory; it never signs, replaces, or removes the originals.
 
-macOS and Windows use `tools.tar.lrz` with a bundled lrzip executable for their respective
-platforms. Linux continues to use `tools.tar.xz`, decoded by Rust's statically linked XZ library.
+macOS, Windows, and Linux use `tools.tar.lrz` with a bundled lrzip executable for their respective
+platforms. Rust retains XZ extraction support for existing bundles and other targets.
 No download or administrator access is needed when the app starts.
 
 ## Building
@@ -22,12 +22,25 @@ The isolated Rust helper in `scripts/tool-archive/` creates deterministic TAR/XZ
 the same TAR and statically linked XZ libraries as the app. It builds for the host architecture,
 even when packaging tools for a different target, and is never included in the app download.
 Cargo caches its build under `src-tauri/target/tool-archive/`.
-On macOS, the first packaging run downloads checksum-pinned lrzip 0.7.3,
+On macOS and Linux, the first packaging run downloads checksum-pinned lrzip 0.7.3,
 LZ4 1.10.0, and LZO 2.10 source archives. `scripts/build-lrzip.mjs` compiles them privately under
-`src-tauri/.toolchain-cache/<target>/`, with macOS 11 as the deployment target and static LZ4/LZO
-linking. Only Apple system libraries remain dynamically linked. This avoids Homebrew binaries
+`src-tauri/.toolchain-cache/<target>/`. On macOS it uses macOS 11 as the deployment target and
+static LZ4/LZO linking. Only Apple system libraries remain dynamically linked. This avoids Homebrew binaries
 silently raising the minimum supported OS. Cached sources/builds make subsequent builds offline.
 Use a native macOS runner for each architecture, as configured in the release workflow.
+
+Linux builds use a matching native GNU/Linux runner (Ubuntu 22.04 for releases). Install
+`build-essential binutils perl zlib1g-dev libbz2-dev` in addition to the normal Tauri build
+dependencies. The helper links fully statically, including the distribution's zlib/bzip2 static
+libraries and the privately built LZ4/LZO. Its ELF architecture is verified, and packaging rejects
+any shared-library dependency or runtime interpreter. No system `lrzip` installation is needed.
+Linux builds omit macOS deployment/architecture flags and CPU-specific tuning. Only the matching
+helper and LRZIP archive ship in both the `.deb` and AppImage; no second XZ archive is included.
+
+Every newly prepared LRZIP archive is extracted with the exact bundled helper into a directory
+with spaces and Unicode characters. The complete decoded TAR SHA-256 must match the original
+before packaging succeeds. A normal Linux extraction uses absolute paths, matching app startup;
+Windows uses relative paths as described below. Cached, hash-verified bundles skip this work.
 
 Windows x64 uses the supplied `lrzip-0.651.1-x86_64-ucrt64.exe`, preserved as
 `src-tauri/bin/compresso_lrzip-x86_64-pc-windows-msvc.exe`. Build its archive on Windows: this
@@ -58,7 +71,8 @@ Generated files live in `src-tauri/tool-bundle/` and are ignored by Git except `
 Original media tool licenses remain bundled. Helper license texts and source metadata are
 included alongside the archive. The matching source archives and helper build script are packaged
 separately in `.toolchain-cache/toolchain-sources-<target>.tar.gz`; CI uploads this alongside each
-macOS release so users can obtain the corresponding sources without enlarging the app download.
+macOS and Linux release so users can obtain the corresponding sources without enlarging the app
+download. Linux also includes the distribution's zlib/bzip2 copyright and license notices.
 
 To build locally without updater signing secrets:
 

@@ -118,7 +118,8 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev \
-            libxdo-dev libssl-dev libasound2-dev libdbus-1-dev patchelf
+            libxdo-dev libssl-dev libasound2-dev libdbus-1-dev patchelf \
+            build-essential binutils perl zlib1g-dev libbz2-dev
           # Bundled in the AppImage (`bundleMediaFramework`), which plays videos with its own
           # GStreamer: without them it has no plugins and its webview crashes on a video
           sudo apt-get install -y gstreamer1.0-plugins-base gstreamer1.0-plugins-good \
@@ -169,6 +170,13 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         run: pnpm tauri build --target ${{ matrix.target }}
 
+      - name: Verify Linux tool installation and execution
+        if: runner.os == 'Linux'
+        run: >-
+          cargo test --locked --manifest-path src-tauri/Cargo.toml
+          --target ${{ matrix.target }} core::tool_bundle::tests
+          -- --include-ignored
+
       # Named as in earlier releases & latest.json (see scripts/generate-latest-json.mts)
       - name: Collect the release files
         shell: bash
@@ -192,6 +200,7 @@ jobs:
               cp "$bundle/nsis/CompressO_${VERSION}_x64-setup.exe.sig" "release-files/CompressO_${VERSION}_x64.exe.sig"
               ;;
             *-linux-*)
+              cp "src-tauri/.toolchain-cache/toolchain-sources-${TARGET}.tar.gz" release-files/
               cp "$bundle/deb/CompressO_${VERSION}_amd64.deb"* release-files/
               cp "$bundle/appimage/CompressO_${VERSION}_amd64.AppImage"* release-files/
               ;;

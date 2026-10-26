@@ -1,4 +1,4 @@
-// Pinned sources, private build prefix, static third-party libraries, macOS 11 minimum.
+// Pinned sources, private build prefix, static third-party libraries.
 // The original media binaries in src-tauri/bin are never modified.
 import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
@@ -33,6 +33,17 @@ const sources = [
 ]
 
 export function buildLrzip(target) {
+  const isMac = target.endsWith('apple-darwin')
+  const isLinux = target.endsWith('unknown-linux-gnu')
+  const arch = target.startsWith('aarch64') ? 'arm64' : 'x86_64'
+  if (
+    (!isMac && !isLinux) ||
+    (isLinux &&
+      (process.platform !== 'linux' ||
+        process.arch !== (arch === 'arm64' ? 'arm64' : 'x64')))
+  ) {
+    throw new Error(`Build LRZIP on a matching native runner for ${target}.`)
+  }
   const cache = path.join(root, 'src-tauri/.toolchain-cache')
   const downloads = path.join(cache, 'downloads')
   const build = path.join(cache, target)
@@ -78,17 +89,18 @@ export function buildLrzip(target) {
     fs.mkdirSync(path.join(prefix, 'include'), { recursive: true })
     for (const source of sources)
       run('tar', ['-xf', path.join(downloads, source.name), '-C', build])
-    const arch = target.startsWith('aarch64') ? 'arm64' : 'x86_64'
-    const flags = `-O2 -arch ${arch} -mmacosx-version-min=11.0`
+    const flags = isMac ? `-O2 -arch ${arch} -mmacosx-version-min=11.0` : '-O2'
     const env = {
       ...process.env,
-      MACOSX_DEPLOYMENT_TARGET: '11.0',
-      CC: `clang -arch ${arch}`,
-      CXX: `clang++ -arch ${arch}`,
+      ...(isMac ? { MACOSX_DEPLOYMENT_TARGET: '11.0' } : {}),
+      CC: isMac ? `clang -arch ${arch}` : 'gcc',
+      CXX: isMac ? `clang++ -arch ${arch}` : 'g++',
       CFLAGS: flags,
       CXXFLAGS: flags,
       CPPFLAGS: `-I${prefix}/include`,
-      LDFLAGS: `-L${prefix}/lib -arch ${arch} -mmacosx-version-min=11.0`,
+      LDFLAGS: isMac
+        ? `-L${prefix}/lib -arch ${arch} -mmacosx-version-min=11.0`
+        : `-L${prefix}/lib -static`,
     }
     const jobs = String(Math.min(os.availableParallelism(), 8))
     const lz4 = path.join(build, 'lz4-1.10.0/lib')
@@ -112,12 +124,41 @@ export function buildLrzip(target) {
     run('make', ['-j', jobs], { cwd: lzo, env })
     run('make', ['install'], { cwd: lzo, env })
     const lrzip = path.join(build, 'lrzip-0.7.3')
-    run('./configure', [`--prefix=${prefix}`], { cwd: lrzip, env })
+    run(
+      './configure',
+      [`--prefix=${prefix}`, ...(isLinux ? ['--enable-static-bin'] : [])],
+      { cwd: lrzip, env },
+    )
     run('make', ['-j', jobs], { cwd: lrzip, env })
     fs.mkdirSync(path.dirname(binary), { recursive: true })
     fs.copyFileSync(path.join(lrzip, 'lrzip'), binary)
     fs.chmodSync(binary, 0o755)
-    // Ensure third-party dependencies really were linked statically.
+    if (isLinux) run('strip', ['--strip-unneeded', binary])
+    fs.writeFileSync(marker, fingerprint)
+  }
+  // Audit cached helpers too: no shared libraries or ELF loader may be required on Linux.
+  if (isLinux) {
+    const header = fs.readFileSync(binary).subarray(0, 20)
+    const machine = arch === 'arm64' ? 183 : 62
+    if (
+      header.toString('hex', 0, 4) !== '7f454c46' ||
+      header[4] !== 2 ||
+      header[5] !== 1 ||
+      header.readUInt16LE(18) !== machine
+    ) {
+      throw new Error(
+        `LRZIP must be a matching 64-bit Linux ELF for ${target}.`,
+      )
+    }
+    const linked = execFileSync('readelf', ['-d', '-l', binary], {
+      encoding: 'utf8',
+    })
+    if (/\(NEEDED\)|INTERP/.test(linked)) {
+      throw new Error(
+        'Linux LRZIP must be fully static, without a runtime loader.',
+      )
+    }
+  } else {
     const linked = execFileSync('otool', ['-L', binary], { encoding: 'utf8' })
     for (const line of linked
       .split('\n')
@@ -131,15 +172,22 @@ export function buildLrzip(target) {
         throw new Error(`Nonportable lrzip dependency: ${dependency}`)
       }
     }
-    fs.writeFileSync(marker, fingerprint)
   }
   return {
     binary,
     sources,
-    licenses: sources.map((source) => ({
-      name: `${source.directory}-LICENSE`,
-      path: path.join(build, source.directory, source.license),
-    })),
+    licenses: [
+      ...sources.map((source) => ({
+        name: `${source.directory}-LICENSE`,
+        path: path.join(build, source.directory, source.license),
+      })),
+      ...(isLinux
+        ? ['zlib1g-dev', 'libbz2-dev'].map((name) => ({
+            name: `${name}-COPYRIGHT`,
+            path: `/usr/share/doc/${name}/copyright`,
+          }))
+        : []),
+    ],
     downloads,
   }
 }

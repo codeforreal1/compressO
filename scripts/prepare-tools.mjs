@@ -20,7 +20,8 @@ const imageCodecs = getImageTools(target)
 const imageTools = imageCodecs.names
 const isMac = target?.endsWith('apple-darwin')
 const isWindows = target?.includes('windows')
-const useLrzip = isMac || isWindows
+const isLinux = target?.endsWith('unknown-linux-gnu')
+const useLrzip = isMac || isWindows || isLinux
 const extension = isWindows ? '.exe' : ''
 const destination = path.join(root, 'src-tauri/tool-bundle')
 const sha256 = (file) =>
@@ -45,7 +46,7 @@ for (const { source } of sources) {
 }
 
 // A cross-build must use a matching decompressor, never the build host's executable.
-const toolchain = isMac ? buildLrzip(target) : null
+const toolchain = isMac || isLinux ? buildLrzip(target) : null
 const windowsMetadata = isWindows
   ? JSON.parse(
       fs.readFileSync(
@@ -167,7 +168,7 @@ try {
     // Fail early on missing runtime DLLs or an executable that cannot start on this host.
     run(helper, ['--version'])
   }
-  if (isMac) {
+  if (toolchain) {
     const licenseDir = path.join(output, 'licenses')
     fs.mkdirSync(licenseDir, { recursive: true })
     for (const license of toolchain.licenses) {
@@ -243,31 +244,48 @@ try {
         stdio: 'inherit',
       },
     )
-    // Windows uses the exact supplied 0.651.1 executable for both operations. Never produce
-    // its archive with the newer macOS helper, whose format/features may be incompatible.
-    if (isWindows) {
-      // Mirror installed-app extraction: no absolute resource/output paths are passed to the
-      // older MinGW executable, which cannot handle Windows extended-length path prefixes.
-      const checkDirectory = path.join(temporary, 'installed app path check')
-      fs.mkdirSync(checkDirectory)
-      fs.copyFileSync(
-        path.join(output, archive),
-        path.join(checkDirectory, archive),
+    // Verify using the exact helper shipped with this archive. Windows must use its supplied
+    // 0.651.1 executable, whose format/features may differ from the Unix helper.
+    {
+      // Mirror app extraction: Unix reads resources in place; the older MinGW executable
+      // needs an archive copy and ASCII relative filenames in its writable staging directory.
+      const checkDirectory = path.join(
+        temporary,
+        'installed app 日本語 path check',
       )
-      run(lrzip, ['-d', '-q', '-p', '1', '-o', 'tools.tar', archive], {
-        cwd: checkDirectory,
-        env: {
-          ...process.env,
-          LRZIP: 'NOCONFIG',
-          TMPDIR: '.',
-          TMP: '.',
-          TEMP: '.',
+      fs.mkdirSync(checkDirectory)
+      if (isWindows) {
+        fs.copyFileSync(
+          path.join(output, archive),
+          path.join(checkDirectory, archive),
+        )
+      }
+      run(
+        path.join(output, 'bootstrap', isWindows ? 'lrzip.exe' : 'lrzip'),
+        [
+          '-d',
+          '-q',
+          '-p',
+          '1',
+          '-o',
+          isWindows ? 'tools.tar' : path.join(checkDirectory, 'tools.tar'),
+          isWindows ? archive : path.join(output, archive),
+        ],
+        {
+          cwd: checkDirectory,
+          env: {
+            ...process.env,
+            LRZIP: 'NOCONFIG',
+            TMPDIR: isWindows ? '.' : checkDirectory,
+            TMP: isWindows ? '.' : checkDirectory,
+            TEMP: isWindows ? '.' : checkDirectory,
+          },
+          stdio: 'inherit',
         },
-        stdio: 'inherit',
-      })
+      )
       if (sha256(path.join(checkDirectory, 'tools.tar')) !== sha256(tarFile)) {
         throw new Error(
-          'The Windows LRZIP archive failed its extraction round-trip check.',
+          'The LRZIP archive failed its extraction round-trip check.',
         )
       }
     }
