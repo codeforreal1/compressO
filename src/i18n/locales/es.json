@@ -90,6 +90,10 @@
         }
       },
       "sound": {
+        "audioWaveforms": {
+          "title": "Formas de onda de audio",
+          "description": "Muestra vistas previas de audio animadas y formas de onda en las líneas de tiempo de audio y vídeo."
+        },
         "title": "Sonido",
         "completionSound": {
           "title": "Sonido al finalizar",

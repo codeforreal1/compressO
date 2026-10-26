@@ -77,6 +77,8 @@ export type SettingsState = {
   watchClipboard: boolean
   /** Play a sound when a compression completes (off by default) */
   playCompletionSound: boolean
+  /** Audio preview and timeline waveforms, including background analysis (on by default). */
+  enableAudioWaveforms: boolean
   /** Translucent, tinted window background (macOS & Windows 11 only, off by default) */
   tintedWindow: boolean
   /** Opacity (%) of the app background over the tinted window's material (both themes) */
@@ -152,6 +154,8 @@ function readSettings(): SettingsState {
     showMenuBarIcon:
       localStorage.getItem(constants.showMenuBarIcon) !== 'false',
     watchClipboard: localStorage.getItem(constants.watchClipboard) === 'true',
+    enableAudioWaveforms:
+      localStorage.getItem(constants.enableAudioWaveforms) !== 'false',
     playCompletionSound:
       localStorage.getItem(constants.playCompletionSound) === 'true',
     tintedWindow: localStorage.getItem(constants.tintedWindow) === 'true',
@@ -258,6 +262,10 @@ subscribe(settingsStore, () => {
   localStorage.setItem(
     constants.watchClipboard,
     String(settingsStore.watchClipboard),
+  )
+  localStorage.setItem(
+    constants.enableAudioWaveforms,
+    String(settingsStore.enableAudioWaveforms),
   )
   localStorage.setItem(
     constants.playCompletionSound,

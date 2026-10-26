@@ -90,6 +90,10 @@
         }
       },
       "sound": {
+        "audioWaveforms": {
+          "title": "Przebiegi fal dźwiękowych",
+          "description": "Pokazuj animowane podglądy audio i przebiegi fal na osiach czasu audio i wideo."
+        },
         "title": "Dźwięk",
         "completionSound": {
           "title": "Dźwięk zakończenia",

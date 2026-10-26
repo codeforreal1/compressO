@@ -5,10 +5,12 @@ import isEqual from 'lodash/isEqual'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { PhotoView } from 'react-photo-view'
+import type ReactPlayer from 'react-player'
 import { OnProgressProps } from 'react-player/base'
 import { toast } from 'sonner'
 import { useSnapshot } from 'valtio'
 
+import AudioWaveform from '@/components/AudioWaveform'
 import Icon from '@/components/Icon'
 import Image from '@/components/Image'
 import ImageViewer from '@/components/ImageViewer'
@@ -17,8 +19,10 @@ import SettingLink from '@/components/SettingLink'
 import useTimelineEngine from '@/components/Timeline/useTimelineEngine'
 import Tooltip from '@/components/Tooltip'
 import VideoPlayer, { VideoPlayerRef } from '@/components/VideoPlayer'
+import { useAudioWaveform } from '@/hooks/useAudioWaveform'
 import { useImagePreview } from '@/hooks/useImagePreview'
 import { usePlayPauseOnSpace } from '@/hooks/usePlayPauseOnSpace'
+import { settingsStore } from '@/stores/settingsStore'
 import { logError } from '@/tauri/commands/app'
 import { generateVideoThumbnail } from '@/tauri/commands/ffmpeg'
 import { copyFileToClipboard } from '@/tauri/commands/fs'
@@ -71,12 +75,21 @@ function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
   const { shouldTransformImage, isImageTransformEditMode } =
     mediaFile?.type === 'image' ? (mediaFile?.config ?? {}) : {}
 
+  const { enableAudioWaveforms } = useSnapshot(settingsStore)
   const playerRef = useRef<VideoPlayerRef | null>(null)
   const trimmerRef = useRef<VideoTrimmerTimelineRef | null>(null)
   const trimConfigSetDebounceRef = useRef<NodeJS.Timeout | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const lastPreviewSourceRef = useRef(mediaPathRaw)
   const [isAudioPlaying, setIsAudioPlaying] = useState(false)
+  const [waveformPlayer, setWaveformPlayer] = useState<HTMLMediaElement | null>(
+    null,
+  )
+  const [playbackDuration, setPlaybackDuration] = useState(0)
+  const attachAudioPlayer = useCallback((element: HTMLAudioElement | null) => {
+    audioRef.current = element
+    setWaveformPlayer(element)
+  }, [])
   const thumbnailCacheRef = useRef<Record<string, string>>({})
   const [isCopyingFrame, setIsCopyingFrame] = useState(false)
 
@@ -444,11 +457,40 @@ function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
   }, [])
   usePlayPauseOnSpace(!!audioOutputSrc, toggleAudioPlayback)
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: A new source must not inherit the previous output's duration.
+  useEffect(() => {
+    setPlaybackDuration(0)
+  }, [playbackSourcePath])
+  const waveformData = useAudioWaveform({
+    path: mediaFile?.type === 'video' ? playbackSourcePath : null,
+    duration: isProcessCompleted
+      ? playbackDuration
+      : mediaFile?.type === 'video'
+        ? (mediaFile.videoDuration ?? playbackDuration)
+        : 0,
+    sizeInBytes: isProcessCompleted
+      ? compressedFile?.sizeInBytes
+      : mediaFile?.sizeInBytes,
+    enabled:
+      enableAudioWaveforms &&
+      !isCompressing &&
+      !isSaving &&
+      isPlaybackSourceStable &&
+      !(
+        mediaFile?.type === 'video' &&
+        mediaFile.videoInfoRaw?.audioStreams?.length === 0
+      ),
+  })
+
+  const waveform = enableAudioWaveforms ? waveformData : null
+
   // An audio file plays like a video, over its cover art (or a music icon), as it has no picture
   const isAudioFile = mediaFile?.type === 'video' && !!mediaFile.isAudioFile
   const audioFileBackdrop = isAudioFile ? (
     <div className="absolute inset-0 flex items-center justify-center overflow-hidden rounded-3xl border-1 border-zinc-200 dark:border-zinc-900">
-      {videoThumbnailPath ? (
+      {waveform ? (
+        <AudioWaveform waveform={waveform} mediaElement={waveformPlayer} />
+      ) : videoThumbnailPath ? (
         <Image
           alt={t('thumbnail.coverArt')}
           src={videoThumbnailPath}
@@ -491,6 +533,12 @@ function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
               {audioFileBackdrop}
               <VideoPlayer
                 ref={playerRef}
+                waveform={waveform}
+                onReady={(player: ReactPlayer) =>
+                  setWaveformPlayer(
+                    player.getInternalPlayer() as HTMLMediaElement,
+                  )
+                }
                 url={
                   isProcessCompleted && compressedFile
                     ? (savedOutputSrc ?? compressedFile.path!)
@@ -579,6 +627,7 @@ function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
                 }}
                 // ffmpeg duration is sometimes incorrect, so force set this duration to particular video
                 onDuration={(duration: number) => {
+                  setPlaybackDuration(duration)
                   if (
                     duration &&
                     !Number.isNaN(duration) &&
@@ -606,13 +655,27 @@ function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
           ) : audioOutputSrc ? (
             // Audio extracted from a video has no picture: a music icon with the play button
             <div className="relative flex flex-col justify-center items-center gap-6 mx-auto w-full max-w-[740px] min-h-[420px] rounded-3xl border-1 border-zinc-200 dark:border-zinc-900">
-              <Icon name="music" size={200} className="text-primary" />
+              <div className="absolute inset-0">
+                {waveform ? (
+                  <AudioWaveform
+                    waveform={waveform}
+                    mediaElement={waveformPlayer}
+                  />
+                ) : (
+                  <div className="h-full flex items-center justify-center">
+                    <Icon name="music" size={160} className="text-primary" />
+                  </div>
+                )}
+              </div>
               {/* Played like videos, so not where they cannot be played (Linux, with video
               previews off) */}
               {isVideoPreviewAvailable ? (
                 <>
                   <audio
-                    ref={audioRef}
+                    ref={attachAudioPlayer}
+                    onLoadedMetadata={(event) =>
+                      setPlaybackDuration(event.currentTarget.duration)
+                    }
                     key={audioPlaybackSrc}
                     src={audioPlaybackSrc}
                     onPlay={() => setIsAudioPlaying(true)}
@@ -754,6 +817,7 @@ function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
             <div className="mt-4">
               <VideoTrimmerTimeline
                 id="video-trimmer-1"
+                waveform={waveform}
                 ref={trimmerRef}
                 duration={mediaFile.videoDuration}
                 {...(trimConfig

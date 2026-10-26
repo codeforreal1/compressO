@@ -90,6 +90,10 @@
         }
       },
       "sound": {
+        "audioWaveforms": {
+          "title": "Ses dalga biçimleri",
+          "description": "Hareketli ses önizlemelerini ve ses ile video zaman çizelgelerindeki dalga biçimlerini göster."
+        },
         "title": "Ses",
         "completionSound": {
           "title": "Tamamlanma sesi",

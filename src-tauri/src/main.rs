@@ -482,6 +482,7 @@ async fn run() {
             get_hardware_encoders,
             extract_subtitle,
             generate_video_thumbnail,
+            core::waveform::get_audio_waveform,
             get_video_basic_info,
             get_image_dimension,
             get_svg_dimension,

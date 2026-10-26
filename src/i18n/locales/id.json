@@ -90,6 +90,10 @@
         }
       },
       "sound": {
+        "audioWaveforms": {
+          "title": "Gelombang audio",
+          "description": "Tampilkan pratinjau audio animasi dan gelombang pada linimasa audio dan video."
+        },
         "title": "Suara",
         "completionSound": {
           "title": "Suara selesai",

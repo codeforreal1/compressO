@@ -175,6 +175,7 @@ function General() {
     showMenuBarIcon,
     playCompletionSound,
     enableVideoPreviews,
+    enableAudioWaveforms,
     preventSleepWhileCompressing,
     keepScreenOnWhileCompressing,
   } = useSnapshot(settingsStore)
@@ -291,6 +292,7 @@ function General() {
         <SettingsSection title={t('settings.general.preview.title')}>
           <SettingsRow
             settingId="videoPreviews"
+            isVisible={isLinux}
             title={t('settings.general.preview.videoPreviews.title')}
             description={t(
               'settings.general.preview.videoPreviews.description',
@@ -357,6 +359,19 @@ function General() {
         </SettingsRow>
       </SettingsSection>
       <SettingsSection title={t('settings.general.sound.title')}>
+        <SettingsRow
+          settingId="audioWaveforms"
+          title={t('settings.general.sound.audioWaveforms.title')}
+          description={t('settings.general.sound.audioWaveforms.description')}
+        >
+          <Switch
+            aria-label={t('settings.general.sound.audioWaveforms.title')}
+            isSelected={enableAudioWaveforms}
+            onValueChange={(value) => {
+              settingsStore.enableAudioWaveforms = value
+            }}
+          />
+        </SettingsRow>
         <SettingsRow
           settingId="completionSound"
           title={t('settings.general.sound.completionSound.title')}

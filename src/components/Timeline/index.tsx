@@ -1,6 +1,8 @@
 import { TimelineAction, TimelineRow } from '@xzdarcy/timeline-engine'
 import { FC } from 'react'
 
+import TimelineWaveform from '@/components/AudioWaveform/TimelineWaveform'
+import type { WaveformData } from '@/types/waveform'
 import { formatDuration } from '@/utils/string'
 
 export const BoundaryRowActionRender: FC<{
@@ -8,7 +10,8 @@ export const BoundaryRowActionRender: FC<{
   row: TimelineRow
   /** Parts of the action that are kept; the rest is left empty as trimmed out */
   keptSegments?: readonly { start: number; end: number }[] | null
-}> = ({ action, keptSegments }) => {
+  waveform?: WaveformData | null
+}> = ({ action, keptSegments, waveform }) => {
   const duration = action.end - action.start
   const isTrimmed = !!keptSegments?.length && duration > 0
   const keptDuration = isTrimmed
@@ -17,11 +20,19 @@ export const BoundaryRowActionRender: FC<{
 
   return (
     <div
-      className={`relative flex justify-center items-center h-[2px] mt-3 rounded-lg ${
-        isTrimmed ? 'bg-transparent' : 'bg-primary'
+      className={`relative flex justify-center items-center rounded-lg ${waveform ? 'h-6 mt-0' : 'h-[2px] mt-3'} ${
+        isTrimmed || waveform ? 'bg-transparent' : 'bg-primary'
       }`}
     >
-      {isTrimmed
+      {waveform ? (
+        <TimelineWaveform
+          waveform={waveform}
+          start={action.start}
+          end={action.end}
+          keptSegments={keptSegments}
+        />
+      ) : null}
+      {isTrimmed && !waveform
         ? keptSegments.map((segment) => (
             <div
               key={`${segment.start}-${segment.end}`}

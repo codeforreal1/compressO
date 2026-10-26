@@ -90,6 +90,10 @@
         }
       },
       "sound": {
+        "audioWaveforms": {
+          "title": "Forme d’onda audio",
+          "description": "Mostra anteprime audio animate e forme d’onda nelle timeline audio e video."
+        },
         "title": "Suono",
         "completionSound": {
           "title": "Suono di completamento",

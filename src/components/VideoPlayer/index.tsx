@@ -17,6 +17,7 @@ import { ClassNameValue } from 'tailwind-merge'
 import { usePlayPauseOnSpace } from '@/hooks/usePlayPauseOnSpace'
 import { t } from '@/i18n'
 import { MediaTransformHistory } from '@/types/compression'
+import type { WaveformData } from '@/types/waveform'
 import { cn } from '@/utils/tailwind'
 import { getTransformPreview } from '@/utils/transform'
 import { constructVideoUrl } from '@/utils/video'
@@ -62,6 +63,7 @@ export interface VideoPlayerProps extends BaseReactPlayerProps {
   transformHistory?: readonly MediaTransformHistory[] | null
   /** Marks everything outside these segments as trimmed out on the timeline */
   trimSegments?: readonly { start: number; end: number }[] | null
+  waveform?: WaveformData | null
 }
 
 const scales: TimelineScales = {
@@ -95,6 +97,7 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
       onReady,
       transformHistory,
       trimSegments,
+      waveform,
       style,
 
       ...props
@@ -609,6 +612,7 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                     action={action}
                     row={row}
                     keptSegments={trimSegments}
+                    waveform={waveform}
                   />
                 )
               }

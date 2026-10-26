@@ -90,6 +90,10 @@
         }
       },
       "sound": {
+        "audioWaveforms": {
+          "title": "Audio waveforms",
+          "description": "Show animated audio previews and waveforms on audio and video timelines."
+        },
         "title": "Sound",
         "completionSound": {
           "title": "Completion sound",

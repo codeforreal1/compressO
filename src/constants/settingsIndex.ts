@@ -80,6 +80,13 @@ export const SETTINGS_INDEX = {
       }),
     ],
   },
+  audioWaveforms: {
+    page: 'general',
+    getText: (t) => [
+      t('settings.general.sound.audioWaveforms.title'),
+      t('settings.general.sound.audioWaveforms.description'),
+    ],
+  },
   videoPreviews: {
     page: 'general',
     getText: (t) => [

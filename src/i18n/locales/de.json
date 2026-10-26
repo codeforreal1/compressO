@@ -90,6 +90,10 @@
         }
       },
       "sound": {
+        "audioWaveforms": {
+          "title": "Audiowellenformen",
+          "description": "Animierte Audiovorschauen und Wellenformen in Audio- und Videozeitleisten anzeigen."
+        },
         "title": "Ton",
         "completionSound": {
           "title": "Abschlusston",

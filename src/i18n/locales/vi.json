@@ -90,6 +90,10 @@
         }
       },
       "sound": {
+        "audioWaveforms": {
+          "title": "Dạng sóng âm thanh",
+          "description": "Hiển thị bản xem trước âm thanh động và dạng sóng trên dòng thời gian âm thanh và video."
+        },
         "title": "Âm thanh",
         "completionSound": {
           "title": "Âm báo hoàn tất",

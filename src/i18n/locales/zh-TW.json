@@ -90,6 +90,10 @@
         }
       },
       "sound": {
+        "audioWaveforms": {
+          "title": "音訊波形",
+          "description": "顯示動態音訊預覽，以及音訊和影片時間軸上的波形。"
+        },
         "title": "聲音",
         "completionSound": {
           "title": "完成提示音",

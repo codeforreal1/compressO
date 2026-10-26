@@ -12,3 +12,5 @@ pub mod orientation;
 pub mod server;
 
 pub mod tool_bundle;
+
+pub mod waveform;

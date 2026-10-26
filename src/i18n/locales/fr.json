@@ -90,6 +90,10 @@
         }
       },
       "sound": {
+        "audioWaveforms": {
+          "title": "Formes d’onde audio",
+          "description": "Afficher des aperçus audio animés et les formes d’onde sur les pistes audio et vidéo."
+        },
         "title": "Son",
         "completionSound": {
           "title": "Son de fin",

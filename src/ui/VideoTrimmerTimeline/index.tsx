@@ -23,6 +23,7 @@ import { Trans } from 'react-i18next'
 
 import { BoundaryRowActionRender, ScaleRender } from '@/components/Timeline'
 import { t } from '@/i18n'
+import type { WaveformData } from '@/types/waveform'
 import Button from '../../components/Button'
 import Code from '../../components/Code'
 import Icon from '../../components/Icon'
@@ -166,6 +167,7 @@ export interface VideoTrimmerTimelineProps
   id: string
   duration: number
   initialTrimActions?: TimelineAction[]
+  waveform?: WaveformData | null
   onChange?: (data: TimelineRow[]) => void
   onEditorDataChange?: (data: TimelineRow[]) => void
 }
@@ -180,6 +182,7 @@ const VideoTrimmerTimeline = forwardRef(
       id,
       duration,
       initialTrimActions,
+      waveform,
       style,
       onChange,
       onEditorDataChange,
@@ -395,7 +398,13 @@ const VideoTrimmerTimeline = forwardRef(
           }}
           getActionRender={(action, row) => {
             if (action.effectId === effects.effectVideoBoundary.id) {
-              return <BoundaryRowActionRender action={action} row={row} />
+              return (
+                <BoundaryRowActionRender
+                  action={action}
+                  row={row}
+                  waveform={waveform}
+                />
+              )
             } else if (action.effectId === effects.effectVideoTrim.id) {
               return (
                 <TrimRowActionRenderer
