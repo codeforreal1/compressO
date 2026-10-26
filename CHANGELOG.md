@@ -5,7 +5,7 @@
 Features:
 
 - **Target Size**: Compress videos, images and audio to a chosen file size, such as 10 MB for an email or a chat app. For videos, CompressO estimates the size before compressing, keeps the resolution where it can and compresses again in rounds until the video fits; every attempt is kept, so another one can be chosen under the result. Images get the highest quality that fits, and are made smaller only when needed. Audio gets the bitrate that fits, in the chosen format.
-- **Much Smaller Download**: The download is now about 45 to 50 MB, down from around 75 to 80 MB, even though CompressO does far more than before. The compression tools are packed in one compressed archive and unpacked on the first launch, which shows its progress.
+- **Much Smaller App Size**: The app size is now about 45 to 50 MB, down from around 75 to 80 MB, even though CompressO does far more than before. The compression tools are packed in one compressed archive and unpacked on the first launch, which shows its progress.
 - **Drop Zone**: Drop or paste media on the menu bar (macOS) or the system tray (Windows) to compress it without opening the app. It can compress automatically, and the queue can be paused, stopped and tried again. Each file shows how much smaller it became.
 - **Watch Folder**: Choose folders, such as screen recordings or downloads, whose new media is compressed automatically with their presets. Files made by CompressO are never compressed again.
 - **Compression History**: See every compression in Settings, with the space saved in total, and search it by name, folder or preset. Each original and output can be shown in its folder.
