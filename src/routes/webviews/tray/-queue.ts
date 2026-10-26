@@ -434,7 +434,7 @@ export async function runDropQueue() {
   }
 }
 
-/** Compresses the queue whenever media is waiting in it (in the menu bar's window) */
+/** Compresses waiting media in the tray window, or the main window on Linux. */
 export function useDropQueueRunner() {
   const items = useDropQueue()
   const isPaused = useDropQueuePaused()
