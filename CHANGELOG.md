@@ -4,7 +4,8 @@
 
 Features:
 
-- **Target Size**: Compress a video to a chosen file size, such as 10 MB for an email or a chat app. CompressO estimates the size before compressing, keeps the resolution where it can and retries until the video fits. Every attempt is kept, so another one can be chosen under the result.
+- **Target Size**: Compress videos, images and audio to a chosen file size, such as 10 MB for an email or a chat app. For videos, CompressO estimates the size before compressing, keeps the resolution where it can and compresses again in rounds until the video fits; every attempt is kept, so another one can be chosen under the result. Images get the highest quality that fits, and are made smaller only when needed. Audio gets the bitrate that fits, in the chosen format.
+- **Much Smaller Download**: The download is now about 45 to 50 MB, down from around 75 to 80 MB, even though CompressO does far more than before. The compression tools are packed in one compressed archive and unpacked on the first launch, which shows its progress.
 - **Drop Zone**: Drop or paste media on the menu bar (macOS) or the system tray (Windows) to compress it without opening the app. It can compress automatically, and the queue can be paused, stopped and tried again. Each file shows how much smaller it became.
 - **Watch Folder**: Choose folders, such as screen recordings or downloads, whose new media is compressed automatically with their presets. Files made by CompressO are never compressed again.
 - **Compression History**: See every compression in Settings, with the space saved in total, and search it by name, folder or preset. Each original and output can be shown in its folder.
@@ -18,6 +19,8 @@ Features:
 - **Batch Improvements**: Add more media to a selection, pause a batch, set one resolution for all videos and choose any video codec for mixed batches. Videos, images and audio are compressed side by side, so images and audio no longer wait for videos.
 - **Transform Previews**: See rotations, flips and crops live, also for videos and animated GIFs, and keep them in presets.
 - **New Formats**: Support for JPEG XL, HEIC, AVIF, BMP, TIFF, M4V, MTS, M2TS and TS.
+- **Audio Waveforms**: See the waveform of audio files and of the sound of videos in previews and on the trim timeline. It can be turned off in Settings.
+- **System Theme**: CompressO follows the light or dark appearance of the system by default, and changes along with it. Light or Dark can still be chosen in Settings.
 - **Completion Sound**: Play a sound when a compression completes.
 - **Keep Awake**: Prevent the computer from sleeping while compressing.
 - **Redesigned Settings**: Settings are now a dialog with a sidebar and a search field, available from the app menu and with Cmd/Ctrl + comma. Messages that mention a setting link to it.
@@ -36,6 +39,9 @@ Enhancements:
 - Modern images, such as AVIF and HEIC, are previewed directly when the system supports them.
 - Update notes show what changed in every version since the installed one, and the changelog can be opened from Settings, under About.
 - The compression tools are checked when the app starts, and repaired when they are damaged.
+- Target Size explains why it cannot be used for some formats, such as GIF, and compressing waits until another format or Quality is chosen.
+- Reconfigure is not offered once compressed files have replaced their originals, as the originals were moved to the Trash.
+- Media from the drop zone that cannot be saved next to its original, such as a file in a read-only folder, is saved in the app's own folder instead.
 
 Bug Fixes:
 
@@ -50,6 +56,9 @@ Bug Fixes:
 - Fixed the app becoming unresponsive when the system denies access to a file.
 - Fixed copying, pasting and showing files in their folder on Linux.
 - Fixed the crop shape picked right before saving a transform being lost.
+- Fixed converting images to WebP on some systems.
+- Fixed compressing JPEG images on some Intel Macs.
+- Fixed play buttons, drop zone outlines and the selected settings page being hard to see in light mode.
 
 ### 3.0.0
 
