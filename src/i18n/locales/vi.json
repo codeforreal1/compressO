@@ -11,7 +11,7 @@
     "exit": "Thoát",
     "showLogs": "Hiện nhật ký",
     "logOpenFailed": "Không thể mở tệp nhật ký.",
-    "included": "Mọi thứ đã được bao gồm. Không cần tải xuống."
+    "onlyOnce": "Việc này chỉ diễn ra một lần."
   },
   "settings": {
     "general": {

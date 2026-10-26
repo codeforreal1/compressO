@@ -76,6 +76,8 @@ pub struct ToolStatus {
     message: String,
     ready: bool,
     error: Option<String>,
+    /// How far the first-time setup is, from 0 to 1 (see `ensure_bundle`)
+    progress: f64,
 }
 
 pub struct ToolBundleState(Mutex<Inner>);
@@ -93,6 +95,7 @@ impl Default for ToolBundleState {
                 message: "Checking compression tools…".into(),
                 ready: false,
                 error: None,
+                progress: 0.0,
             },
             running: false,
             directory: None,
@@ -132,20 +135,34 @@ fn update(app: &AppHandle, phase: &str, message: &str) {
     inner.status.message = message.into();
 }
 
+/// Never goes back, so the window's ring only fills
+fn set_progress(app: &AppHandle, fraction: f64) {
+    let state = app.state::<ToolBundleState>();
+    let mut inner = state.0.lock().unwrap();
+    inner.status.progress = inner.status.progress.max(fraction.clamp(0.0, 1.0));
+}
+
 fn show_preparation(app: &AppHandle) -> Result<(), String> {
     if let Some(window) = app.get_webview_window("preparation") {
         let _ = window.show();
         return Ok(());
     }
-    WebviewWindowBuilder::new(app, "preparation", WebviewUrl::App("index.html".into()))
-        .title("CompressO")
-        .inner_size(460.0, 340.0)
-        .resizable(false)
-        .decorations(true)
-        .shadow(true)
-        .minimizable(true)
-        .maximizable(false)
-        .center()
+    let builder =
+        WebviewWindowBuilder::new(app, "preparation", WebviewUrl::App("index.html".into()))
+            .title("CompressO")
+            .inner_size(360.0, 360.0)
+            .resizable(false)
+            .decorations(true)
+            .shadow(true)
+            .minimizable(true)
+            .maximizable(false)
+            .center();
+    // A title bar blending into the window, as macOS' own small windows
+    #[cfg(target_os = "macos")]
+    let builder = builder
+        .title_bar_style(tauri::TitleBarStyle::Overlay)
+        .hidden_title(true);
+    builder
         .build()
         .map_err(|e| format!("Could not open preparation window: {e}"))?;
     Ok(())
@@ -163,8 +180,16 @@ pub fn prepare_tools(app: AppHandle) {
         }
         inner.running = true;
         inner.status.error = None;
+        inner.status.progress = 0.0;
         inner.status.phase = "checking".into();
         inner.status.message = "Checking compression tools…".into();
+    }
+    // Development only: `COMPRESSO_PREVIEW_SETUP=1` (or `=error`) shows the first-time setup window,
+    // without installing anything
+    #[cfg(debug_assertions)]
+    if let Ok(mode) = std::env::var("COMPRESSO_PREVIEW_SETUP") {
+        tauri::async_runtime::spawn_blocking(move || preview_setup(&app, mode == "error"));
+        return;
     }
     tauri::async_runtime::spawn(async move {
         let worker_app = app.clone();
@@ -181,6 +206,7 @@ pub fn prepare_tools(app: AppHandle) {
                 Ok(directory) => {
                     inner.directory = Some(directory);
                     inner.status.ready = true;
+                    inner.status.progress = 1.0;
                     inner.status.phase = "ready".into();
                     inner.status.message = "Compression tools are ready".into();
                 }
@@ -202,6 +228,48 @@ pub fn prepare_tools(app: AppHandle) {
             log::error!("[tools] {error}");
         }
     });
+}
+
+/// Plays the setup's steps over a few seconds (see `prepare_tools`): ready at the end, or failing
+/// halfway with `fails`
+#[cfg(debug_assertions)]
+fn preview_setup(app: &AppHandle, fails: bool) {
+    let steps = [
+        ("verifying", "Verifying bundled compression tools…", 0.15),
+        ("extracting", "Extracting compression tools. This may take a moment…", 0.55),
+        ("validating", "Checking extracted compression tools…", 1.0),
+    ];
+    if let Err(error) = show_preparation(app) {
+        log::error!("[tools] {error}");
+        return;
+    }
+    // Lets the window load before the ring starts filling
+    std::thread::sleep(std::time::Duration::from_millis(800));
+    let mut progress: f64 = 0.0;
+    for (phase, message, until) in steps {
+        update(app, phase, message);
+        while progress < until {
+            progress = (progress + 0.01).min(until);
+            set_progress(app, progress);
+            if fails && progress >= 0.5 {
+                let state = app.state::<ToolBundleState>();
+                let mut inner = state.0.lock().unwrap();
+                inner.running = false;
+                inner.status.phase = "error".into();
+                inner.status.error = Some("Preview of a failed setup".into());
+                return;
+            }
+            std::thread::sleep(std::time::Duration::from_millis(60));
+        }
+    }
+    let directory = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("bin");
+    let state = app.state::<ToolBundleState>();
+    let mut inner = state.0.lock().unwrap();
+    inner.running = false;
+    inner.directory = Some(directory);
+    inner.status.ready = true;
+    inner.status.progress = 1.0;
+    inner.status.phase = "ready".into();
 }
 
 fn manifest() -> Result<Option<Manifest>, String> {
@@ -264,11 +332,17 @@ fn install(app: &AppHandle) -> Result<PathBuf, String> {
         .map_err(|e| e.to_string())?
         .join("tools")
         .join(TARGET);
-    ensure_bundle(&resources, &root, &manifest, |phase, message| {
-        show_preparation(app)?;
-        update(app, phase, message);
-        Ok(())
-    })
+    ensure_bundle(
+        &resources,
+        &root,
+        &manifest,
+        |phase, message| {
+            show_preparation(app)?;
+            update(app, phase, message);
+            Ok(())
+        },
+        |fraction| set_progress(app, fraction),
+    )
 }
 
 fn development_name(tool: &str) -> String {
@@ -338,6 +412,11 @@ fn regular_file(path: &Path) -> Result<fs::Metadata, String> {
 }
 
 fn hash_file(path: &Path) -> Result<String, String> {
+    hash_file_with_progress(path, &mut |_| {})
+}
+
+/// `read` is told of each part of the file read, in bytes
+fn hash_file_with_progress(path: &Path, read: &mut dyn FnMut(u64)) -> Result<String, String> {
     let mut file = File::open(path).map_err(|e| e.to_string())?;
     let mut hash = Sha256::new();
     let mut buffer = [0; 128 * 1024];
@@ -347,15 +426,26 @@ fn hash_file(path: &Path) -> Result<String, String> {
             break;
         }
         hash.update(&buffer[..count]);
+        read(count as u64);
     }
     Ok(format!("{:x}", hash.finalize()))
 }
 
 fn verify_files(directory: &Path, files: &[ToolFile], executable: bool) -> Result<(), String> {
+    verify_files_with_progress(directory, files, executable, &mut |_| {})
+}
+
+/// `read` is told of the bytes checked, as in `hash_file_with_progress`
+fn verify_files_with_progress(
+    directory: &Path,
+    files: &[ToolFile],
+    executable: bool,
+    read: &mut dyn FnMut(u64),
+) -> Result<(), String> {
     for file in files {
         let path = directory.join(&file.name);
         let metadata = regular_file(&path)?;
-        if metadata.len() != file.size || hash_file(&path)? != file.sha256 {
+        if metadata.len() != file.size || hash_file_with_progress(&path, read)? != file.sha256 {
             return Err(format!("Checksum mismatch: {}", file.name));
         }
         #[cfg(unix)]
@@ -414,11 +504,15 @@ fn lrzip_extraction_command(
     Ok(command)
 }
 
+/// Installs the tools, telling `progress` of each step & `report` how far it is (0 to 1). Each step
+/// counts for the bytes it goes through: the archive checked, then the tools decompressed,
+/// unpacked & checked, so the ring fills about evenly.
 fn ensure_bundle(
     resources: &Path,
     root: &Path,
     manifest: &Manifest,
     mut progress: impl FnMut(&str, &str) -> Result<(), String>,
+    report: impl Fn(f64),
 ) -> Result<PathBuf, String> {
     let directory = root.join(&manifest.sha256);
     if installed(&directory, manifest) {
@@ -427,8 +521,15 @@ fn ensure_bundle(
     }
     progress("verifying", "Verifying bundled compression tools…")?;
     let archive = resources.join(&manifest.archive);
-    regular_file(&archive)?;
-    if hash_file(&archive)? != manifest.sha256 {
+    let archive_size = regular_file(&archive)?.len();
+    let tar_size = manifest.tar_size.max(1);
+    let total = (archive_size + 3 * tar_size) as f64;
+    let mut done: u64 = 0;
+    let mut count = |bytes: u64| {
+        done += bytes;
+        report(done as f64 / total);
+    };
+    if hash_file_with_progress(&archive, &mut count)? != manifest.sha256 {
         return Err(
             "The bundled tool archive is damaged. Reinstall CompressO to restore it.".into(),
         );
@@ -476,7 +577,18 @@ fn ensure_bundle(
                 // Closing the preparation window must also stop extraction before another
                 // launch can clean its staging directory.
                 super::media_process::register_running_process(&child);
-                let status = child.wait().map_err(|e| e.to_string())?;
+                // lrzip does not tell how far it is: its part of the progress moves on its own, slowing
+                // down as it goes & never quite reaching its end until lrzip is done (about a second
+                // on a recent Mac)
+                let started = std::time::Instant::now();
+                let status = loop {
+                    if let Some(status) = child.try_wait().map_err(|e| e.to_string())? {
+                        break status;
+                    }
+                    let fraction = 1.0 - (-started.elapsed().as_secs_f64() / 1.5).exp();
+                    report((archive_size as f64 + 0.95 * fraction * tar_size as f64) / total);
+                    std::thread::sleep(std::time::Duration::from_millis(100));
+                };
                 if !status.success() {
                     return Err(format!(
                         "Tool extraction failed: {}",
@@ -489,8 +601,9 @@ fn ensure_bundle(
                 if regular_file(&tar)?.len() != manifest.tar_size {
                     return Err("Unexpected decompressed archive size".into());
                 }
+                count(tar_size);
                 extract_tar(
-                    File::open(&tar).map_err(|e| e.to_string())?,
+                    CountingReader::new(File::open(&tar).map_err(|e| e.to_string())?, &mut count),
                     &staging,
                     manifest,
                 )?;
@@ -499,15 +612,16 @@ fn ensure_bundle(
             "xz" => {
                 let file = File::open(&archive).map_err(|e| e.to_string())?;
                 let tar = staging.join("tools.tar");
-                let mut decoder = xz2::read::XzDecoder::new(file).take(manifest.tar_size + 1);
+                let decoder = xz2::read::XzDecoder::new(file).take(manifest.tar_size + 1);
                 let mut output = File::create(&tar).map_err(|e| e.to_string())?;
-                let size = io::copy(&mut decoder, &mut output).map_err(|e| e.to_string())?;
+                let size = io::copy(&mut CountingReader::new(decoder, &mut count), &mut output)
+                    .map_err(|e| e.to_string())?;
                 if size != manifest.tar_size {
                     return Err("Unexpected decompressed archive size".into());
                 }
                 drop(output);
                 extract_tar(
-                    File::open(&tar).map_err(|e| e.to_string())?,
+                    CountingReader::new(File::open(&tar).map_err(|e| e.to_string())?, &mut count),
                     &staging,
                     manifest,
                 )?;
@@ -516,7 +630,7 @@ fn ensure_bundle(
             _ => return Err("Unsupported tool archive format".into()),
         }
         progress("validating", "Checking extracted compression tools…")?;
-        verify_files(&staging, &manifest.files, true)?;
+        verify_files_with_progress(&staging, &manifest.files, true, &mut count)?;
         // Sync the marker after successful verification. A crash before the final rename leaves
         // only an incomplete staging directory, never an installation considered ready.
         let mut marker = File::create(staging.join("ready.json")).map_err(|e| e.to_string())?;
@@ -535,6 +649,26 @@ fn ensure_bundle(
         let _ = fs::remove_dir_all(&staging);
     }
     result
+}
+
+/// A reader telling `read` of each part read, in bytes (for the setup's progress)
+struct CountingReader<'a, R> {
+    inner: R,
+    read: &'a mut dyn FnMut(u64),
+}
+
+impl<'a, R> CountingReader<'a, R> {
+    fn new(inner: R, read: &'a mut dyn FnMut(u64)) -> Self {
+        Self { inner, read }
+    }
+}
+
+impl<R: Read> Read for CountingReader<'_, R> {
+    fn read(&mut self, buffer: &mut [u8]) -> io::Result<usize> {
+        let count = self.inner.read(buffer)?;
+        (self.read)(count as u64);
+        Ok(count)
+    }
 }
 
 fn extract_tar(reader: impl Read, directory: &Path, manifest: &Manifest) -> Result<(), String> {
@@ -631,20 +765,24 @@ mod tests {
         let temp = Fixture::new();
         let manifest = fixture(&temp.0, &[("compresso_ffmpeg", tar::EntryType::Regular)]);
         let root = temp.0.join("installed");
-        let directory = ensure_bundle(&temp.0, &root, &manifest, |_, _| Ok(())).unwrap();
-        ensure_bundle(&temp.0, &root, &manifest, |_, _| {
-            panic!("must reuse verified tools")
-        })
+        let directory = ensure_bundle(&temp.0, &root, &manifest, |_, _| Ok(()), |_| {}).unwrap();
+        ensure_bundle(
+            &temp.0,
+            &root,
+            &manifest,
+            |_, _| panic!("must reuse verified tools"),
+            |_| {},
+        )
         .unwrap();
         // Same-length corruption must be detected, rather than trusting file size or the marker.
         fs::write(directory.join("compresso_ffmpeg"), b"evil").unwrap();
-        ensure_bundle(&temp.0, &root, &manifest, |_, _| Ok(())).unwrap();
+        ensure_bundle(&temp.0, &root, &manifest, |_, _| Ok(()), |_| {}).unwrap();
         assert_eq!(
             fs::read(directory.join("compresso_ffmpeg")).unwrap(),
             b"tool"
         );
         fs::remove_file(directory.join("compresso_ffmpeg")).unwrap();
-        ensure_bundle(&temp.0, &root, &manifest, |_, _| Ok(())).unwrap();
+        ensure_bundle(&temp.0, &root, &manifest, |_, _| Ok(()), |_| {}).unwrap();
         assert!(installed(&directory, &manifest));
     }
 
@@ -654,7 +792,7 @@ mod tests {
         let manifest = fixture(&temp.0, &[("compresso_ffmpeg", tar::EntryType::Regular)]);
         fs::write(temp.0.join("tools.tar.xz"), b"broken").unwrap();
         let root = temp.0.join("installed");
-        assert!(ensure_bundle(&temp.0, &root, &manifest, |_, _| Ok(())).is_err());
+        assert!(ensure_bundle(&temp.0, &root, &manifest, |_, _| Ok(()), |_| {}).is_err());
         assert!(!installed(&root.join(&manifest.sha256), &manifest));
     }
 
@@ -669,7 +807,7 @@ mod tests {
             let temp = Fixture::new();
             let manifest = fixture(&temp.0, &entries);
             let root = temp.0.join("installed");
-            assert!(ensure_bundle(&temp.0, &root, &manifest, |_, _| Ok(())).is_err());
+            assert!(ensure_bundle(&temp.0, &root, &manifest, |_, _| Ok(()), |_| {}).is_err());
             assert!(!installed(&root.join(&manifest.sha256), &manifest));
         }
     }
@@ -682,11 +820,11 @@ mod tests {
         let staging = root.join(format!("{}.extracting", manifest.sha256));
         fs::create_dir_all(&staging).unwrap();
         fs::write(staging.join("partial"), b"interrupted").unwrap();
-        let directory = ensure_bundle(&temp.0, &root, &manifest, |_, _| Ok(())).unwrap();
+        let directory = ensure_bundle(&temp.0, &root, &manifest, |_, _| Ok(()), |_| {}).unwrap();
         assert!(!staging.exists());
         fs::remove_file(directory.join("ready.json")).unwrap();
         assert!(!installed(&directory, &manifest));
-        ensure_bundle(&temp.0, &root, &manifest, |_, _| Ok(())).unwrap();
+        ensure_bundle(&temp.0, &root, &manifest, |_, _| Ok(()), |_| {}).unwrap();
         assert!(installed(&directory, &manifest));
     }
 
@@ -695,9 +833,14 @@ mod tests {
         let temp = Fixture::new();
         let mut manifest = fixture(&temp.0, &[("compresso_ffmpeg", tar::EntryType::Regular)]);
         manifest.tar_size = 10;
-        assert!(
-            ensure_bundle(&temp.0, &temp.0.join("installed"), &manifest, |_, _| Ok(())).is_err()
-        );
+        assert!(ensure_bundle(
+            &temp.0,
+            &temp.0.join("installed"),
+            &manifest,
+            |_, _| Ok(()),
+            |_| {}
+        )
+        .is_err());
     }
 
     #[test]
@@ -817,7 +960,8 @@ mod tests {
         let manifest = manifest().unwrap().expect("prepare a tool archive first");
         let temp = Fixture::new();
         let resources = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tool-bundle");
-        let directory = ensure_bundle(&resources, &temp.0, &manifest, |_, _| Ok(())).unwrap();
+        let directory =
+            ensure_bundle(&resources, &temp.0, &manifest, |_, _| Ok(()), |_| {}).unwrap();
         for tool in TOOLS {
             let flag = if tool.starts_with("ff") {
                 "-version"
@@ -839,7 +983,14 @@ mod tests {
                 String::from_utf8_lossy(&output.stderr)
             );
         }
-        ensure_bundle(&resources, &temp.0, &manifest, |_, _| panic!("must reuse")).unwrap();
+        ensure_bundle(
+            &resources,
+            &temp.0,
+            &manifest,
+            |_, _| panic!("must reuse"),
+            |_| {},
+        )
+        .unwrap();
     }
 
     // Use the executor's spawn/handle-taking pattern: Command::output() creates its own pipes
@@ -876,7 +1027,8 @@ mod tests {
         let manifest = manifest().unwrap().expect("prepare a tool archive first");
         let temp = Fixture::new();
         let resources = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tool-bundle");
-        let directory = ensure_bundle(&resources, &temp.0, &manifest, |_, _| Ok(())).unwrap();
+        let directory =
+            ensure_bundle(&resources, &temp.0, &manifest, |_, _| Ok(()), |_| {}).unwrap();
         let suffix = if cfg!(windows) { ".exe" } else { "" };
         let ffmpeg = directory.join(format!("compresso_ffmpeg{suffix}"));
         let ffprobe = directory.join(format!("compresso_ffprobe{suffix}"));

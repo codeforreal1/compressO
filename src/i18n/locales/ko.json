@@ -11,7 +11,7 @@
     "exit": "종료",
     "showLogs": "로그 보기",
     "logOpenFailed": "로그 파일을 열 수 없습니다.",
-    "included": "필요한 파일이 모두 포함되어 있습니다. 다운로드할 필요가 없습니다."
+    "onlyOnce": "이 작업은 한 번만 수행됩니다."
   },
   "settings": {
     "general": {

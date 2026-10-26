@@ -11,7 +11,7 @@
     "exit": "Wyjdź",
     "showLogs": "Pokaż dzienniki",
     "logOpenFailed": "Nie udało się otworzyć pliku dziennika.",
-    "included": "Wszystko jest dołączone. Pobieranie nie jest potrzebne."
+    "onlyOnce": "Dzieje się to tylko raz."
   },
   "settings": {
     "general": {

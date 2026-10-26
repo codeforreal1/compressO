@@ -11,7 +11,7 @@
     "exit": "Sair",
     "showLogs": "Mostrar logs",
     "logOpenFailed": "Não foi possível abrir o arquivo de log.",
-    "included": "Tudo está incluído. Nenhum download é necessário."
+    "onlyOnce": "Isso acontece apenas uma vez."
   },
   "settings": {
     "general": {

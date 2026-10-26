@@ -11,7 +11,7 @@
     "exit": "Exit",
     "showLogs": "Show logs",
     "logOpenFailed": "Could not open the log file.",
-    "included": "Everything is included. No download is needed."
+    "onlyOnce": "This only happens once."
   },
   "settings": {
     "general": {

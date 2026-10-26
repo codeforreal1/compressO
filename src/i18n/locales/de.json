@@ -11,7 +11,7 @@
     "exit": "Beenden",
     "showLogs": "Protokolle anzeigen",
     "logOpenFailed": "Die Protokolldatei konnte nicht geöffnet werden.",
-    "included": "Alles ist enthalten. Es ist kein Download erforderlich."
+    "onlyOnce": "Dies geschieht nur einmal."
   },
   "settings": {
     "general": {

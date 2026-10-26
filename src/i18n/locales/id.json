@@ -11,7 +11,7 @@
     "exit": "Keluar",
     "showLogs": "Tampilkan log",
     "logOpenFailed": "Tidak dapat membuka berkas log.",
-    "included": "Semuanya sudah disertakan. Tidak perlu mengunduh."
+    "onlyOnce": "Ini hanya terjadi sekali."
   },
   "settings": {
     "general": {

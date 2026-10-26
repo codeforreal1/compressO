@@ -11,7 +11,7 @@
     "exit": "Quitter",
     "showLogs": "Afficher les journaux",
     "logOpenFailed": "Impossible d’ouvrir le fichier journal.",
-    "included": "Tout est inclus. Aucun téléchargement n’est nécessaire."
+    "onlyOnce": "Cela ne se produit qu’une seule fois."
   },
   "settings": {
     "general": {

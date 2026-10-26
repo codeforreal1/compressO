@@ -11,7 +11,7 @@
     "exit": "退出",
     "showLogs": "显示日志",
     "logOpenFailed": "无法打开日志文件。",
-    "included": "所有工具均已包含，无需下载。"
+    "onlyOnce": "此操作只会进行一次。"
   },
   "settings": {
     "general": {

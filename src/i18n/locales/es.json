@@ -11,7 +11,7 @@
     "exit": "Salir",
     "showLogs": "Mostrar registros",
     "logOpenFailed": "No se pudo abrir el archivo de registro.",
-    "included": "Todo está incluido. No es necesario descargar nada."
+    "onlyOnce": "Esto solo ocurre una vez."
   },
   "settings": {
     "general": {

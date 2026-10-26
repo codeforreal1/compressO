@@ -11,7 +11,7 @@
     "exit": "Çıkış",
     "showLogs": "Günlükleri göster",
     "logOpenFailed": "Günlük dosyası açılamadı.",
-    "included": "Her şey dahildir. İndirme gerekmez."
+    "onlyOnce": "Bu yalnızca bir kez yapılır."
   },
   "settings": {
     "general": {

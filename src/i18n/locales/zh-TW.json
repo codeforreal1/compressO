@@ -11,7 +11,7 @@
     "exit": "結束",
     "showLogs": "顯示記錄",
     "logOpenFailed": "無法開啟記錄檔。",
-    "included": "所有工具均已包含，無須下載。"
+    "onlyOnce": "此操作只會進行一次。"
   },
   "settings": {
     "general": {

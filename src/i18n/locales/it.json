@@ -11,7 +11,7 @@
     "exit": "Esci",
     "showLogs": "Mostra log",
     "logOpenFailed": "Impossibile aprire il file di log.",
-    "included": "È tutto incluso. Non serve scaricare nulla."
+    "onlyOnce": "Succede solo una volta."
   },
   "settings": {
     "general": {

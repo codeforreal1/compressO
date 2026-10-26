@@ -94,3 +94,32 @@ export function useThemeSync() {
 export function useTheme() {
   return useSnapshot(themeProxy)
 }
+
+/**
+ * Shows the system's look in this window, also when it changes, whatever the app's own choice
+ * (e.g. the first-time setup window, open before anything is chosen)
+ */
+export function useSystemThemeClass() {
+  useEffect(() => {
+    const window = getCurrentWindow()
+    const apply = (theme: ThemeVariant) =>
+      document.documentElement.classList.toggle('dark', theme === 'dark')
+    // This window is never set to a theme, so its own is the system's
+    window
+      .theme()
+      .then((theme) =>
+        apply(theme ?? (systemDarkQuery.matches ? 'dark' : 'light')),
+      )
+      .catch(() => apply(systemDarkQuery.matches ? 'dark' : 'light'))
+    const unlisten = window
+      .onThemeChanged(({ payload }) => apply(payload))
+      .catch(() => undefined)
+    // Where the window's theme is not reported (Linux), the webview's
+    const applyQuery = () => apply(systemDarkQuery.matches ? 'dark' : 'light')
+    systemDarkQuery.addEventListener('change', applyQuery)
+    return () => {
+      unlisten.then((stop) => stop?.())
+      systemDarkQuery.removeEventListener('change', applyQuery)
+    }
+  }, [])
+}

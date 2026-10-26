@@ -11,7 +11,7 @@
     "exit": "終了",
     "showLogs": "ログを表示",
     "logOpenFailed": "ログファイルを開けませんでした。",
-    "included": "必要なものはすべて含まれています。ダウンロードは不要です。"
+    "onlyOnce": "この処理は初回のみ行われます。"
   },
   "settings": {
     "general": {
