@@ -8,10 +8,13 @@ a different codec.
 ## Runtime
 
 The offline tool bundle includes libjxl 0.12.0's `cjxl`, `djxl`, and `jxlinfo` on each supported
-target. Both macOS architectures use libheif 1.23.6's `heif-dec` and `heif-enc`; Windows x64 uses
-statically linked libheif 1.23.6 executables; Linux x64 uses ImageMagick 7.1.2-34's AppImage,
-which contains libheif 1.23.6. Users do not install codecs or use a network service. The
-Windows HEIC executables are self-contained; no codec DLLs are included in the tool archive.
+target. All platforms use libheif 1.23.6's dedicated `heif-dec` and `heif-enc` tools. The Linux
+executables are built on Ubuntu 22.04 with static linking, including x265, libde265, PNG, and JPEG
+dependencies. Their ELF headers are checked for x86-64 and the absence of shared-library or
+loader requirements. ImageMagick, its AppImage extraction, documentation, and unrelated delegates
+are no longer bundled. Windows also uses self-contained HEIC tools without codec DLLs.
+Users do not install codecs or use a network service.
+The Linux `.deb` and AppImage both include this same dedicated-codec tool bundle.
 
 Rust copies inputs to an isolated workspace and passes ASCII relative filenames to codec tools.
 This supports Unicode user paths and Windows extended-length resource paths. The workspace is
@@ -58,9 +61,8 @@ archive hash gives upgrades a separate installation directory and triggers norma
 
 Windows ARM runs the x64 app and tools under Windows emulation. The static Windows HEIC executables
 import only Windows system DLLs and passed an encode/decode round trip in the Windows x64 build
-workflow. A Windows release installation with the new tools still needs testing. The Linux x64
-binaries are present and hash-verified;
-native x64 Linux release installation and HEIC encode/decode still need testing. The Intel macOS
+workflow. A Windows release installation with the new tools still needs testing. Linux x64
+codec and tool installation regression tests also run before release uploads. The Intel macOS
 codec executables are checked in and hash-verified. They were built for x86-64 with a macOS 11
 deployment target, have no non-system dynamic-library dependencies, and passed JXL and HEIC
 encode/decode round trips under Rosetta. A native Intel release installation still needs testing.
@@ -77,6 +79,16 @@ used to avoid Python in the source build. Rebuild it with
 checked-in executables. Before publishing other targets, verify that
 their corresponding source and license obligations are met. A replacement prebuilt executable
 requires an updated hash and an archive rebuild so the embedded manifest matches.
+
+Rebuild only the Linux HEIF tools on an x86-64 Ubuntu 22.04 runner with
+`node scripts/build-image-tools.mjs x86_64-unknown-linux-gnu`. Install `build-essential binutils
+git curl zip unzip pkg-config cmake ninja-build nasm autoconf automake libtool perl` first.
+This preserves the existing JPEG XL tools and builds HEIF with the same primary-image/sequence
+patch used on macOS, no runtime plugins, and x265 assembly optimizations. Copy the two generated
+executables from `.toolchain-cache/image-codecs/<target>/bin/` to `src-tauri/bin/`, update their
+hashes in `SOURCES.json`, and include the matching dependency copyrights. Publish the generated
+`image-codec-sources-<target>.tar.gz` separately via `src-tauri/tool-sources/`; it contains the
+pinned vcpkg recipes, codec sources, build script, and overlays needed to rebuild the tools.
 
 Run real codec regression tests on each native target:
 

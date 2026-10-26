@@ -143,24 +143,40 @@
           "sha256": "0c7d070736d6163626c7fe5c90fff22530481780b378aaeddb9b28c0406d295b"
         },
         {
-          "name": "magick",
-          "file": "compresso_magick-x86_64-unknown-linux-gnu",
-          "sha256": "6e9edfd35d5f30b57c27533afe003d6085faaf8607b207426f398d11751acf93"
+          "name": "heif-dec",
+          "file": "compresso_heif-dec-x86_64-unknown-linux-gnu",
+          "sha256": "0996fc42470b7d7a5b66f45f7144ce6e778b5704ef98a2c8d17ba35b43ff9824"
+        },
+        {
+          "name": "heif-enc",
+          "file": "compresso_heif-enc-x86_64-unknown-linux-gnu",
+          "sha256": "1910af781b9d7dcfbfa2a2665ddb6697bf2a0577dd61be6ad3845dd934ca5104"
         }
       ],
       "licenses": "LICENSES/image-codecs/x86_64-unknown-linux-gnu",
-      "sources": [],
-      "provenance": "JPEG XL 0.12.0 official static Linux release; ImageMagick 7.1.2-34 official x86-64 AppImage includes libheif 1.23.6, libde265, x265. Native x86-64 Linux validation pending.",
+      "sources": [
+        {
+          "file": "src-tauri/tool-sources/image-codecs-x86_64-unknown-linux-gnu.tar.gz",
+          "sha256": "cb6e0a16a837690d613f15e1463652aeaf6ac779bdca7385559fe9ad784b5f7a"
+        }
+      ],
+      "provenance": "JPEG XL 0.12.0 official static Linux release; dedicated libheif 1.23.6 tools built on Ubuntu 22.04 x86-64 with vcpkg revision 4f973280dd95e3902b3410933fb2ce108bb29d1d. Fully static ELF executables with x265 assembly; primary-image patch rejects HEIF sequences. Offline HEIC/HEIF quality, lossless alpha and visible-pixel, primary-image collection, and corrupt-input checks passed.",
       "packages": [
         {
           "url": "https://github.com/libjxl/libjxl/releases/download/v0.12.0/jxl-linux-x86_64-static.tar.lz",
           "sha256": "5318a1ea40adad76d023e0c17a03d4627f8282f83cb2b575e69be8e74f1ff456"
         },
         {
-          "url": "https://github.com/ImageMagick/ImageMagick/releases/download/7.1.2-34/ImageMagick-7.1.2-34-gcc-x86_64.AppImage",
-          "sha256": "6e9edfd35d5f30b57c27533afe003d6085faaf8607b207426f398d11751acf93"
+          "url": "https://github.com/strukturag/libheif/archive/refs/tags/v1.23.6.tar.gz",
+          "sha256": "c9a00b0452f5c16d72ef71e5e40c0e90fbe2ad37148d27a1b2f9bb21546f5f03"
         }
-      ]
+      ],
+      "build": {
+        "vcpkgRevision": "4f973280dd95e3902b3410933fb2ce108bb29d1d",
+        "libheifVersion": "1.23.6",
+        "script": "scripts/build-image-tools.mjs",
+        "artifactMetadata": "LICENSES/image-codecs/x86_64-unknown-linux-gnu/BUILD-METADATA.txt"
+      }
     }
   }
 }

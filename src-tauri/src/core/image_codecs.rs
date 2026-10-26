@@ -155,19 +155,11 @@ pub async fn decoded_png(
         let details = run(app, info, owner, cancel_ids).await?;
         validate_jxl_info(&details)?;
     }
-    let decoder = if ext == "jxl" {
-        "djxl"
-    } else if cfg!(target_os = "linux") {
-        "magick"
-    } else {
-        "heif-dec"
-    };
+    let decoder = if ext == "jxl" { "djxl" } else { "heif-dec" };
     let mut command = super::tool_bundle::command(app, decoder)?;
     command.current_dir(&work.0);
     if ext == "jxl" {
         command.args([&source, "output.png"]);
-    } else if cfg!(target_os = "linux") {
-        command.args(["-define", "heic:primary-image=true", &source, "output.png"]);
     } else {
         command.args(["--quiet", &source, "output.png"]);
     }
@@ -259,20 +251,10 @@ pub async fn encode(
         copy_input(input, &work.0.join("input.png"))?;
     }
     drop(pixels);
-    let encoder = if format == "jxl" {
-        "cjxl"
-    } else if cfg!(target_os = "linux") {
-        "magick"
-    } else {
-        "heif-enc"
-    };
+    let encoder = if format == "jxl" { "cjxl" } else { "heif-enc" };
     let mut command = super::tool_bundle::command(app, encoder)?;
     command.current_dir(&work.0);
-    let name = if cfg!(target_os = "linux") && format != "jxl" {
-        "output.heic".to_string()
-    } else {
-        format!("output.{format}")
-    };
+    let name = format!("output.{format}");
     command.args(encoder_arguments(format, quality, lossless));
     run(app, command, owner, cancel_ids).await?;
     let encoded = work.0.join(name);
@@ -294,15 +276,6 @@ fn encoder_arguments(format: &str, quality: u8, lossless: bool) -> Vec<String> {
             } else {
                 format!("--quality={}", quality.clamp(1, 99))
             },
-        ]
-    } else if cfg!(target_os = "linux") {
-        vec![
-            "input.png".into(),
-            "-define".into(),
-            "heic:chroma=444".into(),
-            "-quality".into(),
-            if lossless { 100 } else { quality.clamp(1, 99) }.to_string(),
-            "HEIC:output.heic".into(),
         ]
     } else {
         let mut args = vec![
@@ -378,9 +351,6 @@ mod tests {
     fn execute(directory: &Path, name: &str, args: &[String]) -> std::process::Output {
         let mut command = Command::new(tool(name));
         command.current_dir(directory).args(args);
-        if cfg!(target_os = "linux") && name == "magick" {
-            command.env("APPIMAGE_EXTRACT_AND_RUN", "1");
-        }
         let output = command.output().unwrap();
         assert!(
             output.status.success(),
@@ -391,9 +361,7 @@ mod tests {
     }
 
     fn heif_test_tool(encode: bool) -> &'static str {
-        if cfg!(target_os = "linux") {
-            "magick"
-        } else if encode {
+        if encode {
             "heif-enc"
         } else {
             "heif-dec"
@@ -403,13 +371,6 @@ mod tests {
     fn decode_test_arguments(format: &str) -> Vec<String> {
         if format == "jxl" {
             vec!["output.jxl".into(), "decoded.png".into()]
-        } else if cfg!(target_os = "linux") {
-            vec![
-                "-define".into(),
-                "heic:primary-image=true".into(),
-                "output.heic".into(),
-                "decoded.png".into(),
-            ]
         } else {
             vec![format!("output.{format}"), "decoded.png".into()]
         }
@@ -459,11 +420,7 @@ mod tests {
                     assert_eq!(original, restored, "{format}: visible pixels");
                 }
             }
-            let encoded_name = if cfg!(target_os = "linux") && format != "jxl" {
-                "output.heic".to_string()
-            } else {
-                format!("output.{format}")
-            };
+            let encoded_name = format!("output.{format}");
             fs::remove_file(work.0.join(&encoded_name)).unwrap();
             execute(
                 &work.0,
@@ -507,9 +464,6 @@ mod tests {
             };
             let mut corrupt = Command::new(tool(decoder));
             corrupt.current_dir(&work.0);
-            if cfg!(target_os = "linux") && decoder == "magick" {
-                corrupt.env("APPIMAGE_EXTRACT_AND_RUN", "1");
-            }
             corrupt.args([format!("bad.{format}"), "bad.png".into()]);
             assert!(!corrupt.output().unwrap().status.success());
             fs::remove_file(work.0.join("decoded.png")).unwrap();
@@ -591,34 +545,32 @@ mod tests {
         let second = image::RgbaImage::from_pixel(24, 16, image::Rgba([0, 0, 255, 255]));
         first.save(work.0.join("first.png")).unwrap();
         second.save(work.0.join("second.png")).unwrap();
-        if !cfg!(target_os = "linux") {
-            execute(
-                &work.0,
-                "heif-enc",
-                &[
-                    "-e",
-                    "x265",
-                    "-L",
-                    "-p",
-                    "chroma=444",
-                    "-o",
-                    "collection.heic",
-                    "first.png",
-                    "second.png",
-                ]
-                .map(String::from),
-            );
-            execute(
-                &work.0,
-                "heif-dec",
-                &["collection.heic", "primary.png"].map(String::from),
-            );
-            assert_eq!(
-                image::open(work.0.join("primary.png")).unwrap().to_rgba8(),
-                first
-            );
-            assert!(!work.0.join("primary-1.png").exists());
-        }
+        execute(
+            &work.0,
+            "heif-enc",
+            &[
+                "-e",
+                "x265",
+                "-L",
+                "-p",
+                "chroma=444",
+                "-o",
+                "collection.heic",
+                "first.png",
+                "second.png",
+            ]
+            .map(String::from),
+        );
+        execute(
+            &work.0,
+            "heif-dec",
+            &["collection.heic", "primary.png"].map(String::from),
+        );
+        assert_eq!(
+            image::open(work.0.join("primary.png")).unwrap().to_rgba8(),
+            first
+        );
+        assert!(!work.0.join("primary-1.png").exists());
         let file = fs::File::create(work.0.join("animation.gif")).unwrap();
         let mut gif = image::codecs::gif::GifEncoder::new(file);
         for pixels in [first.clone(), first] {

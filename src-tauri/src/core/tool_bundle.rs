@@ -14,7 +14,6 @@ use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindowBuilder};
 
 const EMBEDDED_MANIFEST: &str = include_str!(concat!(env!("OUT_DIR"), "/tool-manifest.json"));
 const TARGET: &str = env!("COMPRESSO_TARGET");
-#[cfg(not(target_os = "linux"))]
 const TOOLS: [&str; 10] = [
     "ffmpeg",
     "ffprobe",
@@ -26,18 +25,6 @@ const TOOLS: [&str; 10] = [
     "jxlinfo",
     "heif-dec",
     "heif-enc",
-];
-#[cfg(target_os = "linux")]
-const TOOLS: [&str; 9] = [
-    "ffmpeg",
-    "ffprobe",
-    "pngquant",
-    "jpegoptim",
-    "gifski",
-    "cjxl",
-    "djxl",
-    "jxlinfo",
-    "magick",
 ];
 const IMAGE_SOURCES: &str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
@@ -322,12 +309,7 @@ pub fn command(app: &AppHandle, tool: &str) -> Result<Command, String> {
     } else {
         directory.join(name)
     };
-    let mut command = process_command(path);
-    if cfg!(target_os = "linux") && tool == "magick" {
-        // AppImage self-extraction avoids a libfuse dependency on the user's machine.
-        command.env("APPIMAGE_EXTRACT_AND_RUN", "1");
-    }
-    Ok(command)
+    Ok(process_command(path))
 }
 
 fn process_command(path: PathBuf) -> Command {
@@ -850,9 +832,6 @@ mod tests {
             );
             let mut command = Command::new(directory.join(name));
             command.arg(flag);
-            if cfg!(target_os = "linux") && tool == "magick" {
-                command.env("APPIMAGE_EXTRACT_AND_RUN", "1");
-            }
             let output = command.output().unwrap();
             assert!(
                 output.status.success(),

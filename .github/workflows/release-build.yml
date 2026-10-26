@@ -177,6 +177,13 @@ jobs:
           --target ${{ matrix.target }} core::tool_bundle::tests
           -- --include-ignored
 
+      - name: Verify Linux image codec round trips
+        if: runner.os == 'Linux'
+        run: >-
+          cargo test --locked --manifest-path src-tauri/Cargo.toml
+          --target ${{ matrix.target }} core::image_codecs::tests
+          -- --include-ignored
+
       # Named as in earlier releases & latest.json (see scripts/generate-latest-json.mts)
       - name: Collect the release files
         shell: bash

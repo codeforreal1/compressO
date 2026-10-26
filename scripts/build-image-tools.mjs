@@ -17,6 +17,11 @@ const hash = (file) =>
   createHash('sha256').update(fs.readFileSync(file)).digest('hex')
 
 export function buildImageTools(target) {
+  const linux = target === 'x86_64-unknown-linux-gnu'
+  if (linux && (process.platform !== 'linux' || process.arch !== 'x64'))
+    throw new Error('Build Linux HEIF tools on an x86-64 Linux runner.')
+  // Keep the validated Linux JPEG XL binaries; only replace the HEIF AppImage.
+  const tools = linux ? ['heif-dec', 'heif-enc'] : imageTools
   const triplets = {
     'aarch64-apple-darwin': 'arm64-osx',
     'x86_64-apple-darwin': 'x64-osx',
@@ -110,6 +115,19 @@ vcpkg_cmake_install()
 vcpkg_fixup_pkgconfig()`,
   )
   fs.writeFileSync(lcmsPortPath, lcmsPort)
+  if (linux) {
+    // These are standalone static executables, not shared-library plugins. Keep x265's
+    // assembly optimizations, which the stock Linux port disables for shared-library PIC.
+    const x265Overlay = path.join(path.dirname(overlay), 'x265')
+    fs.cpSync(path.join(source, 'ports/x265'), x265Overlay, { recursive: true })
+    const x265Port = path.join(x265Overlay, 'portfile.cmake')
+    fs.writeFileSync(
+      x265Port,
+      fs
+        .readFileSync(x265Port, 'utf8')
+        .replace('-DENABLE_ASSEMBLY=OFF', '-DENABLE_ASSEMBLY=ON'),
+    )
+  }
   fs.rmSync(path.join(path.dirname(overlay), 'vcpkg-tool-meson'), {
     recursive: true,
     force: true,
@@ -123,7 +141,9 @@ vcpkg_fixup_pkgconfig()`,
       {
         name: 'compresso-image-codecs',
         'version-string': '1',
-        dependencies: [{ name: 'libjxl', features: ['tools'] }, 'libheif'],
+        dependencies: linux
+          ? ['libheif']
+          : [{ name: 'libjxl', features: ['tools'] }, 'libheif'],
       },
       null,
       2,
@@ -142,7 +162,9 @@ vcpkg_fixup_pkgconfig()`,
     `include("${tripletSource.replaceAll('\\', '/')}\")\nset(VCPKG_BUILD_TYPE release)\n` +
       (target.endsWith('apple-darwin')
         ? 'set(VCPKG_OSX_DEPLOYMENT_TARGET 11.0)\n'
-        : ''),
+        : linux
+          ? 'set(VCPKG_CRT_LINKAGE static)\nset(VCPKG_CMAKE_CONFIGURE_OPTIONS -DCMAKE_EXE_LINKER_FLAGS=-static\\ -no-pie)\n'
+          : ''),
   )
   run(
     vcpkg,
@@ -165,7 +187,7 @@ vcpkg_fixup_pkgconfig()`,
   const prefix = path.join(installed, triplet)
   const directory = path.join(buildRoot, 'bin')
   fs.mkdirSync(directory, { recursive: true })
-  for (const name of imageTools) {
+  for (const name of tools) {
     const suffix = windows ? '.exe' : ''
     fs.copyFileSync(
       path.join(
@@ -177,6 +199,21 @@ vcpkg_fixup_pkgconfig()`,
       path.join(directory, `compresso_${name}-${target}${suffix}`),
     )
     const binary = path.join(directory, `compresso_${name}-${target}${suffix}`)
+    if (linux) {
+      run('strip', ['--strip-unneeded', binary])
+      const header = fs.readFileSync(binary).subarray(0, 20)
+      const elf = execFileSync('readelf', ['-d', '-l', binary], {
+        encoding: 'utf8',
+      })
+      if (
+        header.toString('hex', 0, 6) !== '7f454c460201' ||
+        header.readUInt16LE(18) !== 62 ||
+        /\(NEEDED\)|INTERP/.test(elf)
+      )
+        throw new Error(
+          `${name} must be a fully static x86-64 Linux executable`,
+        )
+    }
     if (target.endsWith('apple-darwin')) {
       const dependencies = execFileSync('otool', ['-L', binary], {
         encoding: 'utf8',
