@@ -14,7 +14,8 @@ const isSupported = isWindowTintSupported()
  */
 export function useWindowTint() {
   const { tintedWindow, tintOpacity } = useSnapshot(settingsStore)
-  const { theme } = useTheme()
+  const { theme, preference } = useTheme()
+  const followsSystem = preference === 'system'
   const isTinted = isSupported && tintedWindow
 
   useEffect(() => {
@@ -25,10 +26,10 @@ export function useWindowTint() {
     } else {
       delete root.dataset.tinted
     }
-    setWindowTint(isTinted, theme === 'dark').catch(() => {
+    setWindowTint(isTinted, theme === 'dark', followsSystem).catch(() => {
       delete root.dataset.tinted
     })
-  }, [isTinted, theme])
+  }, [isTinted, theme, followsSystem])
 
   useEffect(() => {
     document.documentElement.style.setProperty(

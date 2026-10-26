@@ -149,48 +149,50 @@ function TargetSize({ mediaIndex }: TargetSizeProps) {
             aria-label={t('targetSize.switchUnit', {
               unit: isInGB ? 'MB' : 'GB',
             })}
-            disabled={shouldDisableInput}
+            disabled={shouldDisableInput || isGif}
           />
         }
         onChange={(value) =>
           setTargetSize(Math.round(value * unitScale * 10) / 10)
         }
-        isDisabled={shouldDisableInput}
+        // A GIF cannot be compressed to a size (see `getTargetSizeWarning`)
+        isDisabled={shouldDisableInput || isGif}
       />
-      <div className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
-        {isGif ? (
-          <p className="text-warning-600 dark:text-warning-400">
-            {t('targetSize.notForGif')}
-          </p>
-        ) : !video ? (
-          <p>{t('targetSize.eachVideo')}</p>
-        ) : plan?.fitsAtQuality ? (
-          <p className="text-zinc-700 dark:text-zinc-300">
-            {t('targetSize.fitsAtQuality', {
-              size: formatBytes(
-                getQualitySizeEstimate(
-                  video as Parameters<typeof getQualitySizeEstimate>[0],
-                  null,
-                ) ?? 0,
-              ),
-            })}
-          </p>
-        ) : plan ? (
-          <p className="text-zinc-700 dark:text-zinc-300">
-            {t(
-              plan.isResolutionLowered || plan.fps
-                ? 'targetSize.estimateLowered'
-                : 'targetSize.estimate',
-              {
-                width: plan.dimensions[0],
-                height: plan.dimensions[1],
-                fps: plan.fps ?? video.fps ?? 30,
-                size: formatSizeInMB(targetSize),
-              },
-            )}
-          </p>
-        ) : null}
-      </div>
+      {/* Why it cannot be used, or what the video comes out as (only known for a single video) */}
+      {isGif || (video && plan) ? (
+        <div className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
+          {isGif ? (
+            <p className="text-warning-600 dark:text-warning-400">
+              {t('targetSize.notForGif')}
+            </p>
+          ) : !video ? null : plan?.fitsAtQuality ? (
+            <p className="text-zinc-700 dark:text-zinc-300">
+              {t('targetSize.fitsAtQuality', {
+                size: formatBytes(
+                  getQualitySizeEstimate(
+                    video as Parameters<typeof getQualitySizeEstimate>[0],
+                    null,
+                  ) ?? 0,
+                ),
+              })}
+            </p>
+          ) : plan ? (
+            <p className="text-zinc-700 dark:text-zinc-300">
+              {t(
+                plan.isResolutionLowered || plan.fps
+                  ? 'targetSize.estimateLowered'
+                  : 'targetSize.estimate',
+                {
+                  width: plan.dimensions[0],
+                  height: plan.dimensions[1],
+                  fps: plan.fps ?? video.fps ?? 30,
+                  size: formatSizeInMB(targetSize),
+                },
+              )}
+            </p>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   )
 }

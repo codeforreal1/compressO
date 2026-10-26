@@ -1,4 +1,3 @@
-import { Button } from '@heroui/react'
 import { core } from '@tauri-apps/api'
 import { motion } from 'framer-motion'
 import isEqual from 'lodash/isEqual'
@@ -11,6 +10,7 @@ import { toast } from 'sonner'
 import { useSnapshot } from 'valtio'
 
 import AudioWaveform from '@/components/AudioWaveform'
+import Button from '@/components/Button'
 import Icon from '@/components/Icon'
 import Image from '@/components/Image'
 import ImageViewer from '@/components/ImageViewer'
@@ -75,7 +75,10 @@ function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
   const { shouldTransformImage, isImageTransformEditMode } =
     mediaFile?.type === 'image' ? (mediaFile?.config ?? {}) : {}
 
-  const { enableAudioWaveforms } = useSnapshot(settingsStore)
+  const { enableAudioWaveforms: isWaveformSettingOn } =
+    useSnapshot(settingsStore)
+  // Drawn over the player, which Linux only has with video previews on
+  const enableAudioWaveforms = isWaveformSettingOn && isVideoPreviewAvailable
   const playerRef = useRef<VideoPlayerRef | null>(null)
   const trimmerRef = useRef<VideoTrimmerTimelineRef | null>(null)
   const trimConfigSetDebounceRef = useRef<NodeJS.Timeout | null>(null)
@@ -698,7 +701,8 @@ function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
                     <Icon
                       name={isAudioPlaying ? 'pause' : 'play'}
                       size={20}
-                      className="text-white drop-shadow-lg"
+                      // On the frosted button: dark in light mode, as the player's (see `VideoPlayer`)
+                      className="text-zinc-800 dark:text-white dark:drop-shadow-lg"
                     />
                   </Button>
                 </>

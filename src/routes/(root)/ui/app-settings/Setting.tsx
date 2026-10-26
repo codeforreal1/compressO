@@ -11,6 +11,7 @@ import ScrollShadow from '@/components/ScrollShadow'
 import TextInput from '@/components/TextInput'
 import Tooltip from '@/components/Tooltip'
 import {
+  isSettingAvailable,
   SETTINGS_INDEX,
   type SettingId,
   type SettingsPageId,
@@ -248,7 +249,7 @@ function useSearchResults(query: string): SearchResult[] {
     )
       .filter(
         ([, setting]) =>
-          ('isAvailable' in setting ? setting.isAvailable : true) &&
+          isSettingAvailable(setting) &&
           pageIds.has(setting.page) &&
           // Found by the name of its page too, e.g. "output prefix"
           matches([...setting.getText(t), t(`settings.pages.${setting.page}`)]),
@@ -342,7 +343,8 @@ function SettingsDialog({ onClose, hasNewVersion }: SettingsDialogProps) {
                       'w-full flex items-center gap-3 px-3 py-1 my-1 rounded-lg border border-transparent text-sm text-left transition-colors',
                       page.id === selectedPage.id
                         ? [
-                            'bg-zinc-100 dark:bg-zinc-700',
+                            // White & raised in light mode, where grey matches the sidebar's
+                            'bg-white shadow-[0_1px_3px_rgba(0,0,0,0.08)] dark:bg-zinc-700 dark:shadow-none',
                             glassBorder,
                             'text-foreground font-medium',
                           ]

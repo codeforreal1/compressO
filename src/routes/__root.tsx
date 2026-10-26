@@ -14,6 +14,7 @@ import { useClipboardWatchSync } from '@/hooks/useClipboardWatchSync'
 import { useHardwareEncodingSync } from '@/hooks/useHardwareEncoding'
 import { useKeepAwakeSync } from '@/hooks/useKeepAwakeSync'
 import { watchPrimaryColor } from '@/hooks/usePrimaryColor'
+import { useThemeSync } from '@/hooks/useTheme'
 import { useWindowTint } from '@/hooks/useWindowTint'
 import { settingsStore } from '@/stores/settingsStore'
 import { checkForUpdates, setupUpdateListeners } from '@/stores/updateStore'
@@ -49,6 +50,7 @@ function RootComponent() {
 }
 
 function MainRoot() {
+  useThemeSync()
   useWindowTint()
   useClipboardWatchSync({ applyOnMount: true })
   useAutoCompressSync()

@@ -1,117 +1,112 @@
-import { Button } from '@heroui/react'
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback } from 'react'
 import { flushSync } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 
-import { useTheme } from '@/hooks/useTheme'
-import { cn } from '@/utils/tailwind'
-import Icon from '../Icon'
-import Tooltip from '../Tooltip'
+import GlidingToggle from '@/components/GlidingToggle'
+import Icon from '@/components/Icon'
+import {
+  applyTheme,
+  resolveTheme,
+  setThemePreference,
+  THEME_PREFERENCES,
+  type ThemePreference,
+  useTheme,
+} from '@/hooks/useTheme'
 
-interface ThemeSwitcherProps extends React.ComponentPropsWithoutRef<'button'> {
+const ICONS = {
+  system: 'themeSystem',
+  light: 'themeLight',
+  dark: 'themeDark',
+} as const
+
+type ThemeSwitcherProps = {
+  /** Of the reveal of the new look, in milliseconds */
   duration?: number
+  className?: string
 }
 
-export const ThemeSwitcher = ({
-  className,
+/**
+ * The look of the app: the system's, light or dark. A new look is revealed in a circle growing
+ * from the option clicked; one that looks the same (e.g. the system's, when it is already shown)
+ * is only chosen.
+ */
+export function ThemeSwitcher({
   duration = 400,
-}: ThemeSwitcherProps) => {
+  className,
+}: ThemeSwitcherProps) {
   const { t } = useTranslation()
-  const { theme, setTheme, toggleTheme } = useTheme()
+  const { preference, theme } = useTheme()
 
-  const buttonRef = useRef<HTMLButtonElement>(null)
+  const choose = useCallback(
+    async (nextPreference: ThemePreference, target: HTMLElement) => {
+      const nextTheme = await resolveTheme(nextPreference)
+      const apply = () => setThemePreference(nextPreference, nextTheme)
 
-  useEffect(() => {
-    const updateTheme = () => {
-      setTheme(
-        document.documentElement.classList.contains('dark') ? 'dark' : 'light',
+      if (
+        nextTheme === theme ||
+        typeof document.startViewTransition !== 'function'
+      ) {
+        apply()
+        return
+      }
+
+      const { top, left, width, height } = target.getBoundingClientRect()
+      const x = left + width / 2
+      const y = top + height / 2
+      const viewportWidth = window.visualViewport?.width ?? window.innerWidth
+      const viewportHeight = window.visualViewport?.height ?? window.innerHeight
+      const maxRadius = Math.hypot(
+        Math.max(x, viewportWidth - x),
+        Math.max(y, viewportHeight - y),
       )
-    }
 
-    updateTheme()
-
-    const observer = new MutationObserver(updateTheme)
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['class'],
-    })
-
-    return () => observer.disconnect()
-  }, [setTheme])
-
-  const handleThemeToggle = useCallback(() => {
-    const button = buttonRef.current
-    if (!button) return
-
-    const { top, left, width, height } = button.getBoundingClientRect()
-    const x = left + width / 2
-    const y = top + height / 2
-    const viewportWidth = window.visualViewport?.width ?? window.innerWidth
-    const viewportHeight = window.visualViewport?.height ?? window.innerHeight
-    const maxRadius = Math.hypot(
-      Math.max(x, viewportWidth - x),
-      Math.max(y, viewportHeight - y),
-    )
-
-    const applyTheme = () => {
-      toggleTheme()
-      document.documentElement.classList.toggle('dark')
-    }
-
-    if (typeof document.startViewTransition !== 'function') {
-      applyTheme()
-      return
-    }
-
-    // Lets translucent surfaces (e.g. the settings dialog) be opaque in the transition snapshots,
-    // which do not preserve backdrop blur
-    const root = document.documentElement
-    root.classList.add('theme-transitioning')
-    const transition = document.startViewTransition(() => {
-      flushSync(applyTheme)
-    })
-    transition.finished.finally(() => {
-      root.classList.remove('theme-transitioning')
-    })
-
-    const ready = transition?.ready
-    if (ready && typeof ready.then === 'function') {
-      ready.then(() => {
-        document.documentElement.animate(
-          {
-            clipPath: [
-              `circle(0px at ${x}px ${y}px)`,
-              `circle(${maxRadius}px at ${x}px ${y}px)`,
-            ],
-          },
-          {
-            duration,
-            easing: 'ease-in-out',
-            pseudoElement: '::view-transition-new(root)',
-          },
-        )
+      // Lets translucent surfaces (e.g. the settings dialog) be opaque in the transition snapshots,
+      // which do not preserve backdrop blur
+      const root = document.documentElement
+      root.classList.add('theme-transitioning')
+      const transition = document.startViewTransition(() => {
+        flushSync(apply)
       })
-    }
-  }, [toggleTheme, duration])
+      transition.finished.finally(() => {
+        root.classList.remove('theme-transitioning')
+      })
+      transition.ready
+        .then(() => {
+          root.animate(
+            {
+              clipPath: [
+                `circle(0px at ${x}px ${y}px)`,
+                `circle(${maxRadius}px at ${x}px ${y}px)`,
+              ],
+            },
+            {
+              duration,
+              easing: 'ease-in-out',
+              pseudoElement: '::view-transition-new(root)',
+            },
+          )
+        })
+        .catch(() => {
+          // Skipped (e.g. another started): the new look is already shown
+          applyTheme(nextTheme)
+        })
+    },
+    [theme, duration],
+  )
 
   return (
-    <Button
-      isIconOnly
-      size="sm"
-      type="button"
-      ref={buttonRef}
-      radius="md"
-      className={cn(className)}
-      onPress={handleThemeToggle}
-    >
-      <Tooltip
-        content={t('theme.toggle')}
-        aria-label={t('theme.toggle')}
-        placement="right"
-      >
-        <Icon name={theme === 'light' ? 'moon' : 'sun'} />
-      </Tooltip>
-      <span className="sr-only">{t('theme.toggle')}</span>
-    </Button>
+    <GlidingToggle
+      aria-label={t('theme.title')}
+      className={className}
+      options={THEME_PREFERENCES.map((option) => ({
+        value: option,
+        label: <Icon name={ICONS[option]} size={16} />,
+        'aria-label': t(`theme.options.${option}`),
+      }))}
+      value={preference}
+      onChange={(option, target) => {
+        choose(option, target)
+      }}
+    />
   )
 }

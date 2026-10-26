@@ -2,11 +2,18 @@ use tauri::{Theme, WebviewWindow};
 
 /// Turns the tinted window on or off: the native translucent material behind the (then
 /// semi-transparent) app background, like macOS' own windows. `dark` matches the material to the
-/// app's theme. **macOS & Windows 11 only** (Acrylic); other platforms return an error.
+/// app's theme, unless it follows the system's (`follows_system`), when the window is left to
+/// follow it too, so its theme changes are still seen. **macOS & Windows 11 only** (Acrylic);
+/// other platforms return an error.
 #[tauri::command]
-pub fn set_window_tint(window: WebviewWindow, enabled: bool, dark: bool) -> Result<(), String> {
+pub fn set_window_tint(
+    window: WebviewWindow,
+    enabled: bool,
+    dark: bool,
+    follows_system: bool,
+) -> Result<(), String> {
     window
-        .set_theme(if enabled {
+        .set_theme(if enabled && !follows_system {
             Some(if dark { Theme::Dark } else { Theme::Light })
         } else {
             None
@@ -70,4 +77,47 @@ fn apply_window_tint(window: &WebviewWindow, enabled: bool, dark: bool) -> Resul
 #[cfg(not(any(target_os = "macos", windows)))]
 fn apply_window_tint(_window: &WebviewWindow, _enabled: bool, _dark: bool) -> Result<(), String> {
     Err("The tinted window is not supported on this platform.".to_string())
+}
+
+/// Whether the system is in dark mode, read from the system itself: a window set to a theme (see
+/// `set_window_tint`) reports that theme instead. `None` where it is not read (Linux), where the
+/// webview's own detection is used.
+#[tauri::command]
+pub fn get_system_dark_mode() -> Option<bool> {
+    #[cfg(target_os = "macos")]
+    {
+        Some(macos_dark_mode())
+    }
+    #[cfg(windows)]
+    {
+        Some(crate::win::theme::apps_use_dark_mode())
+    }
+    #[cfg(not(any(target_os = "macos", windows)))]
+    {
+        None
+    }
+}
+
+/// macOS sets `AppleInterfaceStyle` to "Dark" while in dark mode (also when it changes on its own,
+/// with "Auto"), & removes it in light mode
+#[cfg(target_os = "macos")]
+#[allow(unexpected_cfgs)]
+fn macos_dark_mode() -> bool {
+    use cocoa::base::{id, nil};
+    use cocoa::foundation::NSString;
+    use objc::{class, msg_send, sel, sel_impl};
+
+    unsafe {
+        let defaults: id = msg_send![class!(NSUserDefaults), standardUserDefaults];
+        let key = NSString::alloc(nil).init_str("AppleInterfaceStyle");
+        let style: id = msg_send![defaults, stringForKey: key];
+        let _: () = msg_send![key, release];
+        if style == nil {
+            return false;
+        }
+        std::ffi::CStr::from_ptr(style.UTF8String())
+            .to_str()
+            .map(|style| style.eq_ignore_ascii_case("dark"))
+            .unwrap_or(false)
+    }
 }

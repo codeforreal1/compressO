@@ -44,7 +44,7 @@
         },
         "theme": {
           "title": "Motyw",
-          "description": "Przełączanie między jasnym a ciemnym interfejsem."
+          "description": "Zgodnie z systemem albo zawsze jasny lub ciemny."
         },
         "accentColor": {
           "title": "Kolor akcentu",
@@ -844,14 +844,14 @@
     "confirmCancel": "Potwierdź anulowanie",
     "cancelling": "Anulowanie…",
     "reconfigure": "Zmień konfigurację",
-    "reconfigureOriginalReplaced_one": "Oryginał został przeniesiony do Kosza i zastąpiony skompresowanym plikiem, dlatego nie można go ponownie skompresować.",
-    "reconfigureOriginalReplaced_few": "{{count}} oryginały zostały przeniesione do Kosza i zastąpione skompresowanymi plikami, dlatego nie można ich ponownie skompresować.",
-    "reconfigureOriginalReplaced_many": "{{count}} oryginałów zostało przeniesionych do Kosza i zastąpionych skompresowanymi plikami, dlatego nie można ich ponownie skompresować.",
-    "reconfigureOriginalReplaced_other": "{{count}} oryginału zostało przeniesione do Kosza i zastąpione skompresowanymi plikami, dlatego nie można ich ponownie skompresować.",
-    "reconfigureOriginalReplaced_windows_one": "Oryginał został przeniesiony do Kosza i zastąpiony skompresowanym plikiem, dlatego nie można go ponownie skompresować.",
-    "reconfigureOriginalReplaced_windows_few": "{{count}} oryginały zostały przeniesione do Kosza i zastąpione skompresowanymi plikami, dlatego nie można ich ponownie skompresować.",
-    "reconfigureOriginalReplaced_windows_many": "{{count}} oryginałów zostało przeniesionych do Kosza i zastąpionych skompresowanymi plikami, dlatego nie można ich ponownie skompresować.",
-    "reconfigureOriginalReplaced_windows_other": "{{count}} oryginału zostało przeniesione do Kosza i zastąpione skompresowanymi plikami, dlatego nie można ich ponownie skompresować.",
+    "reconfigureOriginalReplaced_one": "Oryginał został przeniesiony do Kosza, ponieważ opcja <setting>Zastępuj oryginalne pliki</setting> jest włączona, dlatego nie można go ponownie skompresować.",
+    "reconfigureOriginalReplaced_few": "{{count}} oryginały zostały przeniesione do Kosza, ponieważ opcja <setting>Zastępuj oryginalne pliki</setting> jest włączona, dlatego nie można ich ponownie skompresować.",
+    "reconfigureOriginalReplaced_many": "{{count}} oryginałów zostało przeniesionych do Kosza, ponieważ opcja <setting>Zastępuj oryginalne pliki</setting> jest włączona, dlatego nie można ich ponownie skompresować.",
+    "reconfigureOriginalReplaced_other": "{{count}} oryginału zostało przeniesione do Kosza, ponieważ opcja <setting>Zastępuj oryginalne pliki</setting> jest włączona, dlatego nie można ich ponownie skompresować.",
+    "reconfigureOriginalReplaced_windows_one": "Oryginał został przeniesiony do Kosza, ponieważ opcja <setting>Zastępuj oryginalne pliki</setting> jest włączona, dlatego nie można go ponownie skompresować.",
+    "reconfigureOriginalReplaced_windows_few": "{{count}} oryginały zostały przeniesione do Kosza, ponieważ opcja <setting>Zastępuj oryginalne pliki</setting> jest włączona, dlatego nie można ich ponownie skompresować.",
+    "reconfigureOriginalReplaced_windows_many": "{{count}} oryginałów zostało przeniesionych do Kosza, ponieważ opcja <setting>Zastępuj oryginalne pliki</setting> jest włączona, dlatego nie można ich ponownie skompresować.",
+    "reconfigureOriginalReplaced_windows_other": "{{count}} oryginału zostało przeniesione do Kosza, ponieważ opcja <setting>Zastępuj oryginalne pliki</setting> jest włączona, dlatego nie można ich ponownie skompresować.",
     "pauseFailed": "Nie udało się wstrzymać kompresji.",
     "resumeFailed": "Nie udało się wznowić kompresji.",
     "failed": "Podczas kompresji wystąpił błąd.",
@@ -962,7 +962,12 @@
     "enter": "Enter"
   },
   "theme": {
-    "toggle": "Przełącz motyw"
+    "title": "Motyw",
+    "options": {
+      "system": "Systemowy",
+      "light": "Jasny",
+      "dark": "Ciemny"
+    }
   },
   "errorBoundary": {
     "title": "Wystąpił błąd.",
@@ -1019,21 +1024,17 @@
     "estimate": "Około {{width}}×{{height}} przy {{fps}} kl./s, w granicach {{size}} MB.",
     "estimateLowered": "Zmniejszono do {{width}}×{{height}} przy {{fps}} kl./s, aby zmieścić się w {{size}} MB.",
     "notForGif": "Plików GIF nie można skompresować do rozmiaru. Wybierz inny format lub kompresuj według jakości.",
-    "eachAudio": "Każdy plik audio jest kompresowany w wybranym formacie tak, aby zmieścił się w tym rozmiarze.",
-    "audioEstimate": "Około {{bitrate}} kb/s, z zachowaniem wybranego formatu i kanałów.",
+    "audioEstimate": "Około {{bitrate}} kb/s.",
     "audioLossless": "Wybrany format lub kodek audio nie pozwala osiągnąć dowolnego rozmiaru docelowego przez regulację przepływności. Wybierz inny format lub kodek albo kompresuj według jakości. Twoje ustawienia nie zostaną zmienione automatycznie.",
     "audioDurationMissing": "Przed kompresją do rozmiaru docelowego musi być znany czas trwania dźwięku.",
     "audioTooSmall": "Ten rozmiar docelowy jest zbyt mały dla wybranego formatu i czasu trwania dźwięku. Zwiększ rozmiar lub przytnij nagranie.",
     "notReachedAudio": "Nie udało się osiągnąć rozmiaru docelowego w wybranym formacie audio. Wyświetlany jest najmniejszy dostępny plik wyjściowy.",
-    "eachVideo": "Każde wideo jest kompresowane tak, aby zmieściło się w tym rozmiarze.",
     "round": "Runda {{round}}",
     "roundDetail": "Runda {{round}}: zbliżanie się do rozmiaru docelowego",
     "roundWithoutHardwareAcceleration": "Runda {{round}}: bez przyspieszenia sprzętowego, aby zbliżyć się do rozmiaru docelowego",
     "fitsAtQuality": "Wybrana jakość już się mieści (około {{size}}), dlatego zostanie użyta.",
     "switchUnit": "Pokaż rozmiar w {{unit}}",
     "notForSvgOrGif": "Plików SVG i GIF nie można skompresować do rozmiaru. Wybierz inny format lub kompresuj według jakości.",
-    "imageFit": "Używana jest najwyższa jakość, która się mieści, a obraz jest zmniejszany tylko wtedy, gdy jest to konieczne.",
-    "eachImage": "Każdy obraz jest kompresowany tak, aby zmieścił się w tym rozmiarze.",
     "notReachedImage": "Obrazu nie można bardziej zmniejszyć, nie czyniąc go zbyt małym. Rozmiar docelowy wynosił {{size}}."
   },
   "outputOptions": {

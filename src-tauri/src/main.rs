@@ -54,7 +54,7 @@ use tauri_commands::{
     media::{compress_media_batch, estimate_video_size, set_batch_paused},
     sound::play_completion_sound,
     updater::{check_update, download_and_install_update},
-    window::set_window_tint,
+    window::{get_system_dark_mode, set_window_tint},
 };
 
 #[cfg(target_os = "linux")]
@@ -512,6 +512,7 @@ async fn run() {
             get_image_color_info,
             get_exif_info,
             set_window_tint,
+            get_system_dark_mode,
             play_completion_sound,
             restart_app,
             set_keep_awake_settings,

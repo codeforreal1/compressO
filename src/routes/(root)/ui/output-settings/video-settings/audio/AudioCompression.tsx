@@ -103,11 +103,14 @@ function AudioCompression({ mediaIndex }: { mediaIndex: number }) {
           )
           .map((item) => getAudioTargetSizeWarning(item as MediaFile))
           .find(Boolean)
+  // Only a size that is too small can be fixed here (by typing a larger one); otherwise the size
+  // cannot be changed until another format, or the quality, is chosen
+  const isSizeLocked = !!warning && warning !== 'targetSize.audioTooSmall'
   const message = warning
     ? t(warning)
     : plan
       ? t('targetSize.audioEstimate', { bitrate: plan.bitrate })
-      : t('targetSize.eachAudio')
+      : null
 
   return (
     <ToggleSection
@@ -160,7 +163,7 @@ function AudioCompression({ mediaIndex }: { mediaIndex: number }) {
                     units={['KB', 'MB']}
                     isLarger={inMB}
                     onToggle={() => setInMB(!inMB)}
-                    disabled={disabled}
+                    disabled={disabled || isSizeLocked}
                     aria-label={t('targetSize.switchUnit', {
                       unit: inMB ? 'KB' : 'MB',
                     })}
@@ -171,19 +174,22 @@ function AudioCompression({ mediaIndex }: { mediaIndex: number }) {
                     targetSizeInMB: Math.round(value * scale * 1000) / 1000,
                   })
                 }
-                isDisabled={disabled || !supported}
+                isDisabled={disabled || isSizeLocked}
               />
-              <p
-                className={cn(
-                  'mt-2 text-xs',
-                  warning
-                    ? 'text-warning-600 dark:text-warning-400'
-                    : 'text-zinc-500 dark:text-zinc-400',
-                )}
-                role="status"
-              >
-                {message}
-              </p>
+              {/* Why it cannot be used, or the bitrate a single file gets */}
+              {message ? (
+                <p
+                  className={cn(
+                    'mt-2 text-xs',
+                    warning
+                      ? 'text-warning-600 dark:text-warning-400'
+                      : 'text-zinc-500 dark:text-zinc-400',
+                  )}
+                  role="status"
+                >
+                  {message}
+                </p>
+              ) : null}
             </div>
           ),
         },

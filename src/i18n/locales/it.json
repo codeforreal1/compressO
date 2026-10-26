@@ -44,7 +44,7 @@
         },
         "theme": {
           "title": "Tema",
-          "description": "Passa dall’interfaccia chiara a quella scura."
+          "description": "Seguire il sistema, oppure usare sempre il tema chiaro o scuro."
         },
         "accentColor": {
           "title": "Colore di evidenziazione",
@@ -833,12 +833,12 @@
     "confirmCancel": "Conferma annullamento",
     "cancelling": "Annullamento…",
     "reconfigure": "Riconfigura",
-    "reconfigureOriginalReplaced_one": "L’originale è stato spostato nel Cestino e sostituito dal file compresso, quindi non può essere compresso di nuovo.",
-    "reconfigureOriginalReplaced_many": "{{count}} originali sono stati spostati nel Cestino e sostituiti dai file compressi, quindi non possono essere compressi di nuovo.",
-    "reconfigureOriginalReplaced_other": "{{count}} originali sono stati spostati nel Cestino e sostituiti dai file compressi, quindi non possono essere compressi di nuovo.",
-    "reconfigureOriginalReplaced_windows_one": "L’originale è stato spostato nel Cestino e sostituito dal file compresso, quindi non può essere compresso di nuovo.",
-    "reconfigureOriginalReplaced_windows_many": "{{count}} originali sono stati spostati nel Cestino e sostituiti dai file compressi, quindi non possono essere compressi di nuovo.",
-    "reconfigureOriginalReplaced_windows_other": "{{count}} originali sono stati spostati nel Cestino e sostituiti dai file compressi, quindi non possono essere compressi di nuovo.",
+    "reconfigureOriginalReplaced_one": "L’originale è stato spostato nel Cestino perché <setting>Sostituisci i file originali</setting> è attivo, quindi non può essere compresso di nuovo.",
+    "reconfigureOriginalReplaced_many": "{{count}} originali sono stati spostati nel Cestino perché <setting>Sostituisci i file originali</setting> è attivo, quindi non possono essere compressi di nuovo.",
+    "reconfigureOriginalReplaced_other": "{{count}} originali sono stati spostati nel Cestino perché <setting>Sostituisci i file originali</setting> è attivo, quindi non possono essere compressi di nuovo.",
+    "reconfigureOriginalReplaced_windows_one": "L’originale è stato spostato nel Cestino perché <setting>Sostituisci i file originali</setting> è attivo, quindi non può essere compresso di nuovo.",
+    "reconfigureOriginalReplaced_windows_many": "{{count}} originali sono stati spostati nel Cestino perché <setting>Sostituisci i file originali</setting> è attivo, quindi non possono essere compressi di nuovo.",
+    "reconfigureOriginalReplaced_windows_other": "{{count}} originali sono stati spostati nel Cestino perché <setting>Sostituisci i file originali</setting> è attivo, quindi non possono essere compressi di nuovo.",
     "pauseFailed": "Non è stato possibile mettere in pausa la compressione.",
     "resumeFailed": "Non è stato possibile riprendere la compressione.",
     "failed": "Si è verificato un errore durante la compressione.",
@@ -947,7 +947,12 @@
     "enter": "Invio"
   },
   "theme": {
-    "toggle": "Cambia tema"
+    "title": "Tema",
+    "options": {
+      "system": "Sistema",
+      "light": "Chiaro",
+      "dark": "Scuro"
+    }
   },
   "errorBoundary": {
     "title": "Si è verificato un errore.",
@@ -1004,21 +1009,17 @@
     "estimate": "Circa {{width}}×{{height}} a {{fps}} fps, entro {{size}} MB.",
     "estimateLowered": "Ridotto a {{width}}×{{height}} a {{fps}} fps per stare entro {{size}} MB.",
     "notForGif": "Le GIF non possono essere compresse a una dimensione. Scegli un altro formato o comprimi per qualità.",
-    "eachAudio": "Ogni file audio viene compresso nel formato selezionato per stare entro questa dimensione.",
-    "audioEstimate": "Circa {{bitrate}} kbps, mantenendo il formato e i canali selezionati.",
+    "audioEstimate": "Circa {{bitrate}} kbps.",
     "audioLossless": "Il formato o codec audio selezionato non consente di raggiungere una dimensione obiettivo arbitraria regolando il bitrate. Scegli un altro formato o codec, oppure comprimi per qualità. Le tue selezioni non verranno modificate automaticamente.",
     "audioDurationMissing": "La durata dell’audio deve essere nota prima di comprimere a una dimensione obiettivo.",
     "audioTooSmall": "Questa dimensione obiettivo è troppo piccola per il formato e la durata dell’audio selezionati. Aumenta la dimensione o taglia la registrazione.",
     "notReachedAudio": "Non è stato possibile raggiungere la dimensione obiettivo nel formato audio selezionato. Viene mostrato il file di uscita più piccolo disponibile.",
-    "eachVideo": "Ogni video viene compresso per stare entro questa dimensione.",
     "round": "Turno {{round}}",
     "roundDetail": "Turno {{round}}: avvicinamento alla dimensione obiettivo",
     "roundWithoutHardwareAcceleration": "Turno {{round}}: senza accelerazione hardware, per avvicinarsi alla dimensione obiettivo",
     "fitsAtQuality": "La qualità scelta rientra già, con circa {{size}}, quindi viene utilizzata.",
     "switchUnit": "Mostra la dimensione in {{unit}}",
     "notForSvgOrGif": "Gli SVG e le GIF non possono essere compressi a una dimensione. Scegli un altro formato o comprimi per qualità.",
-    "imageFit": "Viene usata la qualità più alta che rientra, e l'immagine viene rimpicciolita solo quando è necessario.",
-    "eachImage": "Ogni immagine viene compressa per stare entro questa dimensione.",
     "notReachedImage": "L'immagine non può essere più piccola senza diventare troppo ridotta. La dimensione obiettivo era {{size}}."
   },
   "outputOptions": {

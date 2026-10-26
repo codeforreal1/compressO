@@ -25,7 +25,6 @@ import Github from '@/assets/icons/github.svg?react'
 import Image from '@/assets/icons/image.svg?react'
 import Info from '@/assets/icons/info.svg?react'
 import LowResHeart from '@/assets/icons/low-res-heart.svg?react'
-import Moon from '@/assets/icons/moon.svg?react'
 import Music from '@/assets/icons/music.svg?react'
 import Pause from '@/assets/icons/pause.svg?react'
 import Pencil from '@/assets/icons/pencil.svg?react'
@@ -41,7 +40,9 @@ import Search from '@/assets/icons/search.svg?react'
 import Setting from '@/assets/icons/setting.svg?react'
 import Star from '@/assets/icons/star.svg?react'
 import Stop from '@/assets/icons/stop.svg?react'
-import Sun from '@/assets/icons/sun.svg?react'
+import ThemeDark from '@/assets/icons/theme-dark.svg?react'
+import ThemeLight from '@/assets/icons/theme-light.svg?react'
+import ThemeSystem from '@/assets/icons/theme-system.svg?react'
 import Tick from '@/assets/icons/tick.svg?react'
 import Trash from '@/assets/icons/trash.svg?react'
 import Video from '@/assets/icons/video.svg?react'
@@ -58,8 +59,9 @@ function asRegistry<T extends string>(
 }
 
 const registry = asRegistry({
-  moon: Moon,
-  sun: Sun,
+  themeSystem: ThemeSystem,
+  themeLight: ThemeLight,
+  themeDark: ThemeDark,
   video: Video,
   star: Star,
   stop: Stop,

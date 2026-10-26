@@ -44,7 +44,7 @@
         },
         "theme": {
           "title": "Thème",
-          "description": "Basculer entre l’interface claire et l’interface sombre."
+          "description": "Suivre le système, ou toujours utiliser le mode clair ou sombre."
         },
         "accentColor": {
           "title": "Couleur d’accentuation",
@@ -833,12 +833,12 @@
     "confirmCancel": "Confirmer l’annulation",
     "cancelling": "Annulation…",
     "reconfigure": "Reconfigurer",
-    "reconfigureOriginalReplaced_one": "L’original a été déplacé vers la Corbeille et remplacé par le fichier compressé ; il ne peut donc pas être compressé à nouveau.",
-    "reconfigureOriginalReplaced_many": "{{count}} originaux ont été déplacés vers la Corbeille et remplacés par les fichiers compressés ; ils ne peuvent donc pas être compressés à nouveau.",
-    "reconfigureOriginalReplaced_other": "{{count}} originaux ont été déplacés vers la Corbeille et remplacés par les fichiers compressés ; ils ne peuvent donc pas être compressés à nouveau.",
-    "reconfigureOriginalReplaced_windows_one": "L’original a été déplacé vers la Corbeille et remplacé par le fichier compressé ; il ne peut donc pas être compressé à nouveau.",
-    "reconfigureOriginalReplaced_windows_many": "{{count}} originaux ont été déplacés vers la Corbeille et remplacés par les fichiers compressés ; ils ne peuvent donc pas être compressés à nouveau.",
-    "reconfigureOriginalReplaced_windows_other": "{{count}} originaux ont été déplacés vers la Corbeille et remplacés par les fichiers compressés ; ils ne peuvent donc pas être compressés à nouveau.",
+    "reconfigureOriginalReplaced_one": "L’original a été déplacé vers la Corbeille, car <setting>Remplacer les fichiers originaux</setting> est activé ; il ne peut donc pas être compressé à nouveau.",
+    "reconfigureOriginalReplaced_many": "{{count}} originaux ont été déplacés vers la Corbeille, car <setting>Remplacer les fichiers originaux</setting> est activé ; ils ne peuvent donc pas être compressés à nouveau.",
+    "reconfigureOriginalReplaced_other": "{{count}} originaux ont été déplacés vers la Corbeille, car <setting>Remplacer les fichiers originaux</setting> est activé ; ils ne peuvent donc pas être compressés à nouveau.",
+    "reconfigureOriginalReplaced_windows_one": "L’original a été déplacé vers la Corbeille, car <setting>Remplacer les fichiers originaux</setting> est activé ; il ne peut donc pas être compressé à nouveau.",
+    "reconfigureOriginalReplaced_windows_many": "{{count}} originaux ont été déplacés vers la Corbeille, car <setting>Remplacer les fichiers originaux</setting> est activé ; ils ne peuvent donc pas être compressés à nouveau.",
+    "reconfigureOriginalReplaced_windows_other": "{{count}} originaux ont été déplacés vers la Corbeille, car <setting>Remplacer les fichiers originaux</setting> est activé ; ils ne peuvent donc pas être compressés à nouveau.",
     "pauseFailed": "La compression n’a pas pu être mise en pause.",
     "resumeFailed": "La compression n’a pas pu reprendre.",
     "failed": "Une erreur s’est produite pendant la compression.",
@@ -947,7 +947,12 @@
     "enter": "Entrée"
   },
   "theme": {
-    "toggle": "Changer de thème"
+    "title": "Thème",
+    "options": {
+      "system": "Système",
+      "light": "Clair",
+      "dark": "Sombre"
+    }
   },
   "errorBoundary": {
     "title": "Une erreur s’est produite.",
@@ -1004,21 +1009,17 @@
     "estimate": "Environ {{width}}×{{height}} à {{fps}} i/s, en {{size}} Mo maximum.",
     "estimateLowered": "Réduite à {{width}}×{{height}} à {{fps}} i/s pour tenir en {{size}} Mo.",
     "notForGif": "Les GIF ne peuvent pas être compressés à une taille. Choisissez un autre format ou compressez selon la qualité.",
-    "eachAudio": "Chaque fichier audio est compressé dans le format sélectionné pour tenir dans cette taille.",
-    "audioEstimate": "Environ {{bitrate}} kbit/s, en conservant le format et les canaux sélectionnés.",
+    "audioEstimate": "Environ {{bitrate}} kbit/s.",
     "audioLossless": "Le format ou le codec audio sélectionné ne permet pas d’atteindre une taille cible arbitraire en réglant le débit. Choisissez un autre format ou codec, ou compressez par qualité. Vos choix ne seront pas modifiés automatiquement.",
     "audioDurationMissing": "La durée de l’audio doit être connue avant de compresser à une taille cible.",
     "audioTooSmall": "Cette taille cible est trop petite pour le format et la durée de l’audio sélectionnés. Augmentez la taille ou raccourcissez l’enregistrement.",
     "notReachedAudio": "La taille cible n’a pas pu être atteinte dans le format audio sélectionné. Le plus petit fichier de sortie disponible est affiché.",
-    "eachVideo": "Chaque vidéo est compressée pour tenir dans cette taille.",
     "round": "Tour {{round}}",
     "roundDetail": "Tour {{round}} : rapprochement de la taille cible",
     "roundWithoutHardwareAcceleration": "Tour {{round}} : sans accélération matérielle, pour se rapprocher de la taille cible",
     "fitsAtQuality": "La qualité choisie tient déjà, avec environ {{size}}, elle est donc utilisée.",
     "switchUnit": "Afficher la taille en {{unit}}",
     "notForSvgOrGif": "Les SVG et les GIF ne peuvent pas être compressés à une taille. Choisissez un autre format ou compressez selon la qualité.",
-    "imageFit": "La qualité la plus élevée qui tient est utilisée, et l'image n'est réduite que lorsque c'est nécessaire.",
-    "eachImage": "Chaque image est compressée pour tenir dans cette taille.",
     "notReachedImage": "L'image ne peut pas être plus petite sans devenir trop réduite. La taille cible était de {{size}}."
   },
   "outputOptions": {

@@ -1,4 +1,6 @@
 import type { Translation, t as translate } from '@/i18n'
+import { settingsStore } from '@/stores/settingsStore'
+import { getPlatform } from '@/utils/fs'
 import { hasTray, TRAY_CONTEXT } from '@/utils/tray'
 
 export type SettingsPageId = keyof Translation['settings']['pages']
@@ -7,8 +9,11 @@ type IndexedSetting = {
   page: SettingsPageId
   /** As shown in its row, so search finds what is seen */
   getText: (t: typeof translate) => string[]
-  /** Only some platforms have it (e.g. the tray's settings) */
-  isAvailable?: boolean
+  /**
+   * Only some platforms have it (e.g. the tray's settings), or only while another setting is on
+   * (checked when searching)
+   */
+  isAvailable?: boolean | (() => boolean)
 }
 
 /**
@@ -82,6 +87,9 @@ export const SETTINGS_INDEX = {
   },
   audioWaveforms: {
     page: 'general',
+    // Drawn over the player, which Linux only has with video previews on
+    isAvailable: () =>
+      !getPlatform().isLinux || settingsStore.enableVideoPreviews,
     getText: (t) => [
       t('settings.general.sound.audioWaveforms.title'),
       t('settings.general.sound.audioWaveforms.description'),
@@ -257,3 +265,10 @@ export type SettingId = keyof typeof SETTINGS_INDEX
 
 /** Where to open the settings: a page, or a setting (on its page) */
 export type SettingsTarget = { page: SettingsPageId } | { settingId: SettingId }
+
+/** Whether a setting is there to be found (see `isAvailable`) */
+export function isSettingAvailable(setting: IndexedSetting) {
+  return typeof setting.isAvailable === 'function'
+    ? setting.isAvailable()
+    : (setting.isAvailable ?? true)
+}

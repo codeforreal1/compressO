@@ -1,9 +1,10 @@
 import { memo } from 'react'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
 import Button from '@/components/Button'
 import Icon from '@/components/Icon'
+import SettingLink from '@/components/SettingLink'
 import Tooltip from '@/components/Tooltip'
 import { useCommandShiftShortcut } from '@/hooks/useCommandEnterShortcut'
 import { getPlatform, isSamePath } from '@/utils/fs'
@@ -45,12 +46,21 @@ function CompressionActions() {
     <div className="w-fit flex justify-center items-center z-[10]">
       <Tooltip
         content={
-          canReconfigure
-            ? `${t('compression.reconfigure')} (${isMacOS ? '⌘⇧R' : 'Ctrl+Shift+R'})`
-            : t('compression.reconfigureOriginalReplaced', {
-                count: replacedOriginalCount,
-                context: isWindows ? 'windows' : undefined,
-              })
+          canReconfigure ? (
+            `${t('compression.reconfigure')} (${isMacOS ? '⌘⇧R' : 'Ctrl+Shift+R'})`
+          ) : (
+            // Names the setting that replaced it, as a link to it
+            <Trans
+              i18nKey="compression.reconfigureOriginalReplaced"
+              count={replacedOriginalCount}
+              context={isWindows ? 'windows' : undefined}
+              components={{
+                setting: (
+                  <SettingLink target={{ settingId: 'replaceOriginal' }} />
+                ),
+              }}
+            />
+          )
         }
         // Shown at once when it explains why it is unavailable
         delay={canReconfigure ? undefined : 0}

@@ -361,6 +361,8 @@ function General() {
       <SettingsSection title={t('settings.general.sound.title')}>
         <SettingsRow
           settingId="audioWaveforms"
+          // Drawn over the player, which Linux only has with video previews on
+          isVisible={!isLinux || enableVideoPreviews}
           title={t('settings.general.sound.audioWaveforms.title')}
           description={t('settings.general.sound.audioWaveforms.description')}
         >

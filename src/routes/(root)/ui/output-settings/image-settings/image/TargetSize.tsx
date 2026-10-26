@@ -5,6 +5,7 @@ import { useSnapshot } from 'valtio'
 import StepperInput from '@/components/StepperInput'
 import UnitSwitch from '@/components/UnitSwitch'
 import { useSyncState } from '@/hooks/useSyncState'
+import { getTargetSizeWarning, MediaFile } from '@/routes/(root)/-compression'
 import { appProxy, normalizeBatchMediaConfig } from '@/routes/(root)/-state'
 import {
   DEFAULT_IMAGE_TARGET_SIZE_IN_KB,
@@ -13,9 +14,7 @@ import {
   KB_PER_MB,
   MAX_IMAGE_TARGET_SIZE_IN_KB,
   MIN_IMAGE_TARGET_SIZE_IN_KB,
-  supportsImageTargetSize,
 } from '@/utils/imageTargetSize'
-import { cn } from '@/utils/tailwind'
 
 type TargetSizeProps = {
   mediaIndex: number
@@ -41,7 +40,7 @@ function TargetSize({ mediaIndex }: TargetSizeProps) {
       ? media[mediaIndex]
       : null
   const { config } = image ?? {}
-  const { targetSizeInKB: targetSizeGlobal, convertToExtension } =
+  const { targetSizeInKB: targetSizeGlobal } =
     config ?? commonConfigForBatchCompression.imageConfig ?? {}
 
   const setTargetSizeGlobal = useCallback(
@@ -80,10 +79,15 @@ function TargetSize({ mediaIndex }: TargetSizeProps) {
   const [isInMB, setIsInMB] = useState(() => targetSize >= KB_PER_MB)
   const unitScale = isInMB ? KB_PER_MB : 1
 
-  // SVGs & GIFs cannot be compressed to a size: a single one's format, or the batch's output
-  const isSupported = image
-    ? supportsImageTargetSize(image.extension, convertToExtension)
-    : supportsImageTargetSize(null, convertToExtension)
+  // SVGs & GIFs cannot be compressed to a size: this image, or any image of the batch (which is
+  // then not compressed until another format, or the quality, is chosen)
+  const warning = image
+    ? getTargetSizeWarning(image as MediaFile)
+    : (media
+        .filter((mediaFile) => mediaFile.type === 'image')
+        .map((mediaFile) => getTargetSizeWarning(mediaFile as MediaFile))
+        .find(Boolean) ?? null)
+  const isSupported = !warning
 
   return (
     <div>
@@ -106,26 +110,18 @@ function TargetSize({ mediaIndex }: TargetSizeProps) {
             aria-label={t('targetSize.switchUnit', {
               unit: isInMB ? 'KB' : 'MB',
             })}
-            disabled={shouldDisableInput}
+            disabled={shouldDisableInput || !isSupported}
           />
         }
         onChange={(value) => setTargetSize(Math.round(value * unitScale))}
         isDisabled={shouldDisableInput || !isSupported}
       />
-      <p
-        className={cn(
-          'mt-2 text-xs',
-          isSupported
-            ? 'text-zinc-500 dark:text-zinc-400'
-            : 'text-warning-600 dark:text-warning-400',
-        )}
-      >
-        {!isSupported
-          ? t('targetSize.notForSvgOrGif')
-          : image
-            ? t('targetSize.imageFit')
-            : t('targetSize.eachImage')}
-      </p>
+      {/* Only why it cannot be used: the size it comes out at is only known once compressed */}
+      {warning ? (
+        <p className="mt-2 text-xs text-warning-600 dark:text-warning-400">
+          {t(warning)}
+        </p>
+      ) : null}
     </div>
   )
 }

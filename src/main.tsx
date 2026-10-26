@@ -34,11 +34,15 @@ if (storedColor) {
   document.documentElement.style.setProperty('--color-primary', storedColor)
 }
 
-// Apply the theme before the first render (`useTheme` only applies it in an effect, after the
-// first paint), so the first frame shown when the window appears already matches it
+// Apply the theme before the first render, so the first frame shown when the window appears
+// already matches it: the chosen one, or the system's (by default; corrected by `useThemeSync`
+// where the webview reports it wrongly)
+const storedTheme = localStorage.getItem('theme')
 document.documentElement.classList.toggle(
   'dark',
-  localStorage.getItem('theme') !== 'light',
+  storedTheme === 'dark' ||
+    (storedTheme !== 'light' &&
+      window.matchMedia('(prefers-color-scheme: dark)').matches),
 )
 
 const rootElement = document.getElementById('app')!

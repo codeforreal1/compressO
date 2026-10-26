@@ -44,7 +44,7 @@
         },
         "theme": {
           "title": "Design",
-          "description": "Zwischen heller und dunkler Oberfläche wechseln."
+          "description": "Dem System folgen oder immer hell oder dunkel verwenden."
         },
         "accentColor": {
           "title": "Akzentfarbe",
@@ -822,10 +822,10 @@
     "confirmCancel": "Abbrechen bestätigen",
     "cancelling": "Wird abgebrochen …",
     "reconfigure": "Neu konfigurieren",
-    "reconfigureOriginalReplaced_one": "Das Original wurde in den Papierkorb verschoben und durch die komprimierte Datei ersetzt, daher kann sie nicht erneut komprimiert werden.",
-    "reconfigureOriginalReplaced_other": "{{count}} Originale wurden in den Papierkorb verschoben und durch die komprimierten Dateien ersetzt, daher können sie nicht erneut komprimiert werden.",
-    "reconfigureOriginalReplaced_windows_one": "Das Original wurde in den Papierkorb verschoben und durch die komprimierte Datei ersetzt, daher kann sie nicht erneut komprimiert werden.",
-    "reconfigureOriginalReplaced_windows_other": "{{count}} Originale wurden in den Papierkorb verschoben und durch die komprimierten Dateien ersetzt, daher können sie nicht erneut komprimiert werden.",
+    "reconfigureOriginalReplaced_one": "Das Original wurde in den Papierkorb verschoben, weil <setting>Originaldateien ersetzen</setting> aktiviert ist, daher kann es nicht erneut komprimiert werden.",
+    "reconfigureOriginalReplaced_other": "{{count}} Originale wurden in den Papierkorb verschoben, weil <setting>Originaldateien ersetzen</setting> aktiviert ist, daher können sie nicht erneut komprimiert werden.",
+    "reconfigureOriginalReplaced_windows_one": "Das Original wurde in den Papierkorb verschoben, weil <setting>Originaldateien ersetzen</setting> aktiviert ist, daher kann es nicht erneut komprimiert werden.",
+    "reconfigureOriginalReplaced_windows_other": "{{count}} Originale wurden in den Papierkorb verschoben, weil <setting>Originaldateien ersetzen</setting> aktiviert ist, daher können sie nicht erneut komprimiert werden.",
     "pauseFailed": "Die Komprimierung konnte nicht pausiert werden.",
     "resumeFailed": "Die Komprimierung konnte nicht fortgesetzt werden.",
     "failed": "Bei der Komprimierung ist ein Fehler aufgetreten.",
@@ -932,7 +932,12 @@
     "enter": "Eingabe"
   },
   "theme": {
-    "toggle": "Design wechseln"
+    "title": "Design",
+    "options": {
+      "system": "System",
+      "light": "Hell",
+      "dark": "Dunkel"
+    }
   },
   "errorBoundary": {
     "title": "Es ist ein Fehler aufgetreten.",
@@ -989,21 +994,17 @@
     "estimate": "Etwa {{width}}×{{height}} bei {{fps}} fps, innerhalb von {{size}} MB.",
     "estimateLowered": "Auf {{width}}×{{height}} bei {{fps}} fps verringert, um in {{size}} MB zu passen.",
     "notForGif": "GIFs können nicht auf eine Größe komprimiert werden. Wählen Sie ein anderes Format oder komprimieren Sie nach Qualität.",
-    "eachAudio": "Jede Audiodatei wird im gewählten Format so komprimiert, dass sie in diese Größe passt.",
-    "audioEstimate": "Etwa {{bitrate}} kbit/s. Das gewählte Format und die Audiokanäle bleiben erhalten.",
+    "audioEstimate": "Etwa {{bitrate}} kbit/s.",
     "audioLossless": "Das gewählte Audioformat oder der Codec kann durch Bitratensteuerung keine beliebige Zielgröße erreichen. Wähle ein anderes Format oder einen anderen Codec oder komprimiere nach Qualität. Deine Auswahl wird nicht automatisch geändert.",
     "audioDurationMissing": "Die Audiodauer muss bekannt sein, bevor auf eine Zielgröße komprimiert werden kann.",
     "audioTooSmall": "Diese Zielgröße ist für das gewählte Audioformat und die Dauer zu klein. Erhöhe die Größe oder kürze die Aufnahme.",
     "notReachedAudio": "Die Zielgröße konnte im gewählten Audioformat nicht erreicht werden. Die kleinste verfügbare Ausgabedatei wird angezeigt.",
-    "eachVideo": "Jedes Video wird so komprimiert, dass es in diese Größe passt.",
     "round": "Runde {{round}}",
     "roundDetail": "Runde {{round}}: Annäherung an die Zielgröße",
     "roundWithoutHardwareAcceleration": "Runde {{round}}: ohne Hardwarebeschleunigung, um der Zielgröße näherzukommen",
     "fitsAtQuality": "Die gewählte Qualität passt bereits, mit etwa {{size}}, daher wird sie verwendet.",
     "switchUnit": "Größe in {{unit}} anzeigen",
     "notForSvgOrGif": "SVGs und GIFs können nicht auf eine Größe komprimiert werden. Wählen Sie ein anderes Format oder komprimieren Sie nach Qualität.",
-    "imageFit": "Es wird die höchste Qualität verwendet, die passt, und das Bild wird nur verkleinert, wenn es nötig ist.",
-    "eachImage": "Jedes Bild wird so komprimiert, dass es in diese Größe passt.",
     "notReachedImage": "Kleiner lässt sich das Bild nicht machen, ohne zu klein zu werden. Die Zielgröße war {{size}}."
   },
   "outputOptions": {

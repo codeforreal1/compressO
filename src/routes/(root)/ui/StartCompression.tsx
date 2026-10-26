@@ -25,11 +25,11 @@ import PauseCompression from './PauseCompression'
 import SaveMedia from './SaveMedia'
 import {
   getAudioTargetSizePlan,
-  getAudioTargetSizeWarning,
   getMediaItemConfig,
   getOutputOptions,
   getQualitySizeEstimate,
   getTargetSizePlan,
+  getTargetSizeWarning,
   type MediaFile,
   waitForDropZone,
 } from '../-compression'
@@ -78,8 +78,9 @@ function StartCompression() {
       media,
     },
   } = useSnapshot(appProxy)
-  const hasInvalidAudioTarget = media.some(
-    (item) => getAudioTargetSizeWarning(item as MediaFile) != null,
+  // A target size that cannot be reached (e.g. for a GIF) is fixed before compressing
+  const hasInvalidTargetSize = media.some(
+    (item) => getTargetSizeWarning(item as MediaFile) != null,
   )
 
   const handleCompression = useCallback(async () => {
@@ -98,7 +99,7 @@ function StartCompression() {
     // Recheck after flushing inputs, including keyboard activation and pending changes.
     if (
       appSnapshot.state.media.some(
-        (item) => getAudioTargetSizeWarning(item as MediaFile) != null,
+        (item) => getTargetSizeWarning(item as MediaFile) != null,
       )
     )
       return
@@ -345,7 +346,7 @@ function StartCompression() {
     !isCompressing &&
     !isProcessCompleted &&
     !isLoadingMediaFiles &&
-    !hasInvalidAudioTarget
+    !hasInvalidTargetSize
   useCommandEnterShortcut(isShortcutEnabled, handleCompression)
   // Holding ⌘ (Ctrl) reveals the shortcut on the button
   const isCommandKeyHeld = useCommandKeyHeld(isShortcutEnabled)
@@ -369,7 +370,7 @@ function StartCompression() {
           className="w-full"
           color="primary"
           variant="solid"
-          isDisabled={isLoadingMediaFiles || hasInvalidAudioTarget}
+          isDisabled={isLoadingMediaFiles || hasInvalidTargetSize}
         >
           {t('compression.process')}
           <ShortcutHint isVisible={isCommandKeyHeld} />

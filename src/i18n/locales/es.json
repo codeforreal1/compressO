@@ -44,7 +44,7 @@
         },
         "theme": {
           "title": "Tema",
-          "description": "Cambiar entre la interfaz clara y la oscura."
+          "description": "Seguir el sistema, o usar siempre el modo claro u oscuro."
         },
         "accentColor": {
           "title": "Color de acento",
@@ -833,12 +833,12 @@
     "confirmCancel": "Confirmar cancelación",
     "cancelling": "Cancelando…",
     "reconfigure": "Reconfigurar",
-    "reconfigureOriginalReplaced_one": "El original se movió a la Papelera y se reemplazó por el archivo comprimido, por lo que no puede comprimirse de nuevo.",
-    "reconfigureOriginalReplaced_many": "{{count}} originales se movieron a la Papelera y se reemplazaron por los archivos comprimidos, por lo que no pueden comprimirse de nuevo.",
-    "reconfigureOriginalReplaced_other": "{{count}} originales se movieron a la Papelera y se reemplazaron por los archivos comprimidos, por lo que no pueden comprimirse de nuevo.",
-    "reconfigureOriginalReplaced_windows_one": "El original se movió a la Papelera de reciclaje y se reemplazó por el archivo comprimido, por lo que no puede comprimirse de nuevo.",
-    "reconfigureOriginalReplaced_windows_many": "{{count}} originales se movieron a la Papelera de reciclaje y se reemplazaron por los archivos comprimidos, por lo que no pueden comprimirse de nuevo.",
-    "reconfigureOriginalReplaced_windows_other": "{{count}} originales se movieron a la Papelera de reciclaje y se reemplazaron por los archivos comprimidos, por lo que no pueden comprimirse de nuevo.",
+    "reconfigureOriginalReplaced_one": "El original se movió a la Papelera porque <setting>Reemplazar archivos originales</setting> está activado, por lo que no puede comprimirse de nuevo.",
+    "reconfigureOriginalReplaced_many": "{{count}} originales se movieron a la Papelera porque <setting>Reemplazar archivos originales</setting> está activado, por lo que no pueden comprimirse de nuevo.",
+    "reconfigureOriginalReplaced_other": "{{count}} originales se movieron a la Papelera porque <setting>Reemplazar archivos originales</setting> está activado, por lo que no pueden comprimirse de nuevo.",
+    "reconfigureOriginalReplaced_windows_one": "El original se movió a la Papelera de reciclaje porque <setting>Reemplazar archivos originales</setting> está activado, por lo que no puede comprimirse de nuevo.",
+    "reconfigureOriginalReplaced_windows_many": "{{count}} originales se movieron a la Papelera de reciclaje porque <setting>Reemplazar archivos originales</setting> está activado, por lo que no pueden comprimirse de nuevo.",
+    "reconfigureOriginalReplaced_windows_other": "{{count}} originales se movieron a la Papelera de reciclaje porque <setting>Reemplazar archivos originales</setting> está activado, por lo que no pueden comprimirse de nuevo.",
     "pauseFailed": "No se pudo pausar la compresión.",
     "resumeFailed": "No se pudo reanudar la compresión.",
     "failed": "Se ha producido un error durante la compresión.",
@@ -947,7 +947,12 @@
     "enter": "Intro"
   },
   "theme": {
-    "toggle": "Cambiar tema"
+    "title": "Tema",
+    "options": {
+      "system": "Sistema",
+      "light": "Claro",
+      "dark": "Oscuro"
+    }
   },
   "errorBoundary": {
     "title": "Se ha producido un error.",
@@ -1004,21 +1009,17 @@
     "estimate": "Aproximadamente {{width}}×{{height}} a {{fps}} fps, dentro de {{size}} MB.",
     "estimateLowered": "Reducido a {{width}}×{{height}} a {{fps}} fps para caber en {{size}} MB.",
     "notForGif": "Los GIF no se pueden comprimir a un tamaño. Elija otro formato o comprima por calidad.",
-    "eachAudio": "Cada archivo de audio se comprime en el formato seleccionado para caber en este tamaño.",
-    "audioEstimate": "Unos {{bitrate}} kbps, conservando el formato y los canales seleccionados.",
+    "audioEstimate": "Unos {{bitrate}} kbps.",
     "audioLossless": "El formato o códec de audio seleccionado no permite alcanzar cualquier tamaño objetivo mediante el control de la tasa de bits. Elige otro formato o códec, o comprime por calidad. Tus selecciones no se cambiarán automáticamente.",
     "audioDurationMissing": "Es necesario conocer la duración del audio antes de comprimir a un tamaño objetivo.",
     "audioTooSmall": "Este tamaño objetivo es demasiado pequeño para el formato y la duración del audio seleccionados. Aumenta el tamaño o recorta la grabación.",
     "notReachedAudio": "No se pudo alcanzar el tamaño objetivo en el formato de audio seleccionado. Se muestra el archivo de salida más pequeño disponible.",
-    "eachVideo": "Cada vídeo se comprime para caber en este tamaño.",
     "round": "Ronda {{round}}",
     "roundDetail": "Ronda {{round}}: acercándose al tamaño objetivo",
     "roundWithoutHardwareAcceleration": "Ronda {{round}}: sin aceleración por hardware, para acercarse al tamaño objetivo",
     "fitsAtQuality": "La calidad elegida ya cabe, con unos {{size}}, por lo que se utiliza.",
     "switchUnit": "Mostrar el tamaño en {{unit}}",
     "notForSvgOrGif": "Los SVG y los GIF no se pueden comprimir a un tamaño. Elija otro formato o comprima por calidad.",
-    "imageFit": "Se usa la calidad más alta que cabe, y la imagen solo se reduce cuando es necesario.",
-    "eachImage": "Cada imagen se comprime para caber en este tamaño.",
     "notReachedImage": "La imagen no puede ser más pequeña sin quedar demasiado reducida. El tamaño objetivo era {{size}}."
   },
   "outputOptions": {

@@ -44,7 +44,7 @@
         },
         "theme": {
           "title": "테마",
-          "description": "밝은 인터페이스와 어두운 인터페이스 사이를 전환합니다."
+          "description": "시스템 설정을 따르거나 항상 밝게 또는 어둡게 사용합니다."
         },
         "accentColor": {
           "title": "강조 색상",
@@ -811,8 +811,8 @@
     "confirmCancel": "취소 확인",
     "cancelling": "취소하는 중…",
     "reconfigure": "다시 구성",
-    "reconfigureOriginalReplaced_other": "원본이 휴지통으로 이동되고 압축된 파일로 대체되었기 때문에 다시 압축할 수 없습니다.",
-    "reconfigureOriginalReplaced_windows_other": "원본이 휴지통으로 이동되고 압축된 파일로 대체되었기 때문에 다시 압축할 수 없습니다.",
+    "reconfigureOriginalReplaced_other": "<setting>원본 파일 바꾸기</setting>이(가) 켜져 있어 원본이 휴지통으로 이동되었기 때문에 다시 압축할 수 없습니다.",
+    "reconfigureOriginalReplaced_windows_other": "<setting>원본 파일 바꾸기</setting>이(가) 켜져 있어 원본이 휴지통으로 이동되었기 때문에 다시 압축할 수 없습니다.",
     "pauseFailed": "압축을 일시정지할 수 없습니다.",
     "resumeFailed": "압축을 재개할 수 없습니다.",
     "failed": "압축 중 문제가 발생했습니다.",
@@ -917,7 +917,12 @@
     "enter": "Enter"
   },
   "theme": {
-    "toggle": "테마 전환"
+    "title": "테마",
+    "options": {
+      "system": "시스템",
+      "light": "밝게",
+      "dark": "어둡게"
+    }
   },
   "errorBoundary": {
     "title": "오류가 발생했습니다.",
@@ -974,21 +979,17 @@
     "estimate": "약 {{width}}×{{height}}, {{fps}} fps, {{size}} MB 이내.",
     "estimateLowered": "{{size}} MB 이내로 맞추기 위해 {{width}}×{{height}}, {{fps}} fps로 낮췄습니다.",
     "notForGif": "GIF는 크기를 지정하여 압축할 수 없습니다. 다른 형식을 선택하거나 화질로 압축하십시오.",
-    "eachAudio": "각 오디오 파일은 선택한 형식으로 이 크기 이내가 되도록 압축됩니다.",
-    "audioEstimate": "약 {{bitrate}} kbps로, 선택한 형식과 채널을 유지합니다.",
+    "audioEstimate": "약 {{bitrate}} kbps.",
     "audioLossless": "선택한 오디오 형식이나 코덱은 비트레이트 조절만으로 임의의 목표 크기를 맞출 수 없습니다. 다른 형식이나 코덱을 선택하거나 품질 기준으로 압축하세요. 선택한 설정은 자동으로 변경되지 않습니다.",
     "audioDurationMissing": "목표 크기로 압축하려면 오디오 길이를 알아야 합니다.",
     "audioTooSmall": "선택한 오디오 형식과 길이에 비해 목표 크기가 너무 작습니다. 크기를 늘리거나 녹음을 잘라내세요.",
     "notReachedAudio": "선택한 오디오 형식으로 목표 크기를 맞추지 못했습니다. 생성된 출력 파일 중 가장 작은 파일을 표시합니다.",
-    "eachVideo": "각 동영상은 이 크기 이내로 압축됩니다.",
     "round": "{{round}}차",
     "roundDetail": "{{round}}차: 목표 크기에 가까워지는 중입니다",
     "roundWithoutHardwareAcceleration": "{{round}}차: 목표 크기에 가까워지기 위해 하드웨어 가속 없이 압축하는 중입니다",
     "fitsAtQuality": "선택한 품질로 이미 맞으므로(약 {{size}}) 해당 품질을 사용합니다.",
     "switchUnit": "크기를 {{unit}}(으)로 표시",
     "notForSvgOrGif": "SVG와 GIF는 크기를 지정하여 압축할 수 없습니다. 다른 형식을 선택하거나 화질로 압축하십시오.",
-    "imageFit": "크기에 맞는 가장 높은 화질이 사용되며, 필요한 경우에만 이미지가 축소됩니다.",
-    "eachImage": "각 이미지는 이 크기 이내로 압축됩니다.",
     "notReachedImage": "이미지를 너무 작게 만들지 않고는 더 줄일 수 없습니다. 목표 크기는 {{size}}였습니다."
   },
   "outputOptions": {

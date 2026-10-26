@@ -44,7 +44,7 @@
         },
         "theme": {
           "title": "Chủ đề",
-          "description": "Chuyển đổi giữa giao diện sáng và tối."
+          "description": "Theo hệ thống, hoặc luôn dùng giao diện sáng hoặc tối."
         },
         "accentColor": {
           "title": "Màu nhấn",
@@ -811,8 +811,8 @@
     "confirmCancel": "Xác nhận hủy",
     "cancelling": "Đang hủy…",
     "reconfigure": "Cấu hình lại",
-    "reconfigureOriginalReplaced_other": "Tệp gốc đã được chuyển vào Thùng rác và thay bằng tệp đã nén, nên không thể nén lại.",
-    "reconfigureOriginalReplaced_windows_other": "Tệp gốc đã được chuyển vào Thùng rác và thay bằng tệp đã nén, nên không thể nén lại.",
+    "reconfigureOriginalReplaced_other": "Tệp gốc đã được chuyển vào Thùng rác vì <setting>Thay thế tệp gốc</setting> đang bật, nên không thể nén lại.",
+    "reconfigureOriginalReplaced_windows_other": "Tệp gốc đã được chuyển vào Thùng rác vì <setting>Thay thế tệp gốc</setting> đang bật, nên không thể nén lại.",
     "pauseFailed": "Không thể tạm dừng quá trình nén.",
     "resumeFailed": "Không thể tiếp tục quá trình nén.",
     "failed": "Đã xảy ra lỗi trong quá trình nén.",
@@ -917,7 +917,12 @@
     "enter": "Enter"
   },
   "theme": {
-    "toggle": "Chuyển chủ đề"
+    "title": "Chủ đề",
+    "options": {
+      "system": "Hệ thống",
+      "light": "Sáng",
+      "dark": "Tối"
+    }
   },
   "errorBoundary": {
     "title": "Đã xảy ra lỗi.",
@@ -974,21 +979,17 @@
     "estimate": "Khoảng {{width}}×{{height}} ở {{fps}} fps, trong {{size}} MB.",
     "estimateLowered": "Đã giảm xuống {{width}}×{{height}} ở {{fps}} fps để vừa trong {{size}} MB.",
     "notForGif": "Không thể nén GIF theo kích thước. Hãy chọn định dạng khác hoặc nén theo chất lượng.",
-    "eachAudio": "Mỗi tệp âm thanh được nén theo định dạng đã chọn để vừa trong kích thước này.",
-    "audioEstimate": "Khoảng {{bitrate}} kbps, giữ nguyên định dạng và các kênh đã chọn.",
+    "audioEstimate": "Khoảng {{bitrate}} kbps.",
     "audioLossless": "Định dạng hoặc bộ mã hóa âm thanh đã chọn không thể đạt kích thước mục tiêu tùy ý bằng cách điều chỉnh tốc độ bit. Hãy chọn định dạng hoặc bộ mã hóa khác, hoặc nén theo chất lượng. Các lựa chọn của bạn sẽ không tự động thay đổi.",
     "audioDurationMissing": "Cần biết thời lượng âm thanh trước khi nén đến kích thước mục tiêu.",
     "audioTooSmall": "Kích thước mục tiêu này quá nhỏ so với định dạng và thời lượng âm thanh đã chọn. Hãy tăng kích thước hoặc cắt bớt bản ghi.",
     "notReachedAudio": "Không thể đạt kích thước mục tiêu trong định dạng âm thanh đã chọn. Tệp đầu ra nhỏ nhất hiện có được hiển thị.",
-    "eachVideo": "Mỗi video được nén để vừa trong kích thước này.",
     "round": "Lượt {{round}}",
     "roundDetail": "Lượt {{round}}: đang tiến gần kích thước mục tiêu",
     "roundWithoutHardwareAcceleration": "Lượt {{round}}: không dùng tăng tốc phần cứng, để tiến gần kích thước mục tiêu",
     "fitsAtQuality": "Chất lượng đã chọn đã vừa, khoảng {{size}}, nên chất lượng này được sử dụng.",
     "switchUnit": "Hiển thị kích thước theo {{unit}}",
     "notForSvgOrGif": "Không thể nén SVG và GIF theo kích thước. Hãy chọn định dạng khác hoặc nén theo chất lượng.",
-    "imageFit": "Chất lượng cao nhất vừa với kích thước sẽ được dùng, và hình ảnh chỉ được thu nhỏ khi cần thiết.",
-    "eachImage": "Mỗi hình ảnh được nén để vừa trong kích thước này.",
     "notReachedImage": "Không thể làm hình ảnh nhỏ hơn nữa mà không khiến nó quá nhỏ. Kích thước mục tiêu là {{size}}."
   },
   "outputOptions": {

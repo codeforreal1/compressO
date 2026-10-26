@@ -44,7 +44,7 @@
         },
         "theme": {
           "title": "Theme",
-          "description": "Switch between the light and dark interface."
+          "description": "Follow the system, or always use light or dark."
         },
         "accentColor": {
           "title": "Accent color",
@@ -822,10 +822,10 @@
     "confirmCancel": "Confirm Cancel",
     "cancelling": "Cancelling...",
     "reconfigure": "Reconfigure",
-    "reconfigureOriginalReplaced_one": "The original was moved to the Trash and replaced by the compressed file, so it cannot be compressed again.",
-    "reconfigureOriginalReplaced_other": "{{count}} originals were moved to the Trash and replaced by the compressed files, so they cannot be compressed again.",
-    "reconfigureOriginalReplaced_windows_one": "The original was moved to the Recycle Bin and replaced by the compressed file, so it cannot be compressed again.",
-    "reconfigureOriginalReplaced_windows_other": "{{count}} originals were moved to the Recycle Bin and replaced by the compressed files, so they cannot be compressed again.",
+    "reconfigureOriginalReplaced_one": "The original was moved to the Trash because <setting>Replace original files</setting> is on, so it cannot be compressed again.",
+    "reconfigureOriginalReplaced_other": "{{count}} originals were moved to the Trash because <setting>Replace original files</setting> is on, so they cannot be compressed again.",
+    "reconfigureOriginalReplaced_windows_one": "The original was moved to the Recycle Bin because <setting>Replace original files</setting> is on, so it cannot be compressed again.",
+    "reconfigureOriginalReplaced_windows_other": "{{count}} originals were moved to the Recycle Bin because <setting>Replace original files</setting> is on, so they cannot be compressed again.",
     "pauseFailed": "The compression could not be paused.",
     "resumeFailed": "The compression could not be resumed.",
     "failed": "Something went wrong during compression.",
@@ -932,7 +932,12 @@
     "enter": "Enter"
   },
   "theme": {
-    "toggle": "Toggle theme"
+    "title": "Theme",
+    "options": {
+      "system": "System",
+      "light": "Light",
+      "dark": "Dark"
+    }
   },
   "errorBoundary": {
     "title": "Oops, there is an error!",
@@ -989,21 +994,17 @@
     "estimate": "About {{width}}×{{height}} at {{fps}} fps, within {{size}} MB.",
     "estimateLowered": "Lowered to {{width}}×{{height}} at {{fps}} fps to fit within {{size}} MB.",
     "notForGif": "GIFs cannot be compressed to a size. Choose another format, or compress by quality.",
-    "eachAudio": "Each audio file is compressed to fit within this size, in the selected format.",
-    "audioEstimate": "About {{bitrate}} kbps, preserving the selected format and channels.",
+    "audioEstimate": "About {{bitrate}} kbps.",
     "audioLossless": "The selected audio format or codec cannot reach an arbitrary target size with bitrate control. Choose another format or codec, or compress by quality. Your selections will not be changed automatically.",
     "audioDurationMissing": "The audio duration must be known before compressing to a target size.",
     "audioTooSmall": "This target is too small for the selected audio format and duration. Increase the size or trim the recording.",
     "notReachedAudio": "The target size could not be reached in the selected audio format. The smallest available output is shown.",
-    "eachVideo": "Each video is compressed to fit within this size.",
     "round": "Round {{round}}",
     "roundDetail": "Round {{round}}: getting closer to the target size",
     "roundWithoutHardwareAcceleration": "Round {{round}}: without hardware acceleration, to get closer to the target size",
     "fitsAtQuality": "The chosen quality already fits, at about {{size}}, so it is used.",
     "switchUnit": "Show the size in {{unit}}",
     "notForSvgOrGif": "SVGs and GIFs cannot be compressed to a size. Choose another format, or compress by quality.",
-    "imageFit": "The highest quality that fits is used, and the image is made smaller only when it has to be.",
-    "eachImage": "Each image is compressed to fit within this size.",
     "notReachedImage": "This is as small as the image can be made without becoming too small. The target size was {{size}}."
   },
   "outputOptions": {

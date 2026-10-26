@@ -7,21 +7,24 @@ import { cn } from '@/utils/tailwind'
 type GlidingToggleOption<T extends string> = {
   value: T
   label: React.ReactNode
+  /** Its name, for a label that has no text (e.g. an icon) */
+  'aria-label'?: string
 }
 
 type GlidingToggleProps<T extends string> = {
-  /** Two choices, side by side */
-  options: readonly [GlidingToggleOption<T>, GlidingToggleOption<T>]
+  /** The choices, side by side (two or more) */
+  options: readonly GlidingToggleOption<T>[]
   value: T
-  onChange: (value: T) => void
+  /** With the option's button, e.g. to start an animation from it */
+  onChange: (value: T, target: HTMLButtonElement) => void
   isDisabled?: boolean
   'aria-label': string
   className?: string
 }
 
 /**
- * A choice between two options in one rounded track: a frosted glass pill (like the website's
- * buttons) glides behind the chosen one, which reads as normal text while the other is dimmed
+ * A choice between options in one rounded track: a frosted glass pill (like the website's
+ * buttons) glides behind the chosen one, which reads as normal text while the others are dimmed
  */
 function GlidingToggle<T extends string>(props: GlidingToggleProps<T>) {
   const { options, value, onChange, isDisabled, className, ...rest } = props
@@ -33,28 +36,37 @@ function GlidingToggle<T extends string>(props: GlidingToggleProps<T>) {
       role="radiogroup"
       aria-label={rest['aria-label']}
       aria-disabled={isDisabled}
+      style={{ gridTemplateColumns: `repeat(${options.length}, 1fr)` }}
       className={cn(
-        'relative inline-grid grid-cols-2 rounded-full p-0.5',
+        'relative inline-grid rounded-full p-0.5',
         glassTrack,
         isDisabled && 'opacity-60',
         className,
       )}
       onKeyDown={(event) => {
         if (isDisabled) return
-        if (event.key === 'ArrowLeft') onChange(options[0].value)
-        if (event.key === 'ArrowRight') onChange(options[1].value)
+        const step =
+          event.key === 'ArrowLeft' ? -1 : event.key === 'ArrowRight' ? 1 : 0
+        const next = options[chosenIndex + step]
+        if (!step || !next) return
+        const buttons =
+          event.currentTarget.querySelectorAll<HTMLButtonElement>('button')
+        const target = buttons[chosenIndex + step]
+        target.focus()
+        onChange(next.value, target)
       }}
     >
       {/* The pill, behind the chosen option */}
       <motion.span
         aria-hidden="true"
         className={cn(
-          'absolute top-0.5 bottom-0.5 left-0.5 w-[calc(50%-2px)] rounded-full',
+          'absolute top-0.5 bottom-0.5 left-0.5 rounded-full',
           glassSurface,
           'backdrop-blur-md',
         )}
+        style={{ width: `calc((100% - 4px) / ${options.length})` }}
         initial={false}
-        animate={{ x: chosenIndex === 1 ? '100%' : '0%' }}
+        animate={{ x: `${Math.max(chosenIndex, 0) * 100}%` }}
         transition={
           reduceMotion
             ? { duration: 0 }
@@ -69,10 +81,11 @@ function GlidingToggle<T extends string>(props: GlidingToggleProps<T>) {
             type="button"
             role="radio"
             aria-checked={isChosen}
+            aria-label={option['aria-label']}
             tabIndex={isChosen ? 0 : -1}
             disabled={isDisabled}
-            onClick={() => {
-              if (!isChosen) onChange(option.value)
+            onClick={(event) => {
+              if (!isChosen) onChange(option.value, event.currentTarget)
             }}
             className={cn(
               'relative z-10 flex h-[22px] items-center justify-center rounded-full px-3 text-[11px]',

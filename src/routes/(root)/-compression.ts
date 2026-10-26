@@ -288,6 +288,27 @@ export function getAudioTargetSizeWarning(media: MediaFile) {
 }
 
 /**
+ * Why a media cannot be compressed to its target size (`null` when it can, or when it is
+ * compressed by quality): shown under its target size, which cannot be changed then (except for
+ * an audio size that is too small), & compressing does not start until it is fixed
+ */
+export function getTargetSizeWarning(media: MediaFile) {
+  if (!media.config?.shouldUseTargetSize) return null
+  if (media.type === 'image') {
+    return supportsImageTargetSize(
+      media.extension,
+      media.config.convertToExtension,
+    )
+      ? null
+      : ('targetSize.notForSvgOrGif' as const)
+  }
+  if (media.config.convertToExtension === 'gif') {
+    return 'targetSize.notForGif' as const
+  }
+  return getAudioTargetSizeWarning(media)
+}
+
+/**
  * The size an image is resized to: its custom dimensions, or the size of a batch (from a preset)
  * for images without their own (`null` to keep its size). SVGs are resized with the SVG scale
  * factor instead.

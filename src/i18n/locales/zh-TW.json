@@ -44,7 +44,7 @@
         },
         "theme": {
           "title": "主題",
-          "description": "在淺色與深色介面之間切換。"
+          "description": "跟隨系統，或一律使用淺色或深色。"
         },
         "accentColor": {
           "title": "強調色",
@@ -811,8 +811,8 @@
     "confirmCancel": "確認取消",
     "cancelling": "正在取消…",
     "reconfigure": "重新設定",
-    "reconfigureOriginalReplaced_other": "原始檔案已移至垃圾桶並由壓縮後的檔案取代，因此無法再次壓縮。",
-    "reconfigureOriginalReplaced_windows_other": "原始檔案已移至資源回收筒並由壓縮後的檔案取代，因此無法再次壓縮。",
+    "reconfigureOriginalReplaced_other": "由於已開啟<setting>取代原始檔案</setting>，原始檔案已移至垃圾桶，因此無法再次壓縮。",
+    "reconfigureOriginalReplaced_windows_other": "由於已開啟<setting>取代原始檔案</setting>，原始檔案已移至資源回收筒，因此無法再次壓縮。",
     "pauseFailed": "無法暫停壓縮。",
     "resumeFailed": "無法繼續壓縮。",
     "failed": "壓縮過程中發生錯誤。",
@@ -917,7 +917,12 @@
     "enter": "Enter"
   },
   "theme": {
-    "toggle": "切換主題"
+    "title": "主題",
+    "options": {
+      "system": "跟隨系統",
+      "light": "淺色",
+      "dark": "深色"
+    }
   },
   "errorBoundary": {
     "title": "發生錯誤。",
@@ -974,21 +979,17 @@
     "estimate": "約 {{width}}×{{height}}，{{fps}} fps，不超過 {{size}} MB。",
     "estimateLowered": "已降至 {{width}}×{{height}}，{{fps}} fps，以控制在 {{size}} MB 以內。",
     "notForGif": "GIF 無法依大小壓縮。請選擇其他格式，或依品質壓縮。",
-    "eachAudio": "每個音訊檔案都會以所選格式壓縮到此大小以內。",
-    "audioEstimate": "約 {{bitrate}} kbps，保留所選格式和聲道。",
+    "audioEstimate": "約 {{bitrate}} kbps。",
     "audioLossless": "所選音訊格式或編解碼器無法透過控制位元率達到任意目標大小。請選擇其他格式或編解碼器，或依品質壓縮。您的選擇不會自動變更。",
     "audioDurationMissing": "壓縮到目標大小前，必須先確定音訊長度。",
     "audioTooSmall": "對於所選音訊格式和長度，此目標大小過小。請增大目標大小或裁剪錄音。",
     "notReachedAudio": "所選音訊格式未能達到目標大小。目前顯示可用的最小輸出檔案。",
-    "eachVideo": "每部影片都會壓縮到此大小以內。",
     "round": "第 {{round}} 輪",
     "roundDetail": "第 {{round}} 輪：正在接近目標大小",
     "roundWithoutHardwareAcceleration": "第 {{round}} 輪：不使用硬體加速，以接近目標大小",
     "fitsAtQuality": "所選品質已符合要求，約為 {{size}}，因此將使用該品質。",
     "switchUnit": "以 {{unit}} 顯示大小",
     "notForSvgOrGif": "SVG 和 GIF 無法依大小壓縮。請選擇其他格式，或依品質壓縮。",
-    "imageFit": "會使用能放得下的最高品質，只有在必要時才會縮小圖片。",
-    "eachImage": "每張圖片都會壓縮到此大小以內。",
     "notReachedImage": "圖片已無法在不變得過小的情況下進一步縮小。目標大小為 {{size}}。"
   },
   "outputOptions": {

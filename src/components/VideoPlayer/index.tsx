@@ -536,7 +536,7 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                 <Icon
                   name={isPlaying ? 'pause' : 'play'}
                   size={20}
-                  className="text-white drop-shadow-lg"
+                  className="text-zinc-800 dark:text-white dark:drop-shadow-lg"
                 />
               </Button>
             ) : (

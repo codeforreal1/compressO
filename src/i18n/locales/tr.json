@@ -44,7 +44,7 @@
         },
         "theme": {
           "title": "Tema",
-          "description": "Açık ve koyu arayüz arasında geçiş yapın."
+          "description": "Sistemi izleyin ya da her zaman açık veya koyu kullanın."
         },
         "accentColor": {
           "title": "Vurgu rengi",
@@ -822,10 +822,10 @@
     "confirmCancel": "İptali Onayla",
     "cancelling": "İptal ediliyor…",
     "reconfigure": "Yeniden Yapılandır",
-    "reconfigureOriginalReplaced_one": "Orijinal dosya Çöp Kutusu’na taşındı ve yerini sıkıştırılan dosya aldı; bu nedenle yeniden sıkıştırılamaz.",
-    "reconfigureOriginalReplaced_other": "{{count}} orijinal dosya Çöp Kutusu’na taşındı ve yerlerini sıkıştırılan dosyalar aldı; bu nedenle yeniden sıkıştırılamazlar.",
-    "reconfigureOriginalReplaced_windows_one": "Orijinal dosya Geri Dönüşüm Kutusu’na taşındı ve yerini sıkıştırılan dosya aldı; bu nedenle yeniden sıkıştırılamaz.",
-    "reconfigureOriginalReplaced_windows_other": "{{count}} orijinal dosya Geri Dönüşüm Kutusu’na taşındı ve yerlerini sıkıştırılan dosyalar aldı; bu nedenle yeniden sıkıştırılamazlar.",
+    "reconfigureOriginalReplaced_one": "<setting>Orijinal dosyaları değiştir</setting> açık olduğu için orijinal dosya Çöp Kutusu’na taşındı; bu nedenle yeniden sıkıştırılamaz.",
+    "reconfigureOriginalReplaced_other": "<setting>Orijinal dosyaları değiştir</setting> açık olduğu için {{count}} orijinal dosya Çöp Kutusu’na taşındı; bu nedenle yeniden sıkıştırılamazlar.",
+    "reconfigureOriginalReplaced_windows_one": "<setting>Orijinal dosyaları değiştir</setting> açık olduğu için orijinal dosya Geri Dönüşüm Kutusu’na taşındı; bu nedenle yeniden sıkıştırılamaz.",
+    "reconfigureOriginalReplaced_windows_other": "<setting>Orijinal dosyaları değiştir</setting> açık olduğu için {{count}} orijinal dosya Geri Dönüşüm Kutusu’na taşındı; bu nedenle yeniden sıkıştırılamazlar.",
     "pauseFailed": "Sıkıştırma duraklatılamadı.",
     "resumeFailed": "Sıkıştırma sürdürülemedi.",
     "failed": "Sıkıştırma sırasında bir sorun oluştu.",
@@ -932,7 +932,12 @@
     "enter": "Enter"
   },
   "theme": {
-    "toggle": "Temayı değiştir"
+    "title": "Tema",
+    "options": {
+      "system": "Sistem",
+      "light": "Açık",
+      "dark": "Koyu"
+    }
   },
   "errorBoundary": {
     "title": "Bir hata oluştu.",
@@ -989,21 +994,17 @@
     "estimate": "Yaklaşık {{width}}×{{height}}, {{fps}} fps, en fazla {{size}} MB.",
     "estimateLowered": "{{size}} MB içine sığması için {{width}}×{{height}}, {{fps}} fps değerine düşürüldü.",
     "notForGif": "GIF dosyaları bir boyuta sıkıştırılamaz. Başka bir biçim seçin veya kaliteye göre sıkıştırın.",
-    "eachAudio": "Her ses dosyası, seçilen biçimde bu boyuta sığacak şekilde sıkıştırılır.",
-    "audioEstimate": "Seçilen biçim ve kanallar korunarak yaklaşık {{bitrate}} kbps.",
+    "audioEstimate": "Yaklaşık {{bitrate}} kbps.",
     "audioLossless": "Seçilen ses biçimi veya kodlayıcı, bit hızı kontrolüyle herhangi bir hedef boyuta ulaşamaz. Başka bir biçim veya kodlayıcı seçin ya da kaliteye göre sıkıştırın. Seçimleriniz otomatik olarak değiştirilmeyecektir.",
     "audioDurationMissing": "Hedef boyuta sıkıştırmadan önce sesin süresinin bilinmesi gerekir.",
     "audioTooSmall": "Bu hedef boyut, seçilen ses biçimi ve süresi için çok küçük. Boyutu artırın veya kaydı kırpın.",
     "notReachedAudio": "Seçilen ses biçiminde hedef boyuta ulaşılamadı. Kullanılabilir en küçük çıktı dosyası gösteriliyor.",
-    "eachVideo": "Her video bu boyuta sığacak şekilde sıkıştırılır.",
     "round": "{{round}}. tur",
     "roundDetail": "{{round}}. tur: hedef boyuta yaklaşılıyor",
     "roundWithoutHardwareAcceleration": "{{round}}. tur: hedef boyuta yaklaşmak için donanım hızlandırma olmadan",
     "fitsAtQuality": "Seçilen kalite zaten sığıyor (yaklaşık {{size}}), bu nedenle kullanılıyor.",
     "switchUnit": "Boyutu {{unit}} olarak göster",
     "notForSvgOrGif": "SVG ve GIF dosyaları bir boyuta sıkıştırılamaz. Başka bir biçim seçin veya kaliteye göre sıkıştırın.",
-    "imageFit": "Sığan en yüksek kalite kullanılır ve görüntü yalnızca gerektiğinde küçültülür.",
-    "eachImage": "Her görüntü bu boyuta sığacak şekilde sıkıştırılır.",
     "notReachedImage": "Görüntü, fazla küçülmeden bundan daha küçük yapılamaz. Hedef boyut {{size}} idi."
   },
   "outputOptions": {

@@ -36,7 +36,8 @@ function DashedBorder({
       className={cn(
         'pointer-events-none absolute inset-px h-[calc(100%-2px)] w-[calc(100%-2px)] overflow-visible',
         'transition-colors duration-300',
-        isActive ? 'text-primary' : ['text-zinc-400 dark:text-white'],
+        // Darker in light mode, to show on light & frosted backgrounds (e.g. the tray's)
+        isActive ? 'text-primary' : ['text-zinc-500 dark:text-white'],
         className,
       )}
     >
@@ -50,9 +51,9 @@ function DashedBorder({
               isActive
                 ? '[stop-opacity:1]'
                 : [
-                    '[stop-opacity:0.7] dark:[stop-opacity:0.35]',
+                    '[stop-opacity:0.85] dark:[stop-opacity:0.35]',
                     isInteractive &&
-                      'group-hover:[stop-opacity:0.9] dark:group-hover:[stop-opacity:0.5]',
+                      'group-hover:[stop-opacity:1] dark:group-hover:[stop-opacity:0.5]',
                   ],
             )}
           />
@@ -64,9 +65,9 @@ function DashedBorder({
               isActive
                 ? '[stop-opacity:1]'
                 : [
-                    '[stop-opacity:0.3] dark:[stop-opacity:0.1]',
+                    '[stop-opacity:0.45] dark:[stop-opacity:0.1]',
                     isInteractive &&
-                      'group-hover:[stop-opacity:0.45] dark:group-hover:[stop-opacity:0.18]',
+                      'group-hover:[stop-opacity:0.6] dark:group-hover:[stop-opacity:0.18]',
                   ],
             )}
           />

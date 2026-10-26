@@ -1,5 +1,5 @@
 import { core } from '@tauri-apps/api'
-import { appDataDir } from '@tauri-apps/api/path'
+import { appDataDir, join } from '@tauri-apps/api/path'
 import { open, save } from '@tauri-apps/plugin-dialog'
 import { snapshot } from 'valtio'
 
@@ -451,16 +451,29 @@ export async function saveQueueOutput(
         '/',
       )
     }
-    const savedPath = await moveFile(
-      output.outputPath,
-      `${destinationDirectory}/${outputFilePrefix}${output.outputFileName}`,
-      {
-        replaceOriginal: settingsStore.replaceOriginalFiles
-          ? output.sourcePath
-          : null,
-      },
-    )
-    return { savedPath }
+    const fileName = `${outputFilePrefix}${output.outputFileName}`
+    try {
+      const savedPath = await moveFile(
+        output.outputPath,
+        `${destinationDirectory}/${fileName}`,
+        {
+          replaceOriginal: settingsStore.replaceOriginalFiles
+            ? output.sourcePath
+            : null,
+        },
+      )
+      return { savedPath }
+    } catch (error) {
+      if (isFixedFolder) throw error
+      // Next to an original in a folder the app cannot write to (e.g. a file copied from another
+      // computer, kept in a shared folder): saved where images copied in a browser are, the app's
+      // own folder (see `save_clipboard_image`), instead of not at all
+      const savedPath = await moveFile(
+        output.outputPath,
+        await join(await appDataDir(), 'assets', fileName),
+      )
+      return { savedPath }
+    }
   } catch {
     return { reason: 'failed' }
   }

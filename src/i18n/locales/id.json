@@ -44,7 +44,7 @@
         },
         "theme": {
           "title": "Tema",
-          "description": "Beralih antara antarmuka terang dan gelap."
+          "description": "Ikuti sistem, atau selalu gunakan terang atau gelap."
         },
         "accentColor": {
           "title": "Warna aksen",
@@ -811,8 +811,8 @@
     "confirmCancel": "Konfirmasi Pembatalan",
     "cancelling": "Membatalkan…",
     "reconfigure": "Konfigurasi Ulang",
-    "reconfigureOriginalReplaced_other": "File asli telah dipindahkan ke Tempat Sampah dan diganti dengan file terkompresi, sehingga tidak dapat dikompresi lagi.",
-    "reconfigureOriginalReplaced_windows_other": "File asli telah dipindahkan ke Recycle Bin dan diganti dengan file terkompresi, sehingga tidak dapat dikompresi lagi.",
+    "reconfigureOriginalReplaced_other": "File asli telah dipindahkan ke Tempat Sampah karena <setting>Ganti file asli</setting> aktif, sehingga tidak dapat dikompresi lagi.",
+    "reconfigureOriginalReplaced_windows_other": "File asli telah dipindahkan ke Recycle Bin karena <setting>Ganti file asli</setting> aktif, sehingga tidak dapat dikompresi lagi.",
     "pauseFailed": "Kompresi tidak dapat dijeda.",
     "resumeFailed": "Kompresi tidak dapat dilanjutkan.",
     "failed": "Terjadi kesalahan saat kompresi.",
@@ -917,7 +917,12 @@
     "enter": "Enter"
   },
   "theme": {
-    "toggle": "Ganti tema"
+    "title": "Tema",
+    "options": {
+      "system": "Sistem",
+      "light": "Terang",
+      "dark": "Gelap"
+    }
   },
   "errorBoundary": {
     "title": "Terjadi kesalahan.",
@@ -974,21 +979,17 @@
     "estimate": "Sekitar {{width}}×{{height}} pada {{fps}} fps, dalam {{size}} MB.",
     "estimateLowered": "Diturunkan ke {{width}}×{{height}} pada {{fps}} fps agar muat dalam {{size}} MB.",
     "notForGif": "GIF tidak dapat dikompres ke suatu ukuran. Pilih format lain, atau kompres berdasarkan kualitas.",
-    "eachAudio": "Setiap file audio dikompres dalam format yang dipilih agar muat dalam ukuran ini.",
-    "audioEstimate": "Sekitar {{bitrate}} kbps, dengan mempertahankan format dan kanal yang dipilih.",
+    "audioEstimate": "Sekitar {{bitrate}} kbps.",
     "audioLossless": "Format atau codec audio yang dipilih tidak dapat mencapai sembarang ukuran target melalui pengaturan bitrate. Pilih format atau codec lain, atau kompres berdasarkan kualitas. Pilihan Anda tidak akan diubah secara otomatis.",
     "audioDurationMissing": "Durasi audio harus diketahui sebelum mengompres ke ukuran target.",
     "audioTooSmall": "Ukuran target ini terlalu kecil untuk format dan durasi audio yang dipilih. Perbesar ukuran atau pangkas rekaman.",
     "notReachedAudio": "Ukuran target tidak dapat dicapai dalam format audio yang dipilih. File keluaran terkecil yang tersedia ditampilkan.",
-    "eachVideo": "Setiap video dikompres agar muat dalam ukuran ini.",
     "round": "Putaran {{round}}",
     "roundDetail": "Putaran {{round}}: mendekati ukuran target",
     "roundWithoutHardwareAcceleration": "Putaran {{round}}: tanpa akselerasi perangkat keras, untuk mendekati ukuran target",
     "fitsAtQuality": "Kualitas yang dipilih sudah sesuai, sekitar {{size}}, sehingga kualitas tersebut digunakan.",
     "switchUnit": "Tampilkan ukuran dalam {{unit}}",
     "notForSvgOrGif": "SVG dan GIF tidak dapat dikompres ke suatu ukuran. Pilih format lain, atau kompres berdasarkan kualitas.",
-    "imageFit": "Kualitas tertinggi yang muat akan digunakan, dan gambar hanya diperkecil jika memang perlu.",
-    "eachImage": "Setiap gambar dikompres agar muat dalam ukuran ini.",
     "notReachedImage": "Gambar tidak dapat dibuat lebih kecil lagi tanpa menjadi terlalu kecil. Ukuran targetnya adalah {{size}}."
   },
   "outputOptions": {
