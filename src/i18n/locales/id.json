@@ -856,6 +856,7 @@
     "noAudio": "Audio tidak ditemukan"
   },
   "quality": {
+    "unsupportedAudio": "Format atau codec audio yang dipilih tidak mendukung penyesuaian kualitas.",
     "lossless": "Kompresi Lossless",
     "title": "Kualitas"
   },
@@ -969,6 +970,12 @@
     "estimate": "Sekitar {{width}}×{{height}} pada {{fps}} fps, dalam {{size}} MB.",
     "estimateLowered": "Diturunkan ke {{width}}×{{height}} pada {{fps}} fps agar muat dalam {{size}} MB.",
     "notForGif": "GIF tidak dapat dikompres ke suatu ukuran. Pilih format lain, atau kompres berdasarkan kualitas.",
+    "eachAudio": "Setiap file audio dikompres dalam format yang dipilih agar muat dalam ukuran ini.",
+    "audioEstimate": "Sekitar {{bitrate}} kbps, dengan mempertahankan format dan kanal yang dipilih.",
+    "audioLossless": "Format atau codec audio yang dipilih tidak dapat mencapai sembarang ukuran target melalui pengaturan bitrate. Pilih format atau codec lain, atau kompres berdasarkan kualitas. Pilihan Anda tidak akan diubah secara otomatis.",
+    "audioDurationMissing": "Durasi audio harus diketahui sebelum mengompres ke ukuran target.",
+    "audioTooSmall": "Ukuran target ini terlalu kecil untuk format dan durasi audio yang dipilih. Perbesar ukuran atau pangkas rekaman.",
+    "notReachedAudio": "Ukuran target tidak dapat dicapai dalam format audio yang dipilih. File keluaran terkecil yang tersedia ditampilkan.",
     "eachVideo": "Setiap video dikompres agar muat dalam ukuran ini.",
     "round": "Putaran {{round}}",
     "roundDetail": "Putaran {{round}}: mendekati ukuran target",

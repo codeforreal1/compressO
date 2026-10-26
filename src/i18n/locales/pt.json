@@ -884,6 +884,7 @@
     "noAudio": "Nenhum áudio encontrado"
   },
   "quality": {
+    "unsupportedAudio": "O formato ou codec de áudio selecionado não permite ajustar a qualidade.",
     "lossless": "Compressão sem perdas",
     "title": "Qualidade"
   },
@@ -999,6 +1000,12 @@
     "estimate": "Cerca de {{width}}×{{height}} a {{fps}} fps, dentro de {{size}} MB.",
     "estimateLowered": "Reduzido para {{width}}×{{height}} a {{fps}} fps para caber em {{size}} MB.",
     "notForGif": "GIFs não podem ser comprimidos para um tamanho. Escolha outro formato ou comprima por qualidade.",
+    "eachAudio": "Cada ficheiro de áudio é comprimido no formato selecionado para caber neste tamanho.",
+    "audioEstimate": "Cerca de {{bitrate}} kbps, mantendo o formato e os canais selecionados.",
+    "audioLossless": "O formato ou codec de áudio selecionado não permite atingir qualquer tamanho alvo através do controlo da taxa de bits. Escolhe outro formato ou codec, ou comprime por qualidade. As tuas seleções não serão alteradas automaticamente.",
+    "audioDurationMissing": "A duração do áudio tem de ser conhecida antes de comprimir para um tamanho alvo.",
+    "audioTooSmall": "Este tamanho alvo é demasiado pequeno para o formato e a duração do áudio selecionados. Aumenta o tamanho ou corta a gravação.",
+    "notReachedAudio": "Não foi possível atingir o tamanho alvo no formato de áudio selecionado. É apresentado o ficheiro de saída mais pequeno disponível.",
     "eachVideo": "Cada vídeo é comprimido para caber neste tamanho.",
     "round": "Rodada {{round}}",
     "roundDetail": "Rodada {{round}}: aproximando-se do tamanho alvo",

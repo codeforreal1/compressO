@@ -870,6 +870,7 @@
     "noAudio": "Kein Audio gefunden"
   },
   "quality": {
+    "unsupportedAudio": "Das gewählte Audioformat oder der Codec unterstützt keine Qualitätsanpassung.",
     "lossless": "Verlustfreie Komprimierung",
     "title": "Qualität"
   },
@@ -984,6 +985,12 @@
     "estimate": "Etwa {{width}}×{{height}} bei {{fps}} fps, innerhalb von {{size}} MB.",
     "estimateLowered": "Auf {{width}}×{{height}} bei {{fps}} fps verringert, um in {{size}} MB zu passen.",
     "notForGif": "GIFs können nicht auf eine Größe komprimiert werden. Wählen Sie ein anderes Format oder komprimieren Sie nach Qualität.",
+    "eachAudio": "Jede Audiodatei wird im gewählten Format so komprimiert, dass sie in diese Größe passt.",
+    "audioEstimate": "Etwa {{bitrate}} kbit/s. Das gewählte Format und die Audiokanäle bleiben erhalten.",
+    "audioLossless": "Das gewählte Audioformat oder der Codec kann durch Bitratensteuerung keine beliebige Zielgröße erreichen. Wähle ein anderes Format oder einen anderen Codec oder komprimiere nach Qualität. Deine Auswahl wird nicht automatisch geändert.",
+    "audioDurationMissing": "Die Audiodauer muss bekannt sein, bevor auf eine Zielgröße komprimiert werden kann.",
+    "audioTooSmall": "Diese Zielgröße ist für das gewählte Audioformat und die Dauer zu klein. Erhöhe die Größe oder kürze die Aufnahme.",
+    "notReachedAudio": "Die Zielgröße konnte im gewählten Audioformat nicht erreicht werden. Die kleinste verfügbare Ausgabedatei wird angezeigt.",
     "eachVideo": "Jedes Video wird so komprimiert, dass es in diese Größe passt.",
     "round": "Runde {{round}}",
     "roundDetail": "Runde {{round}}: Annäherung an die Zielgröße",

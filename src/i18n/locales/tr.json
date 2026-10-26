@@ -870,6 +870,7 @@
     "noAudio": "Ses bulunamadı"
   },
   "quality": {
+    "unsupportedAudio": "Seçilen ses biçimi veya kodlayıcı kalite ayarını desteklemiyor.",
     "lossless": "Kayıpsız Sıkıştırma",
     "title": "Kalite"
   },
@@ -984,6 +985,12 @@
     "estimate": "Yaklaşık {{width}}×{{height}}, {{fps}} fps, en fazla {{size}} MB.",
     "estimateLowered": "{{size}} MB içine sığması için {{width}}×{{height}}, {{fps}} fps değerine düşürüldü.",
     "notForGif": "GIF dosyaları bir boyuta sıkıştırılamaz. Başka bir biçim seçin veya kaliteye göre sıkıştırın.",
+    "eachAudio": "Her ses dosyası, seçilen biçimde bu boyuta sığacak şekilde sıkıştırılır.",
+    "audioEstimate": "Seçilen biçim ve kanallar korunarak yaklaşık {{bitrate}} kbps.",
+    "audioLossless": "Seçilen ses biçimi veya kodlayıcı, bit hızı kontrolüyle herhangi bir hedef boyuta ulaşamaz. Başka bir biçim veya kodlayıcı seçin ya da kaliteye göre sıkıştırın. Seçimleriniz otomatik olarak değiştirilmeyecektir.",
+    "audioDurationMissing": "Hedef boyuta sıkıştırmadan önce sesin süresinin bilinmesi gerekir.",
+    "audioTooSmall": "Bu hedef boyut, seçilen ses biçimi ve süresi için çok küçük. Boyutu artırın veya kaydı kırpın.",
+    "notReachedAudio": "Seçilen ses biçiminde hedef boyuta ulaşılamadı. Kullanılabilir en küçük çıktı dosyası gösteriliyor.",
     "eachVideo": "Her video bu boyuta sığacak şekilde sıkıştırılır.",
     "round": "{{round}}. tur",
     "roundDetail": "{{round}}. tur: hedef boyuta yaklaşılıyor",

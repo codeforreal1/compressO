@@ -884,6 +884,7 @@
     "noAudio": "Aucun audio trouvé"
   },
   "quality": {
+    "unsupportedAudio": "Le format ou le codec audio sélectionné ne permet pas de régler la qualité.",
     "lossless": "Compression sans perte",
     "title": "Qualité"
   },
@@ -999,6 +1000,12 @@
     "estimate": "Environ {{width}}×{{height}} à {{fps}} i/s, en {{size}} Mo maximum.",
     "estimateLowered": "Réduite à {{width}}×{{height}} à {{fps}} i/s pour tenir en {{size}} Mo.",
     "notForGif": "Les GIF ne peuvent pas être compressés à une taille. Choisissez un autre format ou compressez selon la qualité.",
+    "eachAudio": "Chaque fichier audio est compressé dans le format sélectionné pour tenir dans cette taille.",
+    "audioEstimate": "Environ {{bitrate}} kbit/s, en conservant le format et les canaux sélectionnés.",
+    "audioLossless": "Le format ou le codec audio sélectionné ne permet pas d’atteindre une taille cible arbitraire en réglant le débit. Choisissez un autre format ou codec, ou compressez par qualité. Vos choix ne seront pas modifiés automatiquement.",
+    "audioDurationMissing": "La durée de l’audio doit être connue avant de compresser à une taille cible.",
+    "audioTooSmall": "Cette taille cible est trop petite pour le format et la durée de l’audio sélectionnés. Augmentez la taille ou raccourcissez l’enregistrement.",
+    "notReachedAudio": "La taille cible n’a pas pu être atteinte dans le format audio sélectionné. Le plus petit fichier de sortie disponible est affiché.",
     "eachVideo": "Chaque vidéo est compressée pour tenir dans cette taille.",
     "round": "Tour {{round}}",
     "roundDetail": "Tour {{round}} : rapprochement de la taille cible",

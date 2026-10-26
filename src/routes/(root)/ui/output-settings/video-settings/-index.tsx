@@ -13,13 +13,13 @@ import {
 import AudioBitrate from './audio/AudioBitrate'
 import AudioChannels from './audio/AudioChannels'
 import AudioCodec from './audio/AudioCodec'
+import AudioCompression from './audio/AudioCompression'
 import AudioTracks from './audio/AudioTracks'
 import AudioVolume from './audio/AudioVolume'
 import Others from './others/-index'
 import VideoOnlySection from './VideoOnlySection'
 import BatchResolution from './video/BatchResolution'
 import CompressionPreset from './video/CompressionPreset'
-import CompressionQuality from './video/CompressionQuality'
 import CustomThumbnail from './video/CustomThumbnail'
 import VideoDimensions from './video/Dimensions'
 import VideoExtension from './video/Extension'
@@ -136,9 +136,13 @@ function VideoSettings({
           {tab === 'video' ? (
             <div>
               {/* Video-only settings stay in place but are disabled when extracting audio */}
-              <VideoOnlySection isDisabled={isAudioOutput}>
+              {isAudioOutput ? (
+                <AudioCompression mediaIndex={mediaIndex} />
+              ) : (
                 <CompressionPreset mediaIndex={mediaIndex} />
-                <Divider className="my-3" />
+              )}
+              <Divider className="my-3" />
+              <VideoOnlySection isDisabled={isAudioOutput}>
                 <VideoCodec mediaIndex={mediaIndex} />
                 <Divider className="my-3" />
               </VideoOnlySection>
@@ -180,11 +184,8 @@ function VideoSettings({
           ) : null}
           {tab === 'audio' && isAudioFileSettings ? (
             <div>
-              <CompressionQuality
-                mediaIndex={mediaIndex}
-                isDisabled={!!settingsConfig?.shouldEnableCustomBitrate}
-              />
-              <Divider className="mb-3" />
+              <AudioCompression mediaIndex={mediaIndex} />
+              <Divider className="my-3" />
               {mediaIndex >= 0 && video?.videoDuration ? (
                 <>
                   <TrimVideo mediaIndex={mediaIndex} />

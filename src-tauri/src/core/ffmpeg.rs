@@ -144,6 +144,7 @@ impl FFMPEG {
         target_size: Option<&TargetSize>,
     ) -> Result<VideoCompressionResult, String> {
         let is_audio_target = AUDIO_EXTENSIONS.contains(&convert_to_extension);
+        let requested_audio_codec = audio_config.audio_codec.as_deref();
         if !EXTENSIONS.contains(&convert_to_extension) && !is_audio_target {
             return Err(String::from("Invalid convert to extension."));
         }
@@ -382,13 +383,59 @@ impl FFMPEG {
             }
         }
 
-        // A target size: an average bitrate, with peaks kept near it so the size is reached (see
-        // `TargetSize`); GIFs & audio are not compressed to a size
-        let target_size =
-            target_size.filter(|_| preset_name.is_some() && !is_gif_target && !is_audio_target);
+        let audio_codec = audio_output_codec(convert_to_extension, requested_audio_codec);
+        let source_audio = selected_audio_tracks
+            .as_ref()
+            .and_then(|tracks| tracks.first())
+            .and_then(|index| audio_streams.get(*index));
+        let source_sample_rate = source_audio
+            .and_then(|stream| stream.sample_rate.parse::<u32>().ok())
+            .unwrap_or(48000);
+        let audio_channels = if audio_config
+            .audio_channel_config
+            .as_ref()
+            .and_then(|config| config.channel_layout.as_deref())
+            == Some("mono")
+        {
+            1
+        } else {
+            source_audio
+                .and_then(|stream| stream.channels.parse::<u32>().ok())
+                .unwrap_or(2)
+                .max(1)
+        };
+        let (minimum_audio_bitrate, maximum_audio_bitrate) =
+            audio_encoder_bitrate_limits(&audio_codec, source_sample_rate, audio_channels);
+        let planned_audio_bitrate = target_size
+            .filter(|_| is_audio_target)
+            .and_then(|target| target.audio_bitrate)
+            .map(|bitrate| bitrate.clamp(minimum_audio_bitrate, maximum_audio_bitrate));
+
+        // Audio size targets preserve the selected container.
+        if let Some(target) = target_size.filter(|_| is_audio_target) {
+            let codec = audio_output_codec(convert_to_extension, requested_audio_codec);
+            if matches!(requested_audio_codec, Some(requested) if requested != "-" && requested != codec)
+            {
+                return Err(
+                    "The selected audio codec is incompatible with the output format.".into(),
+                );
+            }
+            if !matches!(
+                codec.as_str(),
+                "libmp3lame" | "aac" | "libvorbis" | "libopus"
+            ) {
+                return Err("Target size requires a lossy audio codec; the selected format was not changed.".into());
+            }
+            if target.size_in_bytes == 0
+                || !matches!(target.audio_bitrate, Some(bitrate) if bitrate > 0)
+            {
+                return Err("Invalid audio target size or bitrate.".into());
+            }
+        }
+        let target_size = target_size.filter(|_| preset_name.is_some() && !is_gif_target);
         // Encoded at its bitrate from the start, unless the quality is tried first (it is encoded at
         // a bitrate only when that came out larger, see `TargetSize::quality_first`)
-        let bitrate_target = target_size.filter(|target| !target.quality_first);
+        let bitrate_target = target_size.filter(|target| !is_audio_target && !target.quality_first);
         let target_bitrate_args: Vec<String> = bitrate_target
             .map(|target| bitrate_args(target.video_bitrate))
             .unwrap_or_default();
@@ -761,25 +808,21 @@ impl FFMPEG {
         };
         audio_args_owned.extend(audio_filter_args);
 
-        // Audio bitrate
-        if audio_config.volume > 0 && has_audio_stream {
-            if let Some(bitrate) = audio_config.bitrate {
-                audio_args_owned.push("-b:a".to_string());
-                audio_args_owned.push(format!("{}k", bitrate));
-            }
-        }
-
-        // Audio codec
+        // Audio-only outputs share compatibility handling in both Quality and Target Size modes.
         if is_audio_target {
-            audio_args_owned.push("-c:a".to_string());
-            audio_args_owned.push(audio_output_codec(
-                convert_to_extension,
-                audio_config.audio_codec.as_deref(),
+            audio_args_owned.extend(audio_output_encoding_args(
+                &audio_codec,
+                source_sample_rate,
+                audio_channels,
+                planned_audio_bitrate.or(audio_config.bitrate),
+                target_size.is_some(),
             ));
         } else if audio_config.volume > 0 && has_audio_stream {
+            if let Some(bitrate) = audio_config.bitrate {
+                audio_args_owned.extend(["-b:a".into(), format!("{}k", bitrate)]);
+            }
             if let Some(codec) = &audio_config.audio_codec {
-                audio_args_owned.push("-c:a".to_string());
-                audio_args_owned.push(codec.clone());
+                audio_args_owned.extend(["-c:a".into(), codec.clone()]);
             }
         }
 
@@ -1022,7 +1065,13 @@ impl FFMPEG {
         // outputs so far (see `next_target_bitrate`). Every output is kept until the end & the best
         // is used: the largest within the size (the most quality for it), or else the smallest. A
         // retry that fails keeps the earlier outputs.
-        let mut video_bitrate = target_size.map(|target| target.video_bitrate);
+        let mut target_bitrate = target_size.map(|target| {
+            if is_audio_target {
+                planned_audio_bitrate.unwrap()
+            } else {
+                target.video_bitrate
+            }
+        });
         let mut size_attempt: u32 = 0;
         let mut candidates: Vec<(PathBuf, u64)> = Vec::new();
         let mut samples: Vec<SizeSample> = Vec::new();
@@ -1038,7 +1087,10 @@ impl FFMPEG {
             // "Reach target sizes without acceleration": retries skip the graphics card, as the CPU
             // keeps to a bitrate much more closely (the first encode is still on the graphics card)
             let retry_on_cpu = is_retry && target_size.is_some_and(|target| target.retry_on_cpu);
-            let round_cpu_args = match video_bitrate {
+            let round_cpu_args = match target_bitrate {
+                Some(bitrate) if is_retry && is_audio_target => {
+                    with_audio_bitrate(&cpu_args, bitrate)
+                }
                 Some(bitrate) if is_retry => with_bitrate(&cpu_args, bitrate),
                 _ => cpu_args.clone(),
             };
@@ -1124,7 +1176,7 @@ impl FFMPEG {
                 break;
             }
 
-            let (Some(target), Some(bitrate)) = (target_size, video_bitrate) else {
+            let (Some(target), Some(bitrate)) = (target_size, target_bitrate) else {
                 break;
             };
             let output_size = std::fs::metadata(&output_file)
@@ -1172,9 +1224,22 @@ impl FFMPEG {
             let next_bitrate = next_target_bitrate(
                 &samples,
                 next_on_graphics_card,
-                target.video_bitrate,
+                if is_audio_target {
+                    planned_audio_bitrate.unwrap()
+                } else {
+                    target.video_bitrate
+                },
                 target.size_in_bytes,
             );
+            let next_bitrate = if is_audio_target {
+                let next = next_bitrate.clamp(minimum_audio_bitrate, maximum_audio_bitrate);
+                if samples.iter().any(|sample| sample.bitrate == next) {
+                    break;
+                }
+                next
+            } else {
+                next_bitrate
+            };
             log::info!(
                 "[ffmpeg] {} bytes is {} the target size of {} bytes, compressing again at {} kbit/s on the {}",
                 output_size,
@@ -1191,7 +1256,7 @@ impl FFMPEG {
                     "CPU"
                 }
             );
-            video_bitrate = Some(next_bitrate);
+            target_bitrate = Some(next_bitrate);
             size_attempt += 1;
         }
 
@@ -1882,6 +1947,109 @@ fn with_bitrate(args: &[String], video_bitrate: u32) -> Vec<String> {
     next
 }
 
+fn vorbis_sample_rate(source: u32) -> u32 {
+    [
+        8000_u32, 11025, 12000, 16000, 22050, 24000, 32000, 44100, 48000,
+    ]
+    .into_iter()
+    .min_by_key(|rate| rate.abs_diff(source))
+    .unwrap_or(48000)
+}
+
+fn audio_encoder_bitrate_limits(codec: &str, sample_rate: u32, channels: u32) -> (u32, u32) {
+    if codec != "libvorbis" {
+        return (8, if codec == "libmp3lame" { 320 } else { 256 });
+    }
+    let rate = vorbis_sample_rate(sample_rate);
+    let channels = channels.max(1);
+    let minimum = if rate <= 8000 {
+        8 * channels
+    } else if rate <= 24000 {
+        16 * channels
+    } else if channels == 1 {
+        32
+    } else {
+        24 * channels
+    };
+    let per_channel_maximum = if rate <= 8000 {
+        32
+    } else if rate <= 12000 {
+        48
+    } else if rate <= 16000 {
+        96
+    } else if rate <= 24000 {
+        64
+    } else if rate <= 32000 {
+        160
+    } else {
+        192
+    };
+    (
+        minimum,
+        (per_channel_maximum * channels).min(256).max(minimum),
+    )
+}
+
+fn audio_encoder_sample_rate_args(codec: &str, sample_rate: u32) -> Vec<String> {
+    if codec == "libvorbis" {
+        vec!["-ar".into(), vorbis_sample_rate(sample_rate).to_string()]
+    } else {
+        vec![]
+    }
+}
+
+fn audio_target_encoder_args(codec: &str) -> Vec<String> {
+    match codec {
+        "libmp3lame" => vec!["-abr".into(), "1".into()],
+        "libopus" => vec!["-vbr".into(), "constrained".into()],
+        _ => vec![],
+    }
+}
+
+/// The same encoder configuration is used for quality, custom bitrates and size attempts.
+/// Lossless formats ignore bitrate; Vorbis bitrate limits and resampling apply in every mode.
+fn audio_output_encoding_args(
+    codec: &str,
+    sample_rate: u32,
+    channels: u32,
+    bitrate: Option<u32>,
+    target_size: bool,
+) -> Vec<String> {
+    let mut args = vec!["-c:a".into(), codec.into()];
+    if !matches!(codec, "flac" | "alac" | "pcm_s16le") {
+        let bitrate = if codec == "libvorbis" {
+            let (minimum, maximum) = audio_encoder_bitrate_limits(codec, sample_rate, channels);
+            Some(bitrate.unwrap_or(128).clamp(minimum, maximum))
+        } else if codec == "libopus" {
+            bitrate.map(|value| value.clamp(6, 256 * channels.max(1)))
+        } else {
+            bitrate
+        };
+        if let Some(bitrate) = bitrate {
+            args.extend(["-b:a".into(), format!("{}k", bitrate)]);
+        }
+    }
+    args.extend(audio_encoder_sample_rate_args(codec, sample_rate));
+    if codec == "libopus" && channels > 2 {
+        args.extend(["-mapping_family".into(), "1".into()]);
+    }
+    if target_size {
+        args.extend(audio_target_encoder_args(codec));
+    }
+    args
+}
+
+/// Change only the audio bitrate; every retry still reads the original source.
+fn with_audio_bitrate(args: &[String], bitrate: u32) -> Vec<String> {
+    let mut next = args.to_vec();
+    if let Some(index) = next.iter().position(|arg| arg == "-b:a") {
+        if let Some(value) = next.get_mut(index + 1) {
+            *value = format!("{}k", bitrate);
+        }
+    }
+    next
+}
+
 /// An encode for a target size: where it ran, its bitrate (kbit/s) & the size it came out
 struct SizeSample {
     on_graphics_card: bool,
@@ -2019,3 +2187,311 @@ pub fn build_transform_filters(
     filters
 }
 
+#[cfg(test)]
+mod audio_target_size_tests {
+    use super::*;
+
+    #[test]
+    fn audio_retry_preserves_format_codec_and_filters() {
+        let args: Vec<String> = [
+            "-i",
+            "original.wav",
+            "-b:a",
+            "128k",
+            "-c:a",
+            "aac",
+            "-filter:a:0",
+            "atempo=2",
+            "output.m4a",
+        ]
+        .into_iter()
+        .map(String::from)
+        .collect();
+        let retry = with_audio_bitrate(&args, 96);
+        assert_eq!(retry[3], "96k");
+        for index in [0, 1, 2, 4, 5, 6, 7, 8] {
+            assert_eq!(retry[index], args[index]);
+        }
+        assert!(!retry.iter().any(|arg| arg.starts_with("-b:v")));
+    }
+
+    #[test]
+    fn oversize_audio_retries_below_100_kbps() {
+        let samples = [SizeSample {
+            on_graphics_card: false,
+            bitrate: 64,
+            size: 110_000,
+        }];
+        let next = next_target_bitrate(&samples, false, 64, 100_000);
+        assert!(next < 64 && next >= 8);
+        assert_eq!(
+            audio_encoder_bitrate_limits("libmp3lame", 48000, 2),
+            (8, 320)
+        );
+        assert_eq!(
+            audio_encoder_bitrate_limits("libvorbis", 48000, 2),
+            (48, 256)
+        );
+    }
+
+    /// Uses the shipped encoder and retry calculation, with trim and speed filters preserved.
+    #[test]
+    fn bundled_audio_encoders_reach_target_without_changing_format() {
+        let suffix = if cfg!(windows) { ".exe" } else { "" };
+        let ffmpeg = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("bin")
+            .join(format!(
+                "compresso_ffmpeg-{}{}",
+                env!("COMPRESSO_TARGET"),
+                suffix
+            ));
+        let ffprobe = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("bin")
+            .join(format!(
+                "compresso_ffprobe-{}{}",
+                env!("COMPRESSO_TARGET"),
+                suffix
+            ));
+        struct Work(PathBuf);
+        impl Drop for Work {
+            fn drop(&mut self) {
+                let _ = std::fs::remove_dir_all(&self.0);
+            }
+        }
+        let work = Work(std::env::temp_dir().join(format!("compresso-audio-size-{}", nanoid!())));
+        std::fs::create_dir_all(&work.0).unwrap();
+        for (format, selected_codec, expected_codec, sample_rate, channels) in [
+            ("mp3", "libmp3lame", "mp3", 48000, 2),
+            ("m4a", "aac", "aac", 48000, 2),
+            ("ogg", "libvorbis", "vorbis", 48000, 2),
+            ("opus", "libopus", "opus", 48000, 2),
+            ("ogg", "libopus", "opus", 48000, 2),
+            ("ogg", "libvorbis", "vorbis", 192000, 1),
+            ("ogg", "libvorbis", "vorbis", 8000, 2),
+            ("ogg", "libvorbis", "vorbis", 22050, 1),
+            ("ogg", "libvorbis", "vorbis", 44100, 1),
+        ] {
+            let output = work.0.join(format!("audio.{format}"));
+            let mut samples = Vec::new();
+            // Force an oversized first attempt to exercise real measured-size retries.
+            let (minimum, maximum) =
+                audio_encoder_bitrate_limits(selected_codec, sample_rate, channels);
+            let mut bitrate =
+                (if sample_rate == 192000 { 256 } else { 160 }).clamp(minimum, maximum);
+            let input =
+                format!("anoisesrc=color=pink:seed=42:duration=30:sample_rate={sample_rate}");
+            let channel_count = channels.to_string();
+            let limit = 90_000;
+            let mut fitted = false;
+            for _ in 0..=MAX_TARGET_SIZE_RETRIES {
+                let args: Vec<String> = [
+                    "-hide_banner",
+                    "-loglevel",
+                    "error",
+                    "-y",
+                    "-f",
+                    "lavfi",
+                    "-i",
+                    input.as_str(),
+                    "-ac",
+                    channel_count.as_str(),
+                    "-af",
+                    "atrim=start=5:end=25,asetpts=PTS-STARTPTS,atempo=2",
+                ]
+                .into_iter()
+                .map(String::from)
+                .collect();
+                let mut args = args;
+                args.extend(audio_output_encoding_args(
+                    selected_codec,
+                    sample_rate,
+                    channels,
+                    Some(bitrate),
+                    true,
+                ));
+                let result = std::process::Command::new(&ffmpeg)
+                    .args(args)
+                    .arg(&output)
+                    .output()
+                    .unwrap();
+                assert!(
+                    result.status.success(),
+                    "{format}: {}",
+                    String::from_utf8_lossy(&result.stderr)
+                );
+                let size = std::fs::metadata(&output).unwrap().len();
+                samples.push(SizeSample {
+                    on_graphics_card: false,
+                    bitrate,
+                    size,
+                });
+                if size <= limit {
+                    fitted = true;
+                    break;
+                }
+                bitrate = next_target_bitrate(&samples, false, 66, limit).clamp(minimum, maximum);
+            }
+            assert!(fitted, "{format}/{selected_codec}: no output within target");
+            let probe = std::process::Command::new(&ffprobe)
+                .args([
+                    "-v",
+                    "error",
+                    "-show_entries",
+                    "stream=codec_name,channels,sample_rate:format=duration",
+                    "-of",
+                    "json",
+                ])
+                .arg(&output)
+                .output()
+                .unwrap();
+            assert!(probe.status.success());
+            let info: serde_json::Value = serde_json::from_slice(&probe.stdout).unwrap();
+            assert_eq!(info["streams"][0]["codec_name"], expected_codec);
+            assert_eq!(info["streams"][0]["channels"], channels);
+            if selected_codec == "libvorbis" {
+                assert_eq!(
+                    info["streams"][0]["sample_rate"],
+                    vorbis_sample_rate(sample_rate).to_string()
+                );
+            }
+            let duration: f64 = info["format"]["duration"]
+                .as_str()
+                .unwrap()
+                .parse()
+                .unwrap();
+            assert!((duration - 10.0).abs() < 0.2, "duration was {duration}");
+        }
+    }
+
+    #[test]
+    fn audio_quality_and_target_encoder_compatibility_matrix() {
+        let suffix = if cfg!(windows) { ".exe" } else { "" };
+        let tool = |name: &str| {
+            PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+                .join("bin")
+                .join(format!(
+                    "compresso_{name}-{}{}",
+                    env!("COMPRESSO_TARGET"),
+                    suffix
+                ))
+        };
+        struct Work(PathBuf);
+        impl Drop for Work {
+            fn drop(&mut self) {
+                let _ = std::fs::remove_dir_all(&self.0);
+            }
+        }
+        let work = Work(std::env::temp_dir().join(format!("compresso-audio-matrix-{}", nanoid!())));
+        std::fs::create_dir_all(&work.0).unwrap();
+        let mut failures = Vec::new();
+        let mut cases = 0;
+        for (format, codec, encoded_codec, lossy) in [
+            ("mp3", "libmp3lame", "mp3", true),
+            ("m4a", "aac", "aac", true),
+            ("ogg", "libvorbis", "vorbis", true),
+            ("opus", "libopus", "opus", true),
+            ("ogg", "libopus", "opus", true),
+            ("wav", "pcm_s16le", "pcm_s16le", false),
+            ("flac", "flac", "flac", false),
+            ("m4a", "alac", "alac", false),
+            ("ogg", "flac", "flac", false),
+        ] {
+            for rate in [8000, 22050, 44100, 48000, 192000] {
+                for (channels, layout) in [(1, "mono"), (2, "stereo"), (6, "5.1")] {
+                    for target in [false, true] {
+                        if target && !lossy {
+                            continue;
+                        }
+                        for bitrate in [64, 128, 256, 320] {
+                            cases += 1;
+                            let output = work.0.join(format!("audio.{format}"));
+                            let input = format!("anullsrc=r={rate}:cl={layout}");
+                            let mut args: Vec<String> = [
+                                "-v",
+                                "error",
+                                "-y",
+                                "-f",
+                                "lavfi",
+                                "-i",
+                                input.as_str(),
+                                "-t",
+                                "0.15",
+                            ]
+                            .into_iter()
+                            .map(String::from)
+                            .collect();
+                            args.extend(audio_output_encoding_args(
+                                codec,
+                                rate,
+                                channels,
+                                Some(bitrate),
+                                target,
+                            ));
+                            let result = std::process::Command::new(tool("ffmpeg"))
+                                .args(args)
+                                .arg(&output)
+                                .output()
+                                .unwrap();
+                            let label = format!("{format}/{codec}, {rate} Hz, {channels} channels, {bitrate} kbps, target={target}");
+                            if !result.status.success() {
+                                failures.push(format!(
+                                    "{label}: {}",
+                                    String::from_utf8_lossy(&result.stderr)
+                                ));
+                                continue;
+                            }
+                            let probe = std::process::Command::new(tool("ffprobe"))
+                                .args([
+                                    "-v",
+                                    "error",
+                                    "-show_entries",
+                                    "stream=codec_name,channels",
+                                    "-of",
+                                    "json",
+                                ])
+                                .arg(&output)
+                                .output()
+                                .unwrap();
+                            let info: serde_json::Value =
+                                serde_json::from_slice(&probe.stdout).unwrap();
+                            assert_eq!(info["streams"][0]["codec_name"], encoded_codec, "{label}");
+                            let expected_channels = if codec == "libmp3lame" {
+                                channels.min(2)
+                            } else {
+                                channels
+                            };
+                            assert_eq!(
+                                info["streams"][0]["channels"], expected_channels,
+                                "{label}"
+                            );
+                        }
+                    }
+                }
+            }
+        }
+        assert!(
+            failures.is_empty(),
+            "{} failures in {cases} cases:\n{}",
+            failures.len(),
+            failures.join("\n")
+        );
+        eprintln!("Validated {cases} quality/target encoder combinations.");
+    }
+
+    #[test]
+    fn target_encoders_stay_inside_selected_containers() {
+        for (format, codec) in [
+            ("mp3", "libmp3lame"),
+            ("m4a", "aac"),
+            ("ogg", "libvorbis"),
+            ("opus", "libopus"),
+        ] {
+            assert_eq!(audio_output_codec(format, None), codec);
+        }
+        assert_eq!(audio_target_encoder_args("libmp3lame"), ["-abr", "1"]);
+        assert_eq!(
+            audio_target_encoder_args("libopus"),
+            ["-vbr", "constrained"]
+        );
+    }
+}

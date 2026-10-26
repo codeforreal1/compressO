@@ -165,15 +165,17 @@ pub struct VideoCompressionConfig {
     pub target_size: Option<TargetSize>,
 }
 
-/// A file size a video is compressed to: the video is encoded at an average bitrate worked out by
-/// the frontend (from the size, the output's duration & the audio's share), then encoded again at a
-/// lower bitrate when it still came out larger
+/// A file size for video or audio-only output. The frontend budgets its bitrate from the output
+/// duration; measured attempts refine that bitrate while preserving the selected format and codec.
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct TargetSize {
     pub size_in_bytes: u64,
     /// The video's average bitrate, in kbit/s
     pub video_bitrate: u32,
+    /// Audio-only output bitrate in kbit/s; the video bitrate is unused.
+    #[serde(default)]
+    pub audio_bitrate: Option<u32>,
     /// Encodes again (when the size was missed) on the CPU, not the graphics card
     #[serde(default)]
     pub retry_on_cpu: bool,

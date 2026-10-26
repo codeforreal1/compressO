@@ -380,7 +380,7 @@ function PreviewSingleMedia({
             {imageTargetSizeInKB != null &&
             (compressedFile?.sizeInBytes ?? 0) >
               imageTargetSizeInKB * BYTES_PER_KB ? (
-              <p className="mt-3 text-center text-xs text-zinc-500 dark:text-zinc-400">
+              <p className="mt-3 text-center text-xs text-warning-600 dark:text-warning-400">
                 {t('targetSize.notReachedImage', {
                   size: formatImageTargetSize(imageTargetSizeInKB),
                 })}

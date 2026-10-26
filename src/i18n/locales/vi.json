@@ -856,6 +856,7 @@
     "noAudio": "Không tìm thấy âm thanh"
   },
   "quality": {
+    "unsupportedAudio": "Định dạng hoặc bộ mã hóa âm thanh đã chọn không hỗ trợ điều chỉnh chất lượng.",
     "lossless": "Nén không mất dữ liệu",
     "title": "Chất lượng"
   },
@@ -969,6 +970,12 @@
     "estimate": "Khoảng {{width}}×{{height}} ở {{fps}} fps, trong {{size}} MB.",
     "estimateLowered": "Đã giảm xuống {{width}}×{{height}} ở {{fps}} fps để vừa trong {{size}} MB.",
     "notForGif": "Không thể nén GIF theo kích thước. Hãy chọn định dạng khác hoặc nén theo chất lượng.",
+    "eachAudio": "Mỗi tệp âm thanh được nén theo định dạng đã chọn để vừa trong kích thước này.",
+    "audioEstimate": "Khoảng {{bitrate}} kbps, giữ nguyên định dạng và các kênh đã chọn.",
+    "audioLossless": "Định dạng hoặc bộ mã hóa âm thanh đã chọn không thể đạt kích thước mục tiêu tùy ý bằng cách điều chỉnh tốc độ bit. Hãy chọn định dạng hoặc bộ mã hóa khác, hoặc nén theo chất lượng. Các lựa chọn của bạn sẽ không tự động thay đổi.",
+    "audioDurationMissing": "Cần biết thời lượng âm thanh trước khi nén đến kích thước mục tiêu.",
+    "audioTooSmall": "Kích thước mục tiêu này quá nhỏ so với định dạng và thời lượng âm thanh đã chọn. Hãy tăng kích thước hoặc cắt bớt bản ghi.",
+    "notReachedAudio": "Không thể đạt kích thước mục tiêu trong định dạng âm thanh đã chọn. Tệp đầu ra nhỏ nhất hiện có được hiển thị.",
     "eachVideo": "Mỗi video được nén để vừa trong kích thước này.",
     "round": "Lượt {{round}}",
     "roundDetail": "Lượt {{round}}: đang tiến gần kích thước mục tiêu",

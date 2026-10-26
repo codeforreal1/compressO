@@ -55,6 +55,8 @@ Button.displayName = 'Button'
 
 **Types**: Define in `src/types/`. Use `export type` for types, `export const` with `as const` for constants.
 
+**Localization**: All user-visible app text must be translated in all 16 supported languages. Whenever an English string is added or changed in `src/i18n/locales/en.json`, add or update its translations in every other locale in the same change. Use translation keys in the UI; do not rely on English fallback for new text. Run `pnpm i18n:check` to check key coverage and interpolation placeholders across all locales before completing the work.
+
 **Error Handling**: try/catch for async, toast from sonner (position="bottom-center", richColors, 2500ms).
 
 **Hooks**: Start with "use", export types, define in `src/hooks/`.

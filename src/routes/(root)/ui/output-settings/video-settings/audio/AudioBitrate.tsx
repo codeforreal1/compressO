@@ -6,6 +6,7 @@ import { useSnapshot } from 'valtio'
 
 import Select from '@/components/Select'
 import Switch from '@/components/Switch'
+import { isAudioExtension } from '@/types/compression'
 import { slideDownTransition } from '@/utils/animation'
 import { appProxy, normalizeBatchMediaConfig } from '../../../../-state'
 import { useBatchVideoConfigKey } from '../-batchConfig'
@@ -41,8 +42,12 @@ function AudioBitrate({ mediaIndex }: AudioBitrateProps) {
       ? media[mediaIndex]
       : null
   const { config, videoInfoRaw } = video ?? {}
-  const { audioConfig, shouldEnableCustomBitrate, convertToExtension } =
-    config ?? commonConfigForBatchCompression[batchConfigKey] ?? {}
+  const {
+    audioConfig,
+    shouldEnableCustomBitrate,
+    convertToExtension,
+    shouldUseTargetSize,
+  } = config ?? commonConfigForBatchCompression[batchConfigKey] ?? {}
 
   const handleSwitchToggle = useCallback(() => {
     if (
@@ -123,7 +128,11 @@ function AudioBitrate({ mediaIndex }: AudioBitrateProps) {
     isProcessCompleted ||
     isLoadingMediaFiles ||
     audioConfig?.volume === 0 ||
-    convertToExtension === 'gif'
+    convertToExtension === 'gif' ||
+    (!!shouldUseTargetSize &&
+      (!!video?.isAudioFile ||
+        batchConfigKey === 'audioFileConfig' ||
+        isAudioExtension(convertToExtension)))
 
   const hasNoAudio = videoInfoRaw?.audioStreams?.length === 0
   const currentValue = audioConfig?.bitrate ?? 128

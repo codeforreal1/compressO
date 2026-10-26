@@ -1,6 +1,7 @@
 import { TimelineAction } from '@xzdarcy/timeline-engine'
 import { proxy } from 'valtio'
 
+import { t } from '@/i18n'
 import { settingsStore } from '@/stores/settingsStore'
 import { getDropQueue } from '@/tauri/commands/dropQueue'
 import { Image, MediaMetadataConfig, Video } from '@/types/app'
@@ -16,6 +17,10 @@ import {
   VideoTrimSegment,
 } from '@/types/compression'
 import { getAudioBitrateForQuality } from '@/utils/audio'
+import {
+  planAudioTargetSize,
+  supportsAudioTargetSize,
+} from '@/utils/audioTargetSize'
 import {
   BYTES_PER_KB,
   DEFAULT_IMAGE_TARGET_SIZE_IN_KB,
@@ -228,6 +233,60 @@ export function getTargetSizePlan(
   })
 }
 
+/** Audio files and audio extracted from video share the same duration budget. */
+export function getAudioTargetSizePlan(media: MediaFile) {
+  if (media.type !== 'video' || !media.config?.shouldUseTargetSize) return null
+  const extension = media.isAudioFile
+    ? getAudioFileOutputExtension(
+        media.config.convertToExtension === '-'
+          ? media.extension
+          : media.config.convertToExtension,
+      )
+    : media.config.convertToExtension
+  const selectedTrack = media.config.shouldEnableAudioTrackSelection
+    ? (media.config.selectedAudioTracks?.[0] ?? 0)
+    : 0
+  const stream = media.videoInfoRaw?.audioStreams?.[selectedTrack]
+  const layout = media.config.audioConfig?.audioChannelConfig?.channelLayout
+  return planAudioTargetSize({
+    targetSizeInMB: media.config.targetSizeInMB ?? 10,
+    durationInSeconds: getOutputDuration(media) / 1000,
+    extension,
+    sampleRate: Number(stream?.sampleRate) || undefined,
+    channels: layout === 'mono' ? 1 : Number(stream?.channels) || undefined,
+    codec: media.config.shouldEnableCustomAudioCodec
+      ? media.config.audioConfig?.audioCodec
+      : null,
+  })
+}
+
+/** Shared validation for inline feedback, Process, keyboard shortcuts and the queue. */
+export function getAudioTargetSizeWarning(media: MediaFile) {
+  if (
+    media.type !== 'video' ||
+    !media.config.shouldUseTargetSize ||
+    (!media.isAudioFile && !isAudioExtension(media.config.convertToExtension))
+  )
+    return null
+  const extension =
+    media.config.convertToExtension === '-'
+      ? getAudioFileOutputExtension(media.extension)
+      : media.config.convertToExtension
+  if (
+    !supportsAudioTargetSize(
+      extension,
+      media.config.shouldEnableCustomAudioCodec
+        ? media.config.audioConfig?.audioCodec
+        : null,
+    )
+  ) {
+    return 'targetSize.audioLossless' as const
+  }
+  const plan = getAudioTargetSizePlan(media)
+  if (!plan) return 'targetSize.audioDurationMissing' as const
+  return plan.isTooSmall ? ('targetSize.audioTooSmall' as const) : null
+}
+
 /**
  * The size an image is resized to: its custom dimensions, or the size of a batch (from a preset)
  * for images without their own (`null` to keep its size). SVGs are resized with the SVG scale
@@ -317,6 +376,9 @@ export function getMediaItemConfig(
   // quality settings already fit (then they are used, & the bitrate only when larger after all)
   const targetPlan = getTargetSizePlan(v, batchVideoLongerSide)
   const sizePlan = targetPlan?.fitsAtQuality ? null : targetPlan
+  const audioPlan = getAudioTargetSizePlan(v)
+  const audioWarning = getAudioTargetSizeWarning(v)
+  if (audioWarning) throw new Error(t(audioWarning))
   return {
     videoConfig:
       v.type === 'video'
@@ -329,11 +391,11 @@ export function getMediaItemConfig(
             // The backend compresses (CRF from the quality) when a preset is set, and keeps
             // the source codec otherwise (lossless)
             presetName:
-              targetPlan || !v.config?.shouldDisableCompression
+              targetPlan || audioPlan || !v.config?.shouldDisableCompression
                 ? 'ironclad'
                 : null,
             quality:
-              targetPlan || !v.config?.shouldDisableCompression
+              targetPlan || audioPlan || !v.config?.shouldDisableCompression
                 ? (v.config?.quality as number)
                 : 101,
             audioConfig: {
@@ -344,7 +406,8 @@ export function getMediaItemConfig(
                   : null,
               bitrate:
                 (v.config?.audioConfig?.volume ?? 100) !== 0
-                  ? (sizePlan?.audioBitrate ??
+                  ? (audioPlan?.bitrate ??
+                    sizePlan?.audioBitrate ??
                     v.config?.audioConfig?.bitrate ??
                     null)
                   : null,
@@ -388,16 +451,24 @@ export function getMediaItemConfig(
               : v.config?.shouldEnableCustomFPS
                 ? v.config.customFPS?.toString?.()
                 : null,
-            targetSize: targetPlan
+            targetSize: audioPlan
               ? {
-                  sizeInBytes: targetPlan.sizeInBytes,
-                  videoBitrate: targetPlan.videoBitrate,
-                  retryOnCpu:
-                    settingsStore.useHardwareAcceleration &&
-                    settingsStore.retryTargetSizeOnCpu,
-                  qualityFirst: targetPlan.fitsAtQuality,
+                  sizeInBytes: audioPlan.sizeInBytes,
+                  audioBitrate: audioPlan.bitrate,
+                  videoBitrate: 0,
+                  retryOnCpu: false,
+                  qualityFirst: false,
                 }
-              : null,
+              : targetPlan
+                ? {
+                    sizeInBytes: targetPlan.sizeInBytes,
+                    videoBitrate: targetPlan.videoBitrate,
+                    retryOnCpu:
+                      settingsStore.useHardwareAcceleration &&
+                      settingsStore.retryTargetSizeOnCpu,
+                    qualityFirst: targetPlan.fitsAtQuality,
+                  }
+                : null,
             videoCodec:
               v.config?.shouldEnableCustomVideoCodec &&
               v.config?.customVideoCodec !== '-'

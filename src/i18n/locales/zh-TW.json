@@ -856,6 +856,7 @@
     "noAudio": "找不到音訊"
   },
   "quality": {
+    "unsupportedAudio": "所選音訊格式或編解碼器不支援調整品質。",
     "lossless": "無損壓縮",
     "title": "品質"
   },
@@ -969,6 +970,12 @@
     "estimate": "約 {{width}}×{{height}}，{{fps}} fps，不超過 {{size}} MB。",
     "estimateLowered": "已降至 {{width}}×{{height}}，{{fps}} fps，以控制在 {{size}} MB 以內。",
     "notForGif": "GIF 無法依大小壓縮。請選擇其他格式，或依品質壓縮。",
+    "eachAudio": "每個音訊檔案都會以所選格式壓縮到此大小以內。",
+    "audioEstimate": "約 {{bitrate}} kbps，保留所選格式和聲道。",
+    "audioLossless": "所選音訊格式或編解碼器無法透過控制位元率達到任意目標大小。請選擇其他格式或編解碼器，或依品質壓縮。您的選擇不會自動變更。",
+    "audioDurationMissing": "壓縮到目標大小前，必須先確定音訊長度。",
+    "audioTooSmall": "對於所選音訊格式和長度，此目標大小過小。請增大目標大小或裁剪錄音。",
+    "notReachedAudio": "所選音訊格式未能達到目標大小。目前顯示可用的最小輸出檔案。",
     "eachVideo": "每部影片都會壓縮到此大小以內。",
     "round": "第 {{round}} 輪",
     "roundDetail": "第 {{round}} 輪：正在接近目標大小",

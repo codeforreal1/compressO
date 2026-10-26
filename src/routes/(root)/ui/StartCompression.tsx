@@ -24,6 +24,8 @@ import CancelCompression from './CancelCompression'
 import PauseCompression from './PauseCompression'
 import SaveMedia from './SaveMedia'
 import {
+  getAudioTargetSizePlan,
+  getAudioTargetSizeWarning,
   getMediaItemConfig,
   getOutputOptions,
   getQualitySizeEstimate,
@@ -73,8 +75,12 @@ function StartCompression() {
       isCompressing,
       isProcessCompleted,
       isLoadingMediaFiles,
+      media,
     },
   } = useSnapshot(appProxy)
+  const hasInvalidAudioTarget = media.some(
+    (item) => getAudioTargetSizeWarning(item as MediaFile) != null,
+  )
 
   const handleCompression = useCallback(async () => {
     if (appProxy.state.isCompressing) return
@@ -88,6 +94,14 @@ function StartCompression() {
     flushSyncStates()
     const appSnapshot = snapshot(appProxy)
     if (appSnapshot.state.isCompressing) return
+
+    // Recheck after flushing inputs, including keyboard activation and pending changes.
+    if (
+      appSnapshot.state.media.some(
+        (item) => getAudioTargetSizeWarning(item as MediaFile) != null,
+      )
+    )
+      return
 
     // Resets
     appProxy.clearSnapshots()
@@ -221,14 +235,17 @@ function StartCompression() {
               batchVideoLongerSide,
             )
           : null
-        item.estimatedOutputSize = !plan
-          ? null
-          : plan.fitsAtQuality && qualitySize != null
-            ? {
-                sizeInBytes: Math.min(qualitySize, plan.sizeInBytes),
-                isUpTo: false,
-              }
-            : { sizeInBytes: plan.sizeInBytes, isUpTo: true }
+        const audioPlan = getAudioTargetSizePlan(snapshot(item) as MediaFile)
+        item.estimatedOutputSize = audioPlan
+          ? { sizeInBytes: audioPlan.sizeInBytes, isUpTo: true }
+          : !plan
+            ? null
+            : plan.fitsAtQuality && qualitySize != null
+              ? {
+                  sizeInBytes: Math.min(qualitySize, plan.sizeInBytes),
+                  isUpTo: false,
+                }
+              : { sizeInBytes: plan.sizeInBytes, isUpTo: true }
       }
 
       const { results } = (await Promise.race([
@@ -327,7 +344,8 @@ function StartCompression() {
     selectedMediaIndexForCustomization < 0 &&
     !isCompressing &&
     !isProcessCompleted &&
-    !isLoadingMediaFiles
+    !isLoadingMediaFiles &&
+    !hasInvalidAudioTarget
   useCommandEnterShortcut(isShortcutEnabled, handleCompression)
   // Holding ⌘ (Ctrl) reveals the shortcut on the button
   const isCommandKeyHeld = useCommandKeyHeld(isShortcutEnabled)
@@ -351,7 +369,7 @@ function StartCompression() {
           className="w-full"
           color="primary"
           variant="solid"
-          isDisabled={isLoadingMediaFiles}
+          isDisabled={isLoadingMediaFiles || hasInvalidAudioTarget}
         >
           {t('compression.process')}
           <ShortcutHint isVisible={isCommandKeyHeld} />

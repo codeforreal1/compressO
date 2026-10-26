@@ -856,6 +856,7 @@
     "noAudio": "未找到音频"
   },
   "quality": {
+    "unsupportedAudio": "所选音频格式或编解码器不支持调整质量。",
     "lossless": "无损压缩",
     "title": "质量"
   },
@@ -969,6 +970,12 @@
     "estimate": "约 {{width}}×{{height}}，{{fps}} fps，不超过 {{size}} MB。",
     "estimateLowered": "已降至 {{width}}×{{height}}，{{fps}} fps，以控制在 {{size}} MB 以内。",
     "notForGif": "GIF 无法按大小压缩。请选择其他格式，或按质量压缩。",
+    "eachAudio": "每个音频文件都会以所选格式压缩到此大小以内。",
+    "audioEstimate": "约 {{bitrate}} kbps，保留所选格式和声道。",
+    "audioLossless": "所选音频格式或编解码器无法通过控制比特率达到任意目标大小。请选择其他格式或编解码器，或按质量压缩。您的选择不会自动更改。",
+    "audioDurationMissing": "压缩到目标大小前，必须先确定音频时长。",
+    "audioTooSmall": "对于所选音频格式和时长，此目标大小过小。请增大目标大小或裁剪录音。",
+    "notReachedAudio": "所选音频格式未能达到目标大小。当前显示可用的最小输出文件。",
     "eachVideo": "每个视频都会压缩到此大小以内。",
     "round": "第 {{round}} 轮",
     "roundDetail": "第 {{round}} 轮：正在接近目标大小",

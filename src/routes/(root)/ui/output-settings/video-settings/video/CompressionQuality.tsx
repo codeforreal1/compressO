@@ -100,7 +100,7 @@ function CompressionQuality({
         ]}
         minValue={1}
         maxValue={100}
-        className="mb-8 mt-1 mx-auto"
+        className="mb-3 mt-1 mx-auto"
         classNames={{
           mark: 'text-[11px] mt-2',
           label: 'text-xs',

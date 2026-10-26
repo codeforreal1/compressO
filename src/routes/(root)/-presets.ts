@@ -727,6 +727,14 @@ function getEffectiveAudioSettings(
 ) {
   const effective: Record<string, unknown> = cloneDeep(settings)
   const audioConfig = effective.audioConfig as Record<string, unknown>
+  if (settings.shouldUseTargetSize) {
+    delete effective.quality
+    delete effective.shouldEnableCustomBitrate
+    if (audioConfig) delete audioConfig.bitrate
+  } else {
+    delete effective.shouldUseTargetSize
+    delete effective.targetSizeInMB
+  }
   if (!settings.shouldEnableCustomSpeed) delete effective.customSpeed
   if (settings.shouldEnableCustomBitrate) delete effective.quality
   if (audioConfig) {
@@ -1353,9 +1361,13 @@ export function describeAudioPresetSettings(settings: AudioPresetSettings) {
   const { volume, audioCodec, audioChannelConfig, bitrate } =
     settings.audioConfig ?? {}
   lines.push(
-    settings.shouldEnableCustomBitrate && bitrate
-      ? t('common.kbps', { value: bitrate })
-      : t('presets.summary.quality', { value: settings.quality ?? 0 }),
+    settings.shouldUseTargetSize
+      ? t('presets.summary.targetSize', {
+          size: formatSizeInMB(settings.targetSizeInMB ?? 10),
+        })
+      : settings.shouldEnableCustomBitrate && bitrate
+        ? t('common.kbps', { value: bitrate })
+        : t('presets.summary.quality', { value: settings.quality ?? 0 }),
   )
   if (settings.shouldEnableCustomSpeed && settings.customSpeed) {
     lines.push(t('presets.summary.speed', { speed: settings.customSpeed }))

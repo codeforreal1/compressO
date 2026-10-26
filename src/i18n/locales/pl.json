@@ -898,6 +898,7 @@
     "noAudio": "Nie znaleziono dźwięku"
   },
   "quality": {
+    "unsupportedAudio": "Wybrany format lub kodek audio nie obsługuje regulacji jakości.",
     "lossless": "Kompresja bezstratna",
     "title": "Jakość"
   },
@@ -1014,6 +1015,12 @@
     "estimate": "Około {{width}}×{{height}} przy {{fps}} kl./s, w granicach {{size}} MB.",
     "estimateLowered": "Zmniejszono do {{width}}×{{height}} przy {{fps}} kl./s, aby zmieścić się w {{size}} MB.",
     "notForGif": "Plików GIF nie można skompresować do rozmiaru. Wybierz inny format lub kompresuj według jakości.",
+    "eachAudio": "Każdy plik audio jest kompresowany w wybranym formacie tak, aby zmieścił się w tym rozmiarze.",
+    "audioEstimate": "Około {{bitrate}} kb/s, z zachowaniem wybranego formatu i kanałów.",
+    "audioLossless": "Wybrany format lub kodek audio nie pozwala osiągnąć dowolnego rozmiaru docelowego przez regulację przepływności. Wybierz inny format lub kodek albo kompresuj według jakości. Twoje ustawienia nie zostaną zmienione automatycznie.",
+    "audioDurationMissing": "Przed kompresją do rozmiaru docelowego musi być znany czas trwania dźwięku.",
+    "audioTooSmall": "Ten rozmiar docelowy jest zbyt mały dla wybranego formatu i czasu trwania dźwięku. Zwiększ rozmiar lub przytnij nagranie.",
+    "notReachedAudio": "Nie udało się osiągnąć rozmiaru docelowego w wybranym formacie audio. Wyświetlany jest najmniejszy dostępny plik wyjściowy.",
     "eachVideo": "Każde wideo jest kompresowane tak, aby zmieściło się w tym rozmiarze.",
     "round": "Runda {{round}}",
     "roundDetail": "Runda {{round}}: zbliżanie się do rozmiaru docelowego",

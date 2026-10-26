@@ -194,7 +194,7 @@ function QualitySettings({ mediaIndex }: CompressionQualityProps) {
               ]}
               minValue={1}
               maxValue={100}
-              className="mb-8 mt-2 mx-auto"
+              className="mb-3 mt-2 mx-auto"
               classNames={{
                 mark: 'text-[11px] mt-2',
                 label: 'text-xs',

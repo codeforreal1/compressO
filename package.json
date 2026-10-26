@@ -23,6 +23,8 @@
     "pnpm:devPreinstall": "fnm use",
     "postinstall": "husky install",
     "lint-staged": "lint-staged",
+    "i18n:check": "node scripts/check-translations.mjs",
+    "test:audio-target-size": "node --test scripts/test-audio-target-size.mjs",
     "tsc:check": "tsc --noEmit --skipLibCheck"
   },
   "dependencies": {
@@ -84,6 +86,9 @@
     }
   },
   "lint-staged": {
+    "src/i18n/locales/*.json": [
+      "node scripts/check-translations.mjs"
+    ],
     "src/**/*.{js,ts,jsx,tsx}": [
       "biome check --write"
     ]

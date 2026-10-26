@@ -159,7 +159,9 @@ function TargetSize({ mediaIndex }: TargetSizeProps) {
       />
       <div className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
         {isGif ? (
-          <p>{t('targetSize.notForGif')}</p>
+          <p className="text-warning-600 dark:text-warning-400">
+            {t('targetSize.notForGif')}
+          </p>
         ) : !video ? (
           <p>{t('targetSize.eachVideo')}</p>
         ) : plan?.fitsAtQuality ? (

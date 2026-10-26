@@ -39,21 +39,26 @@ function SlidingPanels({
   useLayoutEffect(() => {
     const panel = panelRefs.current[index]
     if (!panel) return
-    const observer = new ResizeObserver(() => setHeight(panel.offsetHeight))
+    const measure = () => {
+      // A parent tab may mount its contents while hidden. Do not lock the card to zero.
+      if (panel.offsetHeight > 0) setHeight(panel.offsetHeight)
+    }
+    const observer = new ResizeObserver(measure)
     observer.observe(panel)
-    setHeight(panel.offsetHeight)
+    measure()
     return () => observer.disconnect()
   }, [index])
 
   return (
     <motion.div
-      className={cn('[overflow-x:clip]', className)}
+      className={cn('overflow-hidden', className)}
       initial={false}
       animate={height === null ? undefined : { height }}
       transition={reduceMotion ? { duration: 0 } : SLIDE_TRANSITION}
     >
+      {/* The active panel stays in flow so it is visible before the first measurement. */}
       <motion.div
-        className="flex items-start"
+        className="relative w-full"
         initial={false}
         animate={{ x: `${-index * 100}%` }}
         transition={reduceMotion ? { duration: 0 } : SLIDE_TRANSITION}
@@ -65,7 +70,12 @@ function SlidingPanels({
             ref={(element) => {
               panelRefs.current[panelIndex] = element
             }}
-            className={cn('w-full shrink-0', panelClassName)}
+            className={cn(
+              'top-0 w-full',
+              panelIndex === index ? 'relative' : 'absolute',
+              panelClassName,
+            )}
+            style={{ left: `${panelIndex * 100}%` }}
             aria-hidden={panelIndex !== index}
             // Hidden panels are out of the keyboard's reach
             {...(panelIndex !== index ? { inert: '' } : {})}

@@ -84,6 +84,8 @@ export type ImagePresetKey = keyof ImagePresetSettings
  * are per file.
  */
 export const audioFilePresetFields = [
+  'shouldUseTargetSize',
+  'targetSizeInMB',
   'convertToExtension',
   'quality',
   'shouldEnableCustomSpeed',

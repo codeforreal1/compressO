@@ -426,6 +426,8 @@ export type VideoCompressionConfig = {
   targetSize?: {
     sizeInBytes: number
     videoBitrate: number
+    /** Audio-only target; videoBitrate is unused when set. */
+    audioBitrate?: number | null
     /** Compresses again (when the size was missed) on the CPU, not the graphics card */
     retryOnCpu: boolean
     /** Compressed at its quality first (its estimated size fits), at the bitrate only when larger */
