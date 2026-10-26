@@ -1,0 +1,13 @@
+{
+  "target": "x86_64-apple-darwin",
+  "version": "1.5.6",
+  "binary": "src-tauri/bin/compresso_jpegoptim-x86_64-apple-darwin",
+  "binarySha256": "c5509ed7faf44d038cfe422ea57e4eae10fbf1cab53f6f72ce3a2bd0bab5195c",
+  "sourceUrl": "https://github.com/tjko/jpegoptim/archive/refs/tags/v1.5.6.tar.gz",
+  "sourceArchive": "src-tauri/tool-sources/jpegoptim-v1.5.6.tar.gz",
+  "sourceSha256": "661a808dfffa933d78c6beb47a2937d572b9f03e94cbaaab3d4c0d72f410e9be",
+  "libjpegVersion": "libjpeg-turbo 3.2.0",
+  "libjpegArchiveSha256": "2613764e8efec1deebc4fc192854622ad1e602954e7f4cdee1f23f6559a82c01",
+  "libjpegSources": "src-tauri/tool-sources/image-codecs-x86_64-apple-darwin.tar.gz",
+  "minimumMacOS": "11.0"
+}

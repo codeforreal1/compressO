@@ -163,6 +163,9 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      - name: Verify bundled image encoders
+        run: node scripts/check-image-encoders.mjs ${{ matrix.target }}
+
       # Signs the updater files (`createUpdaterArtifacts`), giving each a .sig
       - name: Build
         env:
@@ -177,7 +180,7 @@ jobs:
           --target ${{ matrix.target }} core::tool_bundle::tests
           -- --include-ignored
 
-      - name: Verify native WebP encoding
+      - name: Verify native WebP and AVIF encoding
         run: >-
           cargo test --locked --manifest-path src-tauri/Cargo.toml
           --target ${{ matrix.target }} core::image::webp_tests
@@ -201,6 +204,9 @@ jobs:
           case "$TARGET" in
             *-apple-darwin)
               arch=$([ "$TARGET" = aarch64-apple-darwin ] && echo aarch64 || echo x64)
+              if [ "$TARGET" = x86_64-apple-darwin ]; then
+                cp src-tauri/tool-sources/jpegoptim-v1.5.6.tar.gz release-files/
+              fi
               cp "src-tauri/.toolchain-cache/toolchain-sources-${TARGET}.tar.gz" release-files/
               cp "$bundle/dmg/CompressO_${VERSION}_${arch}.dmg" release-files/
               cp "$bundle/macos/CompressO.app.tar.gz" "release-files/CompressO_${VERSION}_${arch}.app.tar.gz"

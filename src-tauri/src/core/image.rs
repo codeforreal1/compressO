@@ -83,6 +83,47 @@ mod webp_tests {
     }
 
     #[test]
+    fn native_avif_encoder_and_bundled_decoder_are_available() {
+        let fixture = Fixture::new();
+        let source = image::RgbaImage::from_fn(48, 32, |x, y| {
+            image::Rgba([(x * 5) as u8, (y * 7) as u8, 42, 255])
+        });
+        let mut bytes = Vec::new();
+        image::codecs::avif::AvifEncoder::new_with_speed_quality(&mut bytes, 6, 60)
+            .write_image(source.as_raw(), 48, 32, image::ExtendedColorType::Rgba8)
+            .unwrap();
+        fs::write(fixture.path("encoded.avif"), bytes).unwrap();
+        let ffmpeg = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("bin")
+            .join(format!(
+                "compresso_ffmpeg-{}{}",
+                env!("COMPRESSO_TARGET"),
+                if cfg!(windows) { ".exe" } else { "" }
+            ));
+        let output = Command::new(ffmpeg)
+            .args([
+                "-v",
+                "error",
+                "-i",
+                &fixture.path("encoded.avif"),
+                "-frames:v",
+                "1",
+                &fixture.path("decoded.png"),
+            ])
+            .output()
+            .unwrap();
+        assert!(
+            output.status.success(),
+            "{}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        assert_eq!(
+            image::image_dimensions(fixture.path("decoded.png")).unwrap(),
+            source.dimensions()
+        );
+    }
+
+    #[test]
     fn jpeg_conversion_uses_native_webp_quality_range() {
         let fixture = Fixture::new();
         let source = image::RgbImage::from_fn(160, 120, |x, y| {

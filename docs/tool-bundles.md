@@ -1,7 +1,7 @@
 # Offline tool bundles
 
 Release builds ship one target-specific compressed archive containing the platform's tools instead of uncompressed Tauri
-sidecars. **All 20 original binaries in `src-tauri/bin/` remain tracked and unchanged.** Packaging
+sidecars. The platform binaries in `src-tauri/bin/` remain tracked. Packaging
 copies them into a temporary directory; it never signs, replaces, or removes the originals.
 
 macOS, Windows, and Linux use `tools.tar.lrz` with a bundled lrzip executable for their respective
@@ -47,7 +47,7 @@ Windows x64 uses the supplied `lrzip-0.651.1-x86_64-ucrt64.exe`, preserved as
 exact executable creates and then extracts the complete archive during packaging, and the
 round-trip TAR hashes must match before packaging succeeds. This catches runtime dependencies,
 unsupported options, archive incompatibility, and extraction failures before shipping. Windows
-archives are never produced with the newer macOS helper. The original 20 media tools are unchanged.
+archives are never produced with the newer macOS helper. Packaging does not modify the checked-in tools.
 
 `LICENSES/lrzip-windows/SOURCE.json` pins the supplied helper's SHA-256, release provenance, and
 matching source archive checksum. Its import table lists Windows system/UCRT DLLs, with no MSYS,
