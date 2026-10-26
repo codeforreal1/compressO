@@ -68,7 +68,8 @@ jobs:
             });
             const changelog = section.join("\n").trim() || "No changelog available";
             process.stdout.write(readFileSync(".github/release-template.md", "utf8")
-              .replace("{{version}}", process.env.VERSION)
+              .replaceAll("{{version}}", process.env.VERSION)
+              .replaceAll("{{repository}}", process.env.GITHUB_REPOSITORY)
               .replace("{{changelog}}", changelog));
           ')
           gh api -X POST "repos/$GITHUB_REPOSITORY/releases" \
@@ -198,32 +199,34 @@ jobs:
         run: |
           bundle="src-tauri/target/$TARGET/release/bundle"
           mkdir release-files
-          if [ -f "src-tauri/tool-sources/image-codecs-${TARGET}.tar.gz" ]; then
-            cp "src-tauri/tool-sources/image-codecs-${TARGET}.tar.gz" release-files/
-          fi
           case "$TARGET" in
             *-apple-darwin)
               arch=$([ "$TARGET" = aarch64-apple-darwin ] && echo aarch64 || echo x64)
-              if [ "$TARGET" = x86_64-apple-darwin ]; then
-                cp src-tauri/tool-sources/jpegoptim-v1.5.6.tar.gz release-files/
-              fi
-              cp "src-tauri/.toolchain-cache/toolchain-sources-${TARGET}.tar.gz" release-files/
               cp "$bundle/dmg/CompressO_${VERSION}_${arch}.dmg" release-files/
               cp "$bundle/macos/CompressO.app.tar.gz" "release-files/CompressO_${VERSION}_${arch}.app.tar.gz"
               cp "$bundle/macos/CompressO.app.tar.gz.sig" "release-files/CompressO_${VERSION}_${arch}.app.tar.gz.sig"
               ;;
             *-windows-*)
-              cp "src-tauri/tool-sources/lrzip-windows-v0.651-1.tar.gz" release-files/
               cp "$bundle/nsis/CompressO_${VERSION}_x64-setup.exe" "release-files/CompressO_${VERSION}_x64.exe"
               cp "$bundle/nsis/CompressO_${VERSION}_x64-setup.exe.sig" "release-files/CompressO_${VERSION}_x64.exe.sig"
               ;;
             *-linux-*)
-              cp "src-tauri/.toolchain-cache/toolchain-sources-${TARGET}.tar.gz" release-files/
               cp "$bundle/deb/CompressO_${VERSION}_amd64.deb"* release-files/
               cp "$bundle/appimage/CompressO_${VERSION}_amd64.AppImage"* release-files/
               ;;
           esac
           ls -l release-files
+
+      - name: Collect matching dependency sources
+        run: node scripts/package-dependency-sources.mjs collect ${{ matrix.target }} dependency-source-artifacts
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dependency-sources-${{ matrix.target }}
+          path: dependency-source-artifacts/
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 1
 
       - name: Upload to the draft release
         shell: bash
@@ -237,9 +240,39 @@ jobs:
           name: signatures-${{ matrix.target }}
           path: release-files/*.sig
 
+  dependency-sources:
+    name: Publish combined dependency sources
+    needs: [draft, build]
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.draft.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+
+      - name: Test dependency source packaging
+        run: node --test scripts/test-dependency-sources.mjs
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dependency-sources-*
+          path: dependency-source-artifacts
+          merge-multiple: true
+
+      - name: Package and verify every platform's sources
+        run: node scripts/package-dependency-sources.mjs pack dependency-source-artifacts dependency-source-release "$VERSION" "$GITHUB_SHA"
+
+      - name: Upload dependency sources
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "$VERSION" dependency-source-release/*.tar.gz --clobber
+
   latest-json:
     name: Create latest.json
-    needs: [draft, build]
+    needs: [draft, build, dependency-sources]
     runs-on: ubuntu-latest
     env:
       VERSION: ${{ needs.draft.outputs.version }}

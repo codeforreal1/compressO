@@ -51,8 +51,9 @@ archives are never produced with the newer macOS helper. Packaging does not modi
 
 `LICENSES/lrzip-windows/SOURCE.json` pins the supplied helper's SHA-256, release provenance, and
 matching source archive checksum. Its import table lists Windows system/UCRT DLLs, with no MSYS,
-LZO, LZ4, or MinGW runtime DLL imports. The license is bundled with the app, and CI publishes
-`src-tauri/tool-sources/lrzip-windows-v0.651-1.tar.gz` separately alongside Windows releases.
+LZO, LZ4, or MinGW runtime DLL imports. The license is bundled with the app, and CI includes
+`src-tauri/tool-sources/lrzip-windows-v0.651-1.tar.gz` under `toolchains/` in the combined
+dependency-source release download.
 The helper is copied to `tool-bundle/bootstrap/lrzip.exe`, verified against the embedded manifest
 at extraction time, and launched without an additional console window.
 
@@ -70,9 +71,11 @@ validated on a clean Mac; a local ad-hoc build does not establish Gatekeeper acc
 Generated files live in `src-tauri/tool-bundle/` and are ignored by Git except `.gitkeep`.
 Original media tool licenses remain bundled. Helper license texts and source metadata are
 included alongside the archive. The matching source archives and helper build script are packaged
-separately in `.toolchain-cache/toolchain-sources-<target>.tar.gz`; CI uploads this alongside each
-macOS and Linux release so users can obtain the corresponding sources without enlarging the app
-download. Linux also includes the distribution's zlib/bzip2 copyright and license notices.
+separately in `.toolchain-cache/toolchain-sources-<target>.tar.gz`; CI preserves these archives
+inside `CompressO_<version>_dependency-sources.tar.gz`, linked as **Dependency sources** in the
+release description. The combined download covers every release target and includes checksums,
+notices, and build instructions. See [dependency-sources.md](dependency-sources.md). Linux also
+includes the distribution's zlib/bzip2 copyright and license notices.
 
 To build locally without updater signing secrets:
 

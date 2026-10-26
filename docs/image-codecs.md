@@ -72,7 +72,8 @@ encode/decode round trips under Rosetta. A native Intel release installation sti
 Each app includes available dependency notices under `tool-bundle/licenses/image-codecs/`.
 `SOURCES.json` pins the exact executable hashes and upstream package URLs and hashes. The Windows
 static build's metadata and libheif patch are kept with its notices. The Apple Silicon source
-archive is published separately from its installer. The Intel macOS archive includes the pinned
+archive is preserved under `image-codecs/` in the release's combined **Dependency sources**
+download, separately from the installer. The Intel macOS archive includes the pinned
 vcpkg snapshot, downloaded codec sources, the build script, and the Little CMS CMake overlay
 used to avoid Python in the source build. Rebuild it with
 `node scripts/build-image-tools.mjs x86_64-apple-darwin`; normal app builds only verify the
@@ -86,8 +87,9 @@ git curl zip unzip pkg-config cmake ninja-build nasm autoconf automake libtool p
 This preserves the existing JPEG XL tools and builds HEIF with the same primary-image/sequence
 patch used on macOS, no runtime plugins, and x265 assembly optimizations. Copy the two generated
 executables from `.toolchain-cache/image-codecs/<target>/bin/` to `src-tauri/bin/`, update their
-hashes in `SOURCES.json`, and include the matching dependency copyrights. Publish the generated
-`image-codec-sources-<target>.tar.gz` separately via `src-tauri/tool-sources/`; it contains the
+hashes in `SOURCES.json`, and include the matching dependency copyrights. Import the generated
+`image-codec-sources-<target>.tar.gz` via `src-tauri/tool-sources/`; CI preserves the imported
+archive in the combined dependency-source release download. It contains the
 pinned vcpkg recipes, codec sources, build script, and overlays needed to rebuild the tools.
 
 Run real codec regression tests on each native target:

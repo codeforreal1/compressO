@@ -3,7 +3,8 @@ depends only on Apple's libSystem. The former executable required an unbundled
 Homebrew library at /usr/local/opt/jpeg-turbo/lib/libjpeg.8.dylib.
 
 The JSON beside this file pins executable and source hashes. The matching jpegoptim
-source archive is uploaded separately with Intel macOS releases. The libjpeg source,
+source archive is preserved under jpegoptim/ in the combined dependency-source release
+download. The libjpeg source,
 vcpkg recipes, and build script are in image-codecs-x86_64-apple-darwin.tar.gz.
 The libjpeg copyright is included under LICENSES/image-codecs/x86_64-apple-darwin/.
 

@@ -13,6 +13,8 @@
 - `CompressO_{{version}}_x64.dmg` : Apple devices with Intel Chip
 - `CompressO_{{version}}_x64.exe`: Windows build
 
+[Dependency sources](https://github.com/{{repository}}/releases/download/{{version}}/CompressO_{{version}}_dependency-sources.tar.gz) — matching dependency sources, licenses, patches, and build instructions for every platform.
+
 ### Upgrade
 To upgrade, just download the latest build from the releases page and install it in your platform.
 
