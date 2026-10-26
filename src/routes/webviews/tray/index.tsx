@@ -462,7 +462,7 @@ function MainWindowProgress({ status }: { status: CompressionStatus | null }) {
             className={cn(
               'absolute inset-y-0 left-0 overflow-hidden transition-colors duration-300',
               isUnsaved
-                ? 'bg-success/40'
+                ? 'bg-primary/40'
                 : isPaused
                   ? 'bg-zinc-500/40'
                   : 'bg-primary/45',
