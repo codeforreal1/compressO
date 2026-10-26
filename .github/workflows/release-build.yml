@@ -177,6 +177,11 @@ jobs:
           --target ${{ matrix.target }} core::tool_bundle::tests
           -- --include-ignored
 
+      - name: Verify native WebP encoding
+        run: >-
+          cargo test --locked --manifest-path src-tauri/Cargo.toml
+          --target ${{ matrix.target }} core::image::webp_tests
+
       - name: Verify Linux image codec round trips
         if: runner.os == 'Linux'
         run: >-

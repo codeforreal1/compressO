@@ -58,6 +58,146 @@ pub fn supports_target_size(input_path: &str, convert_to_extension: &str) -> boo
     !matches!(input.as_str(), "svg" | "gif") && !matches!(output.as_str(), "svg" | "gif")
 }
 
+#[cfg(test)]
+mod webp_tests {
+    use super::*;
+
+    struct Fixture(PathBuf);
+
+    impl Fixture {
+        fn new() -> Self {
+            let path = std::env::temp_dir().join(format!("WebP 日本語 {}", nanoid!()));
+            fs::create_dir(&path).unwrap();
+            Self(path)
+        }
+
+        fn path(&self, name: &str) -> String {
+            self.0.join(name).to_string_lossy().into_owned()
+        }
+    }
+
+    impl Drop for Fixture {
+        fn drop(&mut self) {
+            let _ = fs::remove_dir_all(&self.0);
+        }
+    }
+
+    #[test]
+    fn jpeg_conversion_uses_native_webp_quality_range() {
+        let fixture = Fixture::new();
+        let source = image::RgbImage::from_fn(160, 120, |x, y| {
+            image::Rgb([
+                (x * 17 + y * 31) as u8,
+                (x * 43 + y * 13) as u8,
+                (x * 7 + y * 61) as u8,
+            ])
+        });
+        source.save(fixture.path("input.jpg")).unwrap();
+        for quality in [1, 40, 95] {
+            let output = fixture.path(&format!("quality-{quality}.webp"));
+            encode_webp_file(&fixture.path("input.jpg"), &output, false, quality).unwrap();
+            assert_eq!(
+                image::image_dimensions(&output).unwrap(),
+                source.dimensions()
+            );
+            assert_eq!(
+                image::guess_format(&fs::read(&output).unwrap()).unwrap(),
+                image::ImageFormat::WebP
+            );
+        }
+        assert!(
+            fs::metadata(fixture.path("quality-1.webp")).unwrap().len()
+                < fs::metadata(fixture.path("quality-95.webp")).unwrap().len()
+        );
+    }
+
+    #[test]
+    fn lossless_webp_preserves_alpha_and_guesses_intermediate_format() {
+        let fixture = Fixture::new();
+        let source = image::RgbaImage::from_fn(32, 24, |x, y| {
+            image::Rgba([
+                (x * 7) as u8,
+                (y * 9) as u8,
+                42,
+                if x < 8 { 0 } else { 255 },
+            ])
+        });
+        source
+            .save_with_format(fixture.path("input.temp"), image::ImageFormat::Png)
+            .unwrap();
+        encode_webp_file(
+            &fixture.path("input.temp"),
+            &fixture.path("lossless.webp"),
+            true,
+            50,
+        )
+        .unwrap();
+        let restored = image::open(fixture.path("lossless.webp"))
+            .unwrap()
+            .to_rgba8();
+        assert_eq!(source.dimensions(), restored.dimensions());
+        for (original, decoded) in source.pixels().zip(restored.pixels()) {
+            assert_eq!(original[3], decoded[3]);
+            if original[3] != 0 {
+                assert_eq!(original, decoded);
+            }
+        }
+    }
+
+    #[test]
+    fn invalid_webp_input_and_unsupported_dimensions_return_errors() {
+        let fixture = Fixture::new();
+        fs::write(fixture.path("bad.png"), b"invalid image").unwrap();
+        assert!(encode_webp_file(
+            &fixture.path("bad.png"),
+            &fixture.path("bad.webp"),
+            false,
+            50
+        )
+        .is_err());
+        image::RgbaImage::new(16384, 1)
+            .save(fixture.path("wide.png"))
+            .unwrap();
+        assert!(encode_webp_file(
+            &fixture.path("wide.png"),
+            &fixture.path("wide.webp"),
+            false,
+            50
+        )
+        .is_err());
+        assert!(!Path::new(&fixture.path("wide.webp")).exists());
+    }
+}
+
+// Use the statically linked encoder for both conversion and recompression. Some bundled
+// FFmpeg builds have a WebP decoder but no encoder, so encoding must not depend on FFmpeg.
+fn encode_webp_file(
+    input_path: &str,
+    output_path: &str,
+    lossless: bool,
+    quality: u8,
+) -> Result<(), String> {
+    let image = ImageReader::open(input_path)
+        .and_then(|reader| reader.with_guessed_format())
+        .map_err(|error| error.to_string())?
+        .decode()
+        .map_err(|error| error.to_string())?
+        .to_rgba8();
+    let encoder = webp::Encoder::from_rgba(image.as_raw(), image.width(), image.height());
+    // The convenience encode()/encode_lossless() methods unwrap errors and can panic.
+    let encoded = encoder
+        .encode_simple(
+            lossless,
+            if lossless {
+                75.0
+            } else {
+                quality.min(100) as f32
+            },
+        )
+        .map_err(|error| format!("{error:?}"))?;
+    fs::write(output_path, &*encoded).map_err(|error| error.to_string())
+}
+
 /// One compression of an image while reaching a target size, kept aside
 #[derive(Clone)]
 struct SizeAttempt {
@@ -1254,27 +1394,7 @@ impl ImageCompressor {
         is_lossless: bool,
         quality: u8,
     ) -> Result<(), String> {
-        let img = ImageReader::open(input_path)
-            .map_err(|e| e.to_string())?
-            .decode()
-            .map_err(|e| e.to_string())?;
-
-        let width = img.width();
-        let height = img.height();
-        let rgba: Vec<u8> = img.to_rgba8().into_raw();
-
-        let webp_data = if is_lossless {
-            let encoder = webp::Encoder::from_rgba(&rgba, width, height);
-            encoder.encode_lossless()
-        } else {
-            let encoder_quality = quality.clamp(0, 100);
-            let encoder = webp::Encoder::from_rgba(&rgba, width, height);
-            encoder.encode(encoder_quality as f32)
-        };
-
-        std::fs::write(&output_path, webp_data.to_vec()).map_err(|e| e.to_string())?;
-
-        Ok(())
+        encode_webp_file(input_path, output_path, is_lossless, quality)
     }
 
     async fn compress_avif(
@@ -1589,6 +1709,10 @@ impl ImageCompressor {
             return Err(String::from("Input image file does not exist."));
         }
 
+        if output_format.eq_ignore_ascii_case("webp") {
+            return encode_webp_file(input_path, output_path, false, quality);
+        }
+
         let mut cmd_args: Vec<String> = Vec::new();
 
         cmd_args.push("-i".to_string());
@@ -1616,13 +1740,6 @@ impl ImageCompressor {
                 cmd_args.push(compression_level.to_string()); // 0-9 (higher is better) but we'll interpolate between 4-9 only
                 cmd_args.push("-pred".to_string());
                 cmd_args.push("mixed".to_string());
-            }
-            "webp" => {
-                let webp_quality = ((quality as f32 - 1.0) / 99.0 * 50.0 + 50.0).round() as u8;
-                cmd_args.push("-q:v".to_string());
-                cmd_args.push(webp_quality.to_string()); // 0-100 (higher is better) but we'll interpolate between 50-100 only
-                cmd_args.push("-lossless".to_string());
-                cmd_args.push("0".to_string());
             }
             _ => {
                 return Err("Unsupported output format".to_string());
