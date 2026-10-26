@@ -11,12 +11,17 @@ interface Props {
   src?: ImageMetadata | string;
   caption?: string;
   aspect?: string;
+  /** Keeps a tall image (e.g. a portrait screenshot) narrower than the figure, centered */
+  maxWidth?: string;
 }
 
-const { label, src, caption, aspect = "16 / 9" } = Astro.props;
+const { label, src, caption, aspect = "16 / 9", maxWidth } = Astro.props;
 ---
 
-<figure class="post-figure">
+<figure
+  class="post-figure"
+  style={maxWidth ? { maxWidth, marginInline: "auto" } : undefined}
+>
   <ImageSlot label={label} src={src} aspect={aspect} />
   {caption ? <figcaption>{caption}</figcaption> : null}
 </figure>
