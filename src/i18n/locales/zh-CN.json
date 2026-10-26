@@ -94,7 +94,7 @@
           "title": "音频波形",
           "description": "显示动态音频预览，以及音频和视频时间轴上的波形。"
         },
-        "title": "声音",
+        "title": "音频与声音",
         "completionSound": {
           "title": "完成提示音",
           "description": "压缩完成时播放提示音。"

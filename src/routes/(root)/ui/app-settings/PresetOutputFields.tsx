@@ -21,9 +21,9 @@ export async function pickSaveFolder() {
 }
 
 export const SAVE_LOCATION_OPTIONS: SaveLocation[] = [
-  'ask',
-  'fixedFolder',
   'sameFolder',
+  'fixedFolder',
+  'ask',
 ]
 
 /** The option of following the Standard preset's output (Settings -> Output) */

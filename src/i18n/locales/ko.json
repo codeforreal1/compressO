@@ -94,7 +94,7 @@
           "title": "오디오 파형",
           "description": "움직이는 오디오 미리보기와 오디오 및 동영상 타임라인의 파형을 표시합니다."
         },
-        "title": "사운드",
+        "title": "오디오 및 사운드",
         "completionSound": {
           "title": "완료 사운드",
           "description": "압축이 완료되면 사운드를 재생합니다."

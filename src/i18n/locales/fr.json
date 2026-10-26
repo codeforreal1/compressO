@@ -94,7 +94,7 @@
           "title": "Formes d’onde audio",
           "description": "Afficher des aperçus audio animés et les formes d’onde sur les pistes audio et vidéo."
         },
-        "title": "Son",
+        "title": "Audio et son",
         "completionSound": {
           "title": "Son de fin",
           "description": "Jouer un son lorsqu’une compression est terminée."

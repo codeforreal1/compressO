@@ -8,12 +8,12 @@ import { type PresetMediaType, STANDARD_PRESET_ID } from '@/types/preset'
 export const DEFAULT_OUTPUT_FILE_PREFIX = 'compressO-'
 
 export const saveLocations = {
+  /** Save automatically next to the original (or next to the dropped folder) */
+  sameFolder: 'sameFolder',
   /** Choose where to save after every compression */
   ask: 'ask',
   /** Save automatically to `saveFolder` */
   fixedFolder: 'fixedFolder',
-  /** Save automatically next to the original (or next to the dropped folder) */
-  sameFolder: 'sameFolder',
 } as const
 
 /** Range (%) of the tinted window's background opacity */
@@ -137,7 +137,7 @@ function readSettings(): SettingsState {
     saveLocation:
       storedSaveLocation && storedSaveLocation in saveLocations
         ? (storedSaveLocation as SaveLocation)
-        : saveLocations.ask,
+        : saveLocations.sameFolder,
     saveFolder: localStorage.getItem(constants.saveFolder),
     // Only an explicit opt-out turns it off
     preserveFolderStructure:

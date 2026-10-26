@@ -94,7 +94,7 @@
           "title": "Audiowellenformen",
           "description": "Animierte Audiovorschauen und Wellenformen in Audio- und Videozeitleisten anzeigen."
         },
-        "title": "Ton",
+        "title": "Audio & Ton",
         "completionSound": {
           "title": "Abschlusston",
           "description": "Einen Ton abspielen, wenn eine Komprimierung abgeschlossen ist."

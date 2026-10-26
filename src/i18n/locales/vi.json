@@ -94,7 +94,7 @@
           "title": "Dạng sóng âm thanh",
           "description": "Hiển thị bản xem trước âm thanh động và dạng sóng trên dòng thời gian âm thanh và video."
         },
-        "title": "Âm thanh",
+        "title": "Âm thanh và âm báo",
         "completionSound": {
           "title": "Âm báo hoàn tất",
           "description": "Phát âm thanh khi quá trình nén hoàn tất."

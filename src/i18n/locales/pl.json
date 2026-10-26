@@ -94,7 +94,7 @@
           "title": "Przebiegi fal dźwiękowych",
           "description": "Pokazuj animowane podglądy audio i przebiegi fal na osiach czasu audio i wideo."
         },
-        "title": "Dźwięk",
+        "title": "Audio i dźwięk",
         "completionSound": {
           "title": "Dźwięk zakończenia",
           "description": "Odtwarzaj dźwięk po zakończeniu kompresji."

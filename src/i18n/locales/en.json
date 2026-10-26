@@ -94,7 +94,7 @@
           "title": "Audio waveforms",
           "description": "Show animated audio previews and waveforms on audio and video timelines."
         },
-        "title": "Sound",
+        "title": "Audio & Sound",
         "completionSound": {
           "title": "Completion sound",
           "description": "Play a sound when a compression completes."

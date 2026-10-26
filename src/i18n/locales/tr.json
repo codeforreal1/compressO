@@ -94,7 +94,7 @@
           "title": "Ses dalga biçimleri",
           "description": "Hareketli ses önizlemelerini ve ses ile video zaman çizelgelerindeki dalga biçimlerini göster."
         },
-        "title": "Ses",
+        "title": "Ses ve ses efektleri",
         "completionSound": {
           "title": "Tamamlanma sesi",
           "description": "Bir sıkıştırma tamamlandığında ses çalın."

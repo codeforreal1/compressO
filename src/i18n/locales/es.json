@@ -94,7 +94,7 @@
           "title": "Formas de onda de audio",
           "description": "Muestra vistas previas de audio animadas y formas de onda en las líneas de tiempo de audio y vídeo."
         },
-        "title": "Sonido",
+        "title": "Audio y sonido",
         "completionSound": {
           "title": "Sonido al finalizar",
           "description": "Reproducir un sonido cuando finaliza una compresión."
