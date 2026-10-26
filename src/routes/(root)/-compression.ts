@@ -7,6 +7,7 @@ import { Image, MediaMetadataConfig, Video } from '@/types/app'
 import {
   getAudioFileOutputExtension,
   ImageCompressionConfig,
+  type ImageTargetSize,
   isAudioExtension,
   type MediaCompressionResult,
   MediaItem,
@@ -15,6 +16,11 @@ import {
   VideoTrimSegment,
 } from '@/types/compression'
 import { getAudioBitrateForQuality } from '@/utils/audio'
+import {
+  BYTES_PER_KB,
+  DEFAULT_IMAGE_TARGET_SIZE_IN_KB,
+  supportsImageTargetSize,
+} from '@/utils/imageTargetSize'
 import {
   BYTES_PER_MB,
   planTargetSize,
@@ -223,6 +229,72 @@ export function getTargetSizePlan(
 }
 
 /**
+ * The size an image is resized to: its custom dimensions, or the size of a batch (from a preset)
+ * for images without their own (`null` to keep its size). SVGs are resized with the SVG scale
+ * factor instead.
+ */
+function getImageOutputDimensions(
+  v: Image,
+  batchImageLongerSide: number | null,
+): [number, number] | null {
+  if (v.config?.shouldEnableCustomDimensions && v.config.customDimensions) {
+    return [v.config.customDimensions[0], v.config.customDimensions[1]]
+  }
+  if (
+    !v.dimensions?.width ||
+    v.extension === 'svg' ||
+    v.config.convertToExtension === 'svg'
+  ) {
+    return null
+  }
+  return getLongerSideDimensions(
+    getTransformedDimensions(
+      v.dimensions,
+      v.config?.shouldTransformImage
+        ? v.config.transformImageConfig?.transformHistory
+        : null,
+    ),
+    batchImageLongerSide,
+  )
+}
+
+/**
+ * The size an image is compressed to fit within (see `utils/imageTargetSize.ts`), with the size it
+ * has before it is lowered to fit: the size it is resized to, or its size after its transforms
+ */
+function getImageTargetSize(
+  v: Image,
+  batchImageLongerSide: number | null,
+): ImageTargetSize | null {
+  if (
+    !v.config?.shouldUseTargetSize ||
+    !supportsImageTargetSize(v.extension, v.config.convertToExtension)
+  ) {
+    return null
+  }
+  const outputDimensions = getImageOutputDimensions(v, batchImageLongerSide)
+  const transformedDimensions = v.dimensions?.width
+    ? getTransformedDimensions(
+        v.dimensions,
+        v.config.shouldTransformImage
+          ? v.config.transformImageConfig?.transformHistory
+          : null,
+      )
+    : null
+  return {
+    sizeInBytes: Math.round(
+      (v.config.targetSizeInKB ?? DEFAULT_IMAGE_TARGET_SIZE_IN_KB) *
+        BYTES_PER_KB,
+    ),
+    dimensions:
+      outputDimensions ??
+      (transformedDimensions?.width && transformedDimensions.height
+        ? [transformedDimensions.width, transformedDimensions.height]
+        : null),
+  }
+}
+
+/**
  * What the backend compresses a media with (`compress_media_batch`), from its settings. Used by the
  * main window & the menu bar's queue.
  * - `batchVideoLongerSide` / `batchImageLongerSide`: the batch's resolution, for media without
@@ -399,33 +471,13 @@ export function getMediaItemConfig(
             svgConfig: v.config?.shouldEnableAdvancedSvgSetting
               ? (v.config.svgConfig ?? null)
               : null,
-            dimensions:
-              v.config?.shouldEnableCustomDimensions &&
-              v.config.customDimensions
-                ? ([
-                    v.config.customDimensions[0],
-                    v.config.customDimensions[1],
-                  ] as [number, number])
-                : // The size of a batch (from a preset) for images without their own;
-                  // SVGs are resized with the SVG scale factor instead
-                  v.dimensions?.width &&
-                    v.extension !== 'svg' &&
-                    v.config.convertToExtension !== 'svg'
-                  ? getLongerSideDimensions(
-                      getTransformedDimensions(
-                        v.dimensions,
-                        v.config?.shouldTransformImage
-                          ? v.config.transformImageConfig?.transformHistory
-                          : null,
-                      ),
-                      batchImageLongerSide,
-                    )
-                  : null,
+            dimensions: getImageOutputDimensions(v, batchImageLongerSide),
             transformHistory: v.config?.shouldTransformImage
               ? (v.config.transformImageConfig?.transformHistory as
                   | MediaTransformHistory[]
                   | null)
               : null,
+            targetSize: getImageTargetSize(v, batchImageLongerSide),
           } satisfies ImageCompressionConfig)
         : undefined,
   }

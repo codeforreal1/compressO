@@ -6,10 +6,10 @@ import Button from '@/components/Button'
 import Icon from '@/components/Icon'
 import Tooltip from '@/components/Tooltip'
 import { useCommandShiftShortcut } from '@/hooks/useCommandEnterShortcut'
-import { getPlatform } from '@/utils/fs'
+import { getPlatform, isSamePath } from '@/utils/fs'
 import { appProxy } from '../-state'
 
-const { isMacOS } = getPlatform()
+const { isMacOS, isWindows } = getPlatform()
 
 /** Reconfigure: back to the settings used for the compression, to change them and compress again */
 function CompressionActions() {
@@ -18,21 +18,42 @@ function CompressionActions() {
     state: { media, isProcessCompleted, isLoadingMediaFiles, isSaving },
   } = useSnapshot(appProxy)
 
+  // Saved over their originals ("Replace original files"), which went to the Trash: compressing
+  // again would compress the compressed files, so it is not offered
+  const replacedOriginalCount = media.filter((mediaFile) =>
+    isSamePath(mediaFile.compressedFile?.savedPath, mediaFile.pathRaw),
+  ).length
+  const canReconfigure = replacedOriginalCount === 0
+
   const handleReconfigure = () => {
+    if (!canReconfigure) return
     appProxy.timeTravel('beforeCompressionStarted')
   }
 
   // ⌘+Shift+R acts like the Reconfigure button
   useCommandShiftShortcut(
     'r',
-    !!media.length && isProcessCompleted && !isLoadingMediaFiles && !isSaving,
+    !!media.length &&
+      isProcessCompleted &&
+      !isLoadingMediaFiles &&
+      !isSaving &&
+      canReconfigure,
     handleReconfigure,
   )
 
   return media.length && !isLoadingMediaFiles && isProcessCompleted ? (
     <div className="w-fit flex justify-center items-center z-[10]">
       <Tooltip
-        content={`${t('compression.reconfigure')} (${isMacOS ? '⌘⇧R' : 'Ctrl+Shift+R'})`}
+        content={
+          canReconfigure
+            ? `${t('compression.reconfigure')} (${isMacOS ? '⌘⇧R' : 'Ctrl+Shift+R'})`
+            : t('compression.reconfigureOriginalReplaced', {
+                count: replacedOriginalCount,
+                context: isWindows ? 'windows' : undefined,
+              })
+        }
+        // Shown at once when it explains why it is unavailable
+        delay={canReconfigure ? undefined : 0}
         aria-label={t('compression.reconfigure')}
       >
         <Button
@@ -41,7 +62,7 @@ function CompressionActions() {
           variant="light"
           radius="full"
           className="gap-1"
-          isDisabled={isSaving}
+          isDisabled={isSaving || !canReconfigure}
           isIconOnly
         >
           <Icon name="redo" size={22} />{' '}

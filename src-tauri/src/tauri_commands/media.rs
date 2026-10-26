@@ -365,19 +365,7 @@ async fn compress_media_item(
                 .map_err(|e| format!("Failed to create image compressor instance: {}", e))?
                 .with_owner_window(&owner_window);
             image_compressor
-                .compress_image(
-                    &config.image_path,
-                    config.convert_to_extension.as_str(),
-                    config.svg_scale_factor,
-                    config.is_lossless,
-                    config.quality,
-                    &config.image_id,
-                    Some(task_batch_id.as_str()),
-                    config.strip_metadata,
-                    config.svg_config.clone(),
-                    config.dimensions,
-                    config.transform_history.as_ref(),
-                )
+                .compress_image_config(&config, Some(task_batch_id.as_str()))
                 .await
         })
         .await

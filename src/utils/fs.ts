@@ -54,3 +54,19 @@ export function getParentDirectory(path: string, levels = 1) {
   }
   return directory
 }
+
+/**
+ * Whether two paths name the same file, whatever their separators (`/` or `\`) & letter case
+ * (macOS & Windows ignore it)
+ */
+export function isSamePath(
+  pathA: string | null | undefined,
+  pathB: string | null | undefined,
+) {
+  if (!pathA || !pathB) return false
+  const normalize = (path: string) => {
+    const unified = path.replace(/\\/g, '/').replace(/\/+$/, '')
+    return getPlatform().isLinux ? unified : unified.toLowerCase()
+  }
+  return normalize(pathA) === normalize(pathB)
+}

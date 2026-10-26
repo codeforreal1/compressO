@@ -382,7 +382,8 @@
       "metadataKept": "Metadata dipertahankan",
       "svgScale": "Skala SVG {{scale}}x",
       "customSvg": "Konversi SVG kustom",
-      "targetSize": "Ukuran target {{size}} MB"
+      "targetSize": "Ukuran target {{size}} MB",
+      "targetSizeImage": "Ukuran target {{size}}"
     },
     "save": {
       "title_video": "Simpan Preset Video",
@@ -806,6 +807,8 @@
     "confirmCancel": "Konfirmasi Pembatalan",
     "cancelling": "Membatalkan…",
     "reconfigure": "Konfigurasi Ulang",
+    "reconfigureOriginalReplaced_other": "File asli telah dipindahkan ke Tempat Sampah dan diganti dengan file terkompresi, sehingga tidak dapat dikompresi lagi.",
+    "reconfigureOriginalReplaced_windows_other": "File asli telah dipindahkan ke Recycle Bin dan diganti dengan file terkompresi, sehingga tidak dapat dikompresi lagi.",
     "pauseFailed": "Kompresi tidak dapat dijeda.",
     "resumeFailed": "Kompresi tidak dapat dilanjutkan.",
     "failed": "Terjadi kesalahan saat kompresi.",
@@ -967,10 +970,15 @@
     "estimateLowered": "Diturunkan ke {{width}}×{{height}} pada {{fps}} fps agar muat dalam {{size}} MB.",
     "notForGif": "GIF tidak dapat dikompres ke suatu ukuran. Pilih format lain, atau kompres berdasarkan kualitas.",
     "eachVideo": "Setiap video dikompres agar muat dalam ukuran ini.",
-    "retrying": "Mengompres ulang untuk mencapai ukuran target.",
-    "retryingOnCpu": "Mengompres ulang tanpa akselerasi perangkat keras untuk mencapai ukuran target.",
+    "round": "Putaran {{round}}",
+    "roundDetail": "Putaran {{round}}: mendekati ukuran target",
+    "roundWithoutHardwareAcceleration": "Putaran {{round}}: tanpa akselerasi perangkat keras, untuk mendekati ukuran target",
     "fitsAtQuality": "Kualitas yang dipilih sudah sesuai, sekitar {{size}}, sehingga kualitas tersebut digunakan.",
-    "switchUnit": "Tampilkan ukuran dalam {{unit}}"
+    "switchUnit": "Tampilkan ukuran dalam {{unit}}",
+    "notForSvgOrGif": "SVG dan GIF tidak dapat dikompres ke suatu ukuran. Pilih format lain, atau kompres berdasarkan kualitas.",
+    "imageFit": "Kualitas tertinggi yang muat akan digunakan, dan gambar hanya diperkecil jika memang perlu.",
+    "eachImage": "Setiap gambar dikompres agar muat dalam ukuran ini.",
+    "notReachedImage": "Gambar tidak dapat dibuat lebih kecil lagi tanpa menjadi terlalu kecil. Ukuran targetnya adalah {{size}}."
   },
   "outputOptions": {
     "title": "Opsi lainnya",

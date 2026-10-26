@@ -444,6 +444,8 @@ export type ImageCompressionResult = {
   fileName: string
   filePath: string
   fileMetadata?: FileMetadata
+  /** Compressed to a target size: whether the output fits within it */
+  isTargetSizeReached?: boolean
 }
 
 export type SvgConfig = {
@@ -467,6 +469,15 @@ export type ImageCompressionConfig = {
   svgConfig?: SvgConfig | null
   dimensions?: [number, number] | null
   transformHistory?: MediaTransformHistory[] | null
+  /** Compressed to fit within a size instead of at `quality` (see `utils/imageTargetSize.ts`) */
+  targetSize?: ImageTargetSize | null
+}
+
+/** See `ImageTargetSize` in `src-tauri/src/core/domain.rs` */
+export type ImageTargetSize = {
+  sizeInBytes: number
+  /** The image's size before it is lowered to fit (when unknown, only its quality is lowered) */
+  dimensions: [number, number] | null
 }
 
 export type MediaItem = {

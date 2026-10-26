@@ -382,7 +382,8 @@
       "metadataKept": "메타데이터 유지",
       "svgScale": "SVG 배율 {{scale}}배",
       "customSvg": "사용자 지정 SVG 변환",
-      "targetSize": "목표 크기 {{size}} MB"
+      "targetSize": "목표 크기 {{size}} MB",
+      "targetSizeImage": "목표 크기 {{size}}"
     },
     "save": {
       "title_video": "비디오 프리셋 저장",
@@ -806,6 +807,8 @@
     "confirmCancel": "취소 확인",
     "cancelling": "취소하는 중…",
     "reconfigure": "다시 구성",
+    "reconfigureOriginalReplaced_other": "원본이 휴지통으로 이동되고 압축된 파일로 대체되었기 때문에 다시 압축할 수 없습니다.",
+    "reconfigureOriginalReplaced_windows_other": "원본이 휴지통으로 이동되고 압축된 파일로 대체되었기 때문에 다시 압축할 수 없습니다.",
     "pauseFailed": "압축을 일시정지할 수 없습니다.",
     "resumeFailed": "압축을 재개할 수 없습니다.",
     "failed": "압축 중 문제가 발생했습니다.",
@@ -967,10 +970,15 @@
     "estimateLowered": "{{size}} MB 이내로 맞추기 위해 {{width}}×{{height}}, {{fps}} fps로 낮췄습니다.",
     "notForGif": "GIF는 크기를 지정하여 압축할 수 없습니다. 다른 형식을 선택하거나 화질로 압축하십시오.",
     "eachVideo": "각 동영상은 이 크기 이내로 압축됩니다.",
-    "retrying": "목표 크기에 맞추기 위해 다시 압축하는 중입니다.",
-    "retryingOnCpu": "목표 크기에 맞추기 위해 하드웨어 가속 없이 다시 압축하는 중입니다.",
+    "round": "{{round}}차",
+    "roundDetail": "{{round}}차: 목표 크기에 가까워지는 중입니다",
+    "roundWithoutHardwareAcceleration": "{{round}}차: 목표 크기에 가까워지기 위해 하드웨어 가속 없이 압축하는 중입니다",
     "fitsAtQuality": "선택한 품질로 이미 맞으므로(약 {{size}}) 해당 품질을 사용합니다.",
-    "switchUnit": "크기를 {{unit}}(으)로 표시"
+    "switchUnit": "크기를 {{unit}}(으)로 표시",
+    "notForSvgOrGif": "SVG와 GIF는 크기를 지정하여 압축할 수 없습니다. 다른 형식을 선택하거나 화질로 압축하십시오.",
+    "imageFit": "크기에 맞는 가장 높은 화질이 사용되며, 필요한 경우에만 이미지가 축소됩니다.",
+    "eachImage": "각 이미지는 이 크기 이내로 압축됩니다.",
+    "notReachedImage": "이미지를 너무 작게 만들지 않고는 더 줄일 수 없습니다. 목표 크기는 {{size}}였습니다."
   },
   "outputOptions": {
     "title": "다른 옵션",

@@ -20,6 +20,12 @@ import { isAudioExtension } from '@/types/compression'
 import { Ripple } from '@/ui/Patterns/Ripple'
 import { slideUpTransition, zoomInTransition } from '@/utils/animation'
 import { formatBytes } from '@/utils/fs'
+import {
+  BYTES_PER_KB,
+  DEFAULT_IMAGE_TARGET_SIZE_IN_KB,
+  formatImageTargetSize,
+  supportsImageTargetSize,
+} from '@/utils/imageTargetSize'
 import { isOverlayOpen, isTextEntryElement } from '@/utils/keyboard'
 import { isOutputPreviewPending } from '@/utils/outputPreview'
 import { formatDuration } from '@/utils/string'
@@ -83,6 +89,18 @@ function PreviewSingleMedia({
   } = mediaFile ?? {}
   const estimatedOutputSize =
     mediaFile?.type === 'video' ? mediaFile.estimatedOutputSize : null
+  const targetSizeRound =
+    mediaFile?.type === 'video' ? mediaFile.targetSizeRound : null
+  // An image compressed to a size, to say so when it could not be reached
+  const imageTargetSizeInKB =
+    mediaFile?.type === 'image' &&
+    mediaFile.config.shouldUseTargetSize &&
+    supportsImageTargetSize(
+      mediaFile.extension,
+      mediaFile.config.convertToExtension,
+    )
+      ? (mediaFile.config.targetSizeInKB ?? DEFAULT_IMAGE_TARGET_SIZE_IN_KB)
+      : null
   const { videoDuration, fps } =
     mediaFile?.type === 'video' ? (mediaFile ?? {}) : {}
   const { isVideoTransformEditMode, isVideoTrimEditMode } =
@@ -359,6 +377,15 @@ function PreviewSingleMedia({
               </p>
             ) : null}
             <OutputOptions mediaIndex={mediaIndex} />
+            {imageTargetSizeInKB != null &&
+            (compressedFile?.sizeInBytes ?? 0) >
+              imageTargetSizeInKB * BYTES_PER_KB ? (
+              <p className="mt-3 text-center text-xs text-zinc-500 dark:text-zinc-400">
+                {t('targetSize.notReachedImage', {
+                  size: formatImageTargetSize(imageTargetSizeInKB),
+                })}
+              </p>
+            ) : null}
           </section>
         ) : (
           <section className={cn(['my-4 mb-2', styles.videoMetadata])}>
@@ -526,7 +553,14 @@ function PreviewSingleMedia({
               ? t('preview.waitingForDropZone')
               : isEstimatingSize
                 ? t('preview.estimatingSize')
-                : t('preview.processing')}
+                : targetSizeRound
+                  ? t(
+                      targetSizeRound.isWithoutHardwareAcceleration
+                        ? 'targetSize.roundWithoutHardwareAcceleration'
+                        : 'targetSize.roundDetail',
+                      { round: targetSizeRound.round },
+                    )
+                  : t('preview.processing')}
           </p>
           <p
             className={`text-2xl text-center font-bold my-2 opacity-${

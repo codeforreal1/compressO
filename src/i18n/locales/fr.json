@@ -382,7 +382,8 @@
       "metadataKept": "Métadonnées conservées",
       "svgScale": "Échelle SVG {{scale}}x",
       "customSvg": "Conversion SVG personnalisée",
-      "targetSize": "Taille cible {{size}} Mo"
+      "targetSize": "Taille cible {{size}} Mo",
+      "targetSizeImage": "Taille cible {{size}}"
     },
     "save": {
       "title_video": "Enregistrer le préréglage vidéo",
@@ -828,6 +829,12 @@
     "confirmCancel": "Confirmer l’annulation",
     "cancelling": "Annulation…",
     "reconfigure": "Reconfigurer",
+    "reconfigureOriginalReplaced_one": "L’original a été déplacé vers la Corbeille et remplacé par le fichier compressé ; il ne peut donc pas être compressé à nouveau.",
+    "reconfigureOriginalReplaced_many": "{{count}} originaux ont été déplacés vers la Corbeille et remplacés par les fichiers compressés ; ils ne peuvent donc pas être compressés à nouveau.",
+    "reconfigureOriginalReplaced_other": "{{count}} originaux ont été déplacés vers la Corbeille et remplacés par les fichiers compressés ; ils ne peuvent donc pas être compressés à nouveau.",
+    "reconfigureOriginalReplaced_windows_one": "L’original a été déplacé vers la Corbeille et remplacé par le fichier compressé ; il ne peut donc pas être compressé à nouveau.",
+    "reconfigureOriginalReplaced_windows_many": "{{count}} originaux ont été déplacés vers la Corbeille et remplacés par les fichiers compressés ; ils ne peuvent donc pas être compressés à nouveau.",
+    "reconfigureOriginalReplaced_windows_other": "{{count}} originaux ont été déplacés vers la Corbeille et remplacés par les fichiers compressés ; ils ne peuvent donc pas être compressés à nouveau.",
     "pauseFailed": "La compression n’a pas pu être mise en pause.",
     "resumeFailed": "La compression n’a pas pu reprendre.",
     "failed": "Une erreur s’est produite pendant la compression.",
@@ -993,10 +1000,15 @@
     "estimateLowered": "Réduite à {{width}}×{{height}} à {{fps}} i/s pour tenir en {{size}} Mo.",
     "notForGif": "Les GIF ne peuvent pas être compressés à une taille. Choisissez un autre format ou compressez selon la qualité.",
     "eachVideo": "Chaque vidéo est compressée pour tenir dans cette taille.",
-    "retrying": "Nouvelle compression pour atteindre la taille cible.",
-    "retryingOnCpu": "Nouvelle compression sans accélération matérielle pour atteindre la taille cible.",
+    "round": "Tour {{round}}",
+    "roundDetail": "Tour {{round}} : rapprochement de la taille cible",
+    "roundWithoutHardwareAcceleration": "Tour {{round}} : sans accélération matérielle, pour se rapprocher de la taille cible",
     "fitsAtQuality": "La qualité choisie tient déjà, avec environ {{size}}, elle est donc utilisée.",
-    "switchUnit": "Afficher la taille en {{unit}}"
+    "switchUnit": "Afficher la taille en {{unit}}",
+    "notForSvgOrGif": "Les SVG et les GIF ne peuvent pas être compressés à une taille. Choisissez un autre format ou compressez selon la qualité.",
+    "imageFit": "La qualité la plus élevée qui tient est utilisée, et l'image n'est réduite que lorsque c'est nécessaire.",
+    "eachImage": "Chaque image est compressée pour tenir dans cette taille.",
+    "notReachedImage": "L'image ne peut pas être plus petite sans devenir trop réduite. La taille cible était de {{size}}."
   },
   "outputOptions": {
     "title": "Autres options",

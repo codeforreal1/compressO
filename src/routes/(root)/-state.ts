@@ -9,6 +9,7 @@ import {
   isVideoCodecCompatible,
   type MediaTransformHistory,
 } from '@/types/compression'
+import { DEFAULT_IMAGE_TARGET_SIZE_IN_KB } from '@/utils/imageTargetSize'
 import { DEFAULT_TARGET_SIZE_IN_MB } from '@/utils/targetSize'
 import { applyPortableTransform } from '@/utils/transform'
 import {
@@ -91,6 +92,8 @@ export const imageConfigInitialState: ImageConfig = {
   convertToExtension: '-',
   isLossless: false,
   quality: 50,
+  shouldUseTargetSize: false,
+  targetSizeInKB: DEFAULT_IMAGE_TARGET_SIZE_IN_KB,
   shouldStripMetadata: true,
   svgScaleFactor: 1,
   shouldEnableAdvancedSvgSetting: false,

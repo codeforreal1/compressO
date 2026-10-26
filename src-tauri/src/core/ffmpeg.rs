@@ -1051,14 +1051,15 @@ impl FFMPEG {
             }
             round_attempts.push((None, round_cpu_args));
             if is_retry {
-                let on_cpu = round_attempts
-                    .first()
-                    .is_none_or(|(name, _)| name.is_none());
+                // Only when the retry leaves the graphics card; without hardware acceleration
+                // (turned off, or none for the codec) every encode is on the CPU anyway
+                let on_cpu = hardware_encoder.is_some() && retry_on_cpu;
                 let _ = self.app.emit_to(
                     self.owner_window.as_str(),
                     TARGET_SIZE_RETRY_EVENT,
                     TargetSizeRetry {
                         video_id: video_id.to_string(),
+                        pass: size_attempt + 1,
                         on_cpu,
                     },
                 );
@@ -1842,6 +1843,8 @@ const TARGET_SIZE_RETRY_EVENT: &str = "target-size-retry";
 #[serde(rename_all = "camelCase")]
 struct TargetSizeRetry {
     video_id: String,
+    /// The encode it is (2 for the first retry)
+    pass: u32,
     /// Encoded again on the CPU (instead of the graphics card)
     on_cpu: bool,
 }

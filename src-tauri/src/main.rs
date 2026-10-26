@@ -295,8 +295,22 @@ fn can_open_files_in_main_window(app_handle: &tauri::AppHandle) -> bool {
     !is_compressing(app_handle) && !has_unsaved_output(app_handle)
 }
 
-#[tokio::main]
-async fn main() {
+/// Stack of each worker thread. Tokio's 2 MiB is too little to compress an image to a target size,
+/// where compressions are nested & some decoders (e.g. JPEG's, for JPEG XL) need much of it
+const WORKER_STACK_SIZE: usize = 8 * 1024 * 1024;
+
+fn main() {
+    let runtime = tokio::runtime::Builder::new_multi_thread()
+        .enable_all()
+        .thread_stack_size(WORKER_STACK_SIZE)
+        .build()
+        .expect("Failed to start the async runtime");
+    // Commands & their tasks run on it as well, instead of on a runtime of Tauri's own
+    tauri::async_runtime::set(runtime.handle().clone());
+    runtime.block_on(run());
+}
+
+async fn run() {
     sys::logging::log_panics();
     tauri::Builder::default()
         // First, so a second launch exits before anything else starts

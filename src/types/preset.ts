@@ -58,6 +58,8 @@ export const imagePresetFields = [
   'convertToExtension',
   'isLossless',
   'quality',
+  'shouldUseTargetSize',
+  'targetSizeInKB',
   'shouldStripMetadata',
   'svgScaleFactor',
   'shouldEnableAdvancedSvgSetting',

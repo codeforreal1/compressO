@@ -69,7 +69,7 @@ function ImageSettings({ mediaIndex }: ImageSettingsProps) {
             <div>
               <div>
                 <CompressionQuality mediaIndex={mediaIndex} />
-                <Divider className="mb-3" />
+                <Divider className="my-3" />
               </div>
 
               {(['svg'] as ImageExtensionType[]).includes(

@@ -517,6 +517,25 @@ function PreviewBatchMedia() {
                           <div className="absolute inset-0 bg-black/70 z-10 rounded-lg"></div>
                         </>
                       ) : null}
+                      {/* Compressed again to get closer to its target size: the round it is in */}
+                      <AnimatePresence>
+                        {isMediaCompressing &&
+                        mediaFile.type === 'video' &&
+                        mediaFile.targetSizeRound ? (
+                          <motion.div
+                            key={mediaFile.targetSizeRound.round}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.15 }}
+                            className="absolute bottom-2 left-2 z-20 flex items-center gap-1 rounded-full bg-black/60 px-2 py-0.5 text-[11px] text-white"
+                          >
+                            {t('targetSize.round', {
+                              round: mediaFile.targetSizeRound.round,
+                            })}
+                          </motion.div>
+                        ) : null}
+                      </AnimatePresence>
                       {/* Media not compressed yet: waits for its turn, or for the batch to resume */}
                       <AnimatePresence>
                         {isCompressing && !isPast && !isMediaCompressing ? (

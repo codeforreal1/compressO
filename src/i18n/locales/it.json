@@ -382,7 +382,8 @@
       "metadataKept": "Metadati mantenuti",
       "svgScale": "Scala SVG {{scale}}x",
       "customSvg": "Conversione SVG personalizzata",
-      "targetSize": "Dimensione obiettivo {{size}} MB"
+      "targetSize": "Dimensione obiettivo {{size}} MB",
+      "targetSizeImage": "Dimensione obiettivo {{size}}"
     },
     "save": {
       "title_video": "Salva preset video",
@@ -828,6 +829,12 @@
     "confirmCancel": "Conferma annullamento",
     "cancelling": "Annullamento…",
     "reconfigure": "Riconfigura",
+    "reconfigureOriginalReplaced_one": "L’originale è stato spostato nel Cestino e sostituito dal file compresso, quindi non può essere compresso di nuovo.",
+    "reconfigureOriginalReplaced_many": "{{count}} originali sono stati spostati nel Cestino e sostituiti dai file compressi, quindi non possono essere compressi di nuovo.",
+    "reconfigureOriginalReplaced_other": "{{count}} originali sono stati spostati nel Cestino e sostituiti dai file compressi, quindi non possono essere compressi di nuovo.",
+    "reconfigureOriginalReplaced_windows_one": "L’originale è stato spostato nel Cestino e sostituito dal file compresso, quindi non può essere compresso di nuovo.",
+    "reconfigureOriginalReplaced_windows_many": "{{count}} originali sono stati spostati nel Cestino e sostituiti dai file compressi, quindi non possono essere compressi di nuovo.",
+    "reconfigureOriginalReplaced_windows_other": "{{count}} originali sono stati spostati nel Cestino e sostituiti dai file compressi, quindi non possono essere compressi di nuovo.",
     "pauseFailed": "Non è stato possibile mettere in pausa la compressione.",
     "resumeFailed": "Non è stato possibile riprendere la compressione.",
     "failed": "Si è verificato un errore durante la compressione.",
@@ -993,10 +1000,15 @@
     "estimateLowered": "Ridotto a {{width}}×{{height}} a {{fps}} fps per stare entro {{size}} MB.",
     "notForGif": "Le GIF non possono essere compresse a una dimensione. Scegli un altro formato o comprimi per qualità.",
     "eachVideo": "Ogni video viene compresso per stare entro questa dimensione.",
-    "retrying": "Nuova compressione per raggiungere la dimensione obiettivo.",
-    "retryingOnCpu": "Nuova compressione senza accelerazione hardware per raggiungere la dimensione obiettivo.",
+    "round": "Turno {{round}}",
+    "roundDetail": "Turno {{round}}: avvicinamento alla dimensione obiettivo",
+    "roundWithoutHardwareAcceleration": "Turno {{round}}: senza accelerazione hardware, per avvicinarsi alla dimensione obiettivo",
     "fitsAtQuality": "La qualità scelta rientra già, con circa {{size}}, quindi viene utilizzata.",
-    "switchUnit": "Mostra la dimensione in {{unit}}"
+    "switchUnit": "Mostra la dimensione in {{unit}}",
+    "notForSvgOrGif": "Gli SVG e le GIF non possono essere compressi a una dimensione. Scegli un altro formato o comprimi per qualità.",
+    "imageFit": "Viene usata la qualità più alta che rientra, e l'immagine viene rimpicciolita solo quando è necessario.",
+    "eachImage": "Ogni immagine viene compressa per stare entro questa dimensione.",
+    "notReachedImage": "L'immagine non può essere più piccola senza diventare troppo ridotta. La dimensione obiettivo era {{size}}."
   },
   "outputOptions": {
     "title": "Altre opzioni",

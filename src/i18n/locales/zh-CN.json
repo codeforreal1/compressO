@@ -382,7 +382,8 @@
       "metadataKept": "保留元数据",
       "svgScale": "SVG 缩放 {{scale}} 倍",
       "customSvg": "自定义 SVG 转换",
-      "targetSize": "目标大小 {{size}} MB"
+      "targetSize": "目标大小 {{size}} MB",
+      "targetSizeImage": "目标大小 {{size}}"
     },
     "save": {
       "title_video": "保存视频预设",
@@ -806,6 +807,8 @@
     "confirmCancel": "确认取消",
     "cancelling": "正在取消…",
     "reconfigure": "重新配置",
+    "reconfigureOriginalReplaced_other": "原始文件已移到废纸篓并被压缩后的文件替换，因此无法再次压缩。",
+    "reconfigureOriginalReplaced_windows_other": "原始文件已移到回收站并被压缩后的文件替换，因此无法再次压缩。",
     "pauseFailed": "无法暂停压缩。",
     "resumeFailed": "无法继续压缩。",
     "failed": "压缩过程中出现错误。",
@@ -967,10 +970,15 @@
     "estimateLowered": "已降至 {{width}}×{{height}}，{{fps}} fps，以控制在 {{size}} MB 以内。",
     "notForGif": "GIF 无法按大小压缩。请选择其他格式，或按质量压缩。",
     "eachVideo": "每个视频都会压缩到此大小以内。",
-    "retrying": "正在重新压缩以达到目标大小。",
-    "retryingOnCpu": "正在不使用硬件加速重新压缩以达到目标大小。",
+    "round": "第 {{round}} 轮",
+    "roundDetail": "第 {{round}} 轮：正在接近目标大小",
+    "roundWithoutHardwareAcceleration": "第 {{round}} 轮：不使用硬件加速，以接近目标大小",
     "fitsAtQuality": "所选质量已符合要求，约为 {{size}}，因此将使用该质量。",
-    "switchUnit": "以 {{unit}} 显示大小"
+    "switchUnit": "以 {{unit}} 显示大小",
+    "notForSvgOrGif": "SVG 和 GIF 无法按大小压缩。请选择其他格式，或按质量压缩。",
+    "imageFit": "会使用能放得下的最高质量，只有在必要时才会缩小图片。",
+    "eachImage": "每张图片都会压缩到此大小以内。",
+    "notReachedImage": "图片已无法在不变得过小的情况下进一步缩小。目标大小为 {{size}}。"
   },
   "outputOptions": {
     "title": "其他选项",

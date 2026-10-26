@@ -45,23 +45,28 @@ import { appProxy } from '../-state'
 function StartCompression() {
   const { t } = useTranslation()
 
-  // A video missed its target size & is compressed again (see `ffmpeg.rs`), on the CPU with
-  // "Retry target sizes on the CPU"
+  // A video missed its target size & is compressed again (see `ffmpeg.rs`): the round is shown on
+  // it while it lasts, so the time it takes is understood
   useEffect(() => {
-    const unlisten = event.listen<{ videoId: string; onCpu: boolean }>(
-      'target-size-retry',
-      ({ payload }) => {
-        toast.info(
-          payload?.onCpu
-            ? t('targetSize.retryingOnCpu')
-            : t('targetSize.retrying'),
-        )
-      },
-    )
+    const unlisten = event.listen<{
+      videoId: string
+      pass: number
+      onCpu: boolean
+    }>('target-size-retry', ({ payload }) => {
+      const media = appProxy.state.media.find(
+        (mediaFile) => mediaFile.id === payload?.videoId,
+      )
+      if (media?.type === 'video') {
+        media.targetSizeRound = {
+          round: payload.pass,
+          isWithoutHardwareAcceleration: payload.onCpu,
+        }
+      }
+    })
     return () => {
       unlisten.then((stop) => stop()).catch(() => {})
     }
-  }, [t])
+  }, [])
   const {
     state: {
       selectedMediaIndexForCustomization,
@@ -116,6 +121,7 @@ function StartCompression() {
               ]?.config?.transformVideoConfig?.previewUrl
           }
           appProxy.state.media[index].config.isVideoTransformEditMode = false
+          appProxy.state.media[index].targetSizeRound = null
         } else if (appProxy.state.media[index].type === 'image') {
           if (
             appProxy.state.media[index]?.config?.shouldTransformImage &&

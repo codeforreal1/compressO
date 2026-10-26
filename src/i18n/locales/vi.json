@@ -382,7 +382,8 @@
       "metadataKept": "Giữ siêu dữ liệu",
       "svgScale": "Tỷ lệ SVG {{scale}}x",
       "customSvg": "Chuyển đổi SVG tùy chỉnh",
-      "targetSize": "Kích thước mục tiêu {{size}} MB"
+      "targetSize": "Kích thước mục tiêu {{size}} MB",
+      "targetSizeImage": "Kích thước mục tiêu {{size}}"
     },
     "save": {
       "title_video": "Lưu cài đặt sẵn cho video",
@@ -806,6 +807,8 @@
     "confirmCancel": "Xác nhận hủy",
     "cancelling": "Đang hủy…",
     "reconfigure": "Cấu hình lại",
+    "reconfigureOriginalReplaced_other": "Tệp gốc đã được chuyển vào Thùng rác và thay bằng tệp đã nén, nên không thể nén lại.",
+    "reconfigureOriginalReplaced_windows_other": "Tệp gốc đã được chuyển vào Thùng rác và thay bằng tệp đã nén, nên không thể nén lại.",
     "pauseFailed": "Không thể tạm dừng quá trình nén.",
     "resumeFailed": "Không thể tiếp tục quá trình nén.",
     "failed": "Đã xảy ra lỗi trong quá trình nén.",
@@ -967,10 +970,15 @@
     "estimateLowered": "Đã giảm xuống {{width}}×{{height}} ở {{fps}} fps để vừa trong {{size}} MB.",
     "notForGif": "Không thể nén GIF theo kích thước. Hãy chọn định dạng khác hoặc nén theo chất lượng.",
     "eachVideo": "Mỗi video được nén để vừa trong kích thước này.",
-    "retrying": "Đang nén lại để đạt kích thước mục tiêu.",
-    "retryingOnCpu": "Đang nén lại không dùng tăng tốc phần cứng để đạt kích thước mục tiêu.",
+    "round": "Lượt {{round}}",
+    "roundDetail": "Lượt {{round}}: đang tiến gần kích thước mục tiêu",
+    "roundWithoutHardwareAcceleration": "Lượt {{round}}: không dùng tăng tốc phần cứng, để tiến gần kích thước mục tiêu",
     "fitsAtQuality": "Chất lượng đã chọn đã vừa, khoảng {{size}}, nên chất lượng này được sử dụng.",
-    "switchUnit": "Hiển thị kích thước theo {{unit}}"
+    "switchUnit": "Hiển thị kích thước theo {{unit}}",
+    "notForSvgOrGif": "Không thể nén SVG và GIF theo kích thước. Hãy chọn định dạng khác hoặc nén theo chất lượng.",
+    "imageFit": "Chất lượng cao nhất vừa với kích thước sẽ được dùng, và hình ảnh chỉ được thu nhỏ khi cần thiết.",
+    "eachImage": "Mỗi hình ảnh được nén để vừa trong kích thước này.",
+    "notReachedImage": "Không thể làm hình ảnh nhỏ hơn nữa mà không khiến nó quá nhỏ. Kích thước mục tiêu là {{size}}."
   },
   "outputOptions": {
     "title": "Tùy chọn khác",

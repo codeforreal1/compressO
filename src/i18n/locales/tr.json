@@ -382,7 +382,8 @@
       "metadataKept": "Meta veriler korundu",
       "svgScale": "SVG ölçeği {{scale}}x",
       "customSvg": "Özel SVG dönüştürme",
-      "targetSize": "Hedef boyut {{size}} MB"
+      "targetSize": "Hedef boyut {{size}} MB",
+      "targetSizeImage": "Hedef boyut {{size}}"
     },
     "save": {
       "title_video": "Video Ön Ayarını Kaydet",
@@ -817,6 +818,10 @@
     "confirmCancel": "İptali Onayla",
     "cancelling": "İptal ediliyor…",
     "reconfigure": "Yeniden Yapılandır",
+    "reconfigureOriginalReplaced_one": "Orijinal dosya Çöp Kutusu’na taşındı ve yerini sıkıştırılan dosya aldı; bu nedenle yeniden sıkıştırılamaz.",
+    "reconfigureOriginalReplaced_other": "{{count}} orijinal dosya Çöp Kutusu’na taşındı ve yerlerini sıkıştırılan dosyalar aldı; bu nedenle yeniden sıkıştırılamazlar.",
+    "reconfigureOriginalReplaced_windows_one": "Orijinal dosya Geri Dönüşüm Kutusu’na taşındı ve yerini sıkıştırılan dosya aldı; bu nedenle yeniden sıkıştırılamaz.",
+    "reconfigureOriginalReplaced_windows_other": "{{count}} orijinal dosya Geri Dönüşüm Kutusu’na taşındı ve yerlerini sıkıştırılan dosyalar aldı; bu nedenle yeniden sıkıştırılamazlar.",
     "pauseFailed": "Sıkıştırma duraklatılamadı.",
     "resumeFailed": "Sıkıştırma sürdürülemedi.",
     "failed": "Sıkıştırma sırasında bir sorun oluştu.",
@@ -980,10 +985,15 @@
     "estimateLowered": "{{size}} MB içine sığması için {{width}}×{{height}}, {{fps}} fps değerine düşürüldü.",
     "notForGif": "GIF dosyaları bir boyuta sıkıştırılamaz. Başka bir biçim seçin veya kaliteye göre sıkıştırın.",
     "eachVideo": "Her video bu boyuta sığacak şekilde sıkıştırılır.",
-    "retrying": "Hedef boyuta ulaşmak için yeniden sıkıştırılıyor.",
-    "retryingOnCpu": "Hedef boyuta ulaşmak için donanım hızlandırma olmadan yeniden sıkıştırılıyor.",
+    "round": "{{round}}. tur",
+    "roundDetail": "{{round}}. tur: hedef boyuta yaklaşılıyor",
+    "roundWithoutHardwareAcceleration": "{{round}}. tur: hedef boyuta yaklaşmak için donanım hızlandırma olmadan",
     "fitsAtQuality": "Seçilen kalite zaten sığıyor (yaklaşık {{size}}), bu nedenle kullanılıyor.",
-    "switchUnit": "Boyutu {{unit}} olarak göster"
+    "switchUnit": "Boyutu {{unit}} olarak göster",
+    "notForSvgOrGif": "SVG ve GIF dosyaları bir boyuta sıkıştırılamaz. Başka bir biçim seçin veya kaliteye göre sıkıştırın.",
+    "imageFit": "Sığan en yüksek kalite kullanılır ve görüntü yalnızca gerektiğinde küçültülür.",
+    "eachImage": "Her görüntü bu boyuta sığacak şekilde sıkıştırılır.",
+    "notReachedImage": "Görüntü, fazla küçülmeden bundan daha küçük yapılamaz. Hedef boyut {{size}} idi."
   },
   "outputOptions": {
     "title": "Diğer seçenekler",

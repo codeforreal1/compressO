@@ -144,6 +144,10 @@ function CompressionProgress() {
                   appProxy.state.media[targetMediaIndex].isCompressing = false
                   appProxy.state.media[targetMediaIndex].compressionProgress =
                     100
+                  const completedMedia = appProxy.state.media[targetMediaIndex]
+                  if (completedMedia.type === 'video') {
+                    completedMedia.targetSizeRound = null
+                  }
                   const lateFile = {
                     isSuccessful: true,
                     fileName: fileMetadata?.fileName,

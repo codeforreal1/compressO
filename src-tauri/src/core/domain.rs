@@ -389,6 +389,23 @@ pub struct ImageCompressionResult {
     pub file_name: String,
     pub file_path: String,
     pub file_metadata: Option<FileMetadata>,
+    /// Compressed to a target size (see `ImageTargetSize`): whether the output fits within it
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub is_target_size_reached: Option<bool>,
+}
+
+/// Compressing an image to a file size (e.g. 500 KB for a form) instead of a quality: the highest
+/// quality that fits, at smaller dimensions when even the lowest quality is larger (see
+/// `ImageCompressor::compress_image_to_size`)
+#[derive(Serialize, Deserialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct ImageTargetSize {
+    /// The size the output is kept within, in bytes
+    pub size_in_bytes: u64,
+    /// The image's size before it is lowered to fit: its custom dimensions, or its size after its
+    /// transforms (when unknown, only its quality is lowered)
+    #[serde(default)]
+    pub dimensions: Option<(f64, f64)>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -404,6 +421,9 @@ pub struct ImageCompressionConfig {
     pub svg_config: Option<SvgConfig>,
     pub dimensions: Option<(f64, f64)>,
     pub transform_history: Option<MediaTransformHistory>,
+    /// Compressed to fit within a size instead of at `quality` (not for SVGs & GIFs)
+    #[serde(default)]
+    pub target_size: Option<ImageTargetSize>,
 }
 
 #[derive(Serialize, Deserialize, Clone)]

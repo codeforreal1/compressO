@@ -1,9 +1,9 @@
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
 import StepperInput from '@/components/StepperInput'
+import UnitSwitch from '@/components/UnitSwitch'
 import { useSyncState } from '@/hooks/useSyncState'
 import { formatBytes } from '@/utils/fs'
 import {
@@ -22,16 +22,6 @@ import {
 } from '../../../../-compression'
 import { appProxy, normalizeBatchMediaConfig } from '../../../../-state'
 import { useBatchVideoConfigKey } from '../-batchConfig'
-
-/**
- * The unit switching: to GB, the new one comes up from below as the old one goes up; back to MB,
- * the other way (`custom` is whether it is now GB)
- */
-const unitVariants = {
-  enter: (isInGB: boolean) => ({ y: isInGB ? 12 : -12, opacity: 0 }),
-  center: { y: 0, opacity: 1 },
-  exit: (isInGB: boolean) => ({ y: isInGB ? -12 : 12, opacity: 0 }),
-}
 
 type TargetSizeProps = {
   mediaIndex: number
@@ -133,7 +123,6 @@ function TargetSize({ mediaIndex }: TargetSizeProps) {
 
   // Shown in MB, or in GB after clicking the unit (the size is kept in MB)
   const [isInGB, setIsInGB] = useState(false)
-  const reduceMotion = useReducedMotion()
   const unitScale = isInGB ? MB_PER_GB : 1
 
   const outputExtension =
@@ -153,35 +142,15 @@ function TargetSize({ mediaIndex }: TargetSizeProps) {
         step={isInGB ? TARGET_SIZE_STEP_IN_GB : TARGET_SIZE_STEP_IN_MB}
         decimals={isInGB ? 2 : 1}
         unit={
-          <button
-            type="button"
+          <UnitSwitch
+            units={['MB', 'GB']}
+            isLarger={isInGB}
+            onToggle={() => setIsInGB((value) => !value)}
             aria-label={t('targetSize.switchUnit', {
               unit: isInGB ? 'MB' : 'GB',
             })}
-            onClick={() => setIsInGB((value) => !value)}
             disabled={shouldDisableInput}
-            className="relative inline-grid h-4 overflow-hidden rounded px-0.5 transition-colors hover:text-zinc-900 disabled:pointer-events-none dark:hover:text-white"
-          >
-            {/* GB slides in from below, MB from above */}
-            <AnimatePresence initial={false} mode="popLayout" custom={isInGB}>
-              <motion.span
-                key={isInGB ? 'GB' : 'MB'}
-                className="col-start-1 row-start-1 leading-4"
-                custom={isInGB}
-                variants={unitVariants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                transition={
-                  reduceMotion
-                    ? { duration: 0 }
-                    : { type: 'spring', stiffness: 420, damping: 32 }
-                }
-              >
-                {isInGB ? 'GB' : 'MB'}
-              </motion.span>
-            </AnimatePresence>
-          </button>
+          />
         }
         onChange={(value) =>
           setTargetSize(Math.round(value * unitScale * 10) / 10)

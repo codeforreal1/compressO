@@ -142,6 +142,14 @@ export type Video = {
    * settings when those fit, or else up to the target size
    */
   estimatedOutputSize?: { sizeInBytes: number; isUpTo: boolean } | null
+  /**
+   * While compressing to a target size & compressed again to get closer to it: the round it is in
+   * (2 for the second), & whether this round is without hardware acceleration
+   */
+  targetSizeRound?: {
+    round: number
+    isWithoutHardwareAcceleration: boolean
+  } | null
   isCompressing?: boolean
   isProcessCompleted?: boolean
   compressedFile?: {
@@ -186,6 +194,9 @@ export type ImageConfig = {
   convertToExtension: keyof typeof extensions.image | '-'
   isLossless: boolean
   quality: number
+  /** Compressed to fit within `targetSizeInKB` instead of at `quality` (see `imageTargetSize.ts`) */
+  shouldUseTargetSize?: boolean
+  targetSizeInKB?: number
   shouldStripMetadata: boolean
   metadataConfig?: MediaMetadataConfig | null
   svgScaleFactor?: number

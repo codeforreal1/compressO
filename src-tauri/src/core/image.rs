@@ -1,7 +1,7 @@
 use crate::core::domain::{
     BatchImageCompressionProgress, CustomEvents, ImageBatchCompressionResult,
     ImageBatchIndividualCompressionResult, ImageCompressionConfig, ImageCompressionProgress,
-    ImageCompressionResult, ImageContainer, MediaTransformHistory, SvgConfig,
+    ImageCompressionResult, ImageContainer, ImageTargetSize, MediaTransformHistory, SvgConfig,
 };
 use crate::core::ffmpeg::build_transform_filters;
 use crate::core::ffmpeg::FFMPEG;
@@ -33,6 +33,40 @@ pub const EXTENSIONS: [&str; 10] = [
 
 /// Formats accepted as input but never written; they're converted to PNG by default.
 pub const INPUT_ONLY_EXTENSIONS: [&str; 3] = ["bmp", "tiff", "tif"];
+
+/// The qualities searched for a target size (see `ImageCompressor::compress_image_to_size`): the
+/// highest is tried first (above it, outputs grow much more than they improve)
+const TARGET_SIZE_MAX_QUALITY: u8 = 95;
+/// Below this quality an image looks worse than a smaller one at it: the dimensions are lowered
+/// first, & lower qualities are only tried at the smallest dimensions
+const TARGET_SIZE_FLOOR_QUALITY: u8 = 40;
+const TARGET_SIZE_MIN_QUALITY: u8 = 1;
+/// The search stops when the qualities that fit & that are too large are this close
+const TARGET_SIZE_QUALITY_PRECISION: u8 = 3;
+/// An output this close under the size (as a part of it) is kept without searching further
+const TARGET_SIZE_CLOSE_ENOUGH: f64 = 0.93;
+/// How many times the dimensions are lowered at most
+const TARGET_SIZE_SCALE_ROUNDS: usize = 5;
+/// The dimensions are never lowered below this longer side, in pixels
+const TARGET_SIZE_MIN_LONGER_SIDE: f64 = 320.0;
+
+/// Whether an image can be compressed to a target size: not SVGs (vector) & GIFs (animated), as
+/// input or output
+pub fn supports_target_size(input_path: &str, convert_to_extension: &str) -> bool {
+    let input = super::image_codecs::extension(input_path);
+    let output = convert_to_extension.to_lowercase();
+    !matches!(input.as_str(), "svg" | "gif") && !matches!(output.as_str(), "svg" | "gif")
+}
+
+/// One compression of an image while reaching a target size, kept aside
+#[derive(Clone)]
+struct SizeAttempt {
+    path: PathBuf,
+    size: u64,
+    quality: u8,
+    /// The part of its size it was compressed at (1 for its full size)
+    scale: f64,
+}
 
 pub struct ImageCompressor {
     app: AppHandle,
@@ -210,6 +244,9 @@ impl ImageCompressor {
             .and_then(|p| p.to_str())
             .unwrap_or(source_path);
 
+        // Removed once the image is done (not on a timer: an image compressed again right away, e.g.
+        // to reach a target size, writes the same file)
+        let mut transform_temp_to_remove: Option<PathBuf> = None;
         let transform_input_path = if !original_extension.eq("svg")
             && (dimensions.is_some() || transform_history.is_some())
         {
@@ -248,14 +285,9 @@ impl ImageCompressor {
             )
             .await?;
 
-            let transform_temp_path_clone = transform_temp_path.clone();
-            tokio::spawn(async move {
-                // Give it a moment before cleanup
-                tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
-                let _ = fs::remove_file(&transform_temp_path_clone);
-            });
-
-            transform_temp_path.to_str().unwrap().to_string()
+            let transform_temp_path_string = transform_temp_path.to_str().unwrap().to_string();
+            transform_temp_to_remove = Some(transform_temp_path);
+            transform_temp_path_string
         } else {
             source_path.to_string()
         };
@@ -444,6 +476,9 @@ impl ImageCompressor {
         if let Some(upright) = upright_path {
             let _ = fs::remove_file(&upright);
         }
+        if let Some(transform_temp) = transform_temp_to_remove {
+            let _ = fs::remove_file(&transform_temp);
+        }
 
         if !strip_metadata.unwrap_or(true) {
             match output_extension {
@@ -478,7 +513,311 @@ impl ImageCompressor {
             file_name: output_filename,
             file_path: output_path.display().to_string(),
             file_metadata: Some(compressed_metadata),
+            is_target_size_reached: None,
         })
+    }
+
+    /// Compresses an image as its config says: to fit within its target size when it has one (see
+    /// `compress_image_to_size`), otherwise at its quality
+    pub async fn compress_image_config(
+        &mut self,
+        config: &ImageCompressionConfig,
+        batch_id: Option<&str>,
+    ) -> Result<ImageCompressionResult, String> {
+        if let Some(target) = &config.target_size {
+            if supports_target_size(&config.image_path, &config.convert_to_extension) {
+                return self.compress_image_to_size(config, batch_id, target).await;
+            }
+        }
+        self.compress_image(
+            &config.image_path,
+            config.convert_to_extension.as_str(),
+            config.svg_scale_factor,
+            config.is_lossless,
+            config.quality,
+            &config.image_id,
+            batch_id,
+            config.strip_metadata,
+            config.svg_config.clone(),
+            config.dimensions,
+            config.transform_history.as_ref(),
+        )
+        .await
+    }
+
+    /// Compresses an image to fit within a size (see `ImageTargetSize`). The output's size is never
+    /// predicted, only measured: each attempt is a full compression, & the one kept becomes the
+    /// output as it is (nothing is encoded again after it is chosen), so encoders need not give the
+    /// same bytes every time.
+    ///
+    /// The highest quality that fits is found by halving the range of qualities. When even a
+    /// fairly low quality (`TARGET_SIZE_FLOOR_QUALITY`) is larger, the dimensions are lowered by
+    /// how much it is over (the size of an image follows its number of pixels) & the qualities
+    /// searched again, down to a smallest size, where lower qualities are tried last. The largest
+    /// attempt within the size is kept (the most quality), or the smallest when none fits.
+    pub async fn compress_image_to_size(
+        &mut self,
+        config: &ImageCompressionConfig,
+        batch_id: Option<&str>,
+        target: &ImageTargetSize,
+    ) -> Result<ImageCompressionResult, String> {
+        let limit = target.size_in_bytes.max(1);
+        // Without its dimensions, only the quality is lowered
+        let smallest_scale = match target.dimensions {
+            Some((width, height)) => {
+                (TARGET_SIZE_MIN_LONGER_SIDE / width.max(height).max(1.0)).min(1.0)
+            }
+            None => 1.0,
+        };
+        let output_extension = config.convert_to_extension.as_str();
+
+        // Each attempt is moved aside as `<id>_size<n>.<extension>`, as the next one writes the
+        // same output
+        let mut attempts: Vec<SizeAttempt> = Vec::new();
+        let result = async {
+            let mut scale = 1.0_f64;
+            for round in 0..TARGET_SIZE_SCALE_ROUNDS {
+                let highest = self
+                    .size_attempt(
+                        config,
+                        batch_id,
+                        scale,
+                        TARGET_SIZE_MAX_QUALITY,
+                        &mut attempts,
+                    )
+                    .await?;
+                if highest <= limit {
+                    break;
+                }
+                let at_floor = self
+                    .size_attempt(
+                        config,
+                        batch_id,
+                        scale,
+                        TARGET_SIZE_FLOOR_QUALITY,
+                        &mut attempts,
+                    )
+                    .await?;
+                if at_floor <= limit {
+                    self.search_quality(
+                        config,
+                        batch_id,
+                        scale,
+                        limit,
+                        (TARGET_SIZE_FLOOR_QUALITY, TARGET_SIZE_MAX_QUALITY),
+                        &mut attempts,
+                    )
+                    .await?;
+                    break;
+                }
+                let is_smallest =
+                    scale <= smallest_scale + f64::EPSILON || round + 1 == TARGET_SIZE_SCALE_ROUNDS;
+                if is_smallest {
+                    // At the smallest dimensions, a lower quality is the only way left
+                    let lowest = self
+                        .size_attempt(
+                            config,
+                            batch_id,
+                            scale,
+                            TARGET_SIZE_MIN_QUALITY,
+                            &mut attempts,
+                        )
+                        .await?;
+                    if lowest <= limit {
+                        self.search_quality(
+                            config,
+                            batch_id,
+                            scale,
+                            limit,
+                            (TARGET_SIZE_MIN_QUALITY, TARGET_SIZE_FLOOR_QUALITY),
+                            &mut attempts,
+                        )
+                        .await?;
+                    }
+                    break;
+                }
+                // Pixels for the size it is over at the floor quality, & a little less, as smaller
+                // images compress slightly less well; always lower by a step, never below the
+                // smallest size
+                let estimated = scale * (limit as f64 / at_floor as f64).sqrt() * 0.95;
+                scale = estimated.min(scale * 0.9).max(smallest_scale);
+            }
+            // The lowered dimensions are estimated: an output well under the size is made once
+            // more a little larger, at the same quality (below a size that was too large)
+            if let Some(fitting) = attempts
+                .iter()
+                .filter(|attempt| attempt.size <= limit)
+                .max_by_key(|attempt| attempt.size)
+                .cloned()
+            {
+                if fitting.scale < 1.0
+                    && (fitting.size as f64) < limit as f64 * TARGET_SIZE_CLOSE_ENOUGH
+                {
+                    let too_large = attempts
+                        .iter()
+                        .filter(|attempt| {
+                            attempt.size > limit
+                                && attempt.quality == fitting.quality
+                                && attempt.scale > fitting.scale
+                        })
+                        .map(|attempt| attempt.scale)
+                        .fold(1.0_f64, f64::min);
+                    let larger =
+                        (fitting.scale * (limit as f64 / fitting.size as f64).sqrt() * 0.97)
+                            .min(too_large - 0.01)
+                            .min(1.0);
+                    if larger > fitting.scale * 1.03 {
+                        self.size_attempt(config, batch_id, larger, fitting.quality, &mut attempts)
+                            .await?;
+                    }
+                }
+            }
+            Ok::<(), String>(())
+        }
+        .await;
+
+        if let Err(error) = result {
+            for attempt in &attempts {
+                let _ = fs::remove_file(&attempt.path);
+            }
+            return Err(error);
+        }
+
+        let best = attempts
+            .iter()
+            .filter(|attempt| attempt.size <= limit)
+            .max_by_key(|attempt| attempt.size)
+            .or_else(|| attempts.iter().min_by_key(|attempt| attempt.size))
+            .cloned()
+            .ok_or_else(|| String::from("The image could not be compressed."))?;
+        log::info!(
+            "[image] Target size {} bytes: kept {} bytes (quality {}, {:.0}% of its size) of {} attempts",
+            limit,
+            best.size,
+            best.quality,
+            best.scale * 100.0,
+            attempts.len()
+        );
+
+        // The extension the attempts were written with (e.g. PNG for a BMP)
+        let extension = best
+            .path
+            .extension()
+            .and_then(|extension| extension.to_str())
+            .unwrap_or(output_extension);
+        let output_filename = format!("{}.{}", config.image_id, extension);
+        let output_path = self.assets_dir.join(&output_filename);
+        for attempt in &attempts {
+            if attempt.path != best.path {
+                let _ = fs::remove_file(&attempt.path);
+            }
+        }
+        fs::rename(&best.path, &output_path).map_err(|e| e.to_string())?;
+
+        Ok(ImageCompressionResult {
+            image_id: config.image_id.clone(),
+            file_name: output_filename,
+            file_path: output_path.display().to_string(),
+            file_metadata: Some(get_file_metadata(output_path.to_str().unwrap())?),
+            is_target_size_reached: Some(best.size <= limit),
+        })
+    }
+
+    /// The highest quality in `(fits, too_large)` whose output is within `limit`, at a part of the
+    /// image's size, by halving the range (see `compress_image_to_size`)
+    async fn search_quality(
+        &mut self,
+        config: &ImageCompressionConfig,
+        batch_id: Option<&str>,
+        scale: f64,
+        limit: u64,
+        (mut fits, mut too_large): (u8, u8),
+        attempts: &mut Vec<SizeAttempt>,
+    ) -> Result<(), String> {
+        while too_large - fits > TARGET_SIZE_QUALITY_PRECISION {
+            let quality = fits + (too_large - fits) / 2;
+            let size = self
+                .size_attempt(config, batch_id, scale, quality, attempts)
+                .await?;
+            if size <= limit {
+                fits = quality;
+                if size as f64 >= limit as f64 * TARGET_SIZE_CLOSE_ENOUGH {
+                    break;
+                }
+            } else {
+                too_large = quality;
+            }
+        }
+        Ok(())
+    }
+
+    /// One attempt to reach a target size (see `compress_image_to_size`): the image compressed at a
+    /// quality & a part of its size, moved aside; its size in bytes
+    async fn size_attempt(
+        &mut self,
+        config: &ImageCompressionConfig,
+        batch_id: Option<&str>,
+        scale: f64,
+        quality: u8,
+        attempts: &mut Vec<SizeAttempt>,
+    ) -> Result<u64, String> {
+        let dimensions = if scale < 1.0 {
+            let (width, height) = config
+                .target_size
+                .as_ref()
+                .and_then(|target| target.dimensions)
+                .ok_or("The image has no dimensions to lower")?;
+            Some((
+                (width * scale).round().max(1.0),
+                (height * scale).round().max(1.0),
+            ))
+        } else {
+            config.dimensions
+        };
+        let result = self
+            .compress_image(
+                &config.image_path,
+                config.convert_to_extension.as_str(),
+                config.svg_scale_factor,
+                // A lossless output cannot be made smaller by its quality
+                Some(false),
+                quality,
+                &config.image_id,
+                batch_id,
+                config.strip_metadata,
+                config.svg_config.clone(),
+                dimensions,
+                config.transform_history.as_ref(),
+            )
+            .await?;
+        let output = PathBuf::from(&result.file_path);
+        let extension = output
+            .extension()
+            .and_then(|extension| extension.to_str())
+            .unwrap_or(config.convert_to_extension.as_str())
+            .to_string();
+        let path = self.assets_dir.join(format!(
+            "{}_size{}.{}",
+            config.image_id,
+            attempts.len(),
+            extension
+        ));
+        fs::rename(&output, &path).map_err(|e| e.to_string())?;
+        let size = fs::metadata(&path).map_err(|e| e.to_string())?.len();
+        log::info!(
+            "[image] Target size attempt {}: quality {}, {:.0}% of its size, {} bytes",
+            attempts.len(),
+            quality,
+            scale * 100.0,
+            size
+        );
+        attempts.push(SizeAttempt {
+            path,
+            size,
+            quality,
+            scale,
+        });
+        Ok(size)
     }
 
     pub async fn compress_images_batch(
@@ -525,32 +864,12 @@ impl ImageCompressor {
                 EventListenerGuard::for_app(app_clone.clone(), event_id)
             };
 
-            let input_path = &image_config.image_path;
-            let quality = image_config.quality;
-            let convert_to_extension = image_config.convert_to_extension.as_str();
-            let svg_scale_factor = image_config.svg_scale_factor;
-            let strip_metadata = image_config.strip_metadata.unwrap_or(true);
-            let is_lossless = image_config.is_lossless;
-            let svg_config = image_config.svg_config.clone();
-            let dimensions = image_config.dimensions;
-            let transform_history = image_config.transform_history.as_ref();
+            let config = ImageCompressionConfig {
+                strip_metadata: Some(image_config.strip_metadata.unwrap_or(true)),
+                ..image_config.clone()
+            };
 
-            match self
-                .compress_image(
-                    input_path,
-                    convert_to_extension,
-                    svg_scale_factor,
-                    is_lossless,
-                    quality,
-                    image_id,
-                    Some(batch_id),
-                    Some(strip_metadata),
-                    svg_config,
-                    dimensions,
-                    transform_history,
-                )
-                .await
-            {
+            match self.compress_image_config(&config, Some(batch_id)).await {
                 Ok(result) => {
                     let image_id = result.image_id.clone();
                     results.insert(image_id.clone(), result.clone());
@@ -788,6 +1107,7 @@ impl ImageCompressor {
                 file_name: output_filename,
                 file_path: output.to_string_lossy().into_owned(),
                 file_metadata: Some(get_file_metadata(output.to_str().unwrap())?),
+                is_target_size_reached: None,
             });
         }
         let decoded = if super::image_codecs::is_modern(&ext) {
@@ -923,6 +1243,7 @@ impl ImageCompressor {
             file_name: output_filename,
             file_path: output.to_string_lossy().into_owned(),
             file_metadata: Some(get_file_metadata(output.to_str().unwrap())?),
+            is_target_size_reached: None,
         })
     }
 

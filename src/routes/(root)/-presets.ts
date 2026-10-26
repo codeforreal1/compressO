@@ -40,6 +40,10 @@ import {
   type VideoPresetSettings,
   videoPresetFields,
 } from '@/types/preset'
+import {
+  formatImageTargetSize,
+  supportsImageTargetSize,
+} from '@/utils/imageTargetSize'
 import { formatSizeInMB } from '@/utils/targetSize'
 import {
   applyPortableTransform,
@@ -691,7 +695,16 @@ function getEffectiveImageSettings(
   sourceExtension: string | null | undefined,
 ) {
   const effective: Record<string, unknown> = cloneDeep(settings)
-  if (settings.isLossless) delete effective.quality
+  // Compressed to a size: the quality & lossless do not apply (presets saved before image target
+  // sizes have neither field, which is compressing by quality)
+  if (settings.shouldUseTargetSize) {
+    delete effective.quality
+    delete effective.isLossless
+  } else {
+    delete effective.shouldUseTargetSize
+    delete effective.targetSizeInKB
+    if (settings.isLossless) delete effective.quality
+  }
   if (!settings.shouldEnableAdvancedSvgSetting) delete effective.svgConfig
   for (const field of skippedFields ?? []) delete effective[field]
   if ('convertToExtension' in effective) {
@@ -1304,9 +1317,15 @@ export function describeVideoPresetSettings(settings: VideoPresetSettings) {
 export function describeImagePresetSettings(settings: ImagePresetSettings) {
   const lines = [formatExtension(settings.convertToExtension)]
   lines.push(
-    settings.isLossless
-      ? t('common.lossless')
-      : t('presets.summary.quality', { value: settings.quality }),
+    settings.shouldUseTargetSize &&
+      settings.targetSizeInKB &&
+      supportsImageTargetSize(null, settings.convertToExtension)
+      ? t('presets.summary.targetSizeImage', {
+          size: formatImageTargetSize(settings.targetSizeInKB),
+        })
+      : settings.isLossless
+        ? t('common.lossless')
+        : t('presets.summary.quality', { value: settings.quality }),
   )
   if (settings.resolution) {
     lines.push(t('presets.summary.resolution', { size: settings.resolution }))
