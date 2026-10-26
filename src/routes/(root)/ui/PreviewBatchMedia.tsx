@@ -424,9 +424,7 @@ function PreviewBatchMedia() {
                                     appProxy.state.selectedMediaIndexForCustomization =
                                       originalIndex
                                   }}
-                                  className={cn(
-                                    'rounded-full text-white hover:bg-zinc-700 transition-colors',
-                                  )}
+                                  className="rounded-full text-white"
                                 >
                                   <Icon
                                     name="compare"

@@ -543,14 +543,16 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
               <Button
                 ref={playPauseButtonRef}
                 onPress={togglePlayPause}
+                variant="bordered"
                 isIconOnly
                 radius="full"
-                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2  bg-black/30 cursor-pointer"
+                aria-label={isPlaying ? t('player.pause') : t('player.play')}
+                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 cursor-pointer"
               >
                 <Icon
                   name={isPlaying ? 'pause' : 'play'}
-                  size={28}
-                  className="text-white drop-shadow-lg"
+                  size={20}
+                  className="text-zinc-800 dark:text-white dark:drop-shadow-lg"
                 />
               </Button>
             )

@@ -123,7 +123,7 @@ function ExitMedia({ className }: ExitMediaProps) {
           <Button
             size="sm"
             onPress={handleExit}
-            variant="light"
+            variant="flat"
             radius="full"
             className={cn(['h-7 w-7 min-w-7', className])}
             isDisabled={isSaving}
