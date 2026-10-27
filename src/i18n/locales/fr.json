@@ -371,6 +371,7 @@
   },
   "presets": {
     "standard": "Standard",
+    "defaultChoice": "Par défaut ({{name}})",
     "summary": {
       "rotated": "Pivoté de {{degrees}}°",
       "flipped": "Retourné",

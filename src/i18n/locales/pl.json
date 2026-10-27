@@ -371,6 +371,7 @@
   },
   "presets": {
     "standard": "Standardowe",
+    "defaultChoice": "Domyślny ({{name}})",
     "summary": {
       "rotated": "Obrócono o {{degrees}}°",
       "flipped": "Odbito",

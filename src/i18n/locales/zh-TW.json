@@ -371,6 +371,7 @@
   },
   "presets": {
     "standard": "標準",
+    "defaultChoice": "預設（{{name}}）",
     "summary": {
       "rotated": "旋轉 {{degrees}}°",
       "flipped": "已翻轉",

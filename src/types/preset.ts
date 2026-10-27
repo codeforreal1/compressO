@@ -156,3 +156,6 @@ export type PresetMediaType = Preset['mediaType']
 
 /** The built-in preset of each media type: the default settings, which cannot be changed */
 export const STANDARD_PRESET_ID = 'standard'
+
+/** A choice of preset that follows the default one (starred in Settings -> Presets) */
+export const DEFAULT_PRESET_CHOICE = 'default'

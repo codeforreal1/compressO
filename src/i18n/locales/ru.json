@@ -371,6 +371,7 @@
   },
   "presets": {
     "standard": "Стандартный",
+    "defaultChoice": "По умолчанию ({{name}})",
     "summary": {
       "rotated": "Поворот на {{degrees}}°",
       "flipped": "Отражено",

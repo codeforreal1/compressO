@@ -371,6 +371,7 @@
   },
   "presets": {
     "standard": "मानक",
+    "defaultChoice": "डिफ़ॉल्ट ({{name}})",
     "summary": {
       "rotated": "{{degrees}}° घुमाया गया",
       "flipped": "पलटा गया",

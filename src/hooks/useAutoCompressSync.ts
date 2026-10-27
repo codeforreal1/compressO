@@ -8,9 +8,12 @@ import {
   setWatchedFolders,
 } from '@/tauri/commands/dropQueue'
 import { inputExtensions } from '@/types/compression'
+import type { PresetMediaType } from '@/types/preset'
 import {
   DROP_ZONE_PRESET_SETTINGS,
   getPresetOutput,
+  type PresetsState,
+  resolvePresetChoice,
   savesAutomatically,
 } from '@/utils/presetOutput'
 import { hasTray } from '@/utils/tray'
@@ -22,11 +25,19 @@ import { hasTray } from '@/utils/tray'
  */
 export function isAutoCompressAvailable(
   settings: typeof settingsStore = settingsStore,
-  presets: typeof presetsStore.presets = presetsStore.presets,
+  presetsState: PresetsState = presetsStore,
 ) {
-  return Object.values(DROP_ZONE_PRESET_SETTINGS).some((settingKey) =>
+  return (
+    Object.entries(DROP_ZONE_PRESET_SETTINGS) as [
+      PresetMediaType,
+      (typeof DROP_ZONE_PRESET_SETTINGS)[PresetMediaType],
+    ][]
+  ).some(([mediaType, settingKey]) =>
     savesAutomatically(
-      getPresetOutput(settings[settingKey], { presets, settings }),
+      getPresetOutput(
+        resolvePresetChoice(settings[settingKey], mediaType, presetsState),
+        { presets: presetsState.presets, settings },
+      ),
     ),
   )
 }
@@ -34,25 +45,32 @@ export function isAutoCompressAvailable(
 /** `isAutoCompressAvailable`, updated when the settings or presets it depends on change */
 export function useIsAutoCompressAvailable() {
   const settings = useSnapshot(settingsStore)
-  const { presets } = useSnapshot(presetsStore)
+  const presetsState = useSnapshot(presetsStore)
   return isAutoCompressAvailable(
     settings as typeof settingsStore,
-    presets as typeof presetsStore.presets,
+    presetsState as PresetsState,
   )
 }
 
 /**
- * Whether a watched folder's media can be saved: when each of its presets (Standard by default)
+ * Whether a watched folder's media can be saved: when each of its presets (Default unless chosen)
  * saves without asking where, as nothing can ask
  */
 export function canWatchedFolderSave(
   folder: Pick<WatchedFolder, 'presetIds'>,
   settings: typeof settingsStore = settingsStore,
-  presets: typeof presetsStore.presets = presetsStore.presets,
+  presetsState: PresetsState = presetsStore,
 ) {
   return (['video', 'image', 'audio'] as const).every((mediaType) =>
     savesAutomatically(
-      getPresetOutput(folder.presetIds?.[mediaType], { presets, settings }),
+      getPresetOutput(
+        resolvePresetChoice(
+          folder.presetIds?.[mediaType],
+          mediaType,
+          presetsState,
+        ),
+        { presets: presetsState.presets, settings },
+      ),
     ),
   )
 }

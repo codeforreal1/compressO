@@ -371,6 +371,7 @@
   },
   "presets": {
     "standard": "Standart",
+    "defaultChoice": "Varsayılan ({{name}})",
     "summary": {
       "rotated": "{{degrees}}° döndürüldü",
       "flipped": "Çevrildi",

@@ -1,5 +1,3 @@
-// The item must be HeroUI's own (not a wrapper) so the Select can build its collection
-import { SelectItem } from '@heroui/react'
 import { open } from '@tauri-apps/plugin-dialog'
 import { useEffect, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
@@ -8,7 +6,6 @@ import { useSnapshot } from 'valtio'
 import Button from '@/components/Button'
 import Icon from '@/components/Icon'
 import InfoTooltip from '@/components/InfoTooltip'
-import Select from '@/components/Select'
 import SettingLink from '@/components/SettingLink'
 import Switch from '@/components/Switch'
 import { toast } from '@/components/Toast'
@@ -23,15 +20,16 @@ import { settingsStore, type WatchedFolder } from '@/stores/settingsStore'
 import { logError } from '@/tauri/commands/app'
 import { getMissingWatchedFolders } from '@/tauri/commands/dropQueue'
 import { showItemInFileManager } from '@/tauri/commands/fs'
+import type { Preset, PresetMediaType } from '@/types/preset'
 import {
-  type Preset,
-  type PresetMediaType,
-  STANDARD_PRESET_ID,
-} from '@/types/preset'
-import { getPresetOutput, savesAutomatically } from '@/utils/presetOutput'
+  getPresetOutput,
+  type PresetsState,
+  resolvePresetChoice,
+  savesAutomatically,
+} from '@/utils/presetOutput'
 import { hasTray, TRAY_CONTEXT } from '@/utils/tray'
+import PresetChoiceSelect from './PresetChoiceSelect'
 import { SettingsRow, SettingsSection } from './SettingsLayout'
-import { getPresets } from '../../-presets'
 
 const PRESET_MEDIA_TYPES: PresetMediaType[] = ['video', 'image', 'audio']
 
@@ -62,23 +60,25 @@ function FolderPresetSelect({
 }: FolderPresetSelectProps) {
   const { t } = useTranslation()
   const settings = useSnapshot(settingsStore)
-  const { presets } = useSnapshot(presetsStore)
-  const options = getPresets(mediaType, presets as Preset[])
-  // The Standard preset unless another is chosen (also for a deleted one)
-  const presetId = folder.presetIds?.[mediaType]
-  const selectedKey = options.some((preset) => preset.id === presetId)
-    ? presetId!
-    : STANDARD_PRESET_ID
+  const presetsState = useSnapshot(presetsStore)
+  const presets = presetsState.presets as Preset[]
   // Asks where to save, which stops the folder from being watched
   const asksWhereToSave = !savesAutomatically(
-    getPresetOutput(selectedKey, {
-      presets: presets as Preset[],
-      settings: settings as typeof settingsStore,
-    }),
+    getPresetOutput(
+      resolvePresetChoice(
+        folder.presetIds?.[mediaType],
+        mediaType,
+        presetsState as PresetsState,
+      ),
+      {
+        presets,
+        settings: settings as typeof settingsStore,
+      },
+    ),
   )
 
   return (
-    <Select
+    <PresetChoiceSelect
       label={
         <span className="inline-flex items-center gap-1">
           {t('settings.dropZone.watchedFolders.preset', {
@@ -101,33 +101,28 @@ function FolderPresetSelect({
           />
         </span>
       }
-      selectedKeys={[selectedKey]}
-      disallowEmptySelection
+      mediaType={mediaType}
+      value={folder.presetIds?.[mediaType]}
       isDisabled={isDisabled}
-      onSelectionChange={(keys) => {
-        const [key] = [...keys]
+      onChange={(choice) => {
         const target = getStoredFolder(folder.id)
-        if (!key || !target) return
-        target.presetIds = { ...target.presetIds, [mediaType]: String(key) }
+        if (!target) return
+        target.presetIds = { ...target.presetIds, [mediaType]: choice }
       }}
       classNames={{ popoverContent: 'settings-dialog' }}
-    >
-      {options.map((preset) => (
-        <SelectItem key={preset.id}>{preset.name}</SelectItem>
-      ))}
-    </Select>
+    />
   )
 }
 
 /**
  * Folders whose new media (e.g. screen recordings or downloads) the drop zone compresses, after
- * the media dropped on it (see `watch_folders.rs`), each with its presets (Standard by default)
+ * the media dropped on it (see `watch_folders.rs`), each with its presets (Default unless chosen)
  */
 function WatchedFolders() {
   const { t } = useTranslation()
   const settings = useSnapshot(settingsStore)
   const { watchedFolders, showMenuBarIcon } = settings
-  const { presets } = useSnapshot(presetsStore)
+  const presetsState = useSnapshot(presetsStore)
   const [missingPaths, setMissingPaths] = useState<string[]>([])
   const [checkingFolderId, setCheckingFolderId] = useState<string | null>(null)
 
@@ -251,7 +246,7 @@ function WatchedFolders() {
         const canSave = canWatchedFolderSave(
           folder,
           settings as typeof settingsStore,
-          presets as typeof presetsStore.presets,
+          presetsState as PresetsState,
         )
         // Its presets stay open while it cannot save, to choose one that does
         const isDisabled = isUnavailable || (!folder.isEnabled && canSave)

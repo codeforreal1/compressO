@@ -371,6 +371,7 @@
   },
   "presets": {
     "standard": "Standar",
+    "defaultChoice": "Default ({{name}})",
     "summary": {
       "rotated": "Diputar {{degrees}}°",
       "flipped": "Dibalik",

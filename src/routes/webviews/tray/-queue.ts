@@ -58,7 +58,10 @@ import {
 } from '@/types/compression'
 import { type PresetMediaType, STANDARD_PRESET_ID } from '@/types/preset'
 import { getOutputFileName } from '@/utils/fs'
-import { DROP_ZONE_PRESET_SETTINGS } from '@/utils/presetOutput'
+import {
+  DROP_ZONE_PRESET_SETTINGS,
+  resolvePresetChoice,
+} from '@/utils/presetOutput'
 import { convertDurationToMilliseconds } from '@/utils/string'
 
 /** Top folders of dropped folders saved so far, shared by the media of a drop */
@@ -86,17 +89,15 @@ async function waitForMainWindow() {
 }
 
 /**
- * The preset a queued media is compressed with: its watched folder's (Standard unless chosen), or
- * the drop zone's (Settings -> Drop Zone)
+ * The preset a queued media is compressed with: its watched folder's, or the drop zone's (Settings
+ * -> Drop Zone), Default (the preset starred now) unless another is chosen
  */
 function getQueuePresetId(item: DropQueueItem, mediaType: PresetMediaType) {
-  if (item.watchFolderId) {
-    const folder = settingsStore.watchedFolders.find(
-      ({ id }) => id === item.watchFolderId,
-    )
-    return folder?.presetIds?.[mediaType] ?? STANDARD_PRESET_ID
-  }
-  return settingsStore[DROP_ZONE_PRESET_SETTINGS[mediaType]]
+  const choice = item.watchFolderId
+    ? settingsStore.watchedFolders.find(({ id }) => id === item.watchFolderId)
+        ?.presetIds?.[mediaType]
+    : settingsStore[DROP_ZONE_PRESET_SETTINGS[mediaType]]
+  return resolvePresetChoice(choice, mediaType)
 }
 
 /**

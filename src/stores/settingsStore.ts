@@ -3,7 +3,7 @@ import { proxy, subscribe } from 'valtio'
 
 import * as constants from '@/constants'
 import { isLanguageCode, type LanguageCode } from '@/i18n/languages'
-import { type PresetMediaType, STANDARD_PRESET_ID } from '@/types/preset'
+import { DEFAULT_PRESET_CHOICE, type PresetMediaType } from '@/types/preset'
 
 export const DEFAULT_OUTPUT_FILE_PREFIX = 'compressO-'
 
@@ -88,7 +88,7 @@ export type SettingsState = {
    * by one, instead of keeping it for the main window (on by default). Needs a save location.
    */
   autoCompress: boolean
-  /** Presets of the media compressed by the drop zone (the Standard presets by default) */
+  /** Presets of the media compressed by the drop zone (Default, following the starred ones) */
   dropZoneVideoPresetId: string
   dropZoneImagePresetId: string
   dropZoneAudioPresetId: string
@@ -163,13 +163,13 @@ function readSettings(): SettingsState {
     autoCompress: localStorage.getItem(constants.autoCompress) !== 'false',
     dropZoneVideoPresetId:
       localStorage.getItem(constants.dropZoneVideoPresetId) ??
-      STANDARD_PRESET_ID,
+      DEFAULT_PRESET_CHOICE,
     dropZoneImagePresetId:
       localStorage.getItem(constants.dropZoneImagePresetId) ??
-      STANDARD_PRESET_ID,
+      DEFAULT_PRESET_CHOICE,
     dropZoneAudioPresetId:
       localStorage.getItem(constants.dropZoneAudioPresetId) ??
-      STANDARD_PRESET_ID,
+      DEFAULT_PRESET_CHOICE,
     watchedFolders: readWatchedFolders(),
     useHardwareAcceleration:
       localStorage.getItem(constants.useHardwareAcceleration) === 'true',

@@ -371,6 +371,7 @@
   },
   "presets": {
     "standard": "標準",
+    "defaultChoice": "デフォルト（{{name}}）",
     "summary": {
       "rotated": "{{degrees}}° 回転",
       "flipped": "反転",
