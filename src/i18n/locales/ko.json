@@ -844,6 +844,7 @@
     "flipHorizontal": "좌우 뒤집기",
     "resetZoom": "확대/축소 재설정",
     "expand": "확장",
+    "straighten": "수평 맞추기",
     "title": "변형"
   },
   "outputSettings": {

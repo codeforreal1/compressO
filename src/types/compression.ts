@@ -336,9 +336,15 @@ export type ContainerInfo = {
 
 export type MediaTransforms = {
   crop: { top: number; left: number; width: number; height: number }
+  /** Quarter turns, clockwise, in degrees */
   rotate: number
+  /** A slight tilt (clockwise, in degrees), applied after the rotations & flips */
+  straighten?: number
   flip: { horizontal: boolean; vertical: boolean }
 }
+
+/** The largest tilt the straighten control allows, either way, in degrees */
+export const MAX_STRAIGHTEN_ANGLE = 45
 
 /** Shapes a crop can be locked to, as width:height */
 export const cropAspectRatios = {
@@ -370,6 +376,8 @@ export type MediaTransformHistory =
     }
   | { type: 'rotate'; value: number }
   | { type: 'flip'; value: { horizontal: boolean; vertical: boolean } }
+  /** Only the latest counts: a tilt applied after the rotations & flips, before the crop */
+  | { type: 'straighten'; value: number }
 
 export type BatchCompressionResult = {
   results: Record<string, VideoCompressionResult>

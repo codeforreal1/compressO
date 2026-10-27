@@ -3,6 +3,7 @@ import { invoke } from '@tauri-apps/api/core'
 import * as constants from '@/constants'
 import { MediaTransformHistory } from '@/types/compression'
 import { getPlatform } from './fs'
+import { getRotatedSize } from './transform'
 
 /**
  * Whether videos (and extracted audio) are played in the app. Always on macOS & Windows. On Linux
@@ -77,25 +78,32 @@ type Dimensions = { width: number; height: number }
 
 /**
  * Size of a video after its transforms: the crop size when cropped (the crop is applied after the
- * rotations), otherwise the original size with width & height swapped by quarter-turn rotations.
+ * rotations & the tilt), otherwise the original size with width & height swapped by quarter-turn
+ * rotations, grown to hold the tilt.
  */
 export function getTransformedDimensions(
   dimensions: Dimensions,
   transformHistory: readonly MediaTransformHistory[] | null | undefined,
 ): Dimensions {
   let isQuarterTurned = false
+  let straighten = 0
   let crop: Dimensions | null = null
   for (const action of transformHistory ?? []) {
     if (action.type === 'rotate' && Math.abs(action.value % 180) === 90) {
       isQuarterTurned = !isQuarterTurned
+    } else if (action.type === 'straighten') {
+      straighten = action.value
     } else if (action.type === 'crop') {
       crop = { width: action.value.width, height: action.value.height }
     }
   }
   if (crop) return crop
-  return isQuarterTurned
+  const turned = isQuarterTurned
     ? { width: dimensions.height, height: dimensions.width }
     : dimensions
+  if (!straighten) return turned
+  const box = getRotatedSize(turned, straighten)
+  return { width: Math.round(box.width), height: Math.round(box.height) }
 }
 
 /**

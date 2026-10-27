@@ -30,6 +30,10 @@ type SliderProps = {
     value: number
     children: React.ReactNode
   }) => React.ReactNode
+  /** Where the lighter block starts (the start of the bar by default), e.g. 0 from -45 to 45 */
+  origin?: number
+  /** Double-clicking the bar sets this value */
+  resetValue?: number
   isDisabled?: boolean
   name?: string
   /** Kept for callers; every slider has the same size */
@@ -38,6 +42,33 @@ type SliderProps = {
   classNames?: Partial<
     Record<'base' | 'label' | 'value' | 'mark' | 'track', string>
   >
+}
+
+const fillClassName = cn(
+  'bg-zinc-300/60 dark:bg-white/[0.09]',
+  'shadow-[inset_0_1px_0_rgba(255,255,255,0.5)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]',
+)
+
+/** The thin handle at the value, which grows while hovered or dragged */
+function SliderHandle({
+  isActive,
+  className,
+}: {
+  isActive: boolean
+  className?: string
+}) {
+  return (
+    <span
+      className={cn(
+        'w-1 rounded-full',
+        'transition-[height,background-color] duration-200 ease-out',
+        isActive
+          ? 'h-5 bg-zinc-700 dark:bg-white'
+          : 'h-3.5 bg-zinc-500/80 dark:bg-white/60',
+        className,
+      )}
+    />
+  )
 }
 
 /** At most this many steps are drawn as ticks (more would be a blur) */
@@ -71,6 +102,8 @@ function Slider(props: SliderProps) {
     marks,
     getValue,
     renderValue,
+    origin,
+    resetValue,
     isDisabled,
     name,
     className,
@@ -86,6 +119,10 @@ function Slider(props: SliderProps) {
   const valueStep = step ?? 1
   const decimals = getDecimals(valueStep)
   const position = (value - minValue) / range
+  const originPosition =
+    origin === undefined
+      ? null
+      : (clamp(origin, minValue, maxValue) - minValue) / range
 
   const barRef = useRef<HTMLDivElement>(null)
   const [isDragging, setIsDragging] = useState(false)
@@ -181,6 +218,11 @@ function Slider(props: SliderProps) {
           setValue(next)
         }}
         onKeyUp={() => onChangeEnd?.(latestValue.current)}
+        onDoubleClick={() => {
+          if (isDisabled || resetValue === undefined) return
+          setValue(resetValue)
+          onChangeEnd?.(latestValue.current)
+        }}
       >
         {/* A tick for each step */}
         {ticks.map((tick) => (
@@ -192,26 +234,44 @@ function Slider(props: SliderProps) {
           />
         ))}
 
-        {/* Up to the value: a lighter frosted block, ending in the handle */}
-        <span
-          aria-hidden="true"
-          className={cn(
-            'absolute inset-y-0 left-0 rounded-xl',
-            'bg-zinc-300/60 dark:bg-white/[0.09]',
-            'shadow-[inset_0_1px_0_rgba(255,255,255,0.5)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]',
-          )}
-          style={{ width: `max(${position * 100}%, 14px)` }}
-        >
+        {originPosition === null ? (
+          // Up to the value: a lighter frosted block, ending in the handle
           <span
+            aria-hidden="true"
             className={cn(
-              'absolute right-1.5 top-1/2 w-1 -translate-y-1/2 rounded-full',
-              'transition-[height,background-color] duration-200 ease-out',
-              isActive
-                ? 'h-5 bg-zinc-700 dark:bg-white'
-                : 'h-3.5 bg-zinc-500/80 dark:bg-white/60',
+              'absolute inset-y-0 left-0 rounded-xl',
+              fillClassName,
             )}
-          />
-        </span>
+            style={{ width: `max(${position * 100}%, 14px)` }}
+          >
+            <SliderHandle
+              isActive={isActive}
+              className="absolute right-1.5 top-1/2 -translate-y-1/2"
+            />
+          </span>
+        ) : (
+          // From the origin to the value: a lighter frosted block, with the handle at the value
+          <>
+            <span
+              aria-hidden="true"
+              className={cn('absolute inset-y-0', fillClassName)}
+              style={{
+                left: `${Math.min(position, originPosition) * 100}%`,
+                width: `${Math.abs(position - originPosition) * 100}%`,
+              }}
+            />
+            <span
+              aria-hidden="true"
+              className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2"
+              // Kept inside the bar's rounded ends
+              style={{
+                left: `clamp(8px, ${position * 100}%, calc(100% - 8px))`,
+              }}
+            >
+              <SliderHandle isActive={isActive} className="block" />
+            </span>
+          </>
+        )}
 
         {/* The label & the value, inside the bar */}
         <span

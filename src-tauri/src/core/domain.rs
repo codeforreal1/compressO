@@ -14,6 +14,11 @@ pub enum MediaTransform {
     Flip {
         value: MediaTransformFlip,
     },
+    /// A slight tilt (clockwise, in degrees); only the latest counts, applied after the rotations
+    /// & flips, before the crop
+    Straighten {
+        value: f64,
+    },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
