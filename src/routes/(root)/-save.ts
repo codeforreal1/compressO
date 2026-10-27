@@ -155,7 +155,6 @@ async function saveCompressedMedia(
   )
 }
 
-/** Saves after asking where: a file location for a single output, a folder for a batch */
 /**
  * Uses another output of a video compressed to a target size (see `compressedFile.options`). When
  * the output was already saved, the chosen one replaces it there (same name & folder), & the one
@@ -206,11 +205,46 @@ export async function chooseOutputOption(
   }
 }
 
-export async function saveCompressedMediaWithPrompt() {
+/**
+ * Looks at another output of a video compressed to a target size. Once the output is saved, the
+ * option is only shown (see `previewOption`), so nothing on disk changes until
+ * `replaceSavedOutput`; before, it simply becomes the output that will be saved.
+ */
+export function previewOutputOption(
+  mediaIndex: number,
+  option: { pathRaw: string; sizeInBytes: number },
+) {
+  const mediaFile = appProxy.state.media[mediaIndex]
+  const file = mediaFile?.type === 'video' ? mediaFile.compressedFile : null
+  if (!file || file.isSaving) return
+  if (!file.isSaved || !file.savedPath) {
+    chooseOutputOption(mediaIndex, option)
+    return
+  }
+  // The saved one again: nothing to replace
+  file.previewOption = option.pathRaw === file.pathRaw ? null : { ...option }
+}
+
+/** Saves the output looked at (see `previewOutputOption`) in place of the one saved */
+export async function replaceSavedOutput(mediaIndex: number) {
+  const mediaFile = appProxy.state.media[mediaIndex]
+  const file = mediaFile?.type === 'video' ? mediaFile.compressedFile : null
+  const option = file?.previewOption
+  if (!file || !option) return
+  await chooseOutputOption(mediaIndex, option)
+  // Kept on a failure (see the toast), so it can be tried again
+  if (file.pathRaw === option.pathRaw) file.previewOption = null
+}
+
+/**
+ * Saves after asking where: a file location for a single output, or for one media of a batch
+ * (`mediaIndex`, from its own view), & a folder for the whole batch
+ */
+export async function saveCompressedMediaWithPrompt(mediaIndex?: number) {
   const { media } = appProxy.state
   if (!media.length) return
 
-  if (media.length > 1) {
+  if (mediaIndex == null && media.length > 1) {
     const directory = await open({
       directory: true,
       title: t('save.chooseDirectory'),
@@ -223,8 +257,10 @@ export async function saveCompressedMediaWithPrompt() {
     return
   }
 
-  const [mediaFile] = media
-  const { compressedFile } = mediaFile
+  const index = mediaIndex ?? 0
+  const isSingle = media.length === 1
+  const mediaFile = media[index]
+  const compressedFile = mediaFile?.compressedFile
   if (!compressedFile?.pathRaw) return
 
   const pathToSave = await save({
@@ -237,28 +273,40 @@ export async function saveCompressedMediaWithPrompt() {
   // "Replace" was confirmed in it, an existing file isn't replaced; a numbered name is used instead,
   // except the original with "Replace original files" on (Settings -> Output), which goes to the
   // Trash.
-  appProxy.state.isSaving = true
+  if (isSingle) appProxy.state.isSaving = true
+  compressedFile.isSaving = true
   try {
     const savedPath = await moveFile(compressedFile.pathRaw, pathToSave, {
       replaceOriginal: settingsStore.replaceOriginalFiles
         ? mediaFile.pathRaw
         : null,
     })
-    appProxy.state.savedPath = savedPath
-    appProxy.state.media[0].compressedFile = {
-      ...(snapshot(appProxy).state.media[0].compressedFile ?? {}),
+    appProxy.state.media[index].compressedFile = {
+      ...(snapshot(appProxy).state.media[index].compressedFile ?? {}),
       savedPath,
       isSaved: true,
+      isSaving: false,
     }
     recordSavedOutput(
-      snapshot(appProxy).state.media[0].compressedFile ?? {},
+      snapshot(appProxy).state.media[index].compressedFile ?? {},
       mediaFile.id,
     )
-    appProxy.state.isSaved = true
+    if (isSingle) {
+      appProxy.state.savedPath = savedPath
+      appProxy.state.isSaved = true
+    } else {
+      // The batch is saved once each of its outputs is
+      appProxy.state.isSaved = appProxy.state.media.every(
+        (item) =>
+          !item.compressedFile?.isSuccessful || !!item.compressedFile?.isSaved,
+      )
+    }
   } catch (_) {
     toast.error(t('save.failed'))
   } finally {
-    appProxy.state.isSaving = false
+    if (isSingle) appProxy.state.isSaving = false
+    const file = appProxy.state.media[index]?.compressedFile
+    if (file) file.isSaving = false
   }
 }
 

@@ -94,7 +94,7 @@
           "title": "Forme d’onda audio",
           "description": "Mostra anteprime audio animate e forme d’onda nelle timeline audio e video."
         },
-        "title": "Audio e suoni",
+        "title": "Suono",
         "completionSound": {
           "title": "Suono di completamento",
           "description": "Riproduci un suono al termine di una compressione."
@@ -820,7 +820,8 @@
     "copyFailed": "Non è stato possibile copiare l’output negli appunti.",
     "saving": "Salvataggio…",
     "saved": "Salvato",
-    "saveMedia": "Salva contenuti"
+    "saveMedia": "Salva contenuti",
+    "saveThisFile": "Salva file"
   },
   "home": {
     "dragAndDrop": "Trascina e rilascia",
@@ -1024,8 +1025,9 @@
   },
   "outputOptions": {
     "title": "Altre opzioni",
-    "choose": "Usa il file di {{size}}",
+    "choose": "Mostra il file di {{size}}",
     "withinTarget": "Entro l’obiettivo",
-    "overTarget": "Oltre l’obiettivo"
+    "overTarget": "Oltre l’obiettivo",
+    "replace": "Sostituisci il file salvato"
   }
 }

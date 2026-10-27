@@ -94,7 +94,7 @@
           "title": "Audiowellenformen",
           "description": "Animierte Audiovorschauen und Wellenformen in Audio- und Videozeitleisten anzeigen."
         },
-        "title": "Audio & Ton",
+        "title": "Ton",
         "completionSound": {
           "title": "Abschlusston",
           "description": "Einen Ton abspielen, wenn eine Komprimierung abgeschlossen ist."
@@ -809,7 +809,8 @@
     "copyFailed": "Die Ausgabe konnte nicht in die Zwischenablage kopiert werden.",
     "saving": "Wird gespeichert …",
     "saved": "Gespeichert",
-    "saveMedia": "Medien speichern"
+    "saveMedia": "Medien speichern",
+    "saveThisFile": "Datei speichern"
   },
   "home": {
     "dragAndDrop": "Ziehen und ablegen",
@@ -1009,8 +1010,9 @@
   },
   "outputOptions": {
     "title": "Weitere Optionen",
-    "choose": "Die Ausgabe mit {{size}} verwenden",
+    "choose": "Die Ausgabe mit {{size}} anzeigen",
     "withinTarget": "Innerhalb des Ziels",
-    "overTarget": "Über dem Ziel"
+    "overTarget": "Über dem Ziel",
+    "replace": "Gespeicherte Datei ersetzen"
   }
 }

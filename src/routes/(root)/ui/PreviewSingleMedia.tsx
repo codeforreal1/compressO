@@ -145,15 +145,19 @@ function PreviewSingleMedia({
     ((mediaFile?.type === 'video' && mediaFile?.previewMode === 'video') ||
       mediaFile?.type === 'image')
 
+  // The size of the output shown: another one looked at (see `previewOutputOption`), or the output
+  const outputSizeInBytes =
+    (mediaFile?.type === 'video'
+      ? mediaFile.compressedFile?.previewOption?.sizeInBytes
+      : null) ?? compressedFile?.sizeInBytes
   const compressedSizeDiff: number = useMemo(
     () =>
-      typeof compressedFile?.sizeInBytes === 'number' &&
+      typeof outputSizeInBytes === 'number' &&
       typeof sizeInBytes === 'number' &&
       !Number.isNaN(sizeInBytes)
-        ? (((sizeInBytes ?? 0) - (compressedFile?.sizeInBytes ?? 0)) * 100) /
-          sizeInBytes
+        ? (((sizeInBytes ?? 0) - (outputSizeInBytes ?? 0)) * 100) / sizeInBytes
         : 0,
-    [compressedFile?.sizeInBytes, sizeInBytes],
+    [outputSizeInBytes, sizeInBytes],
   )
   // Only a smaller output is counted down (a larger one is shown as it is)
   const isSmaller = compressedSizeDiff > 0
@@ -339,12 +343,12 @@ function PreviewSingleMedia({
               <p className="text-3xl  font-bold mx-4 text-primary">
                 {/* A smaller output shrinks from the original's size to its own, & lands with a hit */}
                 <ImpactPop
-                  trigger={compressedFile?.sizeInBytes}
+                  trigger={outputSizeInBytes}
                   delay={RESULT_COUNT_SECONDS}
                   isDisabled={!isSmaller}
                 >
                   <AnimatedNumber
-                    value={compressedFile?.sizeInBytes ?? 0}
+                    value={outputSizeInBytes ?? 0}
                     from={sizeInBytes ?? 0}
                     format={formatBytes}
                     duration={RESULT_COUNT_SECONDS}

@@ -94,7 +94,7 @@
           "title": "音频波形",
           "description": "显示动态音频预览，以及音频和视频时间轴上的波形。"
         },
-        "title": "音频与声音",
+        "title": "声音",
         "completionSound": {
           "title": "完成提示音",
           "description": "压缩完成时播放提示音。"
@@ -798,7 +798,8 @@
     "copyFailed": "无法将输出复制到剪贴板。",
     "saving": "正在保存…",
     "saved": "已保存",
-    "saveMedia": "保存媒体"
+    "saveMedia": "保存媒体",
+    "saveThisFile": "保存文件"
   },
   "home": {
     "dragAndDrop": "拖放",
@@ -994,8 +995,9 @@
   },
   "outputOptions": {
     "title": "其他选项",
-    "choose": "使用 {{size}} 的输出",
+    "choose": "显示 {{size}} 的输出",
     "withinTarget": "在目标以内",
-    "overTarget": "超出目标"
+    "overTarget": "超出目标",
+    "replace": "替换已保存的文件"
   }
 }

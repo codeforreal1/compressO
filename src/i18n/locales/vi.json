@@ -94,7 +94,7 @@
           "title": "Dạng sóng âm thanh",
           "description": "Hiển thị bản xem trước âm thanh động và dạng sóng trên dòng thời gian âm thanh và video."
         },
-        "title": "Âm thanh và âm báo",
+        "title": "Âm thanh",
         "completionSound": {
           "title": "Âm báo hoàn tất",
           "description": "Phát âm thanh khi quá trình nén hoàn tất."
@@ -798,7 +798,8 @@
     "copyFailed": "Không thể sao chép đầu ra vào bảng nhớ tạm.",
     "saving": "Đang lưu…",
     "saved": "Đã lưu",
-    "saveMedia": "Lưu tệp"
+    "saveMedia": "Lưu tệp",
+    "saveThisFile": "Lưu tệp này"
   },
   "home": {
     "dragAndDrop": "Kéo và thả",
@@ -994,8 +995,9 @@
   },
   "outputOptions": {
     "title": "Tùy chọn khác",
-    "choose": "Dùng tệp {{size}}",
+    "choose": "Hiển thị tệp {{size}}",
     "withinTarget": "Trong mục tiêu",
-    "overTarget": "Vượt mục tiêu"
+    "overTarget": "Vượt mục tiêu",
+    "replace": "Thay thế tệp đã lưu"
   }
 }

@@ -83,7 +83,9 @@ function OutputSettings({ mediaIndex }: OutputSettingsProps) {
             }
             startContent={<Icon name={section.icon} size={25} />}
             classNames={{
-              base: 'bg-transparent border-1 border-zinc-200 dark:border-zinc-900 px-2',
+              // Without the splitted variant's shadow, which spread into a grey band behind the
+              // items in light mode; the border sets them apart
+              base: 'bg-transparent shadow-none border-1 border-zinc-200 dark:border-zinc-900 px-2',
             }}
             indicator={({ isOpen }) => (
               <Icon name="caret" className={isOpen ? '-rotate-90' : ''} />

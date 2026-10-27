@@ -34,9 +34,10 @@ const ShortcutHint = React.forwardRef<HTMLSpanElement, ShortcutHintProps>(
         {isVisible ? (
           <motion.span
             ref={ref}
-            initial={{ opacity: 0, width: 0 }}
-            animate={{ opacity: 1, width: 'auto' }}
-            exit={{ opacity: 0, width: 0 }}
+            // A maximum width, not `width: auto`, which can be measured too small (cutting the keys)
+            initial={{ opacity: 0, maxWidth: 0 }}
+            animate={{ opacity: 1, maxWidth: 160 }}
+            exit={{ opacity: 0, maxWidth: 0 }}
             transition={{ duration: 0.15 }}
             className={cn('inline-flex overflow-hidden', className)}
           >

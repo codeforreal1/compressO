@@ -351,14 +351,27 @@ function StartCompression() {
   // Holding ⌘ (Ctrl) reveals the shortcut on the button
   const isCommandKeyHeld = useCommandKeyHeld(isShortcutEnabled)
 
+  // A media of a batch, open on its own after compressing: saved, shown & copied on its own
+  if (selectedMediaIndexForCustomization >= 0) {
+    return isProcessCompleted ? (
+      <div className="mt-4">
+        <SaveMedia mediaIndex={selectedMediaIndexForCustomization} />
+      </div>
+    ) : null
+  }
+
   return selectedMediaIndexForCustomization < 0 ? (
     <div className="mt-4">
       {isCompressing ? (
+        // Flex all the way down, so neither button sits on a line of text (which added a few
+        // pixels under Cancel, & under Pause in its tooltip's span)
         <div className="flex items-center gap-2">
-          <div className="flex-1 min-w-0">
+          <div className="flex flex-1 min-w-0">
             <CancelCompression />
           </div>
-          <PauseCompression />
+          <div className="flex [&>span]:flex">
+            <PauseCompression />
+          </div>
         </div>
       ) : isProcessCompleted ? (
         <SaveMedia />

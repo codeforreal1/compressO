@@ -10,23 +10,41 @@ import { copyFileToClipboard, showItemInFileManager } from '@/tauri/commands/fs'
 import { saveCompressedMediaWithPrompt } from '../-save'
 import { appProxy } from '../-state'
 
-function SaveMedia() {
+type SaveMediaProps = {
+  /** One media of a batch, from its own view; without it, the single media or the whole batch */
+  mediaIndex?: number
+}
+
+function SaveMedia({ mediaIndex }: SaveMediaProps) {
   const { t } = useTranslation()
   const {
-    state: { media, isSaving, isSaved, isCompressing },
+    state: { media, isSaving: isAllSaving, isSaved: isAllSaved, isCompressing },
   } = useSnapshot(appProxy)
-  const mediaFile = media.length === 1 ? media[0] : null
+  // One media of a batch: saved, shown & copied on its own
+  const isOneOfBatch = mediaIndex != null && media.length > 1
+  const index = isOneOfBatch ? mediaIndex : 0
+  const mediaFile = isOneOfBatch || media.length === 1 ? media[index] : null
+  const isSaving = isOneOfBatch
+    ? !!mediaFile?.compressedFile?.isSaving
+    : isAllSaving
+  const isSaved = isOneOfBatch
+    ? !!mediaFile?.compressedFile?.isSaved
+    : isAllSaved
 
   const handleCompressedMediaSave = useCallback(async () => {
-    await saveCompressedMediaWithPrompt()
-  }, [])
+    await saveCompressedMediaWithPrompt(isOneOfBatch ? index : undefined)
+  }, [isOneOfBatch, index])
+
+  // Where it was saved: the media's own, or the single media's
+  const getSavedPath = () => {
+    const { compressedFile } = appProxy.state.media[index] ?? {}
+    return isOneOfBatch
+      ? compressedFile?.savedPath
+      : (appProxy.state.savedPath ?? compressedFile?.savedPath)
+  }
 
   const openInFileManager = async () => {
-    const { media } = appProxy.state
-    const mediaFile = media.length > 0 ? media[0] : null
-    const { compressedFile } = mediaFile ?? {}
-
-    const savedPath = appProxy.state.savedPath ?? compressedFile?.savedPath
+    const savedPath = getSavedPath()
     if (!savedPath) return
     try {
       await showItemInFileManager(savedPath)
@@ -34,18 +52,12 @@ function SaveMedia() {
   }
 
   const copyToClipboard = async () => {
-    const { media } = appProxy.state
-    const mediaFile = media.length > 0 ? media[0] : null
-    const { compressedFile } = mediaFile ?? {}
-
-    const savedPath =
-      appProxy.state.savedPath ??
-      compressedFile?.savedPath ??
-      compressedFile?.pathRaw
-    if (!savedPath) return
+    const path =
+      getSavedPath() ?? appProxy.state.media[index]?.compressedFile?.pathRaw
+    if (!path) return
 
     try {
-      await copyFileToClipboard(savedPath)
+      await copyFileToClipboard(path)
       toast.success(t('common.copied'))
     } catch {}
   }
@@ -57,7 +69,11 @@ function SaveMedia() {
         color="primary"
         onPress={handleCompressedMediaSave}
         isLoading={isSaving}
-        isDisabled={isSaving || isSaved}
+        isDisabled={
+          isSaving ||
+          isSaved ||
+          (isOneOfBatch && !mediaFile?.compressedFile?.isSuccessful)
+        }
         fullWidth
         variant="solid"
       >
@@ -65,7 +81,9 @@ function SaveMedia() {
           ? t('save.saving')
           : isSaved
             ? t('save.saved')
-            : t('save.saveMedia')}
+            : isOneOfBatch
+              ? t('save.saveThisFile')
+              : t('save.saveMedia')}
         {!isSaving ? (
           <Icon name={isSaved ? 'tick' : 'download'} className="text-primary" />
         ) : null}

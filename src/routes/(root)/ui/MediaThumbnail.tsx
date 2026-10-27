@@ -64,6 +64,9 @@ function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
     isProcessCompleted,
   } = mediaFile ?? {}
   const { thumbnailPath: videoThumbnailPath } = mediaFile ?? {}
+  // Another output looked at while the saved one stays on disk (see `previewOutputOption`)
+  const previewOption =
+    mediaFile?.type === 'video' ? mediaFile.compressedFile?.previewOption : null
   const {
     shouldTransformVideo,
     isVideoTransformEditMode,
@@ -382,15 +385,18 @@ function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
   )
 
   // Saving moves the output out of the cache, so saved outputs are loaded from where they were saved
-  const savedOutputSrc =
-    compressedFile?.isSaved && compressedFile.savedPath
+  const savedOutputSrc = previewOption
+    ? core.convertFileSrc(previewOption.pathRaw)
+    : compressedFile?.isSaved && compressedFile.savedPath
       ? (outputImagePreview ?? core.convertFileSrc(compressedFile.savedPath))
       : null
 
   // The source and compressed output can have different playback support. Retry video once for
   // each new file, after any automatic save has finished moving it out of the cache.
   const playbackSourcePath = isProcessCompleted
-    ? (compressedFile?.savedPath ?? compressedFile?.pathRaw)
+    ? (previewOption?.pathRaw ??
+      compressedFile?.savedPath ??
+      compressedFile?.pathRaw)
     : mediaPathRaw
   const isPlaybackSourceStable = !outputPreviewPending
   useEffect(() => {
@@ -472,7 +478,7 @@ function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
         ? (mediaFile.videoDuration ?? playbackDuration)
         : 0,
     sizeInBytes: isProcessCompleted
-      ? compressedFile?.sizeInBytes
+      ? (previewOption?.sizeInBytes ?? compressedFile?.sizeInBytes)
       : mediaFile?.sizeInBytes,
     enabled:
       enableAudioWaveforms &&

@@ -1,10 +1,13 @@
+import { AnimatePresence, motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
+import Button from '@/components/Button'
+import Icon from '@/components/Icon'
 import { formatBytes } from '@/utils/fs'
 import { glassTrack } from '@/utils/glass'
 import { cn } from '@/utils/tailwind'
-import { chooseOutputOption } from '../-save'
+import { previewOutputOption, replaceSavedOutput } from '../-save'
 import { appProxy } from '../-state'
 
 type OutputOptionsProps = {
@@ -12,9 +15,9 @@ type OutputOptionsProps = {
 }
 
 /**
- * The outputs made for a video's target size (each attempt), by size: the one used is marked in
- * the primary color, & choosing another uses it instead (shown in the preview, & saved), see
- * `chooseOutputOption`
+ * The outputs made for a video's target size (each attempt), by size: the one shown is marked in
+ * the primary color. Choosing another shows it; once the output is saved, it only replaces the
+ * saved file with "Replace saved file" (see `previewOutputOption`)
  */
 function OutputOptions({ mediaIndex }: OutputOptionsProps) {
   const { t } = useTranslation()
@@ -38,7 +41,8 @@ function OutputOptions({ mediaIndex }: OutputOptionsProps) {
         className="flex flex-wrap justify-center gap-2"
       >
         {options.map((option) => {
-          const isChosen = option.pathRaw === file.pathRaw
+          const isChosen =
+            option.pathRaw === (file.previewOption?.pathRaw ?? file.pathRaw)
           const isOver =
             targetSizeInBytes != null && option.sizeInBytes > targetSizeInBytes
           const size = formatBytes(option.sizeInBytes)
@@ -50,7 +54,7 @@ function OutputOptions({ mediaIndex }: OutputOptionsProps) {
               aria-checked={isChosen}
               aria-label={t('outputOptions.choose', { size })}
               disabled={file.isSaving}
-              onClick={() => chooseOutputOption(mediaIndex, option)}
+              onClick={() => previewOutputOption(mediaIndex, option)}
               className={cn(
                 'flex items-center gap-2 rounded-xl p-1 pr-3 text-left',
                 'transition-colors duration-200 disabled:cursor-default',
@@ -102,6 +106,33 @@ function OutputOptions({ mediaIndex }: OutputOptionsProps) {
           )
         })}
       </div>
+      {/* Its space is kept once saved, so the result above does not move when it appears */}
+      {file.isSaved ? (
+        <div className="flex h-8 items-center justify-center">
+          <AnimatePresence>
+            {file.previewOption ? (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15 }}
+              >
+                <Button
+                  size="sm"
+                  color="primary"
+                  variant="solid"
+                  className="h-7 gap-1 px-3 text-xs"
+                  isLoading={file.isSaving}
+                  onPress={() => replaceSavedOutput(mediaIndex)}
+                >
+                  {file.isSaving ? null : <Icon name="redo" size={14} />}
+                  {t('outputOptions.replace')}
+                </Button>
+              </motion.div>
+            ) : null}
+          </AnimatePresence>
+        </div>
+      ) : null}
     </div>
   )
 }

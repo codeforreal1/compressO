@@ -87,9 +87,12 @@ function CancelCompression() {
   const isCommandKeyHeld = useCommandKeyHeld(isCompressing && !isCancelling)
 
   return isCompressing ? (
+    // Frosted glass like the controls beside it, in red; solid red (with the same finish) once it
+    // asks to confirm
     <Button
-      color="danger"
+      color={confirmCancellation ? 'danger' : 'default'}
       variant={confirmCancellation ? 'solid' : 'flat'}
+      className={confirmCancellation ? undefined : 'text-danger'}
       onPress={() => {
         if (!confirmCancellation) {
           setConfirmCancellation(true)

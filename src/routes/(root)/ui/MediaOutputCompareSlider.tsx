@@ -155,8 +155,12 @@ function MediaOutputCompareSlider({
   // Saving moves the output out of the cache, so a saved output is loaded from where it was saved
   // (with its size, as another output of a target size can replace it there, see
   // `chooseOutputOption`)
+  // Another output looked at while the saved one stays on disk (see `previewOutputOption`)
+  const previewOption =
+    mediaFile?.type === 'video' ? mediaFile.compressedFile?.previewOption : null
   const outputPath =
     outputPreview ??
+    (previewOption ? core.convertFileSrc(previewOption.pathRaw) : null) ??
     (mediaFile?.compressedFile?.isSaved && mediaFile.compressedFile.savedPath
       ? `${core.convertFileSrc(mediaFile.compressedFile.savedPath)}?v=${mediaFile.compressedFile.sizeInBytes ?? 0}`
       : mediaFile?.compressedFile?.path)

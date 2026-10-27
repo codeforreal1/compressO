@@ -94,7 +94,7 @@
           "title": "Przebiegi fal dźwiękowych",
           "description": "Pokazuj animowane podglądy audio i przebiegi fal na osiach czasu audio i wideo."
         },
-        "title": "Audio i dźwięk",
+        "title": "Dźwięk",
         "completionSound": {
           "title": "Dźwięk zakończenia",
           "description": "Odtwarzaj dźwięk po zakończeniu kompresji."
@@ -831,7 +831,8 @@
     "copyFailed": "Nie udało się skopiować wyniku do schowka.",
     "saving": "Zapisywanie…",
     "saved": "Zapisano",
-    "saveMedia": "Zapisz multimedia"
+    "saveMedia": "Zapisz multimedia",
+    "saveThisFile": "Zapisz plik"
   },
   "home": {
     "dragAndDrop": "Przeciągnij i upuść",
@@ -1039,8 +1040,9 @@
   },
   "outputOptions": {
     "title": "Inne opcje",
-    "choose": "Użyj pliku o rozmiarze {{size}}",
+    "choose": "Pokaż plik o rozmiarze {{size}}",
     "withinTarget": "W granicach celu",
-    "overTarget": "Powyżej celu"
+    "overTarget": "Powyżej celu",
+    "replace": "Zastąp zapisany plik"
   }
 }

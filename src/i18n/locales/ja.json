@@ -94,7 +94,7 @@
           "title": "音声波形",
           "description": "音声プレビューをアニメーション表示し、音声と動画のタイムラインに波形を表示します。"
         },
-        "title": "オーディオとサウンド",
+        "title": "サウンド",
         "completionSound": {
           "title": "完了サウンド",
           "description": "圧縮が完了したときにサウンドを再生します。"
@@ -798,7 +798,8 @@
     "copyFailed": "出力をクリップボードにコピーできませんでした。",
     "saving": "保存中…",
     "saved": "保存しました",
-    "saveMedia": "メディアを保存"
+    "saveMedia": "メディアを保存",
+    "saveThisFile": "ファイルを保存"
   },
   "home": {
     "dragAndDrop": "ドラッグ＆ドロップ",
@@ -994,8 +995,9 @@
   },
   "outputOptions": {
     "title": "その他の候補",
-    "choose": "{{size}} の出力を使用",
+    "choose": "{{size}} の出力を表示",
     "withinTarget": "目標以内",
-    "overTarget": "目標超過"
+    "overTarget": "目標超過",
+    "replace": "保存したファイルを置き換える"
   }
 }

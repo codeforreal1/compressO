@@ -94,7 +94,7 @@
           "title": "音訊波形",
           "description": "顯示動態音訊預覽，以及音訊和影片時間軸上的波形。"
         },
-        "title": "音訊與聲音",
+        "title": "聲音",
         "completionSound": {
           "title": "完成提示音",
           "description": "壓縮完成時播放提示音。"
@@ -798,7 +798,8 @@
     "copyFailed": "無法將輸出複製到剪貼簿。",
     "saving": "正在儲存…",
     "saved": "已儲存",
-    "saveMedia": "儲存媒體"
+    "saveMedia": "儲存媒體",
+    "saveThisFile": "儲存檔案"
   },
   "home": {
     "dragAndDrop": "拖放",
@@ -994,8 +995,9 @@
   },
   "outputOptions": {
     "title": "其他選項",
-    "choose": "使用 {{size}} 的輸出",
+    "choose": "顯示 {{size}} 的輸出",
     "withinTarget": "在目標以內",
-    "overTarget": "超出目標"
+    "overTarget": "超出目標",
+    "replace": "取代已儲存的檔案"
   }
 }

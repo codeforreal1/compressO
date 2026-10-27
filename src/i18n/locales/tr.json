@@ -94,7 +94,7 @@
           "title": "Ses dalga biçimleri",
           "description": "Hareketli ses önizlemelerini ve ses ile video zaman çizelgelerindeki dalga biçimlerini göster."
         },
-        "title": "Ses ve ses efektleri",
+        "title": "Ses",
         "completionSound": {
           "title": "Tamamlanma sesi",
           "description": "Bir sıkıştırma tamamlandığında ses çalın."
@@ -809,7 +809,8 @@
     "copyFailed": "Çıktı panoya kopyalanamadı.",
     "saving": "Kaydediliyor…",
     "saved": "Kaydedildi",
-    "saveMedia": "Medyayı Kaydet"
+    "saveMedia": "Medyayı Kaydet",
+    "saveThisFile": "Dosyayı Kaydet"
   },
   "home": {
     "dragAndDrop": "Sürükleyip Bırakın",
@@ -1009,8 +1010,9 @@
   },
   "outputOptions": {
     "title": "Diğer seçenekler",
-    "choose": "{{size}} boyutundaki çıktıyı kullan",
+    "choose": "{{size}} boyutundaki çıktıyı göster",
     "withinTarget": "Hedefin içinde",
-    "overTarget": "Hedefin üzerinde"
+    "overTarget": "Hedefin üzerinde",
+    "replace": "Kaydedilen dosyayı değiştir"
   }
 }

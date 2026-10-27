@@ -94,7 +94,7 @@
           "title": "Gelombang audio",
           "description": "Tampilkan pratinjau audio animasi dan gelombang pada linimasa audio dan video."
         },
-        "title": "Audio dan Suara",
+        "title": "Suara",
         "completionSound": {
           "title": "Suara selesai",
           "description": "Putar suara saat kompresi selesai."
@@ -798,7 +798,8 @@
     "copyFailed": "Output tidak dapat disalin ke papan klip.",
     "saving": "Menyimpan…",
     "saved": "Disimpan",
-    "saveMedia": "Simpan Media"
+    "saveMedia": "Simpan Media",
+    "saveThisFile": "Simpan Berkas"
   },
   "home": {
     "dragAndDrop": "Seret & Taruh",
@@ -994,8 +995,9 @@
   },
   "outputOptions": {
     "title": "Opsi lainnya",
-    "choose": "Gunakan keluaran {{size}}",
+    "choose": "Tampilkan keluaran {{size}}",
     "withinTarget": "Dalam target",
-    "overTarget": "Melebihi target"
+    "overTarget": "Melebihi target",
+    "replace": "Ganti berkas yang disimpan"
   }
 }

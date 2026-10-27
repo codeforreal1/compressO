@@ -809,7 +809,8 @@
     "copyFailed": "The output could not be copied to the clipboard.",
     "saving": "Saving...",
     "saved": "Saved",
-    "saveMedia": "Save Media"
+    "saveMedia": "Save Media",
+    "saveThisFile": "Save File"
   },
   "home": {
     "dragAndDrop": "Drag & Drop",
@@ -1009,8 +1010,9 @@
   },
   "outputOptions": {
     "title": "Other options",
-    "choose": "Use the output of {{size}}",
+    "choose": "Show the output of {{size}}",
     "withinTarget": "Within the target",
-    "overTarget": "Over the target"
+    "overTarget": "Over the target",
+    "replace": "Replace saved file"
   }
 }

@@ -172,6 +172,11 @@ export type Video = {
      * any of which can be used instead (see `chooseOutputOption`)
      */
     options?: { pathRaw: string; sizeInBytes: number }[] | null
+    /**
+     * Another of `options`, looked at while this output is saved: shown in its place, & saved
+     * instead only with "Replace saved file" (see `previewOutputOption`)
+     */
+    previewOption?: { pathRaw: string; sizeInBytes: number } | null
     targetSizeInBytes?: number | null
   } | null
   compressionProgress?: number

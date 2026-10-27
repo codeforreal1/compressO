@@ -94,7 +94,7 @@
           "title": "Formes d’onde audio",
           "description": "Afficher des aperçus audio animés et les formes d’onde sur les pistes audio et vidéo."
         },
-        "title": "Audio et son",
+        "title": "Son",
         "completionSound": {
           "title": "Son de fin",
           "description": "Jouer un son lorsqu’une compression est terminée."
@@ -820,7 +820,8 @@
     "copyFailed": "La sortie n’a pas pu être copiée dans le presse-papiers.",
     "saving": "Enregistrement…",
     "saved": "Enregistré",
-    "saveMedia": "Enregistrer les médias"
+    "saveMedia": "Enregistrer les médias",
+    "saveThisFile": "Enregistrer le fichier"
   },
   "home": {
     "dragAndDrop": "Glisser-déposer",
@@ -1024,8 +1025,9 @@
   },
   "outputOptions": {
     "title": "Autres options",
-    "choose": "Utiliser le fichier de {{size}}",
+    "choose": "Afficher le fichier de {{size}}",
     "withinTarget": "Dans la cible",
-    "overTarget": "Au-dessus de la cible"
+    "overTarget": "Au-dessus de la cible",
+    "replace": "Remplacer le fichier enregistré"
   }
 }

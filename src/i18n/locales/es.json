@@ -94,7 +94,7 @@
           "title": "Formas de onda de audio",
           "description": "Muestra vistas previas de audio animadas y formas de onda en las líneas de tiempo de audio y vídeo."
         },
-        "title": "Audio y sonido",
+        "title": "Sonido",
         "completionSound": {
           "title": "Sonido al finalizar",
           "description": "Reproducir un sonido cuando finaliza una compresión."
@@ -820,7 +820,8 @@
     "copyFailed": "No se pudo copiar el resultado al portapapeles.",
     "saving": "Guardando…",
     "saved": "Guardado",
-    "saveMedia": "Guardar archivos"
+    "saveMedia": "Guardar archivos",
+    "saveThisFile": "Guardar archivo"
   },
   "home": {
     "dragAndDrop": "Arrastrar y soltar",
@@ -1024,8 +1025,9 @@
   },
   "outputOptions": {
     "title": "Otras opciones",
-    "choose": "Usar el archivo de {{size}}",
+    "choose": "Mostrar el archivo de {{size}}",
     "withinTarget": "Dentro del objetivo",
-    "overTarget": "Supera el objetivo"
+    "overTarget": "Supera el objetivo",
+    "replace": "Reemplazar el archivo guardado"
   }
 }
