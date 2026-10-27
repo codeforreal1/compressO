@@ -1,3 +1,4 @@
+export const SITE_NAME = 'CompressO'
 export const SITE_TITLE =
   'CompressO: Compress any video/image into a tiny size.'
 export const SITE_DESCRIPTION =

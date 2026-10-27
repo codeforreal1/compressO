@@ -1,7 +1,7 @@
 ---
 import type { ImageMetadata } from "astro";
 
-import { SITE_TITLE } from "../consts";
+import { SITE_NAME, SITE_TITLE } from "../consts";
 import FallbackImage from "../assets/placeholder.jpg";
 import "../styles/global.css";
 import PostHog from "./PostHog.astro";
@@ -61,6 +61,7 @@ const { url, site, generator } = Astro;
 
 <!-- Open Graph / Facebook -->
 <meta property="og:type" content="website" />
+<meta property="og:site_name" content={SITE_NAME} />
 <meta property="og:url" content={url} />
 <meta property="og:title" content={title} />
 <meta property="og:description" content={description} />
