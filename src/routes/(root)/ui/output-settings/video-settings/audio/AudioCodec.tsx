@@ -1,17 +1,23 @@
 import { SelectItem, SelectSection } from '@heroui/react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useCallback, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
 import Icon from '@/components/Icon'
 import Select from '@/components/Select'
 import Switch from '@/components/Switch'
 import Tooltip from '@/components/Tooltip'
+import { t } from '@/i18n'
 import { extensions } from '@/types/compression'
 import { slideDownTransition } from '@/utils/animation'
+import { isAudioOutput } from '@/utils/audio'
 import { appProxy, normalizeBatchMediaConfig } from '../../../../-state'
+import { useBatchVideoConfigKey } from '../-batchConfig'
 
-type VideoExtension = keyof typeof extensions.video
+type VideoExtension =
+  | keyof typeof extensions.video
+  | keyof typeof extensions.audio
 
 type AudioCodecOption = {
   value: string
@@ -20,54 +26,89 @@ type AudioCodecOption = {
   compatible_containers: VideoExtension[]
 }
 
-const AUDIO_CODECS: readonly AudioCodecOption[] = [
+export const AUDIO_CODECS: readonly AudioCodecOption[] = [
   {
     value: 'aac',
     name: 'AAC',
-    description: 'Standard codec, wide compatibility',
-    compatible_containers: ['mp4', 'mov', 'mkv'] as VideoExtension[],
+    get description() {
+      return t('codecs.audio.aac')
+    },
+    compatible_containers: [
+      'mp4',
+      'mov',
+      'mkv',
+      'ts',
+      'm4a',
+    ] as VideoExtension[],
   },
   {
     value: 'libmp3lame',
     name: 'MP3',
-    description: 'Universal audio format',
-    compatible_containers: ['mp4', 'mov', 'mkv', 'avi'] as VideoExtension[],
+    get description() {
+      return t('codecs.audio.libmp3lame')
+    },
+    compatible_containers: [
+      'mp4',
+      'mov',
+      'mkv',
+      'avi',
+      'ts',
+      'mp3',
+    ] as VideoExtension[],
   },
   {
     value: 'libopus',
     name: 'Opus',
-    description: 'Modern, high quality',
-    compatible_containers: ['webm', 'mkv'] as VideoExtension[],
+    get description() {
+      return t('codecs.audio.libopus')
+    },
+    compatible_containers: ['webm', 'mkv', 'ogg', 'opus'] as VideoExtension[],
   },
   {
     value: 'libvorbis',
     name: 'Vorbis',
-    description: 'Open-source, good quality',
-    compatible_containers: ['webm', 'mkv'] as VideoExtension[],
+    get description() {
+      return t('codecs.audio.libvorbis')
+    },
+    compatible_containers: ['webm', 'mkv', 'ogg'] as VideoExtension[],
   },
   {
     value: 'ac3',
     name: 'AC3',
-    description: 'Dolby Digital, surround sound',
-    compatible_containers: ['mp4', 'mov', 'mkv', 'avi'] as VideoExtension[],
+    get description() {
+      return t('codecs.audio.ac3')
+    },
+    compatible_containers: [
+      'mp4',
+      'mov',
+      'mkv',
+      'avi',
+      'ts',
+    ] as VideoExtension[],
   },
   {
     value: 'alac',
     name: 'ALAC',
-    description: 'Lossless compression optimized for Apple devices',
-    compatible_containers: ['mp4', 'mov'] as VideoExtension[],
+    get description() {
+      return t('codecs.audio.alac')
+    },
+    compatible_containers: ['mp4', 'mov', 'm4a'] as VideoExtension[],
   },
   {
     value: 'flac',
     name: 'FLAC',
-    description: 'Lossless compression',
-    compatible_containers: ['mkv'] as VideoExtension[],
+    get description() {
+      return t('codecs.audio.flac')
+    },
+    compatible_containers: ['mkv', 'flac', 'ogg'] as VideoExtension[],
   },
   {
     value: 'pcm_s16le',
     name: 'PCM',
-    description: 'Uncompressed, best quality',
-    compatible_containers: ['mov', 'avi'] as VideoExtension[],
+    get description() {
+      return t('codecs.audio.pcm_s16le')
+    },
+    compatible_containers: ['mov', 'avi', 'wav'] as VideoExtension[],
   },
 ]
 
@@ -76,6 +117,7 @@ type AudioCodecProps = {
 }
 
 function AudioCodec({ mediaIndex }: AudioCodecProps) {
+  const { t } = useTranslation()
   const {
     state: {
       media,
@@ -85,13 +127,14 @@ function AudioCodec({ mediaIndex }: AudioCodecProps) {
       isLoadingMediaFiles,
     },
   } = useSnapshot(appProxy)
+  const batchConfigKey = useBatchVideoConfigKey()
   const video =
     media.length > 0 && mediaIndex >= 0 && media[mediaIndex].type === 'video'
       ? media[mediaIndex]
       : null
   const { config, videoInfoRaw, extension: videoExtension } = video ?? {}
   const { shouldEnableCustomAudioCodec, convertToExtension, audioConfig } =
-    config ?? commonConfigForBatchCompression.videoConfig ?? {}
+    config ?? commonConfigForBatchCompression[batchConfigKey] ?? {}
 
   const customAudioCodec = audioConfig?.audioCodec ?? '-'
 
@@ -120,8 +163,9 @@ function AudioCodec({ mediaIndex }: AudioCodecProps) {
             undefined
         } else {
           if (appProxy.state.media.length > 1) {
-            appProxy.state.commonConfigForBatchCompression.videoConfig.audioConfig.audioCodec =
-              undefined
+            appProxy.state.commonConfigForBatchCompression[
+              batchConfigKey
+            ].audioConfig.audioCodec = undefined
           }
         }
       }
@@ -131,6 +175,7 @@ function AudioCodec({ mediaIndex }: AudioCodecProps) {
     shouldEnableCustomAudioCodec,
     customAudioCodec,
     mediaIndex,
+    batchConfigKey,
   ])
 
   const handleSwitchToggle = useCallback(() => {
@@ -144,12 +189,13 @@ function AudioCodec({ mediaIndex }: AudioCodecProps) {
       appProxy.state.media[mediaIndex].isConfigDirty = true
     } else {
       if (appProxy.state.media.length > 1) {
-        appProxy.state.commonConfigForBatchCompression.videoConfig.shouldEnableCustomAudioCodec =
-          !shouldEnableCustomAudioCodec
+        appProxy.state.commonConfigForBatchCompression[
+          batchConfigKey
+        ].shouldEnableCustomAudioCodec = !shouldEnableCustomAudioCodec
         normalizeBatchMediaConfig()
       }
     }
-  }, [mediaIndex, shouldEnableCustomAudioCodec])
+  }, [mediaIndex, shouldEnableCustomAudioCodec, batchConfigKey])
 
   const handleValueChange = useCallback(
     (value: string) => {
@@ -162,13 +208,14 @@ function AudioCodec({ mediaIndex }: AudioCodecProps) {
         appProxy.state.media[mediaIndex].isConfigDirty = true
       } else {
         if (appProxy.state.media.length > 1) {
-          appProxy.state.commonConfigForBatchCompression.videoConfig.audioConfig.audioCodec =
-            value
+          appProxy.state.commonConfigForBatchCompression[
+            batchConfigKey
+          ].audioConfig.audioCodec = value
           normalizeBatchMediaConfig()
         }
       }
     },
-    [mediaIndex],
+    [mediaIndex, batchConfigKey],
   )
 
   const hasNoAudio = videoInfoRaw?.audioStreams?.length === 0
@@ -179,7 +226,13 @@ function AudioCodec({ mediaIndex }: AudioCodecProps) {
     isProcessCompleted ||
     isLoadingMediaFiles ||
     hasNoAudio ||
-    audioConfig?.volume === 0 ||
+    // Muted, an audio output is still written (as silence), so its settings stay available
+    (audioConfig?.volume === 0 &&
+      !isAudioOutput({
+        isAudioFile: video?.isAudioFile,
+        isAudioFileSettings: batchConfigKey === 'audioFileConfig',
+        convertToExtension,
+      })) ||
     convertToExtension === 'gif'
 
   const initialCodecValue = customAudioCodec ?? '-'
@@ -196,7 +249,7 @@ function AudioCodec({ mediaIndex }: AudioCodecProps) {
         isDisabled={shouldDisableInput}
       >
         <p className="text-gray-600 dark:text-gray-400 text-sm mr-2 w-full">
-          Codec
+          {t('codecs.title')}
         </p>
       </Switch>
       <AnimatePresence mode="wait">
@@ -204,7 +257,7 @@ function AudioCodec({ mediaIndex }: AudioCodecProps) {
           <motion.div {...slideDownTransition}>
             <Select
               fullWidth
-              label="Select Codec:"
+              label={t('codecs.select')}
               className="block flex-shrink-0 rounded-2xl !mt-8"
               selectedKeys={[initialCodecValue]}
               size="sm"
@@ -223,12 +276,12 @@ function AudioCodec({ mediaIndex }: AudioCodecProps) {
             >
               <SelectItem
                 key="-"
-                textValue="Default"
+                textValue={t('codecs.default')}
                 className="flex justify-center items-center"
                 endContent={
                   <Tooltip
-                    content="Default codec for the selected container"
-                    aria-label="Default codec for the selected container"
+                    content={t('codecs.defaultDescription')}
+                    aria-label={t('codecs.defaultDescription')}
                   >
                     <Icon
                       name="info"
@@ -239,7 +292,7 @@ function AudioCodec({ mediaIndex }: AudioCodecProps) {
                 }
               >
                 <div className="flex flex-col">
-                  <span className="text-sm">Default</span>
+                  <span className="text-sm">{t('codecs.default')}</span>
                 </div>
               </SelectItem>
               <SelectSection>

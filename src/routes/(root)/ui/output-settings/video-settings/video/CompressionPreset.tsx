@@ -1,36 +1,22 @@
-import { SelectItem } from '@heroui/react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
-import Icon from '@/components/Icon'
-import Select from '@/components/Select'
 import Switch from '@/components/Switch'
-import Tooltip from '@/components/Tooltip'
-import { compressionPresets } from '@/types/compression'
+import ToggleSection from '@/components/ToggleSection'
 import { slideDownTransition } from '@/utils/animation'
 import CompressionQuality from './CompressionQuality'
+import TargetSize from './TargetSize'
 import { appProxy, normalizeBatchMediaConfig } from '../../../../-state'
-
-const PRESETS: {
-  name: keyof typeof compressionPresets
-  description: React.ReactNode
-}[] = [
-  {
-    name: 'ironclad',
-    description: <p>Optimal size but slightly slower processing</p>,
-  },
-  {
-    name: 'thunderbolt',
-    description: <p>Slightly larger size but faster processing</p>,
-  },
-]
+import { useBatchVideoConfigKey } from '../-batchConfig'
 
 type CompressionPresetProps = {
   mediaIndex: number
 }
 
 function CompressionPreset({ mediaIndex }: CompressionPresetProps) {
+  const { t } = useTranslation()
   const {
     state: {
       isCompressing,
@@ -40,13 +26,14 @@ function CompressionPreset({ mediaIndex }: CompressionPresetProps) {
       isLoadingMediaFiles,
     },
   } = useSnapshot(appProxy)
+  const batchConfigKey = useBatchVideoConfigKey()
   const video =
     media.length > 0 && mediaIndex >= 0 && media[mediaIndex].type === 'video'
       ? media[mediaIndex]
       : null
   const { config } = video ?? {}
-  const { presetName, shouldDisableCompression, convertToExtension } =
-    config ?? commonConfigForBatchCompression.videoConfig ?? {}
+  const { shouldDisableCompression, shouldUseTargetSize } =
+    config ?? commonConfigForBatchCompression[batchConfigKey] ?? {}
 
   const handleSwitchToggle = useCallback(() => {
     if (
@@ -59,33 +46,33 @@ function CompressionPreset({ mediaIndex }: CompressionPresetProps) {
       appProxy.state.media[mediaIndex].isConfigDirty = true
     } else {
       if (appProxy.state.media.length > 1) {
-        appProxy.state.commonConfigForBatchCompression.videoConfig.shouldDisableCompression =
-          !shouldDisableCompression
+        appProxy.state.commonConfigForBatchCompression[
+          batchConfigKey
+        ].shouldDisableCompression = !shouldDisableCompression
         normalizeBatchMediaConfig()
       }
     }
-  }, [mediaIndex, shouldDisableCompression])
+  }, [mediaIndex, shouldDisableCompression, batchConfigKey])
 
-  const handleValueChange = useCallback(
-    (value: keyof typeof compressionPresets) => {
-      if (value?.length > 0) {
-        if (
-          mediaIndex >= 0 &&
-          appProxy.state.media[mediaIndex].type === 'video' &&
-          appProxy.state.media[mediaIndex]?.config
-        ) {
-          appProxy.state.media[mediaIndex].config.presetName = value
-          appProxy.state.media[mediaIndex].isConfigDirty = true
-        } else {
-          if (appProxy.state.media.length > 1) {
-            appProxy.state.commonConfigForBatchCompression.videoConfig.presetName =
-              value
-            normalizeBatchMediaConfig()
-          }
-        }
+  /** Compresses by quality (as before), or to a file size */
+  const setTargetSizeMode = useCallback(
+    (isTargetSize: boolean) => {
+      if (
+        mediaIndex >= 0 &&
+        appProxy.state.media[mediaIndex].type === 'video' &&
+        appProxy.state.media[mediaIndex]?.config
+      ) {
+        appProxy.state.media[mediaIndex].config.shouldUseTargetSize =
+          isTargetSize
+        appProxy.state.media[mediaIndex].isConfigDirty = true
+      } else if (appProxy.state.media.length > 1) {
+        appProxy.state.commonConfigForBatchCompression[
+          batchConfigKey
+        ].shouldUseTargetSize = isTargetSize
+        normalizeBatchMediaConfig()
       }
     },
-    [mediaIndex],
+    [mediaIndex, batchConfigKey],
   )
 
   const shouldDisableInput =
@@ -98,6 +85,54 @@ function CompressionPreset({ mediaIndex }: CompressionPresetProps) {
 
   return (
     <>
+      <ToggleSection
+        aria-label={t('targetSize.mode')}
+        options={[
+          {
+            value: 'quality',
+            label: t('targetSize.modes.quality'),
+            content: (
+              <QualitySettings
+                isLossless={!!isLossless}
+                onLosslessChange={handleSwitchToggle}
+                isDisabled={shouldDisableInput}
+                mediaIndex={mediaIndex}
+              />
+            ),
+          },
+          {
+            value: 'size',
+            label: t('targetSize.modes.size'),
+            content: <TargetSize mediaIndex={mediaIndex} />,
+          },
+        ]}
+        value={shouldUseTargetSize ? 'size' : 'quality'}
+        onChange={(mode) => setTargetSizeMode(mode === 'size')}
+        isDisabled={shouldDisableInput}
+      />
+    </>
+  )
+}
+
+type QualitySettingsProps = {
+  isLossless: boolean
+  onLosslessChange: () => void
+  isDisabled: boolean
+  mediaIndex: number
+}
+
+/** Lossless compression, or the quality (compressing by quality, as before target sizes) */
+function QualitySettings({
+  isLossless,
+  onLosslessChange,
+  isDisabled,
+  mediaIndex,
+}: QualitySettingsProps) {
+  const { t } = useTranslation()
+  const handleSwitchToggle = onLosslessChange
+  const shouldDisableInput = isDisabled
+  return (
+    <>
       <div className="flex items-center mb-4">
         <Switch
           isSelected={isLossless}
@@ -108,60 +143,15 @@ function CompressionPreset({ mediaIndex }: CompressionPresetProps) {
         >
           <div className="flex justify-center items-center">
             <span className="text-gray-600 dark:text-gray-400 block mr-2 text-sm">
-              Lossless Compression
+              {t('quality.lossless')}
             </span>
           </div>
         </Switch>
       </div>
       <AnimatePresence mode="wait">
         {!isLossless ? (
-          <motion.div {...slideDownTransition} className="mt-2">
-            <div className="mt-8">
-              <Select
-                fullWidth
-                label="Compression Preset:"
-                labelPlacement="outside"
-                className="block flex-shrink-0 rounded-2xl"
-                selectedKeys={[presetName!]}
-                onChange={(evt) => {
-                  const value = evt?.target
-                    ?.value as unknown as keyof typeof compressionPresets
-                  handleValueChange(value)
-                }}
-                selectionMode="single"
-                isDisabled={
-                  shouldDisableCompression ||
-                  shouldDisableInput ||
-                  convertToExtension === 'gif'
-                }
-                classNames={{
-                  label: '!text-gray-600 dark:!text-gray-400 text-xs',
-                }}
-              >
-                {PRESETS?.map((preset) => (
-                  <SelectItem
-                    key={preset.name}
-                    textValue={preset.name}
-                    className="flex justify-center items-center"
-                    endContent={
-                      preset.name === compressionPresets.ironclad ? (
-                        <Tooltip content="Recommended" aria-label="Recommended">
-                          <Icon
-                            name="star"
-                            className="inline-block ml-1 text-yellow-500"
-                            size={15}
-                          />
-                        </Tooltip>
-                      ) : null
-                    }
-                    description={preset.description}
-                  >
-                    {preset.name}
-                  </SelectItem>
-                ))}
-              </Select>
-            </div>
-            <div className="mt-2">
+          <motion.div {...slideDownTransition} className="pt-2">
+            <div>
               <CompressionQuality mediaIndex={mediaIndex} />
             </div>
           </motion.div>

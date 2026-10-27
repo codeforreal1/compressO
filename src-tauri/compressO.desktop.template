@@ -6,4 +6,4 @@ Icon={{icon}}
 Name={{name}}
 Terminal=false
 Type=Application
-MimeType=video/mp4;video/quicktime;video/x-matroska;video/webm;video/x-msvideo;
+MimeType=video/mp4;video/quicktime;video/x-matroska;video/webm;video/x-msvideo;audio/mpeg;audio/mp4;audio/wav;audio/x-wav;audio/flac;audio/ogg;audio/opus;audio/aac;audio/x-aiff;

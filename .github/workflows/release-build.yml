@@ -25,6 +25,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+
       - id: version
         name: Read the version
         run: |
@@ -54,22 +58,20 @@ jobs:
           done
           # The release text: .github/release-template.md, with the version and its CHANGELOG.md
           # section (as in latest.json, see scripts/generate-latest-json.mts) filled in
-          body=$(python3 - <<'PY'
-          import os
-          version = os.environ['VERSION']
-          lines = open('CHANGELOG.md', encoding='utf-8').read().split('\n')
-          start = next((i for i, line in enumerate(lines) if line.strip().startswith(f'### {version}')), None)
-          section = []
-          if start is not None:
-              for line in lines[start + 1:]:
-                  if line.startswith('###') and not line.startswith('####'):
-                      break
-                  section.append(line)
-          changelog = '\n'.join(section).strip() or 'No changelog available'
-          template = open('.github/release-template.md', encoding='utf-8').read()
-          print(template.replace('{{version}}', version).replace('{{changelog}}', changelog))
-          PY
-          )
+          body=$(node --input-type=module -e '
+            import { readFileSync } from "node:fs";
+            const lines = readFileSync("CHANGELOG.md", "utf8").split("\n");
+            const start = lines.findIndex((line) => line.trim().startsWith(`### ${process.env.VERSION}`));
+            const section = start < 0 ? [] : lines.slice(start + 1).filter((line, index, rest) => {
+              const nextHeading = rest.findIndex((entry) => entry.startsWith("###") && !entry.startsWith("####"));
+              return nextHeading < 0 || index < nextHeading;
+            });
+            const changelog = section.join("\n").trim() || "No changelog available";
+            process.stdout.write(readFileSync(".github/release-template.md", "utf8")
+              .replaceAll("{{version}}", process.env.VERSION)
+              .replaceAll("{{repository}}", process.env.GITHUB_REPOSITORY)
+              .replace("{{changelog}}", changelog));
+          ')
           gh api -X POST "repos/$GITHUB_REPOSITORY/releases" \
             -f tag_name="$VERSION" -f target_commitish="$GITHUB_SHA" -f name="$VERSION" \
             -f body="$body" -F draft=true > /dev/null
@@ -85,9 +87,9 @@ jobs:
           - name: macOS, Apple Silicon
             os: macos-latest
             target: aarch64-apple-darwin
-          # Built on Apple Silicon too (see `swift_build_command` in src-tauri/build.rs)
+          # lrzip and its libraries must match the release architecture.
           - name: macOS, Intel
-            os: macos-latest
+            os: macos-15-intel
             target: x86_64-apple-darwin
           - name: Windows
             os: windows-latest
@@ -117,7 +119,8 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev \
-            libxdo-dev libssl-dev libasound2-dev libdbus-1-dev patchelf
+            libxdo-dev libssl-dev libasound2-dev libdbus-1-dev patchelf \
+            build-essential binutils perl zlib1g-dev libbz2-dev
           # Bundled in the AppImage (`bundleMediaFramework`), which plays videos with its own
           # GStreamer: without them it has no plugins and its webview crashes on a video
           sudo apt-get install -y gstreamer1.0-plugins-base gstreamer1.0-plugins-good \
@@ -161,12 +164,34 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      - name: Verify bundled image encoders
+        run: node scripts/check-image-encoders.mjs ${{ matrix.target }}
+
       # Signs the updater files (`createUpdaterArtifacts`), giving each a .sig
       - name: Build
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         run: pnpm tauri build --target ${{ matrix.target }}
+
+      - name: Verify Linux tool installation and execution
+        if: runner.os == 'Linux'
+        run: >-
+          cargo test --locked --manifest-path src-tauri/Cargo.toml
+          --target ${{ matrix.target }} core::tool_bundle::tests
+          -- --include-ignored
+
+      - name: Verify native WebP and AVIF encoding
+        run: >-
+          cargo test --locked --manifest-path src-tauri/Cargo.toml
+          --target ${{ matrix.target }} core::image::webp_tests
+
+      - name: Verify Linux image codec round trips
+        if: runner.os == 'Linux'
+        run: >-
+          cargo test --locked --manifest-path src-tauri/Cargo.toml
+          --target ${{ matrix.target }} core::image_codecs::tests
+          -- --include-ignored
 
       # Named as in earlier releases & latest.json (see scripts/generate-latest-json.mts)
       - name: Collect the release files
@@ -192,6 +217,17 @@ jobs:
           esac
           ls -l release-files
 
+      - name: Collect matching dependency sources
+        run: node scripts/package-dependency-sources.mjs collect ${{ matrix.target }} dependency-source-artifacts
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dependency-sources-${{ matrix.target }}
+          path: dependency-source-artifacts/
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 1
+
       - name: Upload to the draft release
         shell: bash
         env:
@@ -204,9 +240,39 @@ jobs:
           name: signatures-${{ matrix.target }}
           path: release-files/*.sig
 
+  dependency-sources:
+    name: Publish combined dependency sources
+    needs: [draft, build]
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.draft.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+
+      - name: Test dependency source packaging
+        run: node --test scripts/test-dependency-sources.mjs
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dependency-sources-*
+          path: dependency-source-artifacts
+          merge-multiple: true
+
+      - name: Package and verify every platform's sources
+        run: node scripts/package-dependency-sources.mjs pack dependency-source-artifacts dependency-source-release "$VERSION" "$GITHUB_SHA"
+
+      - name: Upload dependency sources
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "$VERSION" dependency-source-release/*.tar.gz --clobber
+
   latest-json:
     name: Create latest.json
-    needs: [draft, build]
+    needs: [draft, build, dependency-sources]
     runs-on: ubuntu-latest
     env:
       VERSION: ${{ needs.draft.outputs.version }}

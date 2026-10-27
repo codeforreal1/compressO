@@ -1,16 +1,27 @@
 import { event } from '@tauri-apps/api'
+import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow'
 import { AnimatePresence, motion } from 'framer-motion'
 import React, { useEffect } from 'react'
 import ReactDOM from 'react-dom'
+import { useTranslation } from 'react-i18next'
 
+import DashedBorder from '@/components/DashedBorder'
 import Icon from '@/components/Icon'
 import { toast } from '@/components/Toast'
-import { readFilesFromPaths } from '@/tauri/commands/fs'
+import {
+  isPermissionDeniedError,
+  readFilesFromPaths,
+} from '@/tauri/commands/fs'
+import { CollectedFile } from '@/types/fs'
 import { zoomInTransition } from '@/utils/animation'
+import { showAccessDeniedToast } from '../-toasts'
+
+// Only this window's drops (a global listener also receives drops on the menu bar popover)
+const currentWindow = getCurrentWebviewWindow()
 
 type DragAndDropFilesProps = {
   disable?: boolean
-  onFile?: (filePath: string | string[]) => void
+  onFile?: (files: CollectedFile[]) => void | Promise<void>
   multiple?: boolean
 }
 
@@ -19,6 +30,7 @@ function DragAndDropFiles({
   onFile,
   multiple = false,
 }: DragAndDropFilesProps) {
+  const { t } = useTranslation()
   const [dragAndDropState, setDragAndDropState] = React.useState<
     'idle' | 'dragging' | 'dropped'
   >('idle')
@@ -46,7 +58,7 @@ function DragAndDropFiles({
       cancelDragAndDropEvents()
 
       if (!disable) {
-        dragAndDropListenerRef.current.drop = await event.listen<{
+        dragAndDropListenerRef.current.drop = await currentWindow.listen<{
           paths: string[]
         }>(event.TauriEvent.DRAG_DROP, async (evt) => {
           setDragAndDropState('dropped')
@@ -58,26 +70,32 @@ function DragAndDropFiles({
             toast.dismiss()
             const pathsPayload = evt?.payload?.paths
             const paths = multiple ? pathsPayload : pathsPayload.slice(0, 1)
-            const files = await readFilesFromPaths(paths)
-            if (Array.isArray(files)) {
-              onFile?.(files)
-            } else {
-              toast.error('Invalid files/folders')
+            try {
+              const files = await readFilesFromPaths(paths)
+              if (Array.isArray(files)) {
+                onFile?.(files)
+              } else {
+                toast.error(t('media.invalidFiles'))
+              }
+            } catch (error) {
+              if (isPermissionDeniedError(error)) {
+                showAccessDeniedToast(paths.length)
+              } else {
+                toast.error(t('media.invalidFiles'))
+              }
             }
           }
         })
-        dragAndDropListenerRef.current.drag = await event.listen(
+        dragAndDropListenerRef.current.drag = await currentWindow.listen(
           event.TauriEvent.DRAG_ENTER,
           () => {
             setDragAndDropState('dragging')
           },
         )
-        dragAndDropListenerRef.current.dragCancelled = await event.listen(
-          event.TauriEvent.DRAG_LEAVE,
-          () => {
+        dragAndDropListenerRef.current.dragCancelled =
+          await currentWindow.listen(event.TauriEvent.DRAG_LEAVE, () => {
             setDragAndDropState('idle')
-          },
-        )
+          })
       } else {
         cancelDragAndDropEvents()
       }
@@ -86,7 +104,7 @@ function DragAndDropFiles({
     return () => {
       cancelDragAndDropEvents()
     }
-  }, [onFile, disable, cancelDragAndDropEvents, multiple])
+  }, [onFile, disable, cancelDragAndDropEvents, multiple, t])
 
   return (
     <>
@@ -95,15 +113,17 @@ function DragAndDropFiles({
           {dragAndDropState === 'dragging' ? (
             <div
               ref={dragAndDropContainerRef}
-              className="fixed top-0 right-0 bottom-0 left-0 w-screen h-screen bg-zinc-200 dark:bg-zinc-900 flex justify-center items-center flex-col z-[2]"
+              data-tint-frosted=""
+              className="fixed top-0 right-0 bottom-0 left-0 w-screen h-screen bg-zinc-200 dark:bg-zinc-900 flex justify-center items-center flex-col z-[60]"
             >
               <motion.div
-                className="flex justify-center items-center flex-col py-16 px-20 border-2 border-dashed border-zinc-300 dark:border-zinc-700 rounded-3xl"
+                className="relative flex justify-center items-center flex-col py-16 px-20 rounded-3xl"
                 {...zoomInTransition}
               >
+                <DashedBorder radius={24} />
                 <Icon name="dragAndDrop" className="text-primary" size={50} />
                 <p className="my-2 text-gray-600 dark:text-gray-400 text-sm">
-                  Drop anywhere...
+                  {t('home.dropAnywhere')}
                 </p>
               </motion.div>
             </div>

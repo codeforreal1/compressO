@@ -9,8 +9,9 @@ import {
   BatchMediaIndividualCompressionResult,
   CustomEvents,
 } from '@/types/compression'
-import { formatBytes } from '@/utils/fs'
+import { formatBytes, getOutputFileName } from '@/utils/fs'
 import { convertDurationToMilliseconds } from '@/utils/string'
+import { getOutputDuration, getOutputOptions, MediaFile } from '../-compression'
 import { appProxy } from '../-state'
 
 async function updateDockProgress() {
@@ -74,28 +75,10 @@ function CompressionProgress() {
                     payload.mediaProgress.mediaType === 'video' &&
                     media[targetMediaIndex].type === 'video'
                   ) {
-                    const trimConfig =
-                      media[targetMediaIndex]?.config?.trimConfig ?? []
-
-                    const targetVideoDuration =
-                      media[targetMediaIndex].videoDuration ?? 0
-
-                    let videoDurationInMilliseconds =
-                      (media[targetMediaIndex]?.config?.shouldTrimVideo &&
-                      trimConfig
-                        ? (trimConfig.reduce((a, c) => {
-                            a += c.end >= c.start ? c.end - c.start : 0
-                            return a
-                          }, 0) ?? targetVideoDuration)
-                        : targetVideoDuration) * 1000
-
-                    if (
-                      media[targetMediaIndex]?.config?.convertToExtension ===
-                      'gif'
-                    ) {
-                      // For a gif, we need to double the total video duration as we need to first convert the original video to video settings and then convert that video to gif
-                      videoDurationInMilliseconds *= 2
-                    }
+                    // Only the trimmed parts, at the custom speed (see `getOutputDuration`)
+                    const videoDurationInMilliseconds = getOutputDuration(
+                      media[targetMediaIndex] as MediaFile,
+                    )
 
                     const currentDurationInMilliseconds =
                       convertDurationToMilliseconds(
@@ -154,26 +137,49 @@ function CompressionProgress() {
                 )
                 if (targetMediaIndex !== -1) {
                   const fileMetadata = payload.result.fileMetadata
+                  const originalMedia = media[targetMediaIndex]
 
                   appProxy.state.media[targetMediaIndex].isProcessCompleted =
                     true
                   appProxy.state.media[targetMediaIndex].isCompressing = false
                   appProxy.state.media[targetMediaIndex].compressionProgress =
                     100
-                  appProxy.state.media[targetMediaIndex].compressedFile = {
+                  const completedMedia = appProxy.state.media[targetMediaIndex]
+                  if (completedMedia.type === 'video') {
+                    completedMedia.targetSizeRound = null
+                  }
+                  const lateFile = {
                     isSuccessful: true,
                     fileName: fileMetadata?.fileName,
-                    fileNameToDisplay: `${fileMetadata?.fileName?.slice(
-                      0,
-                      -((fileMetadata?.extension?.length ?? 0) + 1),
-                    )}.${fileMetadata?.extension}`,
+                    // This event can arrive after the final results, so it must name the file the
+                    // same way (after the original, not the generated output file name)
+                    fileNameToDisplay: getOutputFileName(
+                      originalMedia.fileName,
+                      originalMedia.extension,
+                      fileMetadata?.extension,
+                    ),
                     pathRaw: fileMetadata?.path,
                     path: core.convertFileSrc(fileMetadata?.path ?? ''),
                     mimeType: fileMetadata?.extension,
                     extension: fileMetadata?.extension,
                     size: formatBytes(fileMetadata?.size ?? 0),
                     sizeInBytes: fileMetadata?.size,
+                    ...getOutputOptions(
+                      payload.result,
+                      originalMedia.type === 'video'
+                        ? originalMedia.config?.targetSizeInMB
+                        : null,
+                    ),
                   }
+                  // Arriving after the final results, it keeps what they set since (e.g. its entry
+                  // in the history, where it was saved, another output chosen)
+                  const existingFile =
+                    snapshot(appProxy).state.media[targetMediaIndex]
+                      .compressedFile
+                  appProxy.state.media[targetMediaIndex].compressedFile =
+                    existingFile?.isSuccessful
+                      ? { ...lateFile, ...existingFile }
+                      : lateFile
                   if (appProxy.state.media.length > 1) {
                     appProxy.takeSnapshot('batchCompressionStep')
                   }

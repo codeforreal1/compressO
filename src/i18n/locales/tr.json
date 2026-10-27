@@ -1,0 +1,1017 @@
+{
+  "toolPreparation": {
+    "title": "CompressO hazırlanıyor",
+    "checking": "Sıkıştırma araçları kontrol ediliyor…",
+    "verifying": "Sıkıştırma araçları doğrulanıyor…",
+    "extracting": "Sıkıştırma araçları çıkarılıyor…",
+    "validating": "Sıkıştırma araçları geçerlilik kontrolünden geçiriliyor…",
+    "failed": "Sıkıştırma araçları hazırlanamadı. Ayrıntılar için günlükleri görüntüleyin.",
+    "statusUnavailable": "Araçların durumu kontrol edilemedi. Tekrar deneyin.",
+    "retry": "Tekrar dene",
+    "exit": "Çıkış",
+    "showLogs": "Günlükleri göster",
+    "logOpenFailed": "Günlük dosyası açılamadı.",
+    "onlyOnce": "Bu yalnızca bir kez yapılır."
+  },
+  "settings": {
+    "general": {
+      "startup": {
+        "title": "Başlangıç",
+        "changeFailed": "Ayar değiştirilemedi.",
+        "openAtLogin": {
+          "title": "Oturum açılınca aç",
+          "description": "Bilgisayarınızda oturum açtığınızda CompressO’yu otomatik olarak açın."
+        },
+        "needsApproval": {
+          "title": "Sistem Ayarları’nda kapatılmış",
+          "description": "CompressO’nun oturum açılınca açılmasına izin verilmiyor. Sistem Ayarları’nda, Genel ve Giriş Öğeleri altında buna izin verin.",
+          "button": "Giriş Öğeleri’ni Aç"
+        },
+        "openInTrayOnly": {
+          "title_macos": "Yalnızca menü çubuğunda aç",
+          "title_windows": "Yalnızca sistem tepsisinde aç",
+          "description_macos": "Oturum açılınca açıldığında ana pencereyi göstermeyin. Medya yine de menü çubuğundan sıkıştırılabilir.",
+          "description_windows": "Oturum açılınca açıldığında ana pencereyi göstermeyin. Medya yine de sistem tepsisinden sıkıştırılabilir.",
+          "needsTrayIcon_macos": "Bunu kullanmak için “<setting>Menü çubuğu simgesini göster</setting>” seçeneğini açın, çünkü uygulama oradan açılır.",
+          "needsTrayIcon_windows": "Bunu kullanmak için “<setting>Sistem tepsisi simgesini göster</setting>” seçeneğini açın, çünkü uygulama oradan açılır."
+        }
+      },
+      "appearance": {
+        "title": "Görünüm",
+        "language": {
+          "title": "Dil",
+          "description": "Uygulamanın dili."
+        },
+        "theme": {
+          "title": "Tema",
+          "description": "Sistemi izleyin ya da her zaman açık veya koyu kullanın."
+        },
+        "accentColor": {
+          "title": "Vurgu rengi",
+          "description": "Düğmeler, vurgular ve ilerleme için kullanılan renk."
+        },
+        "tintedWindow": {
+          "title": "Renklendirilmiş pencere",
+          "description": "Masaüstünün pencere arka planından hafifçe görünmesini sağlayın."
+        },
+        "tintOpacity": {
+          "title": "Renklendirme opaklığı",
+          "description": "Masaüstünün ne kadarının görüneceği. Düşük değerler daha fazlasını gösterir."
+        }
+      },
+      "tray": {
+        "title_macos": "Menü çubuğu",
+        "title_windows": "Sistem tepsisi",
+        "showIcon": {
+          "title_macos": "Menü çubuğu simgesini göster",
+          "title_windows": "Sistem tepsisi simgesini göster",
+          "description_macos": "CompressO simgesini, sıkıştırma ilerlemesini ve bırakma alanını menü çubuğunda gösterin.",
+          "description_windows": "CompressO simgesini, sıkıştırma ilerlemesini ve bırakma alanını sistem tepsisinde gösterin.",
+          "locked": "Bırakma alanındaki medya sıkıştırılıyor. Bu, işlem bittiğinde veya durdurulduğunda kapatılabilir."
+        }
+      },
+      "preview": {
+        "title": "Önizleme",
+        "videoPreviews": {
+          "title": "Video önizlemeleri",
+          "description": "Videoları uygulama içinde oynatın. Bazı Linux sistemlerinde videolar iyi oynatılmaz, bu nedenle varsayılan olarak bunun yerine sabit bir görüntü gösterilir. Değişiklikler yeniden başlatmadan sonra uygulanır."
+        },
+        "restart": "Yeniden başlat"
+      },
+      "sleep": {
+        "title": "Uyku",
+        "preventSleep": {
+          "title": "Sıkıştırma sırasında uykuyu engelle",
+          "description": "Sıkıştırma bitene kadar bilgisayarı uyanık tutun. Ekran yine de kapanabilir. Kapağı kapatmak bilgisayarı yine de uyutur."
+        },
+        "keepScreenOn": {
+          "title": "Ekranı açık tut",
+          "description": "Sıkıştırma sırasında ekranın kapanmasını da engelleyin."
+        }
+      },
+      "sound": {
+        "audioWaveforms": {
+          "title": "Ses dalga biçimleri",
+          "description": "Hareketli ses önizlemelerini ve ses ile video zaman çizelgelerindeki dalga biçimlerini göster."
+        },
+        "title": "Ses",
+        "completionSound": {
+          "title": "Tamamlanma sesi",
+          "description": "Bir sıkıştırma tamamlandığında ses çalın."
+        }
+      },
+      "troubleshooting": {
+        "title": "Sorun giderme",
+        "logFiles": {
+          "title": "Günlük dosyaları",
+          "description": "Uygulamanın yaptıklarının kaydı; bir sorunun nedenini bulmaya yardımcı olur. Sorun bildirirken bunları ekleyin. Sıkıştırdığınız dosyaların adlarını içerirler.",
+          "button": "Günlük dosyalarını göster",
+          "failed": "Günlük dosyaları gösterilemedi."
+        }
+      }
+    },
+    "presets": {
+      "copyName": "{{name}} Kopyası",
+      "isDefault_video": "Yeni videolar için varsayılan. Bunun yerine Standart ön ayarı kullanmak için seçin.",
+      "isDefault_image": "Yeni görüntüler için varsayılan. Bunun yerine Standart ön ayarı kullanmak için seçin.",
+      "isDefault_audio": "Yeni ses dosyaları için varsayılan. Bunun yerine Standart ön ayarı kullanmak için seçin.",
+      "setDefault_video": "Yeni videolar için varsayılan yap",
+      "setDefault_image": "Yeni görüntüler için varsayılan yap",
+      "setDefault_audio": "Yeni ses dosyaları için varsayılan yap",
+      "name": "Ön ayar adı",
+      "moveUp": "Yukarı taşı",
+      "moveDown": "Aşağı taşı",
+      "duplicate": "Çoğalt",
+      "delete": "Ön ayarı sil",
+      "empty_video": "Henüz video ön ayarı yok. Bir videonun ayarlarını düzenleyin ve bunları ön ayar olarak kaydetmek için Ön ayar menüsünün yanındaki artı düğmesini seçin.",
+      "empty_image": "Henüz görüntü ön ayarı yok. Bir görüntünün ayarlarını düzenleyin ve bunları ön ayar olarak kaydetmek için Ön ayar menüsünün yanındaki artı düğmesini seçin.",
+      "empty_audio": "Henüz ses ön ayarı yok. Bir ses dosyasının ayarlarını düzenleyin ve bunları ön ayar olarak kaydetmek için Ön ayar menüsünün yanındaki artı düğmesini seçin.",
+      "mediaType": "Medya türü",
+      "standardOutput": "Kaydetme konumu ve dosya adı öneki <setting>Çıktı</setting> bölümünde ayarlanır.",
+      "cannotDeleteStandard": "Standart ön ayar silinemez."
+    },
+    "dropZone": {
+      "turnOnTrayIcon_macos": "Bırakma alanı menü çubuğundadır. Önce Genel’de “<setting>Menü çubuğu simgesini göster</setting>” seçeneğini açın.",
+      "turnOnTrayIcon_windows": "Bırakma alanı sistem tepsisindedir. Önce Genel’de “<setting>Sistem tepsisi simgesini göster</setting>” seçeneğini açın.",
+      "compression": {
+        "title": "Sıkıştırma",
+        "autoCompress": {
+          "title": "Otomatik sıkıştır",
+          "description": "Medyayı bırakma alanına eklenir eklenmez tek tek sıkıştırır ve ön ayarının kaydetme konumuna kaydeder.",
+          "needsSaveLocation": "Sıkıştırılan medyanın sormadan kaydedilebilmesi için <setting>Çıktı</setting> bölümünde veya bırakma alanının bir ön ayarında Her seferinde sor dışında bir kaydetme konumu seçin."
+        }
+      },
+      "preset": {
+        "title_video": "Video ön ayarı",
+        "title_image": "Görüntü ön ayarı",
+        "title_audio": "Ses ön ayarı",
+        "description_video": "Videolar için kullanılan ayarlar.",
+        "description_image": "Görüntüler için kullanılan ayarlar.",
+        "description_audio": "Ses dosyaları için kullanılan ayarlar."
+      },
+      "clipboard": {
+        "title": "Pano",
+        "watch": {
+          "title": "Panoyu izle",
+          "description_macos": "Kopyaladığınız medyayı, örneğin dosyaları veya bir tarayıcıdaki görüntüleri, menü çubuğundaki bırakma alanına ekleyin.",
+          "description_windows": "Kopyaladığınız medyayı, örneğin dosyaları veya bir tarayıcıdaki görüntüleri, sistem tepsisindeki bırakma alanına ekleyin."
+        }
+      },
+      "watchedFolders": {
+        "add": {
+          "title": "Bir klasörü izle",
+          "description": "Bu klasörlere eklenen yeni medya, örneğin ekran kayıtları veya indirmeler, otomatik olarak sıkıştırılır.",
+          "button": "Klasör ekle",
+          "dialogTitle": "İzlenecek bir klasör seçin.",
+          "alreadyWatched": "Bu klasör zaten izleniyor.",
+          "description_linux": "Bu klasörlere eklenen yeni medya, örneğin ekran kayıtları veya indirmeler, CompressO açıkken otomatik olarak sıkıştırılır."
+        },
+        "watch": "{{name}} klasörünü izle",
+        "missing": "Klasör mevcut değil. İzlenmiyor.",
+        "needsSaveLocation": "Medyasının sormadan kaydedilebilmesi için <setting>Çıktı</setting> bölümünde veya ön ayarlarından birinde \"Her seferinde sor\" dışında bir kaydetme konumu seçin. Şu anda izlenmiyor.",
+        "presetAsks": "Kaydetme konumu Her seferinde sor olarak ayarlı. Bu klasörün izlenebilmesi için <setting>Çıktı</setting> bölümünde veya bu ön ayarda başka bir konum seçin.",
+        "stillMissing": "Klasör henüz mevcut değil. İzlemeyi açmadan önce klasörü yeniden oluşturun.",
+        "checkFailed": "Bu klasörün mevcut olup olmadığı kontrol edilemedi. Tekrar deneyin.",
+        "remove": "İzlemeyi durdur",
+        "preset_video": "Videolar",
+        "preset_image": "Görüntüler",
+        "preset_audio": "Ses"
+      }
+    },
+    "output": {
+      "saving": {
+        "title": "Kaydetme",
+        "location": {
+          "option_ask": "Her seferinde sor",
+          "option_fixedFolder": "Sabit klasör",
+          "option_sameFolder": "Orijinalle aynı klasör",
+          "title": "Kayıt konumu",
+          "description_ask": "Her sıkıştırmadan sonra nereye kaydedileceğini seçin.",
+          "description_fixedFolder": "Her sıkıştırmadan sonra seçilen klasöre otomatik olarak kaydedin.",
+          "description_sameFolder": "Orijinal dosyanın yanına, aynı klasöre otomatik olarak kaydedin."
+        },
+        "folder": {
+          "none": "Klasör seçilmedi",
+          "change": "Değiştir",
+          "dialogTitle": "Sıkıştırılan medyanın kaydedileceği bir klasör seçin.",
+          "title": "Klasör"
+        },
+        "preserveFolders": {
+          "title": "Klasör yapısını koru",
+          "description": "Kaydederken orijinal klasör yapısını koru."
+        },
+        "skipLarger": {
+          "title": "Daha büyük çıktıları atla",
+          "description": "Sıkıştırılan medya orijinalinden büyükse kaydetmeyin."
+        },
+        "replaceOriginal": {
+          "title": "Orijinal dosyaları değiştir",
+          "description": "Sıkıştırılan dosya, orijinaliyle aynı klasöre aynı adla kaydedildiğinde orijinal dosya Çöp Kutusu’na taşınır ve yalnızca sıkıştırılan dosya tutulur.",
+          "description_windows": "Sıkıştırılan dosya, orijinaliyle aynı klasöre aynı adla kaydedildiğinde orijinal dosya Geri Dönüşüm Kutusu’na taşınır ve yalnızca sıkıştırılan dosya tutulur."
+        },
+        "prefix": {
+          "title": "Dosya adı öneki",
+          "placeholder": "Önek yok",
+          "description": "Kaydedilen dosya adlarının başına eklenen metin. Orijinal adları korumak için boş bırakın."
+        },
+        "appliesTo": "Bunlar yalnızca Standart ön ayar için geçerlidir."
+      },
+      "clipboard": {
+        "title": "Pano",
+        "copyOutput": {
+          "title": "Çıktıyı panoya kopyala",
+          "description": "Sıkıştırılan medyayı her sıkıştırmadan sonra panoya kopyalayın, böylece hemen yapıştırılabilir."
+        },
+        "includeBatch": {
+          "title": "Toplu çıktıları dahil et",
+          "description": "Birden fazla dosya aynı anda sıkıştırıldığında da dosyaları kopyalayın."
+        }
+      },
+      "performance": {
+        "title": "Performans",
+        "hardwareAcceleration": {
+          "title": "Donanım hızlandırmayı kullan",
+          "description": "Videoları donanım hızlandırmayla daha hızlı sıkıştırın (dosyalar biraz daha büyük olabilir)",
+          "unavailable": "Bu bilgisayarda donanım hızlandırma kullanılamıyor."
+        },
+        "retryTargetSizeOnCpu": {
+          "title": "Hedef boyutlara hızlandırma olmadan ulaş",
+          "description": "Yalnızca \"Hedef boyut\" için geçerlidir. Bir video hedef boyutunu tutturamazsa donanım hızlandırma olmadan yeniden sıkıştırılır; bu daha yavaştır ama boyuta daha yakındır."
+        }
+      },
+      "storage": {
+        "title": "Depolama",
+        "clearCache": {
+          "title": "Önbelleği temizle",
+          "confirm": "Şimdi temizle",
+          "description": "Geçici dosyaları silerek yer açın. Kaydettiğiniz dosyalar etkilenmez.",
+          "mediaOpen": "Önbelleği kullandığı için önce üzerinde çalıştığınız medyayı kapatın.",
+          "cleared": "Önbelleğin tamamı temizlendi.",
+          "failed": "Önbellek temizlenirken bir sorun oluştu."
+        }
+      },
+      "savedFiles": {
+        "title": "Kaydedilen dosyalar"
+      }
+    },
+    "open": "Ayarları Aç",
+    "search": {
+      "label": "Ayarlarda ara",
+      "results": "Arama sonuçları",
+      "noResults": "Ayar bulunamadı."
+    },
+    "groups": {
+      "settings": "Ayarlar",
+      "app": "CompressO"
+    },
+    "pages": {
+      "general": "Genel",
+      "output": "Çıktı",
+      "presets": "Ön Ayarlar",
+      "dropZone": "Bırakma Alanı",
+      "about": "Hakkında",
+      "credits": "Teşekkürler",
+      "watchedFolders": "Klasör izleme",
+      "history": "Geçmiş"
+    },
+    "about": {
+      "updateAvailable": "Güncelleme mevcut",
+      "tagline": "Her görüntüyü veya videoyu küçücük bir boyuta sıkıştırın.",
+      "version": "Sürüm {{version}}",
+      "newVersion": "Sürüm {{version}} mevcut. Kullanmak için güncellemeden sonra uygulamayı yeniden başlatın.",
+      "upToDate": "En son sürümü kullanıyorsunuz.",
+      "checkDescription": "CompressO’nun daha yeni bir sürümünün olup olmadığını denetleyin.",
+      "updateNow": "Şimdi güncelle",
+      "checkForUpdates": "Güncellemeleri denetle",
+      "website": {
+        "title": "Web sitesi",
+        "description": "İndirmeler, özellikler ve belgeler."
+      },
+      "openSource": {
+        "title": "Ücretsiz ve açık kaynak",
+        "license": "AGPL-3.0 ile lisanslanmıştır"
+      },
+      "madeBy": "<link>Code For Real⚡</link> tarafından herkese açık olarak <heart></heart> ile yapıldı",
+      "releaseNotes": "Sürüm notları",
+      "releaseNotesOnline": {
+        "title": "{{version}} sürümündeki yenilikleri görün",
+        "description": "Sürüm notları burada yüklenemedi.",
+        "view": "Çevrimiçi görüntüle"
+      },
+      "changelog": {
+        "title": "Değişiklik günlüğü",
+        "description": "CompressO’nun her sürümündeki yenilikler.",
+        "view": "Değişiklik günlüğünü görüntüle"
+      }
+    },
+    "credits": {
+      "tools": {
+        "title": "Açık kaynak araçlar",
+        "description": "CompressO, bu harika açık kaynak araçlar ve kitaplıklar olmadan mümkün olmazdı."
+      },
+      "license": "{{license}} ile lisanslanmıştır",
+      "notices": {
+        "title": "Üçüncü taraf bildirimleri",
+        "description": "Üçüncü taraf bildirimlerinin ve lisanslarının tamamı.",
+        "view": "Görüntüle"
+      }
+    },
+    "watchedFolders": {
+      "folders": "Klasörler",
+      "openFailed": "Klasör açılamadı. Taşınmış veya silinmiş olabilir."
+    },
+    "history": {
+      "clear": "Geçmişi temizle",
+      "clearConfirm": "Tüm kayıtları temizle",
+      "clearFailed": "Geçmiş temizlenemedi.",
+      "search": "Ada, klasöre veya ön ayara göre ara",
+      "empty": "Sıkıştırılan medya burada listelenecek.",
+      "noResults": "Aramayla eşleşen sıkıştırma yok.",
+      "source_main": "Ana pencere",
+      "source_dropZone": "Bırakma alanı",
+      "source_watchedFolder": "İzlenen klasör {{name}}",
+      "original": "Orijinal",
+      "output": "Çıktı",
+      "missing": "Bu dosya taşındı veya silindi.",
+      "notSaved": "Bu çıktı kaydedilmedi.",
+      "fileCount": "Dosyalar: {{count}}",
+      "showFiles": "{{name}} dosyalarını göster",
+      "hideFiles": "{{name}} dosyalarını gizle",
+      "stats": {
+        "saved": "Kazanılan alan",
+        "files": "Sıkıştırılan dosyalar",
+        "original": "Orijinal boyut",
+        "output": "Sıkıştırılmış boyut",
+        "reduction": "Ortalama küçülme"
+      }
+    }
+  },
+  "common": {
+    "sameFormatAsInput": "Girdiyle aynı biçim",
+    "lossless": "Kayıpsız",
+    "mono": "Mono",
+    "stereo": "Stereo",
+    "kbps": "{{value}} kbps",
+    "delete": "Sil",
+    "cancel": "İptal",
+    "save": "Kaydet",
+    "sizeChange": "{{from}} → {{to}}",
+    "showInFileManager": "Dosya Gezgini’nde göster",
+    "showNameInFileManager": "{{name}} öğesini Dosya Gezgini’nde göster",
+    "copied": "Panoya kopyalandı.",
+    "close": "Kapat",
+    "reset": "Sıfırla",
+    "apply": "Uygula",
+    "yes": "Evet",
+    "edit": "Düzenle",
+    "decrease": "Azalt",
+    "increase": "Artır"
+  },
+  "presets": {
+    "standard": "Standart",
+    "defaultChoice": "Varsayılan ({{name}})",
+    "summary": {
+      "rotated": "{{degrees}}° döndürüldü",
+      "flipped": "Çevrildi",
+      "cropped": "{{aspectRatio}} olarak kırpıldı",
+      "quality": "Kalite %{{value}}",
+      "resolution": "Uzun kenar {{size}} px",
+      "fps": "{{fps}} FPS",
+      "speed": "{{speed}}x hız",
+      "audioRemoved": "Ses kaldırıldı",
+      "volume": "Ses düzeyi %{{value}}",
+      "audioCodec": "{{codec}} ses",
+      "metadataRemoved": "Meta veriler kaldırıldı",
+      "metadataKept": "Meta veriler korundu",
+      "svgScale": "SVG ölçeği {{scale}}x",
+      "customSvg": "Özel SVG dönüştürme",
+      "targetSize": "Hedef boyut {{size}} MB",
+      "targetSizeImage": "Hedef boyut {{size}}"
+    },
+    "save": {
+      "title_video": "Video Ön Ayarını Kaydet",
+      "title_image": "Görüntü Ön Ayarını Kaydet",
+      "title_audio": "Ses Ön Ayarını Kaydet",
+      "name": "Ad",
+      "placeholder_video": "ör. Web 1080p",
+      "placeholder_image": "ör. Web",
+      "placeholder_audio": "ör. Podcast",
+      "nameTaken": "Bu ada sahip bir ön ayar zaten var.",
+      "hint": "Ön ayarlar, Ayarlar’da <setting>Ön Ayarlar</setting> altında yeniden adlandırılabilir, yeniden sıralanabilir ve silinebilir."
+    },
+    "updated": "“{{name}}” ön ayarı güncellendi.",
+    "saved": "“{{name}}” ön ayarı kaydedildi.",
+    "revertFailed": "Ayarlar geri alınamadı.",
+    "applyFailed": "Ön ayar uygulanamadı.",
+    "label": "Ön ayar:",
+    "update": "“{{name}}” ön ayarını güncelle",
+    "saveAsNew": "Yeni ön ayar olarak kaydet",
+    "revert": "Ön ayara geri dön",
+    "output": {
+      "location": "Kaydetme konumu",
+      "followStandard": "Standart ön ayarla aynı"
+    }
+  },
+  "dropZone": {
+    "unsupportedType": "Bu dosya türü desteklenmiyor.",
+    "unsupportedSkipped": "Desteklenmeyen dosyalar atlandı.",
+    "addFailed": "Medya eklenemedi.",
+    "openFailed": "CompressO açılamadı.",
+    "quitFailed": "CompressO’dan çıkılamadı.",
+    "pin": "Sabitle",
+    "unpin": "Sabitlemeyi kaldır",
+    "openApp": "Uygulamayı Aç",
+    "openAppCompressing": "Uygulamayı aç, sıkıştırılıyor %{{progress}}",
+    "openAppPaused": "Uygulamayı aç, %{{progress}} noktasında duraklatıldı",
+    "quitApp": "Uygulamadan Çık",
+    "release": "Medyayı eklemek için bırakın",
+    "dropToCompress": "Sıkıştırmak için medyayı buraya bırakın veya yapıştırın",
+    "dropToStore": "Saklamak için medyayı buraya bırakın veya yapıştırın",
+    "mediaTypes": "Videolar, görüntüler veya klasörler…",
+    "itemsReady_one": "{{count}} öğe hazır",
+    "itemsReady_other": "{{count}} öğe hazır",
+    "discardAll": "Tümünü at",
+    "remove": "{{name}} öğesini kaldır",
+    "storedBusy": "Saklandı. Geçerli medyadan sonra sıkıştırmak için uygulamayı açın.",
+    "storedIdle": "Daha fazla medya bırakın veya sıkıştırmayı başlatmak için uygulamayı açın.",
+    "needsSaveLocation": "Sıkıştırılan medyanın sormadan kaydedilebilmesi için Ayarlar’da, <setting>Çıktı</setting> bölümünde veya bırakma alanının bir ön ayarında bir kaydetme konumu seçin."
+  },
+  "queue": {
+    "notSavedLarger": "Orijinalinden büyük olduğu için kaydedilmedi.",
+    "noSaveLocation": "Ayarlar’da ön ayarı için bir kaydetme konumu seçin.",
+    "chooseSaveLocation": "Kaydetme konumu seçin",
+    "saveFailed": "Sıkıştırılan medya kaydedilemedi.",
+    "compressFailed": "Medya sıkıştırılamadı.",
+    "summary": {
+      "cancelledAndFailed": "{{cancelled}}, {{failed}}",
+      "cancelled_one": "{{count}} iptal edildi",
+      "cancelled_other": "{{count}} iptal edildi",
+      "failed_one": "{{count}} sıkıştırılamadı",
+      "failed_other": "{{count}} sıkıştırılamadı",
+      "complete": "Sıkıştırma tamamlandı",
+      "pausing": "{{position}}/{{total}} sonrasında duraklatılacak",
+      "paused_one": "Duraklatıldı, {{count}} bekliyor",
+      "paused_other": "Duraklatıldı, {{count}} bekliyor",
+      "compressing": "Sıkıştırılıyor {{position}}/{{total}}",
+      "waiting_one": "{{count}} bekliyor",
+      "waiting_other": "{{count}} bekliyor"
+    },
+    "compressingName": "{{name}} sıkıştırılıyor",
+    "status": {
+      "waiting": "Bekliyor",
+      "cancelled": "İptal edildi",
+      "done": "Bitti",
+      "failed": "Başarısız",
+      "smaller": "%{{value}} daha küçük"
+    },
+    "tryAgain": "Yeniden dene",
+    "tryNameAgain": "{{name}} için yeniden dene",
+    "resume": "Devam et",
+    "pause": "Duraklat",
+    "pauseAfterCurrent": "Geçerli dosyadan sonra duraklat",
+    "stop": "Durdur",
+    "clear": "Temizle",
+    "stopAndCancel": "Sıkıştırmayı durdur ve bekleyen medyayı iptal et",
+    "clearFinished": "Biten medyayı temizle",
+    "stopCompression": "Sıkıştırmayı durdur",
+    "clearAll": "Tümünü temizle",
+    "collapse": "Daralt",
+    "showDropZone": "Bırakma alanını göster",
+    "filesCompressed_one": "{{count}} dosya sıkıştırıldı",
+    "filesCompressed_other": "{{count}} dosya sıkıştırıldı",
+    "accessDenied": "Bu dosyayı açma izni yok. Sistem ayarlarında erişime izin verin.",
+    "fromWatchedFolder": "İzlenen {{name}} klasöründen",
+    "compressAgain": "Yeniden sıkıştır",
+    "compressNameAgain": "{{name}} dosyasını yeniden sıkıştır"
+  },
+  "subtitles": {
+    "unknownLanguage": "Bilinmiyor",
+    "selectFile": "Altyazı dosyası seç (SRT)",
+    "selectFailed": "Altyazı dosyası seçilemedi.",
+    "title": "Altyazılar",
+    "preserveExisting": "Mevcut altyazıları koru",
+    "untitled": "Altyazı {{number}}",
+    "language": "Dil",
+    "add": "Altyazı Ekle",
+    "unsupported": "{{container}} ayrı altyazı parçalarını desteklemiyor"
+  },
+  "mediaInfo": {
+    "videoInformation": "Video Bilgileri",
+    "fullPath": "Tam Yol",
+    "formatName": "Biçim Adı",
+    "format": "Biçim",
+    "duration": "Süre",
+    "size": "Boyut",
+    "bitrate": "Bit Hızı",
+    "totalStreams": "Toplam Akış",
+    "codec": "Codec",
+    "profile": "Profil",
+    "width": "Genişlik",
+    "height": "Yükseklik",
+    "codedWidth": "Kodlanmış Genişlik",
+    "codedHeight": "Kodlanmış Yükseklik",
+    "frameRate": "Kare Hızı",
+    "avgFrameRate": "Ort. Kare Hızı",
+    "pixelFormat": "Piksel Biçimi",
+    "colorSpace": "Renk Alanı",
+    "colorRange": "Renk Aralığı",
+    "colorPrimaries": "Ana Renkler",
+    "colorTransfer": "Renk Aktarımı",
+    "chromaLocation": "Renklilik Konumu",
+    "totalFrames": "Toplam Kare",
+    "referenceFrames": "Referans Kareler",
+    "gopSize": "GOP Boyutu",
+    "codecLevel": "Codec Düzeyi",
+    "fieldOrder": "Alan Sırası",
+    "timeBase": "Zaman Tabanı",
+    "rotation": "Döndürme",
+    "channels": "Kanallar",
+    "channelLayout": "Kanal Düzeni",
+    "sampleRate": "Örnekleme Hızı",
+    "sampleFormat": "Örnek Biçimi",
+    "bitsPerSample": "Örnek Başına Bit",
+    "metadataTags": "Meta Veri Etiketleri",
+    "subtitleFormat": "Altyazı biçimi",
+    "language": "Dil",
+    "title": "Başlık",
+    "disposition": "Atama",
+    "start": "Başlangıç",
+    "end": "Bitiş",
+    "imageInformation": "Görüntü Bilgileri",
+    "fileName": "Dosya Adı",
+    "mimeType": "MIME Türü",
+    "aspectRatio": "En Boy Oranı",
+    "orientation": "Yönlendirme",
+    "dpi": "DPI",
+    "megapixels": "Megapiksel",
+    "colorType": "Renk Türü",
+    "bitDepth": "Bit Derinliği",
+    "alphaChannel": "Alfa Kanalı",
+    "make": "Üretici",
+    "model": "Model",
+    "lensModel": "Objektif Modeli",
+    "software": "Yazılım",
+    "iso": "ISO",
+    "exposureTime": "Pozlama Süresi",
+    "aperture": "Diyafram",
+    "focalLength": "Odak Uzaklığı",
+    "flash": "Flaş",
+    "dateTaken": "Çekim Tarihi",
+    "dateDigitized": "Dijitalleştirme Tarihi",
+    "artist": "Sanatçı",
+    "copyright": "Telif Hakkı",
+    "coordinates": "Koordinatlar",
+    "tabs": {
+      "container": "Kapsayıcı",
+      "video": "Video",
+      "audio": "Ses",
+      "subtitles": "Altyazılar",
+      "chapters": "Bölümler",
+      "metadata": "Meta Veriler",
+      "color": "Renk",
+      "exif": "EXIF"
+    },
+    "noMetadata": "Meta veri bulunamadı",
+    "notAvailable": "Yok",
+    "videoStream": "Video Akışı",
+    "audioStream": "Ses Akışı",
+    "noAudioStreams": "Ses akışı bulunamadı",
+    "noSubtitleStreams": "Altyazı akışı bulunamadı",
+    "noVideoPath": "Video yolu kullanılamıyor",
+    "subtitleFiles": "Altyazı Dosyaları",
+    "subtitleSaved": "Altyazı çıkarıldı ve {{format}} olarak kaydedildi.",
+    "subtitleStream": "Altyazı Akışı {{number}}",
+    "subtitleNotExtractable": "Bu altyazı biçimi ({{codec}}) SRT’ye dönüştürülemez. Büyük olasılıkla görüntü tabanlı bir biçimdir (ör. Blu-ray PGS veya DVD VobSub). Bu nedenle indirilemez.",
+    "downloading": "İndiriliyor…",
+    "unsupported": "Desteklenmiyor",
+    "downloadAs": "{{format}} olarak indir",
+    "dispositions": {
+      "default": "Varsayılan",
+      "forced": "Zorunlu",
+      "attachedPicture": "Ekli Resim",
+      "comment": "Yorum",
+      "karaoke": "Karaoke",
+      "lyrics": "Şarkı Sözleri"
+    },
+    "noChapters": "Bölüm bulunamadı",
+    "chapter": "Bölüm {{number}}",
+    "noExif": "EXIF verisi bulunamadı",
+    "cameraInformation": "Kamera Bilgileri",
+    "shootingInformation": "Çekim Bilgileri",
+    "dateInformation": "Tarih Bilgileri",
+    "copyrightInformation": "Telif Hakkı Bilgileri",
+    "gpsInformation": "GPS Bilgileri",
+    "allTags": "Tüm Etiketler"
+  },
+  "svg": {
+    "advanced": "Gelişmiş SVG Ayarları",
+    "blackAndWhite": "Siyah Beyaz",
+    "levels": {
+      "low": "Düşük",
+      "medium": "Orta",
+      "high": "Yüksek",
+      "few": "Az",
+      "many": "Çok",
+      "sharp": "Keskin",
+      "smooth": "Yumuşak",
+      "fine": "İnce",
+      "coarse": "Kaba",
+      "accurate": "Hassas",
+      "less": "Daha az"
+    },
+    "filterSpeckle": {
+      "title": "Leke Filtresi",
+      "tooltip": "Yüksek değer daha temiz ve yumuşaktır"
+    },
+    "colorPrecision": {
+      "title": "Renk Hassasiyeti",
+      "tooltip": "Yüksek değer daha hassastır ancak aşırı doygunluk oluşturabilir"
+    },
+    "layerDifference": {
+      "title": "Katman Farkı",
+      "tooltip": "Yüksek değer daha az katman demektir"
+    },
+    "cornerThreshold": {
+      "title": "Köşe Eşiği",
+      "tooltip": "Yüksek değer daha yumuşaktır"
+    },
+    "segmentLength": {
+      "title": "Segment Uzunluğu",
+      "tooltip": "Yüksek değer daha kabadır"
+    },
+    "spliceThreshold": {
+      "title": "Birleştirme Eşiği",
+      "tooltip": "Yüksek değer daha az hassastır"
+    },
+    "scaleFactor": "Ölçek Faktörü"
+  },
+  "batch": {
+    "copyOutput": "Çıktıyı panoya kopyala",
+    "compareOutput": "Çıktıyı karşılaştır",
+    "processing": "İşleniyor",
+    "paused": "Duraklatıldı",
+    "inputSize": "Girdi Boyutu",
+    "outputSize": "Çıktı Boyutu",
+    "extension": "Uzantı",
+    "duration": "Süre",
+    "dimensions": "Boyutlar",
+    "compressed_videos": "Sıkıştırılan Videolar",
+    "compressed_audio": "Sıkıştırılan Sesler",
+    "compressed_images": "Sıkıştırılan Görüntüler",
+    "compressed_media": "Sıkıştırılan Medya",
+    "label_videos": "Videolar",
+    "label_audio": "Ses",
+    "label_images": "Görüntüler",
+    "label_media": "Medya",
+    "sizeSaved": "Kazanılan Alan",
+    "addMoreTooltip": "Daha fazla medya ekleyin. Dosyaları bırakabilir veya yapıştırabilirsiniz.",
+    "addMoreMedia": "Daha fazla medya ekle",
+    "addMore": "Daha fazla ekle"
+  },
+  "preview": {
+    "showFailed": "Dosya gösterilemedi.",
+    "compare": "Karşılaştır",
+    "showEdits": "Düzenlemeleri göster",
+    "smaller": "daha küçük",
+    "size": "Boyut",
+    "fps": "FPS",
+    "viewFullInfo": "Tüm Bilgileri Görüntüle",
+    "progress": "İlerleme %{{value}}",
+    "mediaToCompress": "Sıkıştırılacak medya",
+    "waitingForDropZone": "Bırakma alanı bekleniyor…",
+    "processing": "İşleniyor…",
+    "estimatingSize": "Çıktı boyutu tahmin ediliyor...",
+    "estimatedSize": "Tahmini boyut: yaklaşık {{size}}",
+    "estimatedSizeUpTo": "Tahmini boyut: en fazla {{size}}"
+  },
+  "thumbnail": {
+    "copyFrameUnavailable": "Kare kopyalanamıyor",
+    "frameCopied": "Kare panoya kopyalandı",
+    "copyFrameFailed": "Kare panoya kopyalanamadı",
+    "coverArt": "Kapak görseli",
+    "copyFrame": "Geçerli kareyi kopyala",
+    "audioUnplayable": "Bu ses burada oynatılamıyor ancak yine de sıkıştırılabilir.",
+    "switchingToImage": "Görüntü küçük resmine geçiliyor…",
+    "pauseAudio": "Sesi duraklat",
+    "playAudio": "Sesi oynat",
+    "videoUnplayable": "Bu video gelişmiş codec’ler veya yapılandırmalar içerdiğinden bu uygulama tarafından oynatılamıyor. Bu tür videolar VLC gibi özel oynatıcılar gerektirir.",
+    "previewsOff": "Video önizlemeleri kapalı. Ayarlar’da <setting>Genel</setting> altından açılabilir.",
+    "stillCompressible": "Yine de çıktı ayarlarını uygulayabilir ve tüm dönüştürmeleri gerçekleştirebilirsiniz.",
+    "enlarge": "Görüntüyü büyüt",
+    "select": "Küçük resim görüntüsünü seçin.",
+    "selectFailed": "Küçük resim görüntüsü seçilemedi.",
+    "title": "Küçük Resim",
+    "noneSelected": "Küçük resim seçilmedi",
+    "custom": "Özel küçük resim",
+    "choose": "Seç",
+    "unsupported": "{{container}} özel küçük resmi desteklemiyor"
+  },
+  "codecs": {
+    "video": {
+      "libx264": "En uyumlu, iyi kalite",
+      "libx265": "Daha iyi sıkıştırma, daha yeni standart",
+      "libvpx_vp9": "Açık kaynak, web için ideal",
+      "libaom_av1": "En iyi sıkıştırma, daha yavaş",
+      "mpeg4": "Eski codec, geniş destek"
+    },
+    "audio": {
+      "aac": "Standart codec, geniş uyumluluk",
+      "libmp3lame": "Evrensel ses biçimi",
+      "libopus": "Modern, yüksek kalite",
+      "libvorbis": "Açık kaynak, iyi kalite",
+      "ac3": "Dolby Digital, surround ses",
+      "alac": "Apple cihazları için optimize edilmiş kayıpsız sıkıştırma",
+      "flac": "Kayıpsız sıkıştırma",
+      "pcm_s16le": "Sıkıştırılmamış, en iyi kalite"
+    },
+    "title": "Codec",
+    "select": "Codec Seçin:",
+    "default": "Varsayılan",
+    "defaultDescription": "Seçilen kapsayıcının varsayılan codec’i",
+    "unusableIn_one": "{{codec}}, {{containers}} dosyalarında kullanılamaz; bu nedenle {{count}} video varsayılan codec’ini korur.",
+    "unusableIn_other": "{{codec}}, {{containers}} dosyalarında kullanılamaz; bu nedenle {{count}} video varsayılan codec’ini korur.",
+    "videoCount_one": "{{count}} videodan {{usable}}",
+    "videoCount_other": "{{count}} videodan {{usable}}",
+    "partial": "{{codec}} yalnızca {{videos}} tarafından kullanılabilir. Diğerleri varsayılan codec’lerini korur."
+  },
+  "metadata": {
+    "limitation_mov": "MOV dosyaları açıklamayı veya özeti saklayamaz.",
+    "limitation_avi": "AVI dosyaları açıklamayı, özeti veya oluşturma tarihini saklayamaz.",
+    "limitation_ts": "TS dosyaları yalnızca başlığı saklayabilir. Diğer ayrıntılar kaydedilmez.",
+    "strip": "Meta Verileri Kaldır",
+    "keepHint": "Orijinali korumak için alanı boş bırakın",
+    "removeHint": "Veya orijinali kaldırmak için bir boşluk ekleyin",
+    "title": {
+      "label": "Başlık",
+      "placeholder": "Başlık girin",
+      "placeholderVideo": "Video başlığı girin"
+    },
+    "artist": {
+      "label": "Sanatçı",
+      "placeholder": "Sanatçı adı girin"
+    },
+    "album": {
+      "label": "Albüm",
+      "placeholder": "Albüm adı girin"
+    },
+    "genre": {
+      "label": "Tür",
+      "placeholder": "Tür girin"
+    },
+    "year": {
+      "label": "Yıl/Tarih",
+      "placeholder": "Yıl veya tarih girin"
+    },
+    "description": {
+      "label": "Açıklama",
+      "placeholder": "Açıklama girin"
+    },
+    "synopsis": {
+      "label": "Özet",
+      "placeholder": "Özet girin"
+    },
+    "comment": {
+      "label": "Yorum",
+      "placeholder": "Yorum girin"
+    },
+    "copyright": {
+      "label": "Telif Hakkı",
+      "placeholder": "Telif hakkı bilgisi girin"
+    },
+    "creationTime": {
+      "label": "Oluşturma Zamanı",
+      "placeholder": "Oluşturma zamanı girin"
+    }
+  },
+  "media": {
+    "addAfterCompression": "Sıkıştırmadan sonra medya eklenemez. Daha fazla medya eklemek için yeni bir sıkıştırma başlatın.",
+    "noValidFiles": "Geçerli medya dosyası bulunamadı.",
+    "alreadyAdded": "Seçilen medya zaten eklendi.",
+    "someCorrupted": "Bazı dosyalar bozuk veya geçersiz görünüyor ve eklenmedi.",
+    "corrupted": "Dosya bozuk veya geçersiz görünüyor.",
+    "selectTitle": "Sıkıştırılacak görüntüleri, videoları veya sesleri seçin.",
+    "selectFailed": "Medya seçilemedi.",
+    "invalidFiles": "Geçersiz dosyalar veya klasörler",
+    "accessDenied_one": "CompressO’nun bu dosyayı açma izni yok. Sistem ayarlarında klasörüne erişime izin verin ve dosyayı yeniden ekleyin.",
+    "accessDenied_other": "CompressO’nun {{count}} dosyayı açma izni yok. Sistem ayarlarında klasörlerine erişime izin verin ve dosyaları yeniden ekleyin.",
+    "openSettings": "Ayarları aç"
+  },
+  "save": {
+    "partiallySaved_one": "{{count}} dosyadan {{saved}} tanesi kaydedildi. {{failed}} tanesi kaydedilemedi. Başka bir konum seçmek için “Medyayı Kaydet”i kullanın.",
+    "partiallySaved_other": "{{count}} dosyadan {{saved}} tanesi kaydedildi. {{failed}} tanesi kaydedilemedi. Başka bir konum seçmek için “Medyayı Kaydet”i kullanın.",
+    "autoSaveFailed": "Otomatik olarak kaydedilemedi; klasör izinleri eksik olabilir. Bir konum seçmek için “Medyayı Kaydet”i kullanın.",
+    "failed": "Medya belirtilen yola kaydedilemedi.",
+    "chooseDirectory": "Sıkıştırılan medyanın kaydedileceği klasörü seçin.",
+    "chooseLocation": "Sıkıştırılan medyanın kaydedileceği konumu seçin.",
+    "largerSkipped_one": "{{count}} çıktı orijinalinden büyüktü ve otomatik olarak kaydedilmedi. Yine de saklamak istiyorsanız “Kaydet”i kullanın.",
+    "largerSkipped_other": "{{count}} çıktı orijinalinden büyüktü ve otomatik olarak kaydedilmedi. Yine de saklamak istiyorsanız “Kaydet”i kullanın.",
+    "copyFailed": "Çıktı panoya kopyalanamadı.",
+    "saving": "Kaydediliyor…",
+    "saved": "Kaydedildi",
+    "saveMedia": "Medyayı Kaydet",
+    "saveThisFile": "Dosyayı Kaydet"
+  },
+  "home": {
+    "dragAndDrop": "Sürükleyip Bırakın",
+    "or": "Veya",
+    "clickToSelect": "Medya seçmek için tıklayın",
+    "dropAnywhere": "Herhangi bir yere bırakın…"
+  },
+  "compression": {
+    "cannotCancel": "Sıkıştırma şu anda iptal edilemez.",
+    "confirmCancel": "İptali Onayla",
+    "cancelling": "İptal ediliyor…",
+    "reconfigure": "Yeniden Yapılandır",
+    "reconfigureOriginalReplaced_one": "<setting>Orijinal dosyaları değiştir</setting> açık olduğu için orijinal dosya Çöp Kutusu’na taşındı; bu nedenle yeniden sıkıştırılamaz.",
+    "reconfigureOriginalReplaced_other": "<setting>Orijinal dosyaları değiştir</setting> açık olduğu için {{count}} orijinal dosya Çöp Kutusu’na taşındı; bu nedenle yeniden sıkıştırılamazlar.",
+    "reconfigureOriginalReplaced_windows_one": "<setting>Orijinal dosyaları değiştir</setting> açık olduğu için orijinal dosya Geri Dönüşüm Kutusu’na taşındı; bu nedenle yeniden sıkıştırılamaz.",
+    "reconfigureOriginalReplaced_windows_other": "<setting>Orijinal dosyaları değiştir</setting> açık olduğu için {{count}} orijinal dosya Geri Dönüşüm Kutusu’na taşındı; bu nedenle yeniden sıkıştırılamazlar.",
+    "pauseFailed": "Sıkıştırma duraklatılamadı.",
+    "resumeFailed": "Sıkıştırma sürdürülemedi.",
+    "failed": "Sıkıştırma sırasında bir sorun oluştu.",
+    "process": "İşle"
+  },
+  "exit": {
+    "title": "Çık",
+    "notSaved": "Medya kaydedilmedi",
+    "discardConfirm_one": "Sıkıştırılan medyanız henüz kaydedilmedi. Atmak istediğinizden emin misiniz?",
+    "discardConfirm_other": "Sıkıştırılan medyanız henüz kaydedilmedi. Atmak istediğinizden emin misiniz?",
+    "goBack": "Geri Dön"
+  },
+  "mediaConfig": {
+    "filter": "Medya Filtresi",
+    "all": "Tümü",
+    "outputSettings": "Çıktı Ayarları",
+    "batchSettings": "Toplu Ayarlar"
+  },
+  "compare": {
+    "input": "Girdi",
+    "output": "Çıktı",
+    "enlargeInput": "Girdiyi büyüt",
+    "enlargeOutput": "Çıktıyı büyüt",
+    "svgTooLarge": "SVG dosyası çok büyük. Karşılaştırma performansını etkileyebilir."
+  },
+  "transform": {
+    "free": "Serbest",
+    "rotateLeft": "Sola Döndür",
+    "flipVertical": "Dikey Çevir",
+    "flipHorizontal": "Yatay Çevir",
+    "resetZoom": "Yakınlaştırmayı Sıfırla",
+    "expand": "Genişlet",
+    "title": "Dönüştür"
+  },
+  "outputSettings": {
+    "video": "Video Ayarları",
+    "image": "Görüntü Ayarları",
+    "audio": "Ses Ayarları",
+    "compressionSettings": "Sıkıştırma Ayarları",
+    "tabs": {
+      "image": "Görüntü",
+      "video": "Video",
+      "audio": "Ses",
+      "others": "Diğer"
+    },
+    "noAudio": "Ses bulunamadı"
+  },
+  "quality": {
+    "unsupportedAudio": "Seçilen ses biçimi veya kodlayıcı kalite ayarını desteklemiyor.",
+    "lossless": "Kayıpsız Sıkıştırma",
+    "title": "Kalite"
+  },
+  "dimensions": {
+    "resolution": "Çözünürlük",
+    "revert": "Orijinal çözünürlüğe dön",
+    "width": "Genişlik",
+    "height": "Yükseklik",
+    "original": "Orijinal",
+    "resolutionLabel": "Çözünürlük:"
+  },
+  "extension": {
+    "label": "Uzantı:",
+    "sameAsInput": "Girdiyle aynı",
+    "noAudio": "Bu videoda çıkarılacak ses yok.",
+    "extractAudio": "Sesi çıkar",
+    "extractAudioNone": "Sesi çıkar (ses bulunamadı)"
+  },
+  "trim": {
+    "title": "Kırp",
+    "instructions": "Talimatlar",
+    "controls": "Zaman Çizelgesi Denetimleri:",
+    "select": "Bir parça seçmek için tıklayın",
+    "split": "Bölmek için parçaya çift tıklayın",
+    "add": "Yeni bir parça eklemek için boş bir alana çift tıklayın",
+    "delete": "Bir parçayı silmek için seçip <key>Delete</key> tuşuna basın",
+    "hideInstructions": "Talimatları Gizle"
+  },
+  "audio": {
+    "bitrate": "Bit Hızı",
+    "bitrateLabel": "Bit Hızı:",
+    "channels": "Kanallar",
+    "layout": "Düzen:",
+    "monoSource": "Mono Kaynak:",
+    "left": "Sol",
+    "right": "Sağ",
+    "swapChannels": "Sol ve sağ kanalları değiştir",
+    "tracks": "Parçalar",
+    "track": "Parça #{{number}}",
+    "channelCount_one": "{{count}} kanal",
+    "channelCount_other": "{{count}} kanal",
+    "volumeLabel": "Ses Düzeyi:",
+    "volume": "Ses Düzeyi",
+    "mute": "Sessiz"
+  },
+  "fps": {
+    "label": "Saniyedeki Kare Sayısı:"
+  },
+  "speed": {
+    "title": "Hız"
+  },
+  "keys": {
+    "ctrl": "Ctrl",
+    "shift": "Shift",
+    "enter": "Enter"
+  },
+  "theme": {
+    "title": "Tema",
+    "options": {
+      "system": "Sistem",
+      "light": "Açık",
+      "dark": "Koyu"
+    }
+  },
+  "errorBoundary": {
+    "title": "Bir hata oluştu.",
+    "retry": "Yeniden dene"
+  },
+  "player": {
+    "play": "Oynat",
+    "pause": "Duraklat"
+  },
+  "update": {
+    "installed": "Güncelleme yüklendi. Yeni sürümü kullanmak için uygulamayı yeniden başlatın.",
+    "installFailed": "Güncelleme yüklenemedi. Lütfen yeniden deneyin.",
+    "error": "Güncelleme hatası: {{message}}"
+  },
+  "native": {
+    "quit": "Çık",
+    "continueCompressing": "Sıkıştırmaya Devam Et",
+    "goBack": "Geri Dön",
+    "compressingTitle": "Sıkıştırma sürüyor",
+    "compressingMessage": "Medya hâlâ sıkıştırılıyor. Şimdi çıkarsanız sıkıştırma iptal edilir.",
+    "unsavedTitle": "Medya kaydedilmedi",
+    "unsavedMessage": "Sıkıştırılan medyanız henüz kaydedilmedi. Şimdi çıkarsanız atılır.",
+    "dropQueueMessage": "Bırakma alanındaki medya hâlâ sıkıştırılıyor. Şimdi çıkarsanız işlem durdurulur.",
+    "openApp": "CompressO’yu Aç",
+    "quitApp": "CompressO’dan Çık",
+    "aboutApp": "CompressO Hakkında",
+    "settings": "Ayarlar…",
+    "services": "Servisler",
+    "hideApp": "CompressO’yu Gizle",
+    "hideOthers": "Diğerlerini Gizle",
+    "file": "Dosya",
+    "closeWindow": "Pencereyi Kapat",
+    "edit": "Düzen",
+    "undo": "Geri Al",
+    "redo": "Yinele",
+    "cut": "Kes",
+    "copy": "Kopyala",
+    "paste": "Yapıştır",
+    "selectAll": "Tümünü Seç",
+    "view": "Görüntü",
+    "fullScreen": "Tam Ekranı Aç/Kapat",
+    "window": "Pencere",
+    "minimize": "Küçült",
+    "zoom": "Büyüt/Küçült",
+    "help": "Yardım"
+  },
+  "targetSize": {
+    "mode": "Sıkıştırma ölçütü",
+    "modes": {
+      "quality": "Kalite",
+      "size": "Hedef boyut"
+    },
+    "size": "Hedef boyut",
+    "estimate": "Yaklaşık {{width}}×{{height}}, {{fps}} fps, en fazla {{size}} MB.",
+    "estimateLowered": "{{size}} MB içine sığması için {{width}}×{{height}}, {{fps}} fps değerine düşürüldü.",
+    "notForGif": "GIF dosyaları bir boyuta sıkıştırılamaz. Başka bir biçim seçin veya kaliteye göre sıkıştırın.",
+    "audioEstimate": "Yaklaşık {{bitrate}} kbps.",
+    "audioLossless": "Seçilen ses biçimi veya kodlayıcı, bit hızı kontrolüyle herhangi bir hedef boyuta ulaşamaz. Başka bir biçim veya kodlayıcı seçin ya da kaliteye göre sıkıştırın. Seçimleriniz otomatik olarak değiştirilmeyecektir.",
+    "audioDurationMissing": "Hedef boyuta sıkıştırmadan önce sesin süresinin bilinmesi gerekir.",
+    "audioTooSmall": "Bu hedef boyut, seçilen ses biçimi ve süresi için çok küçük. Boyutu artırın veya kaydı kırpın.",
+    "notReachedAudio": "Seçilen ses biçiminde hedef boyuta ulaşılamadı. Kullanılabilir en küçük çıktı dosyası gösteriliyor.",
+    "round": "{{round}}. tur",
+    "roundDetail": "{{round}}. tur: hedef boyuta yaklaşılıyor",
+    "roundWithoutHardwareAcceleration": "{{round}}. tur: hedef boyuta yaklaşmak için donanım hızlandırma olmadan",
+    "fitsAtQuality": "Seçilen kalite zaten sığıyor (yaklaşık {{size}}), bu nedenle kullanılıyor.",
+    "switchUnit": "Boyutu {{unit}} olarak göster",
+    "notForSvgOrGif": "SVG ve GIF dosyaları bir boyuta sıkıştırılamaz. Başka bir biçim seçin veya kaliteye göre sıkıştırın.",
+    "notReachedImage": "Görüntü, fazla küçülmeden bundan daha küçük yapılamaz. Hedef boyut {{size}} idi."
+  },
+  "outputOptions": {
+    "title": "Diğer seçenekler",
+    "choose": "{{size}} boyutundaki çıktıyı göster",
+    "withinTarget": "Hedefin içinde",
+    "overTarget": "Hedefin üzerinde",
+    "replace": "Kaydedilen dosyayı değiştir"
+  }
+}

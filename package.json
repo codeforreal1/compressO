@@ -1,6 +1,6 @@
 {
   "name": "compresso",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "private": true,
   "author": {
     "name": "Code For Real",
@@ -20,10 +20,12 @@
     "tauri:build:mac:x64": "tauri build --target x86_64-apple-darwin",
     "tauri:build:mac": "pnpm tauri:build:mac:arm64 && pnpm tauri:build:mac:x64",
     "generate:latest-json": "node scripts/generate-latest-json.mts",
-    "homebrew:release": "tsx scripts/homebrew-release.mts",
     "pnpm:devPreinstall": "fnm use",
     "postinstall": "husky install",
     "lint-staged": "lint-staged",
+    "i18n:check": "node scripts/check-translations.mjs",
+    "test:audio-target-size": "node --test scripts/test-audio-target-size.mjs",
+    "test:drop-queue": "node --test scripts/test-drop-queue.mjs",
     "tsc:check": "tsc --noEmit --skipLibCheck"
   },
   "dependencies": {
@@ -41,7 +43,8 @@
     "@xzdarcy/react-timeline-editor": "^0.1.9",
     "@xzdarcy/timeline-engine": "^1.0.0",
     "clsx": "^2.0.0",
-    "framer-motion": "11.18.2",
+    "framer-motion": "14.6.0",
+    "i18next": "^26.4.7",
     "lodash": "^4.17.21",
     "pretty-bytes": "^6.1.1",
     "react": "^18",
@@ -49,6 +52,7 @@
     "react-colorful": "^5.6.1",
     "react-compare-slider": "^3.1.0",
     "react-dom": "^18",
+    "react-i18next": "^17.0.20",
     "react-markdown": "^10.1.0",
     "react-photo-view": "^1.2.7",
     "react-player": "^2.16.0",
@@ -73,7 +77,6 @@
     "lint-staged": "^13.2.3",
     "postcss": "^8.4.31",
     "tailwindcss": "^3.4.0",
-    "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "vite": "^6.0.3",
     "vite-plugin-svgr": "^4.3.0"
@@ -84,6 +87,7 @@
     }
   },
   "lint-staged": {
+    "src/i18n/locales/*.json": ["node scripts/check-translations.mjs"],
     "src/**/*.{js,ts,jsx,tsx}": ["biome check --write"]
   }
 }

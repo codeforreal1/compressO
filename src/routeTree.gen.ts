@@ -12,12 +12,19 @@
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as rootIndexImport } from './routes/(root)/index'
+import { Route as WebviewsTrayIndexImport } from './routes/webviews/tray/index'
 
 // Create/Update Routes
 
 const rootIndexRoute = rootIndexImport.update({
   id: '/(root)/',
   path: '/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const WebviewsTrayIndexRoute = WebviewsTrayIndexImport.update({
+  id: '/webviews/tray/',
+  path: '/webviews/tray/',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -32,6 +39,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof rootIndexImport
       parentRoute: typeof rootRoute
     }
+    '/webviews/tray/': {
+      id: '/webviews/tray/'
+      path: '/webviews/tray'
+      fullPath: '/webviews/tray'
+      preLoaderRoute: typeof WebviewsTrayIndexImport
+      parentRoute: typeof rootRoute
+    }
   }
 }
 
@@ -39,32 +53,37 @@ declare module '@tanstack/react-router' {
 
 export interface FileRoutesByFullPath {
   '/': typeof rootIndexRoute
+  '/webviews/tray': typeof WebviewsTrayIndexRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof rootIndexRoute
+  '/webviews/tray': typeof WebviewsTrayIndexRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/(root)/': typeof rootIndexRoute
+  '/webviews/tray/': typeof WebviewsTrayIndexRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/webviews/tray'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/(root)/'
+  to: '/' | '/webviews/tray'
+  id: '__root__' | '/(root)/' | '/webviews/tray/'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   rootIndexRoute: typeof rootIndexRoute
+  WebviewsTrayIndexRoute: typeof WebviewsTrayIndexRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   rootIndexRoute: rootIndexRoute,
+  WebviewsTrayIndexRoute: WebviewsTrayIndexRoute,
 }
 
 export const routeTree = rootRoute
@@ -77,11 +96,15 @@ export const routeTree = rootRoute
     "__root__": {
       "filePath": "__root.tsx",
       "children": [
-        "/(root)/"
+        "/(root)/",
+        "/webviews/tray/"
       ]
     },
     "/(root)/": {
       "filePath": "(root)/index.tsx"
+    },
+    "/webviews/tray/": {
+      "filePath": "webviews/tray/index.tsx"
     }
   }
 }

@@ -22,3 +22,51 @@ export function getPlatform() {
     isWindows: userAgent?.includes?.('Win'),
   }
 }
+
+/**
+ * Name to save a compressed file under: the original's name with the output's extension (outputs
+ * themselves are stored under generated ids, e.g. `clip.mov` -> `clip.mp4`).
+ */
+export function getOutputFileName(
+  originalFileName: string | null | undefined,
+  originalExtension: string | null | undefined,
+  outputExtension: string | null | undefined,
+) {
+  const baseName = originalExtension
+    ? (originalFileName ?? '').slice(0, -(originalExtension.length + 1))
+    : (originalFileName ?? '')
+  return outputExtension ? `${baseName}.${outputExtension}` : baseName
+}
+
+/**
+ * Parent directory of a path, `levels` folders up. Handles both `/` and `\` separators.
+ */
+export function getParentDirectory(path: string, levels = 1) {
+  let directory = path.replace(/[\\/]+$/, '')
+  for (let i = 0; i < levels; i++) {
+    const index = Math.max(
+      directory.lastIndexOf('/'),
+      directory.lastIndexOf('\\'),
+    )
+    if (index < 0) return ''
+    // Keep the root separator (e.g. `/file.mp4` -> `/`)
+    directory = index === 0 ? directory.slice(0, 1) : directory.slice(0, index)
+  }
+  return directory
+}
+
+/**
+ * Whether two paths name the same file, whatever their separators (`/` or `\`) & letter case
+ * (macOS & Windows ignore it)
+ */
+export function isSamePath(
+  pathA: string | null | undefined,
+  pathB: string | null | undefined,
+) {
+  if (!pathA || !pathB) return false
+  const normalize = (path: string) => {
+    const unified = path.replace(/\\/g, '/').replace(/\/+$/, '')
+    return getPlatform().isLinux ? unified : unified.toLowerCase()
+  }
+  return normalize(pathA) === normalize(pathB)
+}

@@ -1,0 +1,12 @@
+[package]
+name = "compresso-tool-archive"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+tar = "=0.4.44"
+xz2 = { version = "=0.1.7", features = ["static"] }
+
+# Keep this build-time helper independent from the Tauri app's build.rs and resources.
+[workspace]

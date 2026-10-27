@@ -1,93 +1,149 @@
 ---
+import { Image } from "astro:assets";
+import CodeForRealLogo from "../assets/logo.png";
 import SocialLinks from "./SocialLinks.astro";
 
-const today = new Date();
+const year = new Date().getFullYear();
+
+const columns = [
+  {
+    title: "Product",
+    links: [
+      { href: "/#features", label: "Features" },
+      { href: "/#download", label: "Download" },
+      { href: "/changelog", label: "Changelog" },
+      { href: "/blog", label: "Blog" },
+      { href: "https://github.com/codeforreal1/compressO/releases", label: "Releases" },
+    ],
+  },
+  {
+    title: "Project",
+    links: [
+      { href: "https://github.com/codeforreal1/compressO", label: "Source code" },
+      { href: "https://github.com/codeforreal1/compressO/issues", label: "Report an issue" },
+      { href: "mailto:compresso@codeforreal.com", label: "Contact" },
+    ],
+  },
+];
 ---
 
-<footer>
-  <div class="footer-inner">
+<footer class="site-footer">
+  <div class="container">
     <div class="footer-top">
       <div class="footer-brand">
-        <img src="/app-icon.png" alt="CompressO" class="footer-logo" />
-        <span class="footer-name">CompressO</span>
+        <a href="/" class="brand">
+          <img src="/app-icon.png" alt="" width="28" height="28" />
+          <span>CompressO</span>
+        </a>
+        <p>Compress any video, image or audio file into a tiny size.</p>
       </div>
-      <div class="footer-links">
-        <a href="https://github.com/codeforreal1/compressO" target="_blank">GitHub</a>
-        <a href="https://github.com/codeforreal1/compressO/releases" target="_blank">Releases</a>
-        <a href="mailto:compresso@codeforreal.com">Contact</a>
-      </div>
+      {
+        columns.map((column) => (
+          <div class="footer-column">
+            <h3>{column.title}</h3>
+            {column.links.map((link) => (
+              <a href={link.href}>{link.label}</a>
+            ))}
+          </div>
+        ))
+      }
     </div>
     <div class="footer-bottom">
-      <p>&copy; {today.getFullYear()} Code For Real. All rights reserved.</p>
+      <a href="https://codeforreal.com" class="maker" aria-label="Code For Real">
+        <span>Made by</span>
+        <Image src={CodeForRealLogo} alt="Code For Real" class="maker-logo" />
+      </a>
+      <p>&copy; {year} Code For Real</p>
       <SocialLinks />
     </div>
   </div>
 </footer>
+
 <style>
-  footer {
-    padding: 48px 24px 32px;
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
-  }
-  .footer-inner {
-    max-width: 1100px;
-    margin: 0 auto;
+  .site-footer {
+    border-top: 1px solid var(--border);
+    padding: 64px 0 40px;
   }
   .footer-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24px;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 40px;
+    padding-bottom: 48px;
   }
-  .footer-brand {
-    display: flex;
+  .brand {
+    display: inline-flex;
     align-items: center;
     gap: 10px;
-  }
-  .footer-logo {
-    width: 24px;
-    height: 24px;
-    border-radius: 6px;
-  }
-  .footer-name {
-    font-size: 15px;
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.8);
   }
-  .footer-links {
+  .brand img {
+    border-radius: 7px;
+  }
+  .footer-brand p {
+    margin-top: 14px;
+    max-width: 300px;
+    font-size: 14px;
+    color: var(--text-faint);
+  }
+  .footer-column {
     display: flex;
-    gap: 24px;
+    flex-direction: column;
+    gap: 10px;
+    font-size: 14px;
   }
-  .footer-links a {
+  .footer-column h3 {
     font-size: 13px;
-    color: rgba(255, 255, 255, 0.4);
-    text-decoration: none;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .footer-column a {
+    color: var(--text-faint);
     transition: color 0.15s ease;
   }
-  .footer-links a:hover {
-    color: rgba(255, 255, 255, 0.7);
-    opacity: 1;
+  .footer-column a:hover {
+    color: var(--text);
   }
   .footer-bottom {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    padding-top: 20px;
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    justify-content: space-between;
+    gap: 16px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    color: var(--text-faint);
   }
   .footer-bottom p {
-    font-size: 12px;
-    color: rgba(255, 255, 255, 0.3);
-    margin: 0;
+    font-size: 13px;
+    color: var(--text-faint);
   }
-  @media (max-width: 640px) {
+  .maker {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+  }
+  .maker-logo {
+    width: 120px;
+    height: auto;
+    opacity: 0.55;
+    transition: opacity 0.15s ease;
+  }
+  .maker:hover .maker-logo {
+    opacity: 0.85;
+  }
+  .footer-bottom :global(.social-links) {
+    color: var(--text-faint);
+  }
+  @media (max-width: 720px) {
     .footer-top {
-      flex-direction: column;
-      gap: 16px;
-      align-items: flex-start;
+      grid-template-columns: 1fr 1fr;
+    }
+    .footer-brand {
+      grid-column: 1 / -1;
     }
     .footer-bottom {
       flex-direction: column;
-      gap: 12px;
       align-items: flex-start;
     }
   }

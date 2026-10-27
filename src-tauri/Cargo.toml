@@ -15,7 +15,7 @@ tauri-build = { version = "2.0.0", features = [] }
 [dependencies]
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
-tauri = { version = "2.0.0", features = ["protocol-asset"] }
+tauri = { version = "2.0.0", features = ["protocol-asset", "tray-icon", "macos-private-api"] }
 tokio = { version = "1.34.0", features = [
     "rt",
     "rt-multi-thread",
@@ -37,7 +37,9 @@ tauri-plugin-log = "2.0.0"
 tauri-plugin-window-state = "2.0.0"
 tauri-plugin-os = "2.0.0"
 tauri-plugin-updater = "2.0.0"
-wgpu = "23.0.1"
+# Release notes from CHANGELOG.md on GitHub, see `tauri_commands/updater.rs`
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls"] }
+semver = "1"
 clipboard-rs = "0.3.2"
 oxipng = { version = "9", features = ["parallel", "zopfli", "filetime"], default-features = false }
 webp = "0.3"
@@ -47,9 +49,23 @@ svgcleaner = "0.9.5"
 vtracer = "0.6.5"
 resvg = "0.44.0"
 exiftool-rs = "0.4.4"
+rodio = { version = "0.20", default-features = false, features = ["wav"] }
+tauri-plugin-autostart = "2"
+tauri-plugin-single-instance = "2"
+time = "0.3"
+notify-debouncer-mini = "0.4.1"
+sha2 = "0.10.8"
+tar = "0.4"
+xz2 = { version = "0.1.7", features = ["static"] }
+trash = "5.2.3"
+
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"
 
 [target.'cfg(target_os = "linux")'.dependencies]
 dbus = "0.9"
+# The clipboard, read as the desktop serves it (Wayland or X11), see `sys/linux_clipboard.rs`
+gtk = "0.18"
 axum = "0.7"
 tower = "0.5"
 tower-http = { version = "0.5", features = ["cors", "fs"] }
@@ -57,8 +73,21 @@ urlencoding = "2.1"
 tokio-util = "0.7"
 
 [target.'cfg(target_os = "macos")'.dependencies]
+core-foundation = "0.10"
 objc = "0.2"
 cocoa = "0.25"
+swift-bridge = "0.1"
+objc2 = "0.6"
+objc2-app-kit = "0.3"
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.59", features = ["Win32_Foundation", "Win32_Storage_FileSystem", "Win32_System_Diagnostics_Debug", "Win32_System_IO", "Win32_System_Kernel", "Win32_System_Power", "Win32_System_Registry", "Win32_System_SystemServices", "Win32_System_Threading", "Win32_UI_WindowsAndMessaging"] }
+
+[target.'cfg(any(target_os = "macos", windows))'.dependencies]
+window-vibrancy = "0.6"
+
+[target.'cfg(target_os = "macos")'.build-dependencies]
+swift-bridge-build = "0.1"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem and the built-in dev server is disabled.

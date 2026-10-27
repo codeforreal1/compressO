@@ -1,53 +1,62 @@
-import { Button } from '@heroui/react'
 import { core } from '@tauri-apps/api'
 import { motion } from 'framer-motion'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import isEqual from 'lodash/isEqual'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 import { PhotoView } from 'react-photo-view'
+import type ReactPlayer from 'react-player'
 import { OnProgressProps } from 'react-player/base'
 import { toast } from 'sonner'
 import { useSnapshot } from 'valtio'
-import { subscribeKey } from 'valtio/utils'
 
+import AudioWaveform from '@/components/AudioWaveform'
+import Button from '@/components/Button'
 import Icon from '@/components/Icon'
 import Image from '@/components/Image'
 import ImageViewer from '@/components/ImageViewer'
 import Popover, { PopoverContent, PopoverTrigger } from '@/components/Popover'
+import SettingLink from '@/components/SettingLink'
 import useTimelineEngine from '@/components/Timeline/useTimelineEngine'
 import Tooltip from '@/components/Tooltip'
 import VideoPlayer, { VideoPlayerRef } from '@/components/VideoPlayer'
+import { useAudioWaveform } from '@/hooks/useAudioWaveform'
+import { useImagePreview } from '@/hooks/useImagePreview'
+import { usePlayPauseOnSpace } from '@/hooks/usePlayPauseOnSpace'
+import { settingsStore } from '@/stores/settingsStore'
+import { logError } from '@/tauri/commands/app'
 import { generateVideoThumbnail } from '@/tauri/commands/ffmpeg'
 import { copyFileToClipboard } from '@/tauri/commands/fs'
+import { isAudioExtension } from '@/types/compression'
 import VideoTrimmerTimeline, {
   rowIds,
   scales,
   VideoTrimmerTimelineRef,
 } from '@/ui/VideoTrimmerTimeline'
+import { isOutputPreviewPending } from '@/utils/outputPreview'
 import { formatDuration } from '@/utils/string'
+import { getTransformPreview, renderTransformPreview } from '@/utils/transform'
+import { constructVideoUrl, isVideoPreviewAvailable } from '@/utils/video'
 import MediaTransformer from './MediaTransformer'
 import { appProxy } from '../-state'
 
-function pickRandomTimestamp(durationMs: number): string {
-  const durationSeconds = durationMs / 1000
-  // Avoid the first 5% and last 5% of the video to get more interesting frames
-  const minSeconds = durationSeconds * 0.05
-  const maxSeconds = durationSeconds * 0.95
-
-  const randomSeconds = minSeconds + Math.random() * (maxSeconds - minSeconds)
-
-  return formatDuration(randomSeconds)
-}
-
 type MediaThumbnailProps = {
   mediaIndex: number
+  /** Shows the media without its transforms (crop, rotation, flip), e.g. to compare */
+  showOriginal?: boolean
 }
 
-function MediaThumbnail({ mediaIndex }: MediaThumbnailProps) {
+function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
+  const { t } = useTranslation()
   if (mediaIndex < 0) return
 
   const {
-    state: { media, isSaved },
+    state: { media, isCompressing, isSaving },
   } = useSnapshot(appProxy)
   const mediaFile = media.length > 0 ? media[mediaIndex] : null
+  const outputPreviewPending = isOutputPreviewPending(mediaFile, {
+    isCompressing,
+    isSaving,
+  })
   const {
     path: mediaPath,
     pathRaw: mediaPathRaw,
@@ -55,6 +64,9 @@ function MediaThumbnail({ mediaIndex }: MediaThumbnailProps) {
     isProcessCompleted,
   } = mediaFile ?? {}
   const { thumbnailPath: videoThumbnailPath } = mediaFile ?? {}
+  // Another output looked at while the saved one stays on disk (see `previewOutputOption`)
+  const previewOption =
+    mediaFile?.type === 'video' ? mediaFile.compressedFile?.previewOption : null
   const {
     shouldTransformVideo,
     isVideoTransformEditMode,
@@ -66,10 +78,24 @@ function MediaThumbnail({ mediaIndex }: MediaThumbnailProps) {
   const { shouldTransformImage, isImageTransformEditMode } =
     mediaFile?.type === 'image' ? (mediaFile?.config ?? {}) : {}
 
+  const { enableAudioWaveforms: isWaveformSettingOn } =
+    useSnapshot(settingsStore)
+  // Drawn over the player, which Linux only has with video previews on
+  const enableAudioWaveforms = isWaveformSettingOn && isVideoPreviewAvailable
   const playerRef = useRef<VideoPlayerRef | null>(null)
   const trimmerRef = useRef<VideoTrimmerTimelineRef | null>(null)
   const trimConfigSetDebounceRef = useRef<NodeJS.Timeout | null>(null)
-  const [isThumbnailRegenerating, setIsThumbnailRegenerating] = useState(false)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+  const lastPreviewSourceRef = useRef(mediaPathRaw)
+  const [isAudioPlaying, setIsAudioPlaying] = useState(false)
+  const [waveformPlayer, setWaveformPlayer] = useState<HTMLMediaElement | null>(
+    null,
+  )
+  const [playbackDuration, setPlaybackDuration] = useState(0)
+  const attachAudioPlayer = useCallback((element: HTMLAudioElement | null) => {
+    audioRef.current = element
+    setWaveformPlayer(element)
+  }, [])
   const thumbnailCacheRef = useRef<Record<string, string>>({})
   const [isCopyingFrame, setIsCopyingFrame] = useState(false)
 
@@ -82,7 +108,7 @@ function MediaThumbnail({ mediaIndex }: MediaThumbnailProps) {
       !mediaPathRaw ||
       !playerRef.current
     ) {
-      toast.error('Unable to copy frame')
+      toast.error(t('thumbnail.copyFrameUnavailable'))
       return
     }
 
@@ -101,48 +127,13 @@ function MediaThumbnail({ mediaIndex }: MediaThumbnailProps) {
       const result = await generateVideoThumbnail(mediaPathRaw, timestamp)
 
       await copyFileToClipboard(result.filePath)
-      toast.success('Frame copied to clipboard')
+      toast.success(t('thumbnail.frameCopied'))
     } catch {
-      toast.error('Failed to copy frame to clipboard')
+      toast.error(t('thumbnail.copyFrameFailed'))
     } finally {
       setIsCopyingFrame(false)
     }
-  }, [mediaPathRaw, mediaIndex])
-
-  const handleRegenerateThumbnail = useCallback(
-    async (timeStamp?: string, retries = 2, forced = false) => {
-      const targetMedia = appProxy.state.media[mediaIndex]
-
-      if (
-        !targetMedia ||
-        targetMedia.type !== 'video' ||
-        !targetMedia.videoDuration ||
-        !mediaPathRaw ||
-        (forced ? false : isThumbnailRegenerating)
-      )
-        return
-
-      setIsThumbnailRegenerating(true)
-      try {
-        const videoDuration = targetMedia.videoDuration
-        const result = await generateVideoThumbnail(
-          mediaPathRaw,
-          timeStamp ?? pickRandomTimestamp(videoDuration * 1000),
-        )
-        appProxy.state.media[mediaIndex].thumbnailPathRaw = result.filePath
-        appProxy.state.media[mediaIndex].thumbnailPath = core.convertFileSrc(
-          result.filePath,
-        )
-      } catch {
-        if (retries > 0) {
-          handleRegenerateThumbnail('00:00:01.00', retries - 1)
-        }
-      } finally {
-        setIsThumbnailRegenerating(false)
-      }
-    },
-    [mediaPathRaw, mediaIndex, isThumbnailRegenerating],
-  )
+  }, [mediaPathRaw, mediaIndex, t])
 
   const seekPlayerTo = useCallback((time: number, onPausedOnly = true) => {
     if (playerRef.current?.playerRef) {
@@ -175,129 +166,360 @@ function MediaThumbnail({ mediaIndex }: MediaThumbnailProps) {
     onSeek: seekPlayerTo,
   })
 
+  // Crop on the frame at the current playback time when the transform editor opens. Driven by the
+  // snapshot value (not `subscribeKey` on the config object), since the config/media objects get
+  // replaced (batch config normalization, resets, snapshot restores) which left a subscription stale.
   useEffect(() => {
-    let unsubscribeTransform: (() => void) | undefined
+    if (!isVideoTransformEditMode) return
 
-    if (
-      appProxy.state.media[mediaIndex]?.type === 'video' &&
-      appProxy.state.media[mediaIndex]?.config
-    ) {
-      unsubscribeTransform = subscribeKey(
-        appProxy.state.media[mediaIndex].config,
-        'isVideoTransformEditMode',
-        async () => {
-          const mediaSnapshot = appProxy.state.media[mediaIndex]
-          if (
-            (playerRef.current || trimmerRef.current) &&
-            mediaSnapshot.type === 'video' &&
-            mediaSnapshot.config.isVideoTransformEditMode
-          ) {
-            if (playerRef.current) {
-              playerRef.current.pauseVideo()
-            }
-            const { pathRaw: mediaPathRaw } = mediaSnapshot
-            const currentTime = playerRef.current
-              ? playerRef.current.playerRef?.getCurrentTime?.()
-              : trimmerRef.current?.getTime?.()
-            if (currentTime && mediaPathRaw) {
-              try {
-                const targetDuration =
-                  currentTime >= mediaSnapshot.videoDuration!
-                    ? currentTime - 0.02
-                    : currentTime <= 0
-                      ? 0.02
-                      : currentTime
-                const timestamp = formatDuration(targetDuration)
-
-                let thumbnailPath = thumbnailCacheRef.current[timestamp]
-
-                if (!thumbnailPath) {
-                  const result = await generateVideoThumbnail(
-                    mediaPathRaw,
-                    timestamp,
-                  )
-
-                  thumbnailPath = result.filePath
-                  thumbnailCacheRef.current[timestamp] = thumbnailPath
-                }
-
-                mediaSnapshot.thumbnailPathRaw = thumbnailPath
-                mediaSnapshot.thumbnailPath = core.convertFileSrc(thumbnailPath)
-              } catch {}
-            }
-          }
-        },
+    const generateThumbnailAtCurrentTime = async () => {
+      const targetMedia = appProxy.state.media[mediaIndex]
+      if (
+        targetMedia?.type !== 'video' ||
+        !targetMedia.pathRaw ||
+        !(playerRef.current || trimmerRef.current)
       )
+        return
+
+      playerRef.current?.pauseVideo()
+      const currentTime = playerRef.current
+        ? playerRef.current.playerRef?.getCurrentTime?.()
+        : trimmerRef.current?.getTime?.()
+      if (currentTime == null || Number.isNaN(currentTime)) return
+
+      try {
+        const targetDuration =
+          currentTime >= targetMedia.videoDuration!
+            ? currentTime - 0.02
+            : currentTime <= 0
+              ? 0.02
+              : currentTime
+        const timestamp = formatDuration(targetDuration)
+
+        let thumbnailPath = thumbnailCacheRef.current[timestamp]
+
+        if (!thumbnailPath) {
+          const result = await generateVideoThumbnail(
+            targetMedia.pathRaw,
+            timestamp,
+          )
+
+          thumbnailPath = result.filePath
+          thumbnailCacheRef.current[timestamp] = thumbnailPath
+        }
+
+        // Re-read in case the media entry was replaced while generating
+        const latestMedia = appProxy.state.media[mediaIndex]
+        if (
+          latestMedia?.type === 'video' &&
+          latestMedia.pathRaw === targetMedia.pathRaw
+        ) {
+          latestMedia.thumbnailPathRaw = thumbnailPath
+          latestMedia.thumbnailPath = core.convertFileSrc(thumbnailPath)
+        }
+      } catch {}
     }
-    return () => {
-      unsubscribeTransform?.()
-    }
-  }, [mediaIndex])
+
+    generateThumbnailAtCurrentTime()
+  }, [isVideoTransformEditMode, mediaIndex])
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: <Clear thumbnail cache when video changes>
   useEffect(() => {
     thumbnailCacheRef.current = {}
   }, [mediaIndex])
 
+  // When the trim editor opens/closes, pause (on open) and move the timeline playhead to the
+  // player's current time. Driven by the snapshot value rather than `subscribeKey` on the config
+  // object, which went stale whenever the config/media objects were replaced.
+  const previousTrimEditModeRef = useRef(isVideoTrimEditMode)
   useEffect(() => {
-    let unsubscribeTrim: (() => void) | undefined
+    if (previousTrimEditModeRef.current === isVideoTrimEditMode) return
+    previousTrimEditModeRef.current = isVideoTrimEditMode
 
-    if (
-      appProxy.state.media[mediaIndex]?.type === 'video' &&
-      appProxy.state.media[mediaIndex]?.config
-    ) {
-      unsubscribeTrim = subscribeKey(
-        appProxy.state.media[mediaIndex].config,
-        'isVideoTrimEditMode',
-        async () => {
-          if (playerRef.current) {
-            setTimeout(() => {
-              if (playerRef?.current?.playerRef) {
-                const currentTime =
-                  playerRef?.current?.playerRef?.getCurrentTime?.()
-                if (currentTime) {
-                  setTimelineTime(currentTime)
-                  autoScrollCursorToCurrentTime(scales, {
-                    onlyOnOutOfView: false,
-                  })
-                }
-              }
-            }, 100)
-            if (
-              appProxy.state.media[mediaIndex].type === 'video' &&
-              appProxy.state.media[mediaIndex].config.isVideoTrimEditMode
-            ) {
-              playerRef.current.pauseVideo()
-            }
-          }
-        },
-      )
+    if (!playerRef.current) return
+    if (isVideoTrimEditMode) {
+      playerRef.current.pauseVideo()
     }
-    return () => {
-      unsubscribeTrim?.()
-    }
-  }, [mediaIndex, autoScrollCursorToCurrentTime, setTimelineTime])
+
+    const timeoutId = setTimeout(() => {
+      const currentTime = playerRef.current?.playerRef?.getCurrentTime?.()
+      if (currentTime != null && !Number.isNaN(currentTime)) {
+        setTimelineTime(currentTime)
+        autoScrollCursorToCurrentTime(scales, {
+          onlyOnOutOfView: false,
+        })
+      }
+    }, 100)
+    return () => clearTimeout(timeoutId)
+  }, [isVideoTrimEditMode, autoScrollCursorToCurrentTime, setTimelineTime])
 
   const showTrimmerLayout =
     shouldTrimVideo && isVideoTrimEditMode && !isProcessCompleted
+
+  // Transforms set by a preset have no preview yet (the editor renders one when used), so it is
+  // rendered here, for the media being shown
+  const transformConfigToPreview =
+    mediaFile?.type === 'image'
+      ? shouldTransformImage && mediaFile.extension !== 'gif'
+        ? mediaFile.config.transformImageConfig
+        : undefined
+      : mediaFile?.type === 'video' && shouldTransformVideo
+        ? mediaFile.config.transformVideoConfig
+        : undefined
+  const isEditingTransform = !!(
+    isImageTransformEditMode || isVideoTransformEditMode
+  )
+  useEffect(() => {
+    const transforms = transformConfigToPreview?.transforms
+    const thumbnailPathRaw = appProxy.state.media[mediaIndex]?.thumbnailPathRaw
+    if (
+      !transforms ||
+      transformConfigToPreview?.previewUrl ||
+      isEditingTransform ||
+      isProcessCompleted ||
+      !thumbnailPathRaw
+    ) {
+      return
+    }
+    let isCancelled = false
+    renderTransformPreview(core.convertFileSrc(thumbnailPathRaw), transforms)
+      .then((previewUrl) => {
+        const targetMedia = appProxy.state.media[mediaIndex]
+        const targetConfig =
+          targetMedia?.type === 'image'
+            ? targetMedia.config.transformImageConfig
+            : targetMedia?.type === 'video'
+              ? targetMedia.config.transformVideoConfig
+              : undefined
+        // Only for the transforms it was rendered for
+        if (
+          isCancelled ||
+          !targetConfig ||
+          targetConfig.previewUrl ||
+          !isEqual(targetConfig.transforms, transforms)
+        ) {
+          URL.revokeObjectURL(previewUrl)
+          return
+        }
+        targetConfig.previewUrl = previewUrl
+      })
+      .catch(() => {})
+    return () => {
+      isCancelled = true
+    }
+  }, [
+    transformConfigToPreview,
+    isEditingTransform,
+    isProcessCompleted,
+    mediaIndex,
+  ])
 
   const showTransformerLayout =
     ((shouldTransformVideo && isVideoTransformEditMode) ||
       (shouldTransformImage && isImageTransformEditMode)) &&
     !isProcessCompleted
 
-  const thumbnailPath =
-    mediaFile?.type === 'video' ? videoThumbnailPath : mediaPath
+  // Rendered result of the crop/rotate/flip, so the preview reflects the applied transforms
+  const transformedThumbnailPreview = showOriginal
+    ? undefined
+    : mediaFile?.type === 'image' && shouldTransformImage
+      ? mediaFile.config.transformImageConfig?.previewUrl
+      : mediaFile?.type === 'video' && shouldTransformVideo
+        ? mediaFile.config.transformVideoConfig?.previewUrl
+        : undefined
 
-  const imageToRenderSrc = isProcessCompleted
-    ? mediaFile?.type === 'video' &&
-      mediaFile?.previewMode === 'image' &&
-      mediaFile?.compressedFile?.extension !== 'gif'
-      ? mediaFile?.thumbnailPath!
-      : isSaved
-        ? core.convertFileSrc(mediaFile?.compressedFile?.savedPath!)
-        : mediaFile?.compressedFile?.path!
-    : thumbnailPath!
+  // Animated gifs preview the transforms live with css (like videos) instead of the still snapshot
+  const gifTransformPreview = useMemo(
+    () =>
+      !showOriginal &&
+      mediaFile?.type === 'image' &&
+      mediaFile.extension === 'gif' &&
+      shouldTransformImage &&
+      !isProcessCompleted &&
+      mediaFile.config.transformImageConfig?.transformHistory &&
+      mediaFile.dimensions
+        ? getTransformPreview(
+            mediaFile.config.transformImageConfig.transformHistory,
+            mediaFile.dimensions.width,
+            mediaFile.dimensions.height,
+          )
+        : null,
+    [mediaFile, shouldTransformImage, isProcessCompleted, showOriginal],
+  )
+
+  const thumbnailPath =
+    (gifTransformPreview ? undefined : transformedThumbnailPreview) ??
+    mediaFile?.thumbnailPath ??
+    mediaPath
+
+  // The compressed output already has the transforms applied
+  const videoTransformHistory =
+    mediaFile?.type === 'video' &&
+    shouldTransformVideo &&
+    !isProcessCompleted &&
+    !showOriginal
+      ? mediaFile.config.transformVideoConfig?.transformHistory
+      : null
+
+  // Kept segments, so the player timeline can mark the trimmed out parts
+  const trimSegments = useMemo(
+    () =>
+      shouldTrimVideo ? trimConfig?.filter((a) => a.end >= a.start) : null,
+    [shouldTrimVideo, trimConfig],
+  )
+
+  // Re-compressing writes to the same output file, so give each result a unique url to
+  // bypass the webview's image cache (otherwise a previous result can be shown)
+  const outputImagePreview = useImagePreview(
+    mediaFile?.type === 'image' && !outputPreviewPending
+      ? (compressedFile?.savedPath ?? compressedFile?.pathRaw)
+      : undefined,
+    compressedFile,
+    thumbnailPath,
+  )
+  const compressedFileSrc = useMemo(
+    () =>
+      outputImagePreview ??
+      (compressedFile?.path ? `${compressedFile.path}?v=${Date.now()}` : ''),
+    [compressedFile, outputImagePreview],
+  )
+
+  // Saving moves the output out of the cache, so saved outputs are loaded from where they were saved
+  const savedOutputSrc = previewOption
+    ? core.convertFileSrc(previewOption.pathRaw)
+    : compressedFile?.isSaved && compressedFile.savedPath
+      ? (outputImagePreview ?? core.convertFileSrc(compressedFile.savedPath))
+      : null
+
+  // The source and compressed output can have different playback support. Retry video once for
+  // each new file, after any automatic save has finished moving it out of the cache.
+  const playbackSourcePath = isProcessCompleted
+    ? (previewOption?.pathRaw ??
+      compressedFile?.savedPath ??
+      compressedFile?.pathRaw)
+    : mediaPathRaw
+  const isPlaybackSourceStable = !outputPreviewPending
+  useEffect(() => {
+    if (
+      mediaFile?.type !== 'video' ||
+      !isVideoPreviewAvailable ||
+      !isPlaybackSourceStable ||
+      !playbackSourcePath ||
+      lastPreviewSourceRef.current === playbackSourcePath
+    ) {
+      return
+    }
+    lastPreviewSourceRef.current = playbackSourcePath
+    const current = appProxy.state.media[mediaIndex]
+    if (current?.type === 'video' && current.pathRaw === mediaPathRaw) {
+      current.previewMode = 'video'
+    }
+  }, [
+    mediaFile?.type,
+    mediaIndex,
+    mediaPathRaw,
+    isPlaybackSourceStable,
+    playbackSourcePath,
+  ])
+
+  // Audio extracted from a video: show the video's thumbnail with an audio player
+  const isAudioOutput =
+    !!isProcessCompleted &&
+    !outputPreviewPending &&
+    isAudioExtension(compressedFile?.extension)
+  const audioOutputSrc = isAudioOutput
+    ? (savedOutputSrc ?? compressedFileSrc)
+    : undefined
+  // Linux's webview cannot play media from asset links, so it is played through the app's local
+  // server, as videos are (see `constructVideoUrl`); elsewhere the asset link is played as it is
+  const [audioPlaybackSrc, setAudioPlaybackSrc] = useState<string>()
+  useEffect(() => {
+    if (!audioOutputSrc) {
+      setAudioPlaybackSrc(undefined)
+      return
+    }
+    let isCurrent = true
+    ;(async () => {
+      // Without the cache-busting `?v=`, which would be read as part of the file's path
+      const [assetSrc] = audioOutputSrc.split('?')
+      const serverSrc = await constructVideoUrl(assetSrc).catch(() => assetSrc)
+      if (!isCurrent) return
+      setAudioPlaybackSrc(
+        serverSrc === assetSrc
+          ? audioOutputSrc
+          : `${serverSrc}${serverSrc.includes('?') ? '&' : '?'}v=${Date.now()}`,
+      )
+    })()
+    return () => {
+      isCurrent = false
+    }
+  }, [audioOutputSrc])
+
+  const toggleAudioPlayback = useCallback(() => {
+    const audio = audioRef.current
+    if (!audio) return
+    if (audio.paused) {
+      audio.play().catch(() => {})
+    } else {
+      audio.pause()
+    }
+  }, [])
+  usePlayPauseOnSpace(!!audioOutputSrc, toggleAudioPlayback)
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: A new source must not inherit the previous output's duration.
+  useEffect(() => {
+    setPlaybackDuration(0)
+  }, [playbackSourcePath])
+  const waveformData = useAudioWaveform({
+    path: mediaFile?.type === 'video' ? playbackSourcePath : null,
+    duration: isProcessCompleted
+      ? playbackDuration
+      : mediaFile?.type === 'video'
+        ? (mediaFile.videoDuration ?? playbackDuration)
+        : 0,
+    sizeInBytes: isProcessCompleted
+      ? (previewOption?.sizeInBytes ?? compressedFile?.sizeInBytes)
+      : mediaFile?.sizeInBytes,
+    enabled:
+      enableAudioWaveforms &&
+      !isCompressing &&
+      !isSaving &&
+      isPlaybackSourceStable &&
+      !(
+        mediaFile?.type === 'video' &&
+        mediaFile.videoInfoRaw?.audioStreams?.length === 0
+      ),
+  })
+
+  const waveform = enableAudioWaveforms ? waveformData : null
+
+  // An audio file plays like a video, over its cover art (or a music icon), as it has no picture
+  const isAudioFile = mediaFile?.type === 'video' && !!mediaFile.isAudioFile
+  const audioFileBackdrop = isAudioFile ? (
+    <div className="absolute inset-0 flex items-center justify-center overflow-hidden rounded-3xl border-1 border-zinc-200 dark:border-zinc-900">
+      {waveform ? (
+        <AudioWaveform waveform={waveform} mediaElement={waveformPlayer} />
+      ) : videoThumbnailPath ? (
+        <Image
+          alt={t('thumbnail.coverArt')}
+          src={videoThumbnailPath}
+          className="h-full w-full object-contain"
+          removeWrapper
+        />
+      ) : (
+        <Icon name="music" size={160} className="text-primary" />
+      )}
+    </div>
+  ) : null
+
+  const imageToRenderSrc =
+    isProcessCompleted && !outputPreviewPending
+      ? mediaFile?.type === 'video' &&
+        mediaFile?.previewMode === 'image' &&
+        mediaFile?.compressedFile?.extension !== 'gif'
+        ? mediaFile?.thumbnailPath!
+        : (savedOutputSrc ?? compressedFileSrc)
+      : thumbnailPath!
 
   return (
     <>
@@ -306,6 +528,8 @@ function MediaThumbnail({ mediaIndex }: MediaThumbnailProps) {
           {mediaFile?.type === 'video' &&
           mediaFile.previewMode === 'video' &&
           mediaPath &&
+          isPlaybackSourceStable &&
+          !isAudioOutput &&
           (mediaFile?.isProcessCompleted
             ? mediaFile?.compressedFile?.extension !== 'gif'
             : true) ? (
@@ -313,12 +537,20 @@ function MediaThumbnail({ mediaIndex }: MediaThumbnailProps) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5 }}
+              className="relative"
             >
+              {audioFileBackdrop}
               <VideoPlayer
                 ref={playerRef}
+                waveform={waveform}
+                onReady={(player: ReactPlayer) =>
+                  setWaveformPlayer(
+                    player.getInternalPlayer() as HTMLMediaElement,
+                  )
+                }
                 url={
                   isProcessCompleted && compressedFile
-                    ? compressedFile.path!
+                    ? (savedOutputSrc ?? compressedFile.path!)
                     : mediaPath!
                 }
                 enableTimelinePlayer={
@@ -330,11 +562,13 @@ function MediaThumbnail({ mediaIndex }: MediaThumbnailProps) {
                 }
                 progressInterval={10}
                 controls={false}
+                transformHistory={videoTransformHistory}
+                trimSegments={trimSegments}
                 playPauseOnSpaceKeydown={!showTransformerLayout}
                 autoFocus
                 containerClassName="w-full h-full"
                 contextMenu={
-                  !isProcessCompleted ? (
+                  !isProcessCompleted && !isAudioFile ? (
                     <div className="min-w-[120px] p-0">
                       <button
                         className="flex items-center gap-1 w-full px-2 py-2 text-xs text-left hover:bg-default-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -342,7 +576,7 @@ function MediaThumbnail({ mediaIndex }: MediaThumbnailProps) {
                         disabled={isCopyingFrame}
                       >
                         <Icon name="copy" size={20} />
-                        <span>Copy current frame</span>
+                        <span>{t('thumbnail.copyFrame')}</span>
                       </button>
                     </div>
                   ) : null
@@ -351,9 +585,10 @@ function MediaThumbnail({ mediaIndex }: MediaThumbnailProps) {
                   width: '100%',
                   minWidth: '50vw',
                   maxHeight: '60vh',
-                  aspectRatio:
-                    (mediaFile?.dimensions?.width ?? 1) /
-                    (mediaFile?.dimensions?.height ?? 1),
+                  aspectRatio: isAudioFile
+                    ? 16 / 9
+                    : (mediaFile?.dimensions?.width ?? 1) /
+                      (mediaFile?.dimensions?.height ?? 1),
                 }}
                 config={{
                   file: {
@@ -361,14 +596,35 @@ function MediaThumbnail({ mediaIndex }: MediaThumbnailProps) {
                       crossOrigin: 'anonymous',
                     },
                     tracks: [],
+                    // Played as audio, whatever the format (e.g. FLAC, Opus)
+                    forceAudio: isAudioFile,
                   },
                 }}
+                // Like the audio player after a compression
+                isPlayPauseControlAtBottom={isAudioFile}
                 disableClosedCaptions
                 onError={(error: any) => {
                   if (error.name !== 'AbortError') {
-                    toast.warning('Switching to image thumbnail...')
-                    if (appProxy.state.media[mediaIndex].type === 'video') {
-                      appProxy.state.media[mediaIndex].previewMode = 'image'
+                    const current = appProxy.state.media[mediaIndex]
+                    if (
+                      appProxy.state.isCompressing ||
+                      appProxy.state.isSaving ||
+                      current?.compressedFile?.isSaving
+                    ) {
+                      return
+                    }
+                    const playerError = error?.target?.error ?? error
+                    logError(
+                      'Video preview playback failed',
+                      `source=${playbackSourcePath}, code=${playerError?.code ?? 'unknown'}, message=${playerError?.message ?? String(error)}`,
+                    )
+                    toast.warning(
+                      isAudioFile
+                        ? t('thumbnail.audioUnplayable')
+                        : t('thumbnail.switchingToImage'),
+                    )
+                    if (current?.type === 'video') {
+                      current.previewMode = 'image'
                     }
                   }
                 }}
@@ -380,6 +636,7 @@ function MediaThumbnail({ mediaIndex }: MediaThumbnailProps) {
                 }}
                 // ffmpeg duration is sometimes incorrect, so force set this duration to particular video
                 onDuration={(duration: number) => {
+                  setPlaybackDuration(duration)
                   if (
                     duration &&
                     !Number.isNaN(duration) &&
@@ -404,18 +661,91 @@ function MediaThumbnail({ mediaIndex }: MediaThumbnailProps) {
                 }}
               />
             </motion.div>
+          ) : audioOutputSrc ? (
+            // Audio extracted from a video has no picture: a music icon with the play button
+            <div className="relative flex flex-col justify-center items-center gap-6 mx-auto w-full max-w-[740px] min-h-[420px] rounded-3xl border-1 border-zinc-200 dark:border-zinc-900">
+              <div className="absolute inset-0">
+                {waveform ? (
+                  <AudioWaveform
+                    waveform={waveform}
+                    mediaElement={waveformPlayer}
+                  />
+                ) : (
+                  <div className="h-full flex items-center justify-center">
+                    <Icon name="music" size={160} className="text-primary" />
+                  </div>
+                )}
+              </div>
+              {/* Played like videos, so not where they cannot be played (Linux, with video
+              previews off) */}
+              {isVideoPreviewAvailable ? (
+                <>
+                  <audio
+                    ref={attachAudioPlayer}
+                    onLoadedMetadata={(event) =>
+                      setPlaybackDuration(event.currentTarget.duration)
+                    }
+                    key={audioPlaybackSrc}
+                    src={audioPlaybackSrc}
+                    onPlay={() => setIsAudioPlaying(true)}
+                    onPause={() => setIsAudioPlaying(false)}
+                    onEnded={() => setIsAudioPlaying(false)}
+                    className="hidden"
+                  />
+                  <Button
+                    onPress={toggleAudioPlayback}
+                    variant="bordered"
+                    isIconOnly
+                    radius="full"
+                    aria-label={
+                      isAudioPlaying
+                        ? t('thumbnail.pauseAudio')
+                        : t('thumbnail.playAudio')
+                    }
+                    className="absolute bottom-4 left-1/2 -translate-x-1/2"
+                  >
+                    <Icon
+                      name={isAudioPlaying ? 'pause' : 'play'}
+                      size={20}
+                      // On the frosted button: dark in light mode, as the player's (see `VideoPlayer`)
+                      className="text-zinc-800 dark:text-white dark:drop-shadow-lg"
+                    />
+                  </Button>
+                </>
+              ) : null}
+            </div>
+          ) : isAudioFile ? (
+            // An audio file that is not played here (Linux, with video previews off)
+            <div className="relative mx-auto w-full max-w-[740px] aspect-video">
+              {audioFileBackdrop}
+            </div>
           ) : (
             <div className="relative w-fit mx-auto">
-              <Image
-                alt="image to compress"
-                src={imageToRenderSrc}
-                className="object-contain rounded-3xl max-h-[60vh] border-1 border-zinc-200 dark:border-zinc-900 min-w-[100px] min-h-[100px]"
-                onError={() => {
-                  if (!isProcessCompleted) {
-                    handleRegenerateThumbnail('00:00:01.00', 0, true)
-                  }
-                }}
-              />
+              {gifTransformPreview ? (
+                <div
+                  className="relative overflow-hidden rounded-3xl border-1 border-zinc-200 dark:border-zinc-900"
+                  style={{
+                    aspectRatio: gifTransformPreview.aspectRatio,
+                    // fit within 60vh without upscaling past the cropped size
+                    width: `min(calc(60vh * ${gifTransformPreview.aspectRatio}), ${gifTransformPreview.croppedWidth}px)`,
+                    maxWidth: '100%',
+                  }}
+                >
+                  <div style={gifTransformPreview.frameStyle}>
+                    <img
+                      alt={t('preview.mediaToCompress')}
+                      src={imageToRenderSrc}
+                      style={gifTransformPreview.mediaStyle}
+                    />
+                  </div>
+                </div>
+              ) : (
+                <Image
+                  alt={t('preview.mediaToCompress')}
+                  src={imageToRenderSrc}
+                  className="object-contain rounded-3xl max-h-[60vh] border-1 border-zinc-200 dark:border-zinc-900 min-w-[100px] min-h-[100px]"
+                />
+              )}
               {!showTransformerLayout ? (
                 <div className="absolute bottom-3 right-3 z-[10] flex items-center gap-3 bg-zinc-900/10 dark:bg-zinc-900/40 min-h-[25px] px-2 rounded-2xl">
                   {mediaFile?.type === 'video' &&
@@ -432,47 +762,31 @@ function MediaThumbnail({ mediaIndex }: MediaThumbnailProps) {
                       </PopoverTrigger>
                       <PopoverContent>
                         <div className="py-2 px-1 max-w-[250px]">
-                          <p>
-                            This video is unable to play by this app because it
-                            contains advanced codec/configurations. Such videos
-                            require dedicated media players like VLC.
-                          </p>
+                          {isVideoPreviewAvailable ? (
+                            <p>{t('thumbnail.videoUnplayable')}</p>
+                          ) : (
+                            <p>
+                              <Trans
+                                i18nKey="thumbnail.previewsOff"
+                                components={{
+                                  setting: (
+                                    <SettingLink
+                                      target={{ settingId: 'videoPreviews' }}
+                                    />
+                                  ),
+                                }}
+                              />
+                            </p>
+                          )}
                           {!isProcessCompleted ? (
                             <>
                               <br />
-                              <p>
-                                Rest assured, you can still apply the output
-                                settings and perform all the conversions.
-                              </p>
+                              <p>{t('thumbnail.stillCompressible')}</p>
                             </>
                           ) : null}
                         </div>
                       </PopoverContent>
                     </Popover>
-                  ) : null}
-                  {mediaFile?.type === 'video' &&
-                  mediaFile.videoDuration &&
-                  !isProcessCompleted ? (
-                    <>
-                      <Button
-                        size="sm"
-                        variant="light"
-                        isIconOnly
-                        onPress={() => {
-                          handleRegenerateThumbnail()
-                        }}
-                        isDisabled={isThumbnailRegenerating}
-                        isLoading={isThumbnailRegenerating}
-                        className="!p-0 !min-h-0 !py-2 !w-[unset] !min-w-[unset] !h-0 "
-                      >
-                        <Tooltip
-                          content="Regenerate Thumbnail"
-                          className="w-0! h-0!"
-                        >
-                          <Icon name="image" size={20} />
-                        </Tooltip>
-                      </Button>
-                    </>
                   ) : null}
 
                   <ImageViewer
@@ -485,9 +799,15 @@ function MediaThumbnail({ mediaIndex }: MediaThumbnailProps) {
                         : {}
                     }
                   >
-                    <PhotoView src={imageToRenderSrc!}>
+                    <PhotoView
+                      src={
+                        (gifTransformPreview
+                          ? transformedThumbnailPreview
+                          : undefined) ?? imageToRenderSrc!
+                      }
+                    >
                       <div>
-                        <Tooltip content="Enlarge image">
+                        <Tooltip content={t('thumbnail.enlarge')}>
                           <Icon
                             name="zoom"
                             size={18}
@@ -507,6 +827,7 @@ function MediaThumbnail({ mediaIndex }: MediaThumbnailProps) {
             <div className="mt-4">
               <VideoTrimmerTimeline
                 id="video-trimmer-1"
+                waveform={waveform}
                 ref={trimmerRef}
                 duration={mediaFile.videoDuration}
                 {...(trimConfig
@@ -552,7 +873,10 @@ function MediaThumbnail({ mediaIndex }: MediaThumbnailProps) {
         </div>
       </div>
       {showTransformerLayout ? (
-        <div className="absolute top-0 right-0 bottom-0 left-0 w-full h-full m-auto z-[10] p-4 bg-white1 dark:bg-black1 flex flex-col">
+        <div
+          data-tint-overlay=""
+          className="absolute top-0 right-0 bottom-0 left-0 w-full h-full m-auto z-[10] p-4 bg-white1 dark:bg-black1 flex flex-col"
+        >
           <MediaTransformer mediaIndex={mediaIndex} />
         </div>
       ) : null}

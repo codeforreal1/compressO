@@ -1,120 +1,50 @@
-import { open, save } from '@tauri-apps/plugin-dialog'
 import React, { useCallback } from 'react'
-import { snapshot, useSnapshot } from 'valtio'
+import { useTranslation } from 'react-i18next'
+import { useSnapshot } from 'valtio'
 
 import Button from '@/components/Button'
 import Icon from '@/components/Icon'
 import { toast } from '@/components/Toast'
 import Tooltip from '@/components/Tooltip'
-import {
-  copyFileToClipboard,
-  moveFile,
-  showItemInFileManager,
-} from '@/tauri/commands/fs'
+import { copyFileToClipboard, showItemInFileManager } from '@/tauri/commands/fs'
+import { saveCompressedMediaWithPrompt } from '../-save'
 import { appProxy } from '../-state'
 
-function SaveMedia() {
+type SaveMediaProps = {
+  /** One media of a batch, from its own view; without it, the single media or the whole batch */
+  mediaIndex?: number
+}
+
+function SaveMedia({ mediaIndex }: SaveMediaProps) {
+  const { t } = useTranslation()
   const {
-    state: { media, isSaving, isSaved, isCompressing },
+    state: { media, isSaving: isAllSaving, isSaved: isAllSaved, isCompressing },
   } = useSnapshot(appProxy)
-  const mediaFile = media.length === 1 ? media[0] : null
+  // One media of a batch: saved, shown & copied on its own
+  const isOneOfBatch = mediaIndex != null && media.length > 1
+  const index = isOneOfBatch ? mediaIndex : 0
+  const mediaFile = isOneOfBatch || media.length === 1 ? media[index] : null
+  const isSaving = isOneOfBatch
+    ? !!mediaFile?.compressedFile?.isSaving
+    : isAllSaving
+  const isSaved = isOneOfBatch
+    ? !!mediaFile?.compressedFile?.isSaved
+    : isAllSaved
 
   const handleCompressedMediaSave = useCallback(async () => {
-    if (appProxy.state.media.length) {
-      const { media } = appProxy.state
-      const isBatch = media.length > 1
-      const mediaFile = media.length > 0 ? media[0] : null
-      const { compressedFile, fileName } = mediaFile ?? {}
+    await saveCompressedMediaWithPrompt(isOneOfBatch ? index : undefined)
+  }, [isOneOfBatch, index])
 
-      try {
-        let pathToSave: string | string[] | null = null
-
-        if (isBatch) {
-          const selectedDirectory = await open({
-            directory: true,
-            title: 'Choose directory to save the compressed media.',
-          })
-          if (selectedDirectory) {
-            pathToSave = selectedDirectory as string
-          }
-        } else {
-          pathToSave = await save({
-            title: 'Choose location to save the compressed media.',
-            defaultPath: `compressO-${compressedFile?.fileNameToDisplay ?? fileName ?? ''}`,
-          })
-        }
-
-        if (pathToSave) {
-          appProxy.state.isSaving = true
-          appProxy.state.isSaved = false
-          appProxy.state.savedPath = pathToSave
-
-          if (isBatch) {
-            const directory = pathToSave as string
-
-            for (let i = 0; i < media.length; i++) {
-              const mediaFile = media[i]
-              if (mediaFile.compressedFile?.pathRaw) {
-                appProxy.state.media[i].compressedFile = {
-                  ...(snapshot(appProxy).state.media[i].compressedFile ?? {}),
-                  isSaving: true,
-                  isSaved: false,
-                }
-
-                const destinationPath = `${directory}/compressO-${mediaFile?.compressedFile?.fileNameToDisplay || mediaFile?.fileName}`
-
-                await moveFile(
-                  mediaFile.compressedFile.pathRaw,
-                  destinationPath,
-                )
-                appProxy.state.media[i].compressedFile = {
-                  ...(snapshot(appProxy).state.media[i].compressedFile ?? {}),
-                  savedPath: destinationPath,
-                  isSaving: false,
-                  isSaved: true,
-                }
-              }
-            }
-            appProxy.state.isSaved = true
-          } else {
-            appProxy.state.media[0].compressedFile = {
-              ...(snapshot(appProxy).state.media[0].compressedFile ?? {}),
-              isSaving: true,
-              isSaved: false,
-            }
-            await moveFile(
-              compressedFile?.pathRaw as string,
-              pathToSave as string,
-            )
-            appProxy.state.media[0].compressedFile = {
-              ...(snapshot(appProxy).state.media[0].compressedFile ?? {}),
-              savedPath: pathToSave as string,
-              isSaving: false,
-              isSaved: true,
-            }
-            appProxy.state.isSaved = true
-          }
-        }
-      } catch (_) {
-        toast.error('Could not save media to the given path.')
-        for (let i = 0; i < media.length; i++) {
-          appProxy.state.media[i].compressedFile = {
-            ...(snapshot(appProxy).state.media[i].compressedFile ?? {}),
-            isSaving: false,
-            isSaved: false,
-          }
-        }
-      }
-      appProxy.state.isSaving = false
-    }
-  }, [])
+  // Where it was saved: the media's own, or the single media's
+  const getSavedPath = () => {
+    const { compressedFile } = appProxy.state.media[index] ?? {}
+    return isOneOfBatch
+      ? compressedFile?.savedPath
+      : (appProxy.state.savedPath ?? compressedFile?.savedPath)
+  }
 
   const openInFileManager = async () => {
-    const { media } = appProxy.state
-    const mediaFile = media.length > 0 ? media[0] : null
-    const { compressedFile } = mediaFile ?? {}
-
-    const savedPath = appProxy.state.savedPath ?? compressedFile?.savedPath
+    const savedPath = getSavedPath()
     if (!savedPath) return
     try {
       await showItemInFileManager(savedPath)
@@ -122,19 +52,13 @@ function SaveMedia() {
   }
 
   const copyToClipboard = async () => {
-    const { media } = appProxy.state
-    const mediaFile = media.length > 0 ? media[0] : null
-    const { compressedFile } = mediaFile ?? {}
-
-    const savedPath =
-      appProxy.state.savedPath ??
-      compressedFile?.savedPath ??
-      compressedFile?.pathRaw
-    if (!savedPath) return
+    const path =
+      getSavedPath() ?? appProxy.state.media[index]?.compressedFile?.pathRaw
+    if (!path) return
 
     try {
-      await copyFileToClipboard(savedPath)
-      toast.success('Copied to clipboard.')
+      await copyFileToClipboard(path)
+      toast.success(t('common.copied'))
     } catch {}
   }
 
@@ -142,29 +66,37 @@ function SaveMedia() {
     <div className="flex items-center">
       <Button
         className="flex justify-center items-center"
-        color="success"
+        color="primary"
         onPress={handleCompressedMediaSave}
         isLoading={isSaving}
-        isDisabled={isSaving || isSaved}
+        isDisabled={
+          isSaving ||
+          isSaved ||
+          (isOneOfBatch && !mediaFile?.compressedFile?.isSuccessful)
+        }
         fullWidth
+        variant="solid"
       >
-        {isSaving ? 'Saving...' : isSaved ? 'Saved' : `Save Media`}
+        {isSaving
+          ? t('save.saving')
+          : isSaved
+            ? t('save.saved')
+            : isOneOfBatch
+              ? t('save.saveThisFile')
+              : t('save.saveMedia')}
         {!isSaving ? (
-          <Icon
-            name={isSaved ? 'tick' : 'download'}
-            className="text-green-300"
-          />
+          <Icon name={isSaved ? 'tick' : 'download'} className="text-primary" />
         ) : null}
       </Button>
       {isSaved ? (
         <>
           <Tooltip
-            content="Show in File Explorer"
-            aria-label="Show in File Explorer"
+            content={t('common.showInFileManager')}
+            aria-label={t('common.showInFileManager')}
           >
             <Button
               isIconOnly
-              className="ml-2 text-green-500"
+              className="ml-2 text-primary"
               onPress={openInFileManager}
             >
               <Icon name="fileExplorer" />
@@ -176,12 +108,12 @@ function SaveMedia() {
       mediaFile?.isProcessCompleted &&
       mediaFile?.compressedFile?.isSuccessful ? (
         <Tooltip
-          content="Copy output to clipboard"
-          aria-label="Copy output to clipboard"
+          content={t('batch.copyOutput')}
+          aria-label={t('batch.copyOutput')}
         >
           <Button
             isIconOnly
-            className="ml-2 text-green-500"
+            className="ml-2 text-primary"
             onPress={copyToClipboard}
           >
             <Icon name="copy" size={28} />

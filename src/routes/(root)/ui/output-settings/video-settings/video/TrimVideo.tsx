@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
 import Button from '@/components/Button'
@@ -10,6 +11,7 @@ type TrimVideoProps = {
 }
 
 function TrimVideo({ mediaIndex }: TrimVideoProps) {
+  const { t } = useTranslation()
   if (mediaIndex < 0) return
 
   const {
@@ -57,7 +59,7 @@ function TrimVideo({ mediaIndex }: TrimVideoProps) {
         isDisabled={shouldDisableInput}
       >
         <p className="text-gray-600 dark:text-gray-400 text-sm mr-2 w-full">
-          Trim
+          {t('trim.title')}
         </p>
       </Switch>
       {shouldTrimVideo ? (
@@ -74,7 +76,7 @@ function TrimVideo({ mediaIndex }: TrimVideoProps) {
             className="h-[unset] py-1 ml-auto"
             isDisabled={shouldDisableInput}
           >
-            Save
+            {t('common.save')}
           </Button>
         ) : (
           <Button
@@ -91,7 +93,7 @@ function TrimVideo({ mediaIndex }: TrimVideoProps) {
             className="h-[unset] py-1 ml-auto"
             isDisabled={shouldDisableInput}
           >
-            <Icon name="pencil" size={16} /> Edit
+            <Icon name="pencil" size={16} /> {t('common.edit')}
           </Button>
         )
       ) : null}

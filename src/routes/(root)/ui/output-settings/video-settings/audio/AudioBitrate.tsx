@@ -1,12 +1,16 @@
 import { SelectItem } from '@heroui/react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
 import Select from '@/components/Select'
 import Switch from '@/components/Switch'
+import { isAudioExtension } from '@/types/compression'
 import { slideDownTransition } from '@/utils/animation'
+import { isAudioOutput } from '@/utils/audio'
 import { appProxy, normalizeBatchMediaConfig } from '../../../../-state'
+import { useBatchVideoConfigKey } from '../-batchConfig'
 
 const AUDIO_BITRATES = [
   { value: 64, label: '64 kbps' },
@@ -23,6 +27,7 @@ type AudioBitrateProps = {
 }
 
 function AudioBitrate({ mediaIndex }: AudioBitrateProps) {
+  const { t } = useTranslation()
   const {
     state: {
       media,
@@ -32,13 +37,18 @@ function AudioBitrate({ mediaIndex }: AudioBitrateProps) {
       isLoadingMediaFiles,
     },
   } = useSnapshot(appProxy)
+  const batchConfigKey = useBatchVideoConfigKey()
   const video =
     media.length > 0 && mediaIndex >= 0 && media[mediaIndex].type === 'video'
       ? media[mediaIndex]
       : null
   const { config, videoInfoRaw } = video ?? {}
-  const { audioConfig, shouldEnableCustomBitrate, convertToExtension } =
-    config ?? commonConfigForBatchCompression.videoConfig ?? {}
+  const {
+    audioConfig,
+    shouldEnableCustomBitrate,
+    convertToExtension,
+    shouldUseTargetSize,
+  } = config ?? commonConfigForBatchCompression[batchConfigKey] ?? {}
 
   const handleSwitchToggle = useCallback(() => {
     if (
@@ -62,7 +72,7 @@ function AudioBitrate({ mediaIndex }: AudioBitrateProps) {
     } else {
       if (appProxy.state.media.length > 1) {
         const commonConfig =
-          appProxy.state.commonConfigForBatchCompression.videoConfig
+          appProxy.state.commonConfigForBatchCompression[batchConfigKey]
         commonConfig.shouldEnableCustomBitrate = !shouldEnableCustomBitrate
         if (!commonConfig.audioConfig) {
           commonConfig.audioConfig = { volume: 100 }
@@ -75,7 +85,7 @@ function AudioBitrate({ mediaIndex }: AudioBitrateProps) {
         normalizeBatchMediaConfig()
       }
     }
-  }, [mediaIndex, shouldEnableCustomBitrate])
+  }, [mediaIndex, shouldEnableCustomBitrate, batchConfigKey])
 
   const handleBitrateChange = useCallback(
     (value: string) => {
@@ -94,21 +104,23 @@ function AudioBitrate({ mediaIndex }: AudioBitrateProps) {
       } else {
         if (appProxy.state.media.length > 1) {
           if (
-            !appProxy.state.commonConfigForBatchCompression.videoConfig
+            !appProxy.state.commonConfigForBatchCompression[batchConfigKey]
               .audioConfig
           ) {
-            appProxy.state.commonConfigForBatchCompression.videoConfig.audioConfig =
-              {
-                volume: 100,
-              }
+            appProxy.state.commonConfigForBatchCompression[
+              batchConfigKey
+            ].audioConfig = {
+              volume: 100,
+            }
           }
-          appProxy.state.commonConfigForBatchCompression.videoConfig.audioConfig.bitrate =
-            bitrate
+          appProxy.state.commonConfigForBatchCompression[
+            batchConfigKey
+          ].audioConfig.bitrate = bitrate
           normalizeBatchMediaConfig()
         }
       }
     },
-    [mediaIndex],
+    [mediaIndex, batchConfigKey],
   )
 
   const shouldDisableInput =
@@ -116,8 +128,18 @@ function AudioBitrate({ mediaIndex }: AudioBitrateProps) {
     isCompressing ||
     isProcessCompleted ||
     isLoadingMediaFiles ||
-    audioConfig?.volume === 0 ||
-    convertToExtension === 'gif'
+    // Muted, an audio output is still written (as silence), so its settings stay available
+    (audioConfig?.volume === 0 &&
+      !isAudioOutput({
+        isAudioFile: video?.isAudioFile,
+        isAudioFileSettings: batchConfigKey === 'audioFileConfig',
+        convertToExtension,
+      })) ||
+    convertToExtension === 'gif' ||
+    (!!shouldUseTargetSize &&
+      (!!video?.isAudioFile ||
+        batchConfigKey === 'audioFileConfig' ||
+        isAudioExtension(convertToExtension)))
 
   const hasNoAudio = videoInfoRaw?.audioStreams?.length === 0
   const currentValue = audioConfig?.bitrate ?? 128
@@ -130,7 +152,7 @@ function AudioBitrate({ mediaIndex }: AudioBitrateProps) {
         isDisabled={shouldDisableInput || hasNoAudio}
       >
         <p className="text-gray-600 dark:text-gray-400 text-sm mr-2 w-full">
-          Bitrate
+          {t('audio.bitrate')}
         </p>
       </Switch>
       <AnimatePresence mode="wait">
@@ -138,7 +160,7 @@ function AudioBitrate({ mediaIndex }: AudioBitrateProps) {
           <motion.div {...slideDownTransition}>
             <Select
               fullWidth
-              label="Bitrate:"
+              label={t('audio.bitrateLabel')}
               className="block flex-shrink-0 rounded-2xl !mt-8"
               size="sm"
               value={currentValue?.toString() ?? '128'}

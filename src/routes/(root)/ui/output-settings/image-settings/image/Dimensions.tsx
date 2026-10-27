@@ -1,19 +1,29 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import React, { useCallback, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { subscribe, useSnapshot } from 'valtio'
 import { subscribeKey } from 'valtio/utils'
 
 import Button from '@/components/Button'
+import Icon from '@/components/Icon'
 import NumberInput from '@/components/NumberInput'
 import Switch from '@/components/Switch'
+import Tooltip from '@/components/Tooltip'
 import { appProxy } from '@/routes/(root)/-state'
+import { batchResolutions } from '@/types/compression'
 import { slideDownTransition } from '@/utils/animation'
+
+/** The listed resolutions, as the size of the longer side (see `batchResolutions`) */
+const RESOLUTION_BUTTONS = Object.entries(batchResolutions).flatMap(
+  ([label, width]) => (width ? [{ label, width }] : []),
+)
 
 type DimensionsProps = {
   mediaIndex: number
 }
 
 function Dimensions({ mediaIndex }: DimensionsProps) {
+  const { t } = useTranslation()
   if (mediaIndex < 0) return
 
   const {
@@ -63,8 +73,9 @@ function Dimensions({ mediaIndex }: DimensionsProps) {
                   targetImage.config.transformImageConfig?.transforms
                 if (transforms?.crop) {
                   setDimensions({
-                    width: transforms.crop.width,
-                    height: transforms.crop.height,
+                    // The crop is in fractional pixels
+                    width: Math.round(transforms.crop.width),
+                    height: Math.round(transforms.crop.height),
                   })
                 }
               }
@@ -101,8 +112,8 @@ function Dimensions({ mediaIndex }: DimensionsProps) {
             targetImage.config.transformImageConfig?.transforms?.crop
           if (shouldTransformImage && transformCrop) {
             const _dimensions: [number, number] = [
-              transformCrop?.width ?? 0,
-              transformCrop?.height ?? 0,
+              Math.round(transformCrop?.width ?? 0),
+              Math.round(transformCrop?.height ?? 0),
             ]
             setDimensions({
               width: _dimensions[0],
@@ -164,40 +175,120 @@ function Dimensions({ mediaIndex }: DimensionsProps) {
     [mediaIndex],
   )
 
+  // What "original" means: the media's size, or the crop size when a transform crop is applied
+  const transformCrop = config?.shouldTransformImage
+    ? config.transformImageConfig?.transforms?.crop
+    : null
+  const baseDimensions = transformCrop
+    ? {
+        width: Math.round(transformCrop.width),
+        height: Math.round(transformCrop.height),
+      }
+    : imageOriginalDimensions
+
+  // Follows dimensions set outside the inputs (e.g. by a preset); none means the original size
+  const customWidth = imageCustomDimensions?.[0]
+  const customHeight = imageCustomDimensions?.[1]
+  const baseWidth = baseDimensions?.width
+  const baseHeight = baseDimensions?.height
+  useEffect(() => {
+    const width = customWidth ?? baseWidth
+    const height = customHeight ?? baseHeight
+    if (width && height) {
+      setDimensions((current) =>
+        current.width === width && current.height === height
+          ? current
+          : { width, height },
+      )
+    }
+  }, [customWidth, customHeight, baseWidth, baseHeight])
+
+  const isOriginalDimensions =
+    !baseDimensions ||
+    (dimensions.width === baseDimensions.width &&
+      dimensions.height === baseDimensions.height)
+
+  const handleRevert = useCallback(() => {
+    if (
+      !baseDimensions?.width ||
+      !baseDimensions?.height ||
+      appProxy.state.media[mediaIndex].type !== 'image'
+    ) {
+      return
+    }
+    setDimensions({
+      width: baseDimensions.width,
+      height: baseDimensions.height,
+    })
+    // No custom dimensions means the output keeps its original size, without resizing
+    appProxy.state.media[mediaIndex].config.customDimensions = undefined
+    appProxy.state.media[mediaIndex].isConfigDirty = true
+  }, [mediaIndex, baseDimensions?.width, baseDimensions?.height])
+
+  const isPortrait = dimensions.height > dimensions.width
+  const longerSide = Math.max(dimensions.width, dimensions.height)
+
   const shouldDisableInput =
     media.length === 0 ||
     isCompressing ||
     isProcessCompleted ||
     isLoadingMediaFiles
 
+  const canRevert =
+    !!shouldEnableCustomDimensions &&
+    !isOriginalDimensions &&
+    !shouldDisableInput
+
   return (
     <>
-      <Switch
-        isSelected={shouldEnableCustomDimensions}
-        onValueChange={() => {
-          if (
-            appProxy.state.media[mediaIndex].type === 'image' &&
-            appProxy.state.media[mediaIndex]?.config
-          ) {
-            appProxy.state.media[
-              mediaIndex
-            ].config.shouldEnableCustomDimensions =
-              !shouldEnableCustomDimensions
-            appProxy.state.media[mediaIndex].isConfigDirty = true
-          }
-        }}
-        isDisabled={shouldDisableInput}
-      >
-        <p className="text-gray-600 dark:text-gray-400 text-sm mr-2 w-full">
-          Dimensions
-        </p>
-      </Switch>
+      <div className="w-full flex items-center">
+        <Switch
+          isSelected={shouldEnableCustomDimensions}
+          onValueChange={() => {
+            if (
+              appProxy.state.media[mediaIndex].type === 'image' &&
+              appProxy.state.media[mediaIndex]?.config
+            ) {
+              appProxy.state.media[
+                mediaIndex
+              ].config.shouldEnableCustomDimensions =
+                !shouldEnableCustomDimensions
+              appProxy.state.media[mediaIndex].isConfigDirty = true
+            }
+          }}
+          isDisabled={shouldDisableInput}
+        >
+          <p className="text-gray-600 dark:text-gray-400 text-sm mr-2 w-full">
+            {t('dimensions.resolution')}
+          </p>
+        </Switch>
+        {/* Always rendered (only faded) so showing it never shifts the layout; it is only needed
+        when the size differs from the original */}
+        <Button
+          isIconOnly
+          size="sm"
+          variant="light"
+          onPress={handleRevert}
+          isDisabled={!canRevert}
+          aria-hidden={!canRevert}
+          tabIndex={canRevert ? undefined : -1}
+          aria-label={t('dimensions.revert')}
+          className={`ml-auto transition-opacity ${canRevert ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        >
+          <Tooltip
+            content={t('dimensions.revert')}
+            aria-label={t('dimensions.revert')}
+          >
+            <Icon name="redo" size={18} className="-scale-x-100" />
+          </Tooltip>
+        </Button>
+      </div>
       <AnimatePresence mode="wait">
         {shouldEnableCustomDimensions ? (
           <motion.div {...slideDownTransition}>
             <div className="mt-2 flex items-center space-x-2">
               <NumberInput
-                label="Width"
+                label={t('dimensions.width')}
                 className="max-w-[120px] xl:max-w-[150px]"
                 value={dimensions?.width}
                 onValueChange={(val) => handleChange(val, 'width')}
@@ -206,7 +297,7 @@ function Dimensions({ mediaIndex }: DimensionsProps) {
                 isDisabled={!shouldEnableCustomDimensions || shouldDisableInput}
               />
               <NumberInput
-                label="Height"
+                label={t('dimensions.height')}
                 className="max-w-[120px] xl:max-w-[150px]"
                 value={dimensions?.height}
                 onValueChange={(val) => handleChange(val, 'height')}
@@ -221,18 +312,19 @@ function Dimensions({ mediaIndex }: DimensionsProps) {
               />
             </div>
             <div className="mt-3 flex flex-wrap gap-2">
-              {[
-                { label: '480p', width: 640 },
-                { label: '720p', width: 1280 },
-                { label: '1080p', width: 1920 },
-                { label: '2k', width: 2560 },
-                { label: '4k', width: 3840 },
-              ].map((preset) => (
+              {RESOLUTION_BUTTONS.map((preset) => (
                 <Button
                   size="sm"
                   radius="md"
                   key={preset.label}
-                  onPress={() => handleChange(preset.width, 'width')}
+                  // Sets the longer side: the width of a landscape media, the height of a portrait one
+                  onPress={() =>
+                    handleChange(preset.width, isPortrait ? 'height' : 'width')
+                  }
+                  // Highlighted while the longer side matches it (a custom size matches none)
+                  color={longerSide === preset.width ? 'primary' : 'default'}
+                  variant={longerSide === preset.width ? 'solid' : 'flat'}
+                  aria-pressed={longerSide === preset.width}
                   isDisabled={shouldDisableInput}
                   className="min-w-[unset]"
                 >

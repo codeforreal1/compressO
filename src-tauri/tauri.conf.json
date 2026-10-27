@@ -1,12 +1,16 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "CompressO",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "identifier": "com.compresso.app",
   "build": {
-    "beforeBuildCommand": "pnpm vite:build",
+    "beforeBuildCommand": "node scripts/prepare-tools.mjs && pnpm vite:build",
     "frontendDist": "../dist",
-    "devUrl": "http://localhost:3001"
+    "devUrl": "http://localhost:3001",
+    "beforeDevCommand": {
+      "script": "node scripts/image-tools.mjs",
+      "wait": true
+    }
   },
   "bundle": {
     "longDescription": "Compress any video/image file to a tiny size.",
@@ -15,13 +19,6 @@
     "category": "Video",
     "copyright": "Code For Real",
     "targets": ["deb", "appimage", "nsis", "dmg", "app"],
-    "externalBin": [
-      "./bin/compresso_ffmpeg",
-      "./bin/compresso_ffprobe",
-      "./bin/compresso_pngquant",
-      "./bin/compresso_jpegoptim",
-      "./bin/compresso_gifski"
-    ],
     "fileAssociations": [
       {
         "ext": ["mp4"],
@@ -49,6 +46,16 @@
         "role": "Editor"
       },
       {
+        "ext": ["ts", "mts", "m2ts"],
+        "mimeType": "video/mp2t",
+        "role": "Editor"
+      },
+      {
+        "ext": ["m4v"],
+        "mimeType": "video/x-m4v",
+        "role": "Editor"
+      },
+      {
         "ext": ["png"],
         "mimeType": "image/png",
         "role": "Editor"
@@ -72,6 +79,79 @@
         "ext": ["svg"],
         "mimeType": "image/svg+xml",
         "role": "Editor"
+      },
+      {
+        "ext": ["avif"],
+        "mimeType": "image/avif",
+        "role": "Editor"
+      },
+      {
+        "ext": ["bmp"],
+        "mimeType": "image/bmp",
+        "role": "Editor"
+      },
+      {
+        "ext": ["tiff", "tif"],
+        "mimeType": "image/tiff",
+        "role": "Editor"
+      },
+      {
+        "ext": ["mp3"],
+        "mimeType": "audio/mpeg",
+        "role": "Editor"
+      },
+      {
+        "ext": ["m4a"],
+        "mimeType": "audio/mp4",
+        "role": "Editor"
+      },
+      {
+        "ext": ["wav"],
+        "mimeType": "audio/wav",
+        "role": "Editor"
+      },
+      {
+        "ext": ["flac"],
+        "mimeType": "audio/flac",
+        "role": "Editor"
+      },
+      {
+        "ext": ["ogg"],
+        "mimeType": "audio/ogg",
+        "role": "Editor"
+      },
+      {
+        "ext": ["opus"],
+        "mimeType": "audio/opus",
+        "role": "Editor"
+      },
+      {
+        "ext": ["aac"],
+        "mimeType": "audio/aac",
+        "role": "Editor"
+      },
+      {
+        "ext": ["aiff", "aif"],
+        "mimeType": "audio/aiff",
+        "role": "Editor"
+      },
+      {
+        "ext": ["jxl"],
+        "mimeType": "image/jxl",
+        "name": "JPEG XL",
+        "role": "Editor"
+      },
+      {
+        "ext": ["heic"],
+        "mimeType": "image/heic",
+        "name": "HEIC Image",
+        "role": "Editor"
+      },
+      {
+        "ext": ["heif"],
+        "mimeType": "image/heif",
+        "name": "HEIF Image",
+        "role": "Editor"
       }
     ],
     "icon": [
@@ -93,8 +173,14 @@
       "providerShortName": null,
       "signingIdentity": null
     },
-    "resources": { "../LICENSES/": "" },
+    "resources": {
+      "../LICENSES/": "",
+      "tool-bundle/": "tool-bundle/"
+    },
     "linux": {
+      "appimage": {
+        "bundleMediaFramework": true
+      },
       "deb": {
         "depends": [],
         "desktopTemplate": "compressO.desktop.template"
@@ -113,6 +199,7 @@
     }
   },
   "app": {
+    "macOSPrivateApi": true,
     "windows": [
       {
         "title": "CompressO",
@@ -123,7 +210,8 @@
         "minHeight": 800,
         "resizable": true,
         "hiddenTitle": true,
-        "backgroundColor": "#FFFFFF",
+        "transparent": true,
+        "visible": false,
         "titleBarStyle": "Overlay"
       }
     ],

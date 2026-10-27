@@ -1,0 +1,86 @@
+#   Copyright
+#
+#      Copyright (C) 2011-2016 Con Kolivas
+#
+#   License
+#
+#       This program is free software; you can redistribute it and/or modify
+#       it under the terms of the GNU General Public License as published by
+#       the Free Software Foundation; either version 2 of the License, or
+#       (at your option) any later version.
+#
+#       This program is distributed in the hope that it will be useful,
+#       but WITHOUT ANY WARRANTY; without even the implied warranty of
+#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+#       GNU General Public License for more details.
+#
+#       You should have received a copy of the GNU General Public License
+#       along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+#   Description
+#
+#	To learn what TOP LEVEL section to use in manual pages,
+#	see POSIX/Susv standard and "tility Description Defaults" at
+#	http://www.opengroup.org/onlinepubs/009695399/utilities/xcu_chap01.html#tag_01_11
+#
+#	This is manual page in Perl POD format. Read more at
+#	http://perldoc.perl.org/perlpod.html or run command:
+#
+#	    perldoc perlpod | less
+#
+#	To check the syntax:
+#
+#	    podchecker *.pod
+#
+#	Create manual page with command:
+#
+#	    pod2man PAGE.N.pod > PAGE.N
+
+=pod
+
+=head1 NAME
+
+lrzcat - Uncompress LRZ files to STDOUT
+
+=head1 SYNOPSIS
+
+  lrzcat [options] FILE [... FILE]
+
+=head1 DESCRIPTION
+
+lrzcat is identical to C<lrzip -d -o -> used to decompress files to STDOUT.
+
+=head1 OPTIONS
+
+See lrzip(1).
+
+=head1 ENVIRONMENT
+
+None.
+
+=head1 FILES
+
+None.
+
+=head1 SEE ALSO
+
+lrzip.conf(5),
+lrzip(1),
+lrunzip(1),
+lrztar(1),
+lrzuntar(1),
+lrz(1),
+bzip2(1),
+gzip(1),
+lzop(1),
+rzip(1),
+zip(1)
+
+=head1 AUTHORS
+
+This manual page was written by Con Kolivas <kernel@kolivas.org> (but
+may be used by others). Released under license GNU GPL version 2 or (at
+your option) any later version. For more information about license,
+visit <http://www.gnu.org/copyleft/gpl.html>.
+
+=cut

@@ -19,7 +19,7 @@
   --font-poppins:
     "Poppins", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-  --color-primary: 127 70 226;
+  --color-primary: 255 132 0;
   --color-secondary: 255 106 231;
   --color-black1: 0 0 0;
   --color-gray1: 194 194 194;
@@ -66,6 +66,51 @@ body #app {
   background-color: theme("colors.white1");
 }
 
+/* Tinted window (Settings -> General): the native translucent material (macOS sidebar material,
+   Windows 11 Acrylic) shows through a lightly tinted app background */
+html[data-tinted="true"],
+html[data-tinted="true"] body,
+html[data-tinted="true"] body #app,
+html[data-tinted="true"] #titlebar,
+html[data-tinted="true"] [data-layout],
+html[data-tinted="true"] [data-tint-overlay],
+html[data-tinted="true"] [data-tint-transparent] {
+  background-color: transparent;
+}
+
+/* Full-window overlays (e.g. while dragging files in) get the tint, frosted over the content */
+html[data-tinted="true"] [data-tint-frosted] {
+  background-color: rgb(var(--color-white1) / var(--tint-opacity, 0.5));
+  backdrop-filter: blur(40px);
+}
+
+html.dark[data-tinted="true"] [data-tint-frosted] {
+  background-color: rgb(var(--color-black1) / var(--tint-opacity, 0.5));
+}
+
+/* Views opened on top of others (full media info, a batch item being customized, the transform
+   editor) normally cover them with a solid background. When tinted, that background is see-through,
+   so what they cover (their siblings) is hidden instead. */
+html[data-tinted="true"] :has(> [data-tint-overlay])
+  > :not([data-tint-overlay]) {
+  visibility: hidden;
+}
+
+html[data-tinted="true"] #main {
+  background-color: rgb(var(--color-white1) / var(--tint-opacity, 0.5));
+}
+
+html.dark[data-tinted="true"] #main {
+  background-color: rgb(var(--color-black1) / var(--tint-opacity, 0.5));
+}
+
+/* The tray popover's webview is transparent so the native popover material shows through */
+html[data-window="tray"],
+html[data-window="tray"] body,
+html[data-window="tray"] body #app {
+  background-color: transparent;
+}
+
 h1,
 h2,
 h3,
@@ -84,6 +129,35 @@ a {
 
 body > * {
   cursor: default;
+}
+
+/* Like native macOS apps, only links show the pointer cursor; buttons & other controls keep the
+   default arrow. Tailwind's preflight gives all buttons a pointer (overridden in the base layer, so
+   explicit cursor utilities still apply), and this covers `cursor-pointer` & its variants from the
+   app & HeroUI. */
+@layer base {
+  button,
+  [role="button"] {
+    cursor: default;
+  }
+}
+
+/* Settings dialog (and other dialogs like it, e.g. Save preset): only headings (section titles) are
+   bold; titles, descriptions, controls, links & labels use the normal weight. Also set on popovers
+   that render outside the dialog, e.g. dropdown menus. */
+.settings-dialog :not(h1, h2, h3) {
+  font-weight: 400 !important;
+}
+
+[class*="cursor-pointer"] {
+  cursor: default !important;
+}
+
+a[href],
+a[href] *,
+[data-link],
+[data-link] * {
+  cursor: pointer !important;
 }
 
 #main {
@@ -199,7 +273,7 @@ body > * {
 
 .timeline-editor-edit-area
   .ReactVirtualized__Grid::-webkit-scrollbar:horizontal {
-  height: 8px !important;
+  height: 5px !important;
   opacity: 0.8 !important;
   @apply opacity-80 dark:opacity-60 !important;
 }
@@ -220,12 +294,16 @@ body > * {
 
 .timeline-editor-edit-area
   .ReactVirtualized__Grid::-webkit-scrollbar:horizontal:hover {
+  height: 8px !important;
   @apply opacity-100 !important;
+
 }
 
 .timeline-editor-edit-area
   .ReactVirtualized__Grid::-webkit-scrollbar-thumb:horizontal:hover {
+  height: 8px !important;
   @apply opacity-100 !important;
+
 }
 
 .timeline-editor-cursor-top > path {
@@ -263,4 +341,59 @@ body > * {
   -moz-user-select: text !important;
   -ms-user-select: text !important;
   user-select: text !important;
+}
+
+/* Settings that depend on the one above (see `SettingsRow`): a thread from that setting curving
+   into the setting's title, continued down to the next dependent setting */
+.settings-row-nested {
+  --thread-color: theme("colors.zinc.400");
+  position: relative;
+  padding-left: 2.25rem;
+  /* No divider, so the thread connects to the setting above */
+  border-top-width: 0 !important;
+}
+
+.dark .settings-row-nested {
+  --thread-color: theme("colors.zinc.700");
+}
+
+.settings-row-nested::before {
+  content: "";
+  position: absolute;
+  left: 0.75rem;
+  /* From the spacing below the setting above, to the middle of the title (1rem padding + half of
+     its 1.25rem line) */
+  top: -0.5rem;
+  height: 2.125rem;
+  width: 1rem;
+  border-left: 1px solid var(--thread-color);
+  border-bottom: 1px solid var(--thread-color);
+  border-bottom-left-radius: 0.625rem;
+  pointer-events: none;
+}
+
+.settings-row-nested:has(+ .settings-row-nested)::after {
+  content: "";
+  position: absolute;
+  left: 0.75rem;
+  top: 1rem;
+  bottom: -0.5rem;
+  border-left: 1px solid var(--thread-color);
+  pointer-events: none;
+}
+
+/*
+ * The dashed outline of a drop area (`DashedBorder`), while the area (`.group`) is hovered: its dashes
+ * flow around it. Still with reduced motion.
+ */
+@keyframes dashed-border-flow {
+  to {
+    /* Two dash lengths (6 + 5), so it loops without a jump */
+    stroke-dashoffset: -22;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .group:hover .dashed-border-flow {
+    animation: dashed-border-flow 2.5s linear infinite;
+  }
 }

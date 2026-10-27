@@ -1,39 +1,108 @@
 import { core, event } from '@tauri-apps/api'
-import { TimelineAction } from '@xzdarcy/timeline-engine'
 import { motion } from 'framer-motion'
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { snapshot, useSnapshot } from 'valtio'
 
 import Button from '@/components/Button'
+import ShortcutHint from '@/components/ShortcutHint'
+import { useCommandEnterShortcut } from '@/hooks/useCommandEnterShortcut'
+import { useCommandKeyHeld } from '@/hooks/useCommandKeyHeld'
+import { flushSyncStates } from '@/hooks/useSyncState'
+import { settingsStore } from '@/stores/settingsStore'
+import { getDropQueue } from '@/tauri/commands/dropQueue'
 import { compressMediaBatch } from '@/tauri/commands/media'
-import { MediaMetadataConfig } from '@/types/app'
+import { playCompletionSound } from '@/tauri/commands/sound'
 import {
   CustomEvents,
-  ImageCompressionConfig,
+  getBatchResolutionLongerSide,
   MediaBatchCompressionResult,
-  MediaTransformHistory,
-  VideoCompressionConfig,
-  VideoTrimSegment,
 } from '@/types/compression'
-import { formatBytes } from '@/utils/fs'
+import { formatBytes, getOutputFileName } from '@/utils/fs'
 import CancelCompression from './CancelCompression'
+import PauseCompression from './PauseCompression'
 import SaveMedia from './SaveMedia'
+import {
+  getAudioTargetSizePlan,
+  getMediaItemConfig,
+  getOutputOptions,
+  getQualitySizeEstimate,
+  getTargetSizePlan,
+  getTargetSizeWarning,
+  type MediaFile,
+  waitForDropZone,
+} from '../-compression'
+import { recordMainWindowHistory } from '../-history'
+import {
+  autoCopyCompressedMediaToClipboard,
+  autoSaveCompressedMedia,
+} from '../-save'
+import {
+  estimateTargetSizeVideos,
+  needsQualityEstimate,
+} from '../-sizeEstimate'
 import { appProxy } from '../-state'
 
 function StartCompression() {
+  const { t } = useTranslation()
+
+  // A video missed its target size & is compressed again (see `ffmpeg.rs`): the round is shown on
+  // it while it lasts, so the time it takes is understood
+  useEffect(() => {
+    const unlisten = event.listen<{
+      videoId: string
+      pass: number
+      onCpu: boolean
+    }>('target-size-retry', ({ payload }) => {
+      const media = appProxy.state.media.find(
+        (mediaFile) => mediaFile.id === payload?.videoId,
+      )
+      if (media?.type === 'video') {
+        media.targetSizeRound = {
+          round: payload.pass,
+          isWithoutHardwareAcceleration: payload.onCpu,
+        }
+      }
+    })
+    return () => {
+      unlisten.then((stop) => stop()).catch(() => {})
+    }
+  }, [])
   const {
     state: {
       selectedMediaIndexForCustomization,
       isCompressing,
       isProcessCompleted,
       isLoadingMediaFiles,
+      media,
     },
   } = useSnapshot(appProxy)
+  // A target size that cannot be reached (e.g. for a GIF) is fixed before compressing
+  const hasInvalidTargetSize = media.some(
+    (item) => getTargetSizeWarning(item as MediaFile) != null,
+  )
 
   const handleCompression = useCallback(async () => {
+    if (appProxy.state.isCompressing) return
+    // A number still being typed is entered (inputs take it when they lose focus), & changes not
+    // yet saved to the settings (e.g. just before, see `useSyncState`) are saved, so they are used
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur()
+      // The value entered reaches `useSyncState` a moment later (valtio notifies after a tick)
+      await new Promise((resolve) => setTimeout(resolve, 0))
+    }
+    flushSyncStates()
     const appSnapshot = snapshot(appProxy)
     if (appSnapshot.state.isCompressing) return
+
+    // Recheck after flushing inputs, including keyboard activation and pending changes.
+    if (
+      appSnapshot.state.media.some(
+        (item) => getTargetSizeWarning(item as MediaFile) != null,
+      )
+    )
+      return
 
     // Resets
     appProxy.clearSnapshots()
@@ -53,6 +122,7 @@ function StartCompression() {
 
     try {
       appProxy.state.isCompressing = true
+      appProxy.state.isBatchPaused = false
 
       for (const index in appProxy.state.media) {
         if (appProxy.state.media[index].type === 'video') {
@@ -66,6 +136,7 @@ function StartCompression() {
               ]?.config?.transformVideoConfig?.previewUrl
           }
           appProxy.state.media[index].config.isVideoTransformEditMode = false
+          appProxy.state.media[index].targetSizeRound = null
         } else if (appProxy.state.media[index].type === 'image') {
           if (
             appProxy.state.media[index]?.config?.shouldTransformImage &&
@@ -91,164 +162,104 @@ function StartCompression() {
         },
       )
 
+      // A batch resolution applies to every video of a batch without its own custom dimensions
+      const batchVideoLongerSide =
+        appSnapshot.state.media.length > 1
+          ? getBatchResolutionLongerSide(
+              appSnapshot.state.commonConfigForBatchCompression.videoConfig
+                .batchResolution,
+            )
+          : null
+
+      // Size of the longer side of a batch's images (from a preset)
+      const batchImageLongerSide =
+        appSnapshot.state.media.length > 1
+          ? (appSnapshot.state.commonConfigForBatchCompression.imageConfig
+              .batchLongerSide ?? null)
+          : null
+
+      // Cancelling (also while waiting for the drop zone) stops waiting for the compression
+      const cancellation = new Promise<never>((_, reject) => {
+        abortController.signal.addEventListener('abort', () => {
+          unlisten()
+          reject('CANCELLED')
+        })
+      })
+      cancellation.catch(() => {})
+
+      // The drop zone finishes the media it is compressing first (it does not start more meanwhile,
+      // as this window is compressing)
+      const dropZone = await getDropQueue().catch(() => [])
+      if (dropZone.some((item) => item.status === 'compressing')) {
+        appProxy.state.isWaitingForDropZone = true
+        try {
+          await Promise.race([
+            waitForDropZone(abortController.signal),
+            cancellation,
+          ])
+        } finally {
+          appProxy.state.isWaitingForDropZone = false
+        }
+      }
+
+      // Videos compressed to a size are compressed at their quality settings when those fit, so
+      // their size at them is estimated first (when not already)
+      const mediaToEstimate = appSnapshot.state.media.filter((v) =>
+        needsQualityEstimate(v as MediaFile, batchVideoLongerSide),
+      ) as MediaFile[]
+      if (mediaToEstimate.length > 0) {
+        appProxy.state.isEstimatingSize = true
+        try {
+          await Promise.race([
+            estimateTargetSizeVideos(
+              mediaToEstimate,
+              batchVideoLongerSide,
+              abortController.signal,
+            ),
+            cancellation,
+          ])
+        } finally {
+          appProxy.state.isEstimatingSize = false
+        }
+      }
+      // The size each video compressed to a target size comes out at, shown while compressing
+      for (const index in appProxy.state.media) {
+        const item = appProxy.state.media[index]
+        if (item.type !== 'video') continue
+        const plan = getTargetSizePlan(
+          snapshot(item) as MediaFile,
+          batchVideoLongerSide,
+        )
+        const qualitySize = plan
+          ? getQualitySizeEstimate(
+              snapshot(item) as MediaFile,
+              batchVideoLongerSide,
+            )
+          : null
+        const audioPlan = getAudioTargetSizePlan(snapshot(item) as MediaFile)
+        item.estimatedOutputSize = audioPlan
+          ? { sizeInBytes: audioPlan.sizeInBytes, isUpTo: true }
+          : !plan
+            ? null
+            : plan.fitsAtQuality && qualitySize != null
+              ? {
+                  sizeInBytes: Math.min(qualitySize, plan.sizeInBytes),
+                  isUpTo: false,
+                }
+              : { sizeInBytes: plan.sizeInBytes, isUpTo: true }
+      }
+
       const { results } = (await Promise.race([
         compressMediaBatch(
           batchId,
-          appSnapshot.state.media.map((v) => ({
-            videoConfig:
-              v.type === 'video'
-                ? ({
-                    videoId: v.id!,
-                    videoPath: v.pathRaw!,
-                    convertToExtension: (v.config?.convertToExtension === '-'
-                      ? v.extension
-                      : v.config.convertToExtension)!,
-                    presetName: !v.config?.shouldDisableCompression
-                      ? v.config.presetName
-                      : null,
-                    quality: !v.config?.shouldDisableCompression
-                      ? (v.config?.quality as number)
-                      : 101,
-                    audioConfig: {
-                      volume: v.config?.audioConfig?.volume ?? 100,
-                      audioChannelConfig:
-                        (v.config?.audioConfig?.volume ?? 100) !== 0
-                          ? (v.config?.audioConfig?.audioChannelConfig ?? null)
-                          : null,
-                      bitrate:
-                        (v.config?.audioConfig?.volume ?? 100) !== 0
-                          ? (v.config?.audioConfig?.bitrate ?? null)
-                          : null,
-                      audioCodec:
-                        v.config?.shouldEnableCustomAudioCodec &&
-                        v.config.audioConfig?.audioCodec !== '-'
-                          ? (v.config?.audioConfig?.audioCodec ?? null)
-                          : null,
-                      selectedAudioTracks:
-                        v.config?.shouldEnableAudioTrackSelection &&
-                        (v.config?.audioConfig?.volume ?? 100) !== 0
-                          ? (v.config?.selectedAudioTracks ?? null)
-                          : null,
-                    },
-                    dimensions:
-                      v.config?.shouldEnableCustomDimensions &&
-                      v.config.customDimensions
-                        ? ([
-                            Math.round(v.config.customDimensions[0]),
-                            Math.round(v.config.customDimensions[1]),
-                          ] as [number, number])
-                        : null,
-
-                    speed:
-                      v.config?.shouldEnableCustomSpeed &&
-                      v.config.customSpeed !== 1
-                        ? v.config.customSpeed
-                        : null,
-                    fps: v.config?.shouldEnableCustomFPS
-                      ? v.config.customFPS?.toString?.()
-                      : null,
-                    videoCodec:
-                      v.config?.shouldEnableCustomVideoCodec &&
-                      v.config?.customVideoCodec !== '-'
-                        ? v.config.customVideoCodec
-                        : null,
-                    transformHistory: v.config?.shouldTransformVideo
-                      ? ((v.config.transformVideoConfig?.transformHistory ??
-                          []) as MediaTransformHistory[])
-                      : null,
-                    stripMetadata: v.config?.shouldStripMetadata,
-                    metadataConfig:
-                      !v.config?.shouldStripMetadata && v.config?.metadataConfig
-                        ? Object.entries(
-                            v.config?.metadataConfig as MediaMetadataConfig,
-                          ).reduce(
-                            (a, [key, value]: [string, any]) => {
-                              a[key] = value?.length > 0 ? value : null
-                              return a
-                            },
-                            {} as Record<string, string>,
-                          )
-                        : null,
-                    customThumbnailPath:
-                      v.config?.shouldEnableCustomThumbnail &&
-                      v.config?.customThumbnailPath?.length
-                        ? v.config.customThumbnailPath
-                        : null,
-                    trimSegments:
-                      v.config?.shouldTrimVideo &&
-                      Array.isArray(v.config?.trimConfig)
-                        ? (v.config.trimConfig
-                            .filter((a) => a.end >= a.start)
-                            .map(
-                              (action: TimelineAction): VideoTrimSegment => ({
-                                start: action.start,
-                                end: action.end,
-                              }),
-                            ) as VideoTrimSegment[])
-                        : null,
-                    subtitlesConfig:
-                      (v.config?.subtitlesConfig?.shouldEnableSubtitles &&
-                        v.config?.subtitlesConfig?.subtitles?.length > 0) ||
-                      v.config?.subtitlesConfig?.preserveExistingSubtitles ===
-                        true
-                        ? {
-                            subtitles:
-                              v.config.subtitlesConfig?.subtitles?.map((s) => ({
-                                subtitlePath: s.subtitlePath ?? null,
-                                language: s.language || 'eng',
-                                fileName: s.fileName ?? null,
-                                title: s.title,
-                              })) ?? [],
-                            shouldEnableSubtitles:
-                              v.config.subtitlesConfig.shouldEnableSubtitles ??
-                              false,
-                            preserveExistingSubtitles:
-                              v.config.subtitlesConfig
-                                .preserveExistingSubtitles,
-                          }
-                        : null,
-                  } satisfies VideoCompressionConfig)
-                : undefined,
-            imageConfig:
-              v.type === 'image'
-                ? ({
-                    imageId: v.id!,
-                    convertToExtension: (v.config.convertToExtension === '-'
-                      ? v.extension
-                      : v.config.convertToExtension)!,
-                    imagePath: v.pathRaw!,
-                    isLossless: v.config.isLossless,
-                    quality: v.config.isLossless
-                      ? 100
-                      : (v.config.quality ?? 100),
-                    stripMetadata: v.config.shouldStripMetadata,
-                    svgScaleFactor: v.config.svgScaleFactor ?? null,
-                    svgConfig: v.config?.shouldEnableAdvancedSvgSetting
-                      ? (v.config.svgConfig ?? null)
-                      : null,
-                    dimensions:
-                      v.config?.shouldEnableCustomDimensions &&
-                      v.config.customDimensions
-                        ? ([
-                            v.config.customDimensions[0],
-                            v.config.customDimensions[1],
-                          ] as [number, number])
-                        : null,
-                    transformHistory: v.config?.shouldTransformImage
-                      ? (v.config.transformImageConfig?.transformHistory as
-                          | MediaTransformHistory[]
-                          | null)
-                      : null,
-                  } satisfies ImageCompressionConfig)
-                : undefined,
-          })),
+          appSnapshot.state.media.map((v) =>
+            getMediaItemConfig(v as MediaFile, {
+              batchVideoLongerSide,
+              batchImageLongerSide,
+            }),
+          ),
         ),
-        new Promise((_, reject) => {
-          abortController.signal.addEventListener('abort', () => {
-            unlisten()
-            reject('CANCELLED')
-          })
-        }),
+        cancellation,
       ])) as MediaBatchCompressionResult
 
       unlisten()
@@ -258,6 +269,7 @@ function StartCompression() {
       }
 
       appProxy.state.isCompressing = false
+      appProxy.state.isBatchPaused = false
       appProxy.state.isProcessCompleted = true
 
       for (const index in appProxy.state.media) {
@@ -269,16 +281,18 @@ function StartCompression() {
           appProxy.state.media[index].compressedFile = {
             isSuccessful: !(videoResult == null),
             fileName: videoResult?.fileMetadata?.fileName ?? video.fileName,
-            fileNameToDisplay: `${video?.fileName?.slice(
-              0,
-              -((video?.extension?.length ?? 0) + 1),
-            )}.${videoResult?.fileMetadata?.extension}`,
+            fileNameToDisplay: getOutputFileName(
+              video.fileName,
+              video.extension,
+              videoResult?.fileMetadata?.extension,
+            ),
             pathRaw: videoResult?.fileMetadata?.path,
             path: core.convertFileSrc(videoResult?.fileMetadata?.path ?? ''),
             mimeType: videoResult?.fileMetadata?.mimeType,
             sizeInBytes: videoResult?.fileMetadata?.size,
             size: formatBytes(videoResult?.fileMetadata?.size ?? 0),
             extension: videoResult?.fileMetadata?.extension,
+            ...getOutputOptions(videoResult, video.config?.targetSizeInMB),
           }
         } else if (appProxy.state.media[index].type === 'image') {
           const image = appProxy.state.media[index]
@@ -288,10 +302,11 @@ function StartCompression() {
           appProxy.state.media[index].compressedFile = {
             isSuccessful: !(imageResult == null),
             fileName: imageResult?.fileName ?? image.fileName,
-            fileNameToDisplay: `${image?.fileName?.slice(
-              0,
-              -((image?.extension?.length ?? 0) + 1),
-            )}.${imageResult?.fileMetadata?.extension}`,
+            fileNameToDisplay: getOutputFileName(
+              image.fileName,
+              image.extension,
+              imageResult?.fileMetadata?.extension,
+            ),
             pathRaw: imageResult?.fileMetadata?.path,
             path: core.convertFileSrc(imageResult?.fileMetadata?.path ?? ''),
             mimeType: imageResult?.fileMetadata?.mimeType,
@@ -301,18 +316,63 @@ function StartCompression() {
           }
         }
       }
+
+      // Once for the whole compression (a batch too), when anything was compressed
+      if (
+        settingsStore.playCompletionSound &&
+        appProxy.state.media.some(
+          (mediaFile) => mediaFile.compressedFile?.isSuccessful,
+        )
+      ) {
+        playCompletionSound().catch(() => {})
+      }
+
+      // Saves right away when a save location is set in Settings (Output -> Save location)
+      await autoSaveCompressedMedia()
+      // Once saved automatically, so the saved outputs are recorded where they were saved
+      recordMainWindowHistory(batchId)
+      await autoCopyCompressedMediaToClipboard()
     } catch (error) {
       if (error !== 'CANCELLED') {
-        toast.error('Something went wrong during compression.')
+        toast.error(t('compression.failed'))
         appProxy.timeTravel('beforeCompressionStarted')
       }
     }
-  }, [])
+  }, [t])
+
+  // ⌘+Shift+Enter acts like the Process button (cancelling is handled by CancelCompression)
+  const isShortcutEnabled =
+    selectedMediaIndexForCustomization < 0 &&
+    !isCompressing &&
+    !isProcessCompleted &&
+    !isLoadingMediaFiles &&
+    !hasInvalidTargetSize
+  useCommandEnterShortcut(isShortcutEnabled, handleCompression)
+  // Holding ⌘ (Ctrl) reveals the shortcut on the button
+  const isCommandKeyHeld = useCommandKeyHeld(isShortcutEnabled)
+
+  // A media of a batch, open on its own after compressing: saved, shown & copied on its own
+  if (selectedMediaIndexForCustomization >= 0) {
+    return isProcessCompleted ? (
+      <div className="mt-4">
+        <SaveMedia mediaIndex={selectedMediaIndexForCustomization} />
+      </div>
+    ) : null
+  }
 
   return selectedMediaIndexForCustomization < 0 ? (
     <div className="mt-4">
       {isCompressing ? (
-        <CancelCompression />
+        // Flex all the way down, so neither button sits on a line of text (which added a few
+        // pixels under Cancel, & under Pause in its tooltip's span)
+        <div className="flex items-center gap-2">
+          <div className="flex flex-1 min-w-0">
+            <CancelCompression />
+          </div>
+          <div className="flex [&>span]:flex">
+            <PauseCompression />
+          </div>
+        </div>
       ) : isProcessCompleted ? (
         <SaveMedia />
       ) : (
@@ -320,10 +380,13 @@ function StartCompression() {
           as={motion.button}
           onPress={handleCompression}
           fullWidth
-          className="w-full text-primary bg-primary/20"
-          isDisabled={isLoadingMediaFiles}
+          className="w-full"
+          color="primary"
+          variant="solid"
+          isDisabled={isLoadingMediaFiles || hasInvalidTargetSize}
         >
-          Process
+          {t('compression.process')}
+          <ShortcutHint isVisible={isCommandKeyHeld} />
         </Button>
       )}
     </div>

@@ -1,0 +1,182 @@
+{
+  "schema": 1,
+  "targets": {
+    "aarch64-apple-darwin": {
+      "tools": [
+        {
+          "name": "cjxl",
+          "file": "compresso_cjxl-aarch64-apple-darwin",
+          "sha256": "3dec7e80286d146ffc48dca5472f7fb8f5738ae4347c0f9ca55caadb7ec45867"
+        },
+        {
+          "name": "djxl",
+          "file": "compresso_djxl-aarch64-apple-darwin",
+          "sha256": "051bf7b9d040c27dabbd57543b91f0b0061a255579ddeba95316d4bcf914bb09"
+        },
+        {
+          "name": "jxlinfo",
+          "file": "compresso_jxlinfo-aarch64-apple-darwin",
+          "sha256": "5419b91e8234aa9f19c5d47d141b09dd1e06f3c7c595602c41046104f4ceb472"
+        },
+        {
+          "name": "heif-dec",
+          "file": "compresso_heif-dec-aarch64-apple-darwin",
+          "sha256": "03095811275a139583c92fda455e74096913ef3a97f904a71f3baeff26c1cb75"
+        },
+        {
+          "name": "heif-enc",
+          "file": "compresso_heif-enc-aarch64-apple-darwin",
+          "sha256": "35f6077cf73f0df4a2e7500569ae098c2d97b68dfdcb329e5f87ca7b144abc19"
+        }
+      ],
+      "licenses": "LICENSES/image-codecs/aarch64-apple-darwin",
+      "sources": [
+        {
+          "file": "src-tauri/tool-sources/image-codecs-aarch64-apple-darwin.tar.gz",
+          "sha256": "33609dd55e7f698def64795a4a20c94ccea4a7f5f12c9d622b90951e639454a6"
+        }
+      ],
+      "provenance": "Existing validated static libjxl 0.12.0 / libheif 1.23.6 tools; vcpkg revision 4f973280dd95e3902b3410933fb2ce108bb29d1d; macOS 11 deployment target."
+    },
+    "x86_64-apple-darwin": {
+      "tools": [
+        {
+          "name": "cjxl",
+          "file": "compresso_cjxl-x86_64-apple-darwin",
+          "sha256": "ee12d0fc49bafded71c6dbec24addcafc121aefa1949d50fca986753fb36920a"
+        },
+        {
+          "name": "djxl",
+          "file": "compresso_djxl-x86_64-apple-darwin",
+          "sha256": "f6c65dd35eb8ee9619d02cb118720403c3689b6dbecb489fa746d401d80a3979"
+        },
+        {
+          "name": "jxlinfo",
+          "file": "compresso_jxlinfo-x86_64-apple-darwin",
+          "sha256": "4d9cb993bb1e7164e5580bdfe389bde2a836b537bd9493528c06ba33f2976141"
+        },
+        {
+          "name": "heif-dec",
+          "file": "compresso_heif-dec-x86_64-apple-darwin",
+          "sha256": "95c674e22994176fb22d70aad652116701e99d4abe1c705118f410af934c2d58"
+        },
+        {
+          "name": "heif-enc",
+          "file": "compresso_heif-enc-x86_64-apple-darwin",
+          "sha256": "e654aadee72fdca777af61c0d10b0113ebb7cb307d0d1a38f21bc70464d3790d"
+        }
+      ],
+      "licenses": "LICENSES/image-codecs/x86_64-apple-darwin",
+      "sources": [
+        {
+          "file": "src-tauri/tool-sources/image-codecs-x86_64-apple-darwin.tar.gz",
+          "sha256": "9c58be20f45e04e21cc20b657737092605f82d220b911f05570e2af469f857bf"
+        }
+      ],
+      "provenance": "libjxl 0.12.0 and libheif 1.23.6, built for x86-64 macOS 11 from pinned vcpkg revision 4f973280dd95e3902b3410933fb2ce108bb29d1d with static codec libraries and a CMake Little CMS overlay. Five x86-64 executables link only to macOS system libraries; JXL and HEIC encode/decode round trips passed under Rosetta."
+    },
+    "x86_64-pc-windows-msvc": {
+      "tools": [
+        {
+          "name": "cjxl",
+          "file": "compresso_cjxl-x86_64-pc-windows-msvc.exe",
+          "sha256": "e2262d72f4c1028fd3fbe420d85e6e35210df06956a5521b692a92c4f0e0d8da"
+        },
+        {
+          "name": "djxl",
+          "file": "compresso_djxl-x86_64-pc-windows-msvc.exe",
+          "sha256": "6970ce73de51e046b39bd5f28fc7bc5da64e9f6505c11194319f43d8849d2bf4"
+        },
+        {
+          "name": "jxlinfo",
+          "file": "compresso_jxlinfo-x86_64-pc-windows-msvc.exe",
+          "sha256": "9f81874b9db1268401844c1a867a5b7fc0bab13727e3033c1e77d4f9d1c2cc9c"
+        },
+        {
+          "name": "heif-dec",
+          "file": "compresso_heif-dec-x86_64-pc-windows-msvc.exe",
+          "sha256": "1bc8a9529f1832bfa05e09d73f41dd8109ee50d72e51a10e197e76e19854b0d2"
+        },
+        {
+          "name": "heif-enc",
+          "file": "compresso_heif-enc-x86_64-pc-windows-msvc.exe",
+          "sha256": "65181d4f181313cd9f72412a72884c51c4e1b1c3a1742d5c129d4fa434a06923"
+        }
+      ],
+      "licenses": "LICENSES/image-codecs/x86_64-pc-windows-msvc",
+      "sources": [],
+      "provenance": "JPEG XL 0.12.0 official static Windows release; libheif 1.23.6 HEIC tools built with vcpkg x64-windows-static-release by compresso-binary-builds workflow run 39974393037. Both HEIC executables import only Windows system DLLs and passed an encode/decode round trip on the GitHub Windows x64 runner.",
+      "packages": [
+        {
+          "url": "https://github.com/libjxl/libjxl/releases/download/v0.12.0/jxl-x64-windows-static.zip",
+          "sha256": "3025d7e308390796d20492322e606bc92decaee7b6bc99d3f7547870ae5db7de"
+        },
+        {
+          "url": "https://github.com/strukturag/libheif/archive/refs/tags/v1.23.6.tar.gz",
+          "sha256": "c9a00b0452f5c16d72ef71e5e40c0e90fbe2ad37148d27a1b2f9bb21546f5f03"
+        }
+      ],
+      "build": {
+        "repository": "https://github.com/niraj-khatiwada/compresso-binary-builds",
+        "workflowRun": "https://github.com/niraj-khatiwada/compresso-binary-builds/actions/runs/39974393037",
+        "vcpkgRevision": "4f973280dd95e3902b3410933fb2ce108bb29d1d",
+        "libheifVersion": "1.23.6",
+        "artifactMetadata": "LICENSES/image-codecs/x86_64-pc-windows-msvc/BUILD-METADATA.txt",
+        "sourcePatch": "LICENSES/image-codecs/x86_64-pc-windows-msvc/libheif-no-tiff-build.patch"
+      }
+    },
+    "x86_64-unknown-linux-gnu": {
+      "tools": [
+        {
+          "name": "cjxl",
+          "file": "compresso_cjxl-x86_64-unknown-linux-gnu",
+          "sha256": "c43d5bfbf1b359947a6edb61edb0bfc079924ee9801b30895533ff1fce83ee28"
+        },
+        {
+          "name": "djxl",
+          "file": "compresso_djxl-x86_64-unknown-linux-gnu",
+          "sha256": "67bdc98fdca7f93d7b77f3473e818b251ba107109ee83b3b37ccbd90066f2454"
+        },
+        {
+          "name": "jxlinfo",
+          "file": "compresso_jxlinfo-x86_64-unknown-linux-gnu",
+          "sha256": "0c7d070736d6163626c7fe5c90fff22530481780b378aaeddb9b28c0406d295b"
+        },
+        {
+          "name": "heif-dec",
+          "file": "compresso_heif-dec-x86_64-unknown-linux-gnu",
+          "sha256": "0996fc42470b7d7a5b66f45f7144ce6e778b5704ef98a2c8d17ba35b43ff9824"
+        },
+        {
+          "name": "heif-enc",
+          "file": "compresso_heif-enc-x86_64-unknown-linux-gnu",
+          "sha256": "1910af781b9d7dcfbfa2a2665ddb6697bf2a0577dd61be6ad3845dd934ca5104"
+        }
+      ],
+      "licenses": "LICENSES/image-codecs/x86_64-unknown-linux-gnu",
+      "sources": [
+        {
+          "file": "src-tauri/tool-sources/image-codecs-x86_64-unknown-linux-gnu.tar.gz",
+          "sha256": "cb6e0a16a837690d613f15e1463652aeaf6ac779bdca7385559fe9ad784b5f7a"
+        }
+      ],
+      "provenance": "JPEG XL 0.12.0 official static Linux release; dedicated libheif 1.23.6 tools built on Ubuntu 22.04 x86-64 with vcpkg revision 4f973280dd95e3902b3410933fb2ce108bb29d1d. Fully static ELF executables with x265 assembly; primary-image patch rejects HEIF sequences. Offline HEIC/HEIF quality, lossless alpha and visible-pixel, primary-image collection, and corrupt-input checks passed.",
+      "packages": [
+        {
+          "url": "https://github.com/libjxl/libjxl/releases/download/v0.12.0/jxl-linux-x86_64-static.tar.lz",
+          "sha256": "5318a1ea40adad76d023e0c17a03d4627f8282f83cb2b575e69be8e74f1ff456"
+        },
+        {
+          "url": "https://github.com/strukturag/libheif/archive/refs/tags/v1.23.6.tar.gz",
+          "sha256": "c9a00b0452f5c16d72ef71e5e40c0e90fbe2ad37148d27a1b2f9bb21546f5f03"
+        }
+      ],
+      "build": {
+        "vcpkgRevision": "4f973280dd95e3902b3410933fb2ce108bb29d1d",
+        "libheifVersion": "1.23.6",
+        "script": "scripts/build-image-tools.mjs",
+        "artifactMetadata": "LICENSES/image-codecs/x86_64-unknown-linux-gnu/BUILD-METADATA.txt"
+      }
+    }
+  }
+}

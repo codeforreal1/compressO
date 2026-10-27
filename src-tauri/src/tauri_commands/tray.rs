@@ -1,0 +1,354 @@
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Mutex;
+use tauri::{
+    menu::{Menu, MenuEvent, MenuItem},
+    utils::config::WindowConfig,
+    webview::PageLoadEvent,
+    AppHandle, Emitter, Manager, Url, WebviewWindowBuilder, Wry,
+};
+
+// The macOS menu bar popover, or the Windows system tray popover
+use crate::tray_popover::{self, WindowExt, TRAY_WINDOW_LABEL};
+
+pub const MAIN_WINDOW_LABEL: &str = "main";
+
+#[tauri::command]
+pub fn open_tray_popover(app_handle: AppHandle) -> Result<(), String> {
+    let tray_window = app_handle
+        .get_webview_window(TRAY_WINDOW_LABEL)
+        .ok_or("Tray window not found")?;
+    tray_window.open_tray_popover()
+}
+
+/// Closes the tray popover. `suspend` also destroys the tray webview, which is recreated the next
+/// time the tray icon is clicked.
+#[tauri::command]
+pub fn close_tray_popover(app_handle: AppHandle, suspend: Option<bool>) -> Result<(), String> {
+    let tray_window = app_handle
+        .get_webview_window(TRAY_WINDOW_LABEL)
+        .ok_or("Tray window not found")?;
+    if suspend.unwrap_or(false) {
+        return tray_popover::destroy_tray_window(&app_handle);
+    }
+    tray_window.close_tray_popover()
+}
+
+#[tauri::command]
+pub fn resize_tray_popover(
+    app_handle: AppHandle,
+    width: f64,
+    height: f64,
+    animate: Option<bool>,
+    blur_overlay_on_resize: Option<bool>,
+) -> Result<(), String> {
+    tray_popover::resize_popover(&app_handle, width, height, animate, blur_overlay_on_resize)
+}
+
+#[tauri::command]
+pub fn is_tray_popover_visible(app_handle: AppHandle) -> bool {
+    app_handle
+        .get_webview_window(TRAY_WINDOW_LABEL)
+        .map(|tray_window| tray_window.is_tray_popover_visible())
+        .unwrap_or(false)
+}
+
+/// Pins the tray popover, so it stays open when clicking outside it, or restores the default
+#[tauri::command]
+pub fn set_tray_popover_pinned(app_handle: AppHandle, pinned: bool) {
+    tray_popover::set_pinned(&app_handle, pinned);
+}
+
+/// Adds files copied to the clipboard to the media dropped on the menu bar (or stops doing so)
+#[tauri::command]
+pub fn set_clipboard_watch_enabled(app_handle: AppHandle, enabled: bool) {
+    crate::sys::clipboard_watch::set_enabled(&app_handle, enabled);
+}
+
+#[tauri::command]
+pub fn is_clipboard_watch_enabled() -> bool {
+    crate::sys::clipboard_watch::is_enabled()
+}
+
+/// Shows or removes the menu bar (tray) icon
+#[tauri::command]
+pub fn set_tray_icon_enabled(app_handle: AppHandle, enabled: bool) -> Result<(), String> {
+    tray_popover::set_tray_icon_enabled(&app_handle, enabled)
+}
+
+/// Files & folders dropped on the menu bar icon or popover, opened in the main window with
+/// "Open App"
+#[derive(Default)]
+pub struct DroppedFilesState {
+    files: Mutex<Vec<String>>,
+    /// Lowercase extensions of the media that can be compressed, sent by the tray popover
+    supported_extensions: Mutex<Vec<String>>,
+}
+
+const DROPPED_FILES_EVENT: &str = "tray-dropped-files";
+
+fn dropped_files(app_handle: &AppHandle) -> Vec<String> {
+    app_handle
+        .try_state::<DroppedFilesState>()
+        .and_then(|state| state.files.lock().ok().map(|files| files.clone()))
+        .unwrap_or_default()
+}
+
+/// Changes the dropped files & sends them to the tray popover
+fn update_dropped_files(app_handle: &AppHandle, update: impl FnOnce(&mut Vec<String>)) {
+    let files = {
+        let Some(state) = app_handle.try_state::<DroppedFilesState>() else {
+            return;
+        };
+        let Ok(mut files) = state.files.lock() else {
+            return;
+        };
+        update(&mut files);
+        files.clone()
+    };
+    let _ = app_handle.emit_to(TRAY_WINDOW_LABEL, DROPPED_FILES_EVENT, files);
+}
+
+/// Whether a dropped path can be added: a folder (its media is picked when opened) or a file with a
+/// supported extension
+pub fn is_supported_drop(app_handle: &AppHandle, path: &str) -> bool {
+    let path = std::path::Path::new(path);
+    if path.is_dir() {
+        return true;
+    }
+    let Some(extension) = path.extension().and_then(|ext| ext.to_str()) else {
+        return false;
+    };
+    let extension = extension.to_lowercase();
+    app_handle
+        .try_state::<DroppedFilesState>()
+        .and_then(|state| {
+            state
+                .supported_extensions
+                .lock()
+                .ok()
+                .map(|extensions| extensions.contains(&extension))
+        })
+        .unwrap_or(false)
+}
+
+/// The media extensions that can be dropped (the frontend's list of supported inputs)
+#[tauri::command]
+pub fn set_supported_drop_extensions(app_handle: AppHandle, extensions: Vec<String>) {
+    if let Some(state) = app_handle.try_state::<DroppedFilesState>() {
+        if let Ok(mut supported_extensions) = state.supported_extensions.lock() {
+            *supported_extensions = extensions.iter().map(|ext| ext.to_lowercase()).collect();
+        }
+    }
+}
+
+/// Adds dropped files (each once), skipping unsupported ones. Returns how many were skipped.
+/// With "Compress automatically", they are added to the queue (see `drop_queue`); otherwise they
+/// are kept for the main window, and refused while they cannot be opened (e.g. while compressing).
+#[tauri::command]
+pub fn add_dropped_files(app_handle: AppHandle, paths: Vec<String>) -> Result<usize, String> {
+    if crate::tauri_commands::drop_queue::is_auto_compress_enabled() {
+        let (supported, unsupported): (Vec<_>, Vec<_>) = paths
+            .into_iter()
+            .partition(|path| is_supported_drop(&app_handle, path));
+        let app = app_handle.clone();
+        crate::tauri_commands::drop_queue::add_to_queue(&app_handle, supported, move |path| {
+            is_supported_drop(&app, path)
+        });
+        return Ok(unsupported.len());
+    }
+    // Otherwise stored for the main window, also while it is busy: "Open App" delivers them once
+    // it is free (see `focus_main_window`)
+    let (supported, unsupported): (Vec<_>, Vec<_>) = paths
+        .into_iter()
+        .partition(|path| is_supported_drop(&app_handle, path));
+    update_dropped_files(&app_handle, |files| {
+        for path in supported {
+            if !files.contains(&path) {
+                files.push(path);
+            }
+        }
+    });
+    Ok(unsupported.len())
+}
+
+/// Adds what is on the clipboard (pasted in the popover): copied files, or a copied image (e.g. in a
+/// browser). Returns how many files were skipped as unsupported, or an error with nothing to add.
+#[tauri::command]
+pub fn paste_dropped_files(app_handle: AppHandle) -> Result<usize, String> {
+    let paths = crate::sys::clipboard_watch::read_clipboard_media(&app_handle);
+    if paths.is_empty() {
+        return Err("No files or images found in clipboard".to_string());
+    }
+    add_dropped_files(app_handle, paths)
+}
+
+#[tauri::command]
+pub fn remove_dropped_file(app_handle: AppHandle, path: String) {
+    update_dropped_files(&app_handle, |files| files.retain(|file| *file != path));
+}
+
+#[tauri::command]
+pub fn clear_dropped_files(app_handle: AppHandle) {
+    update_dropped_files(&app_handle, |files| files.clear());
+}
+
+#[tauri::command]
+pub fn get_dropped_files(app_handle: AppHandle) -> Vec<String> {
+    dropped_files(&app_handle)
+}
+
+/// Shows the main window, with the files dropped on the menu bar (if any & if they can be opened)
+#[tauri::command]
+pub fn focus_main_window(app_handle: AppHandle) -> Result<(), String> {
+    if !dropped_files(&app_handle).is_empty() {
+        if crate::can_open_files_in_main_window(&app_handle) {
+            deliver_dropped_files(&app_handle)?;
+        } else {
+            // Busy (compressing, or with unsaved outputs): delivered once it is free
+            DELIVER_WHEN_FREE.store(true, Ordering::SeqCst);
+        }
+    }
+    focus_or_create_main_window(&app_handle)
+}
+
+/// "Open App" was used while the main window was busy: the stored files are delivered once it is
+/// free (see `deliver_dropped_files_if_free`)
+static DELIVER_WHEN_FREE: AtomicBool = AtomicBool::new(false);
+
+/// Opens the stored files in the main window & clears them
+fn deliver_dropped_files(app_handle: &AppHandle) -> Result<(), String> {
+    let urls = dropped_files(app_handle)
+        .iter()
+        .filter_map(|path| Url::from_file_path(path).ok())
+        .collect::<Vec<_>>();
+    if urls.is_empty() {
+        return Ok(());
+    }
+    // Delivered to the main window once it is ready (see `frontend-ready`)
+    crate::handle_open_with_app(app_handle, urls)?;
+    update_dropped_files(app_handle, |files| files.clear());
+    Ok(())
+}
+
+/// Delivers the stored files asked for with "Open App" while the main window was busy, once it is
+/// free; called when its status changes
+pub fn deliver_dropped_files_if_free(app_handle: &AppHandle) {
+    if DELIVER_WHEN_FREE.load(Ordering::SeqCst) && crate::can_open_files_in_main_window(app_handle)
+    {
+        DELIVER_WHEN_FREE.store(false, Ordering::SeqCst);
+        let _ = deliver_dropped_files(app_handle);
+    }
+}
+
+#[tauri::command]
+pub fn quit_app(app_handle: AppHandle) {
+    app_handle.exit(0);
+}
+
+/// The app's accent color (as `"255 132 0"`), which the Windows tray icon's progress ring fills
+/// with. The macOS menu bar shows the progress as text, so it is not used there.
+#[tauri::command]
+pub fn set_tray_progress_color(app_handle: AppHandle, color: String) {
+    let channels: Vec<u8> = color
+        .split_whitespace()
+        .filter_map(|channel| channel.parse().ok())
+        .collect();
+    #[cfg(windows)]
+    if let [red, green, blue] = channels[..] {
+        crate::win::tray_icon::set_progress_color(&app_handle, [red, green, blue]);
+    }
+    #[cfg(not(windows))]
+    let _ = (app_handle, channels);
+}
+
+/// The tray icon's menu, shown with a right click: opens the main window, or quits
+pub fn tray_icon_menu(app_handle: &AppHandle) -> Result<Menu<Wry>, String> {
+    let texts = crate::sys::native_text::get();
+    let open_item = MenuItem::with_id(app_handle, "open", &texts.open_app, true, None::<&str>)
+        .map_err(|err| err.to_string())?;
+    let quit_item = MenuItem::with_id(app_handle, "quit", &texts.quit_app, true, None::<&str>)
+        .map_err(|err| err.to_string())?;
+    Menu::with_items(app_handle, &[&open_item, &quit_item]).map_err(|err| err.to_string())
+}
+
+/// Rebuilds the tray icon's menu in the app's language (Windows, where it stays attached)
+#[cfg(windows)]
+pub fn update_tray_icon_menu(app_handle: &AppHandle) -> Result<(), String> {
+    let Some(tray) = app_handle.tray_by_id(TRAY_WINDOW_LABEL) else {
+        return Ok(());
+    };
+    tray.set_menu(Some(tray_icon_menu(app_handle)?))
+        .map_err(|err| err.to_string())
+}
+
+pub fn handle_tray_icon_menu_event(app_handle: &AppHandle, event: MenuEvent) {
+    match event.id().as_ref() {
+        "open" => {
+            if let Err(err) = focus_or_create_main_window(app_handle) {
+                log::error!("Failed to open the main window: {}", err);
+            }
+        }
+        // Asks first while compressing (see `quit::quit_reason`)
+        "quit" => app_handle.exit(0),
+        _ => {}
+    }
+}
+
+/// Shows & focuses the main window, recreating it if it was closed (the app keeps running while
+/// the tray is alive)
+pub fn focus_or_create_main_window(app_handle: &AppHandle) -> Result<(), String> {
+    if !crate::core::tool_bundle::is_ready(app_handle) {
+        if let Some(window) = app_handle.get_webview_window("preparation") {
+            window.show().map_err(|e| e.to_string())?;
+            window.set_focus().map_err(|e| e.to_string())?;
+        }
+        return Ok(());
+    }
+    match app_handle.get_webview_window(MAIN_WINDOW_LABEL) {
+        Some(window) => {
+            window.unminimize().map_err(|e| e.to_string())?;
+            window.show().map_err(|e| e.to_string())?;
+            window.set_focus().map_err(|e| e.to_string())?;
+        }
+        None => {
+            let window_config = app_handle
+                .config()
+                .app
+                .windows
+                .iter()
+                .find(|w| w.label == MAIN_WINDOW_LABEL)
+                .cloned()
+                .unwrap_or_default();
+
+            // Created on another thread in Windows: this runs in synchronous commands, on the main
+            // thread, where creating a webview deadlocks there
+            #[cfg(windows)]
+            {
+                let app_handle = app_handle.clone();
+                std::thread::spawn(move || {
+                    if let Err(err) = create_main_window(&app_handle, &window_config) {
+                        log::error!("Failed to create the main window: {}", err);
+                    }
+                });
+            }
+            #[cfg(not(windows))]
+            create_main_window(app_handle, &window_config)?;
+        }
+    }
+    Ok(())
+}
+
+fn create_main_window(app_handle: &AppHandle, window_config: &WindowConfig) -> Result<(), String> {
+    // The window starts hidden (see `tauri.conf.json`), so show it once it has loaded
+    WebviewWindowBuilder::from_config(app_handle, window_config)
+        .map_err(|e| e.to_string())?
+        .on_page_load(|window, payload| {
+            if let PageLoadEvent::Finished = payload.event() {
+                let _ = window.show();
+                let _ = window.set_focus();
+            }
+        })
+        .build()
+        .map_err(|e| e.to_string())?;
+    Ok(())
+}

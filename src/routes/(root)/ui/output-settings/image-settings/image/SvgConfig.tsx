@@ -1,6 +1,7 @@
-import { motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import cloneDeep from 'lodash/cloneDeep'
 import { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
 import Icon from '@/components/Icon'
@@ -22,6 +23,7 @@ type SvgConfigProps = {
 const svgSettingInitialStateCloned = cloneDeep(svgSettingInitialState)
 
 function SvgConfig({ mediaIndex }: SvgConfigProps) {
+  const { t } = useTranslation()
   const {
     state: {
       isCompressing,
@@ -162,311 +164,311 @@ function SvgConfig({ mediaIndex }: SvgConfigProps) {
         isDisabled={shouldDisableInput}
       >
         <p className="text-gray-600 dark:text-gray-400 text-sm mr-2 w-full">
-          Advanced SVG Settings
+          {t('svg.advanced')}
         </p>
       </Switch>
 
-      {shouldEnableAdvancedSvgSetting ? (
-        <motion.div
-          {...slideDownTransition}
-          className="mb-2 p-3 bg-default-50 rounded-xl border border-default-200 dark:border-default-100"
-        >
-          <div className="mt-2">
-            <Slider
-              label={
-                <div className="flex items-center gap-1">
-                  Filter Speckle
-                  <Tooltip content="Higher is cleaner/smoother">
-                    <Icon
-                      name="info"
-                      size={20}
-                      className="text-gray-400 dark:text-gray-500"
-                    />
-                  </Tooltip>
-                </div>
-              }
-              aria-label="Filter Speckle"
-              marks={[
-                { value: 0, label: '0' },
-                { value: 128, label: '128' },
-              ]}
-              minValue={0}
-              maxValue={128}
-              className="mb-6 mt-1 mx-auto"
-              classNames={{
-                mark: 'text-[11px] mt-2',
-                base: 'mt-[-10px]',
-                label: 'text-xs',
-              }}
-              getValue={(value) => {
-                const val = Array.isArray(value) ? value?.[0] : +value
-                return val < 50
-                  ? 'Low'
-                  : val >= 50 && val < 100
-                    ? 'Medium'
-                    : 'High'
-              }}
-              renderValue={() => (
-                <p className="text-primary text-xs">{filterSpeckle}</p>
-              )}
-              value={filterSpeckle}
-              onChange={(value) => {
-                if (typeof value === 'number') {
-                  setFilterSpeckle(value)
-                }
-              }}
-              isDisabled={shouldDisableInput}
-            />
-          </div>
+      <AnimatePresence initial={false}>
+        {shouldEnableAdvancedSvgSetting ? (
+          <motion.div {...slideDownTransition} className="pb-2">
+            {/* The card is inside the animated element, so its padding & border collapse with it */}
+            <div className="p-3 bg-default-50 rounded-xl border border-default-200 dark:border-default-100">
+              <div className="mt-2">
+                <Slider
+                  label={
+                    <div className="flex items-center gap-1">
+                      {t('svg.filterSpeckle.title')}
+                      <Tooltip content={t('svg.filterSpeckle.tooltip')}>
+                        <Icon
+                          name="info"
+                          size={20}
+                          className="text-gray-400 dark:text-gray-500"
+                        />
+                      </Tooltip>
+                    </div>
+                  }
+                  aria-label={t('svg.filterSpeckle.title')}
+                  marks={[
+                    { value: 0, label: '0' },
+                    { value: 128, label: '128' },
+                  ]}
+                  minValue={0}
+                  maxValue={128}
+                  className="mb-6 mt-1 mx-auto"
+                  classNames={{
+                    mark: 'text-[11px] mt-2',
+                    label: 'text-xs',
+                  }}
+                  getValue={(value) => {
+                    const val = Array.isArray(value) ? value?.[0] : +value
+                    return val < 50
+                      ? t('svg.levels.low')
+                      : val >= 50 && val < 100
+                        ? t('svg.levels.medium')
+                        : t('svg.levels.high')
+                  }}
+                  renderValue={() => (
+                    <p className="text-primary text-xs">{filterSpeckle}</p>
+                  )}
+                  value={filterSpeckle}
+                  onChange={(value) => {
+                    if (typeof value === 'number') {
+                      setFilterSpeckle(value)
+                    }
+                  }}
+                  isDisabled={shouldDisableInput}
+                />
+              </div>
 
-          <div>
-            <Slider
-              label={
-                <div className="flex items-center gap-1">
-                  Color Precision
-                  <Tooltip content="Higher is more accurate but can over-saturate">
-                    <Icon
-                      name="info"
-                      size={20}
-                      className="text-gray-400 dark:text-gray-500"
-                    />
-                  </Tooltip>
-                </div>
-              }
-              aria-label="Color Precision"
-              marks={[
-                { value: 1, label: '1' },
-                { value: 8, label: '8' },
-              ]}
-              minValue={1}
-              maxValue={8}
-              step={1}
-              className="mb-6 mt-1 mx-auto"
-              classNames={{
-                mark: 'text-[11px] mt-2',
-                base: 'mt-[-10px]',
-                label: 'text-xs',
-              }}
-              getValue={(value) => {
-                const val = Array.isArray(value) ? value?.[0] : +value
-                return val < 4 ? 'Low' : val >= 4 && val < 7 ? 'Medium' : 'High'
-              }}
-              renderValue={() => (
-                <p className="text-primary text-xs">{colorPrecision}</p>
-              )}
-              value={colorPrecision}
-              onChange={(value) => {
-                if (typeof value === 'number') {
-                  setColorPrecision(value)
-                }
-              }}
-              isDisabled={shouldDisableInput}
-            />
-          </div>
+              <div>
+                <Slider
+                  label={
+                    <div className="flex items-center gap-1">
+                      {t('svg.colorPrecision.title')}
+                      <Tooltip content={t('svg.colorPrecision.tooltip')}>
+                        <Icon
+                          name="info"
+                          size={20}
+                          className="text-gray-400 dark:text-gray-500"
+                        />
+                      </Tooltip>
+                    </div>
+                  }
+                  aria-label={t('svg.colorPrecision.title')}
+                  marks={[
+                    { value: 1, label: '1' },
+                    { value: 8, label: '8' },
+                  ]}
+                  minValue={1}
+                  maxValue={8}
+                  step={1}
+                  className="mb-6 mt-1 mx-auto"
+                  classNames={{
+                    mark: 'text-[11px] mt-2',
+                    label: 'text-xs',
+                  }}
+                  getValue={(value) => {
+                    const val = Array.isArray(value) ? value?.[0] : +value
+                    return val < 4
+                      ? t('svg.levels.low')
+                      : val >= 4 && val < 7
+                        ? t('svg.levels.medium')
+                        : t('svg.levels.high')
+                  }}
+                  renderValue={() => (
+                    <p className="text-primary text-xs">{colorPrecision}</p>
+                  )}
+                  value={colorPrecision}
+                  onChange={(value) => {
+                    if (typeof value === 'number') {
+                      setColorPrecision(value)
+                    }
+                  }}
+                  isDisabled={shouldDisableInput}
+                />
+              </div>
 
-          <div>
-            <Slider
-              label={
-                <div className="flex items-center gap-1">
-                  Layer Difference
-                  <Tooltip content="Higher means less layers">
-                    <Icon
-                      name="info"
-                      size={20}
-                      className="text-gray-400 dark:text-gray-500"
-                    />
-                  </Tooltip>
-                </div>
-              }
-              aria-label="Layer Difference"
-              marks={[
-                { value: 0, label: '0' },
-                { value: 128, label: '128' },
-              ]}
-              minValue={0}
-              maxValue={128}
-              className="mb-6 mt-1 mx-auto"
-              classNames={{
-                mark: 'text-[11px] mt-2',
-                base: 'mt-[-10px]',
-                label: 'text-xs',
-              }}
-              getValue={(value) => {
-                const val = Array.isArray(value) ? value?.[0] : +value
-                return val < 50
-                  ? 'Few'
-                  : val >= 50 && val < 100
-                    ? 'Medium'
-                    : 'Many'
-              }}
-              renderValue={() => (
-                <p className="text-primary text-xs">{layerDifference}</p>
-              )}
-              value={layerDifference}
-              onChange={(value) => {
-                if (typeof value === 'number') {
-                  setLayerDifference(value)
-                }
-              }}
-              isDisabled={shouldDisableInput}
-            />
-          </div>
+              <div>
+                <Slider
+                  label={
+                    <div className="flex items-center gap-1">
+                      {t('svg.layerDifference.title')}
+                      <Tooltip content={t('svg.layerDifference.tooltip')}>
+                        <Icon
+                          name="info"
+                          size={20}
+                          className="text-gray-400 dark:text-gray-500"
+                        />
+                      </Tooltip>
+                    </div>
+                  }
+                  aria-label={t('svg.layerDifference.title')}
+                  marks={[
+                    { value: 0, label: '0' },
+                    { value: 128, label: '128' },
+                  ]}
+                  minValue={0}
+                  maxValue={128}
+                  className="mb-6 mt-1 mx-auto"
+                  classNames={{
+                    mark: 'text-[11px] mt-2',
+                    label: 'text-xs',
+                  }}
+                  getValue={(value) => {
+                    const val = Array.isArray(value) ? value?.[0] : +value
+                    return val < 50
+                      ? t('svg.levels.few')
+                      : val >= 50 && val < 100
+                        ? t('svg.levels.medium')
+                        : t('svg.levels.many')
+                  }}
+                  renderValue={() => (
+                    <p className="text-primary text-xs">{layerDifference}</p>
+                  )}
+                  value={layerDifference}
+                  onChange={(value) => {
+                    if (typeof value === 'number') {
+                      setLayerDifference(value)
+                    }
+                  }}
+                  isDisabled={shouldDisableInput}
+                />
+              </div>
 
-          <div>
-            <Slider
-              label={
-                <div className="flex items-center gap-1">
-                  Corner Threshold
-                  <Tooltip content="Higher is smoother">
-                    <Icon
-                      name="info"
-                      size={20}
-                      className="text-gray-400 dark:text-gray-500"
-                    />
-                  </Tooltip>
-                </div>
-              }
-              aria-label="Corner Threshold"
-              marks={[
-                { value: 0, label: '0' },
-                { value: 180, label: '180' },
-              ]}
-              minValue={0}
-              maxValue={180}
-              className="mb-6 mt-1 mx-auto"
-              classNames={{
-                mark: 'text-[11px] mt-2',
-                base: 'mt-[-10px]',
-                label: 'text-xs',
-              }}
-              getValue={(value) => {
-                const val = Array.isArray(value) ? value?.[0] : +value
-                return val < 60
-                  ? 'Sharp'
-                  : val >= 60 && val < 120
-                    ? 'Medium'
-                    : 'Smooth'
-              }}
-              renderValue={() => (
-                <p className="text-primary text-xs">{cornerThreshold}</p>
-              )}
-              value={cornerThreshold}
-              onChange={(value) => {
-                if (typeof value === 'number') {
-                  setCornerThreshold(value)
-                }
-              }}
-              isDisabled={shouldDisableInput}
-            />
-          </div>
+              <div>
+                <Slider
+                  label={
+                    <div className="flex items-center gap-1">
+                      {t('svg.cornerThreshold.title')}
+                      <Tooltip content={t('svg.cornerThreshold.tooltip')}>
+                        <Icon
+                          name="info"
+                          size={20}
+                          className="text-gray-400 dark:text-gray-500"
+                        />
+                      </Tooltip>
+                    </div>
+                  }
+                  aria-label={t('svg.cornerThreshold.title')}
+                  marks={[
+                    { value: 0, label: '0' },
+                    { value: 180, label: '180' },
+                  ]}
+                  minValue={0}
+                  maxValue={180}
+                  className="mb-6 mt-1 mx-auto"
+                  classNames={{
+                    mark: 'text-[11px] mt-2',
+                    label: 'text-xs',
+                  }}
+                  getValue={(value) => {
+                    const val = Array.isArray(value) ? value?.[0] : +value
+                    return val < 60
+                      ? t('svg.levels.sharp')
+                      : val >= 60 && val < 120
+                        ? t('svg.levels.medium')
+                        : t('svg.levels.smooth')
+                  }}
+                  renderValue={() => (
+                    <p className="text-primary text-xs">{cornerThreshold}</p>
+                  )}
+                  value={cornerThreshold}
+                  onChange={(value) => {
+                    if (typeof value === 'number') {
+                      setCornerThreshold(value)
+                    }
+                  }}
+                  isDisabled={shouldDisableInput}
+                />
+              </div>
 
-          <div>
-            <Slider
-              label={
-                <div className="flex items-center gap-1">
-                  Segment Length
-                  <Tooltip content="Higher is more coarse">
-                    <Icon
-                      name="info"
-                      size={20}
-                      className="text-gray-400 dark:text-gray-500"
-                    />
-                  </Tooltip>
-                </div>
-              }
-              aria-label="Segment Length"
-              marks={[
-                { value: 0, label: '0' },
-                { value: 10, label: '10' },
-              ]}
-              minValue={0}
-              maxValue={10}
-              step={0.5}
-              className="mb-6 mt-1 mx-auto"
-              classNames={{
-                mark: 'text-[11px] mt-2',
-                base: 'mt-[-10px]',
-                label: 'text-xs',
-              }}
-              getValue={(value) => {
-                const val = Array.isArray(value) ? value?.[0] : +value
-                return val < 3
-                  ? 'Fine'
-                  : val >= 3 && val < 7
-                    ? 'Medium'
-                    : 'Coarse'
-              }}
-              renderValue={() => (
-                <p className="text-primary text-xs">{lengthThreshold}</p>
-              )}
-              value={lengthThreshold}
-              onChange={(value) => {
-                if (typeof value === 'number') {
-                  setLengthThreshold(value)
-                }
-              }}
-              isDisabled={shouldDisableInput}
-            />
-          </div>
+              <div>
+                <Slider
+                  label={
+                    <div className="flex items-center gap-1">
+                      {t('svg.segmentLength.title')}
+                      <Tooltip content={t('svg.segmentLength.tooltip')}>
+                        <Icon
+                          name="info"
+                          size={20}
+                          className="text-gray-400 dark:text-gray-500"
+                        />
+                      </Tooltip>
+                    </div>
+                  }
+                  aria-label={t('svg.segmentLength.title')}
+                  marks={[
+                    { value: 0, label: '0' },
+                    { value: 10, label: '10' },
+                  ]}
+                  minValue={0}
+                  maxValue={10}
+                  step={0.5}
+                  className="mb-6 mt-1 mx-auto"
+                  classNames={{
+                    mark: 'text-[11px] mt-2',
+                    label: 'text-xs',
+                  }}
+                  getValue={(value) => {
+                    const val = Array.isArray(value) ? value?.[0] : +value
+                    return val < 3
+                      ? t('svg.levels.fine')
+                      : val >= 3 && val < 7
+                        ? t('svg.levels.medium')
+                        : t('svg.levels.coarse')
+                  }}
+                  renderValue={() => (
+                    <p className="text-primary text-xs">{lengthThreshold}</p>
+                  )}
+                  value={lengthThreshold}
+                  onChange={(value) => {
+                    if (typeof value === 'number') {
+                      setLengthThreshold(value)
+                    }
+                  }}
+                  isDisabled={shouldDisableInput}
+                />
+              </div>
 
-          <div>
-            <Slider
-              label={
-                <div className="flex items-center gap-1">
-                  Splice Threshold
-                  <Tooltip content="Higher is less accurate">
-                    <Icon
-                      name="info"
-                      size={20}
-                      className="text-gray-400 dark:text-gray-500"
-                    />
-                  </Tooltip>
-                </div>
-              }
-              aria-label="Splice Threshold"
-              marks={[
-                { value: 0, label: '0' },
-                { value: 180, label: '180' },
-              ]}
-              minValue={0}
-              maxValue={180}
-              className="mb-6 mt-1 mx-auto"
-              classNames={{
-                mark: 'text-[11px] mt-2',
-                base: 'mt-[-10px]',
-                label: 'text-xs',
-              }}
-              getValue={(value) => {
-                const val = Array.isArray(value) ? value?.[0] : +value
-                return val < 60
-                  ? 'Accurate'
-                  : val >= 60 && val < 120
-                    ? 'Medium'
-                    : 'Less'
-              }}
-              renderValue={() => (
-                <p className="text-primary text-xs">{spliceThreshold}</p>
-              )}
-              value={spliceThreshold}
-              onChange={(value) => {
-                if (typeof value === 'number') {
-                  setSpliceThreshold(value)
-                }
-              }}
-              isDisabled={shouldDisableInput}
-            />
-          </div>
-          <Switch
-            isSelected={isBw}
-            onValueChange={setIsBw}
-            isDisabled={shouldDisableInput}
-          >
-            <p className="text-gray-600 dark:text-gray-400 text-sm mr-2 w-full">
-              Black & White
-            </p>
-          </Switch>
-        </motion.div>
-      ) : null}
+              <div>
+                <Slider
+                  label={
+                    <div className="flex items-center gap-1">
+                      {t('svg.spliceThreshold.title')}
+                      <Tooltip content={t('svg.spliceThreshold.tooltip')}>
+                        <Icon
+                          name="info"
+                          size={20}
+                          className="text-gray-400 dark:text-gray-500"
+                        />
+                      </Tooltip>
+                    </div>
+                  }
+                  aria-label={t('svg.spliceThreshold.title')}
+                  marks={[
+                    { value: 0, label: '0' },
+                    { value: 180, label: '180' },
+                  ]}
+                  minValue={0}
+                  maxValue={180}
+                  className="mb-6 mt-1 mx-auto"
+                  classNames={{
+                    mark: 'text-[11px] mt-2',
+                    label: 'text-xs',
+                  }}
+                  getValue={(value) => {
+                    const val = Array.isArray(value) ? value?.[0] : +value
+                    return val < 60
+                      ? t('svg.levels.accurate')
+                      : val >= 60 && val < 120
+                        ? t('svg.levels.medium')
+                        : t('svg.levels.less')
+                  }}
+                  renderValue={() => (
+                    <p className="text-primary text-xs">{spliceThreshold}</p>
+                  )}
+                  value={spliceThreshold}
+                  onChange={(value) => {
+                    if (typeof value === 'number') {
+                      setSpliceThreshold(value)
+                    }
+                  }}
+                  isDisabled={shouldDisableInput}
+                />
+              </div>
+              <Switch
+                isSelected={isBw}
+                onValueChange={setIsBw}
+                isDisabled={shouldDisableInput}
+              >
+                <p className="text-gray-600 dark:text-gray-400 text-sm mr-2 w-full">
+                  {t('svg.blackAndWhite')}
+                </p>
+              </Switch>
+            </div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
     </div>
   )
 }

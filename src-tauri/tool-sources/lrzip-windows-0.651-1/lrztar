@@ -1,0 +1,153 @@
+#!/bin/bash
+
+# Copyright (C) George Makrydakis 2009-2011,2013
+# Copyright (C) Con Kolivas 2011-2012,2016,2018,2021
+
+# A bash wrapper for Con Kolivas' excellent lrzip utility. For the time
+# being, lrzip does not like pipes, so we had to do this. It is kind of
+# self - documenting, spawned out of a test tube bash shell script.
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 2 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+function lrztar_local() {
+    local hv="\
+lrztar GNU/bash wrapper script for lrzip and tar input/output over directories.
+Copyright (C) George Makrydakis 2009-2011,2013
+Copyright (C) Con Kolivas       2011-2012,2016,2018,2021
+
+Usage : lrztar [lrzip options] <directory>
+Result: a lrzip tarball is produced.
+Extras: when an lrzip tarball is used with -d, -O, it gets extracted:
+
+ -h: will display this message.
+ -d: <path1> will decompress a <path1> lrzip tarball to current directory.
+ -O: <path2> will decompress a -d specified lrzip tarball to <path2> path.
+ -f: will force overwrites.
+
+Notice:
+ - The input argument is always last, all options and their arguments precede.
+ - The -O flag is an option flag, goes before: (-O <somedir> <input arg>).
+ - You can use the remaining options of lrzip as they were.
+ - lrzuntar is equivalent to lrztar [options] -d <filename>.
+ - This script exists because of how lrzip behaves.
+ - Beware the -f flag, it stands for what it says...
+"
+    [[ $1 == "" ]] && {
+        printf "lrztar: no arguments given\n";
+        return 1;
+    }
+    local p=("${@:1:$(($#-1))}") s="${!#}" vopt=("lrz") \
+          v_w=0 v_S=0 v_D=0 v_p=0 v_q=0 v_L=0 \
+          v_n=0 v_l=0 v_b=0 v_g=0 v_z=0 v_U=0 \
+          v_T=0 v_N=0 v_v=0 v_f=0 v_d=0 v_h=0 \
+          v_H=0 v_c=0 v_k=0 v_o=0 v_O=0 v_m=0 x= i="$(pwd)"
+    tar --version &> /dev/null \
+        || { printf "lrztar: no tar in your path\n"; return 1; }
+    lrzip --version &> /dev/null \
+        || { printf "lrztar: no lrzip in your path\n"; return 1; }
+    lrzcat --version &> /dev/null \
+        || { printf "lrztar: no lrzcat in your path\n"; return 1; }
+    while getopts w:O:S:DqL:nlbgzUm:TN:p:vfo:d:tVhHck x; do
+        [[ $x == [tV] ]] && {
+            printf "lrztar: invalid option for lrztar: %s\n" "$x";
+            return 1;
+        }
+        ((v_$x=${#vopt[@]}))
+        vopt[${#vopt[@]}]="$OPTARG"
+    done
+    [[ $(basename "$0") == lrzuntar ]] \
+        && { ((v_d=${#vopt[@]})); vopt[${#vopt[@]}]="$s"; }
+    { ! (($#)) || ((v_h)); } && {
+        printf "%s\n" "$hv"
+        return
+    }
+    ((v_d)) && {
+        [[ -e ${vopt[v_d]} ]] || {
+            printf "lrztar: file does not exist: %s\n" \
+                   "${vopt[v_d]}"
+            return 1
+        }
+        i+="/${vopt[v_d]##*/}"
+        i="${i%.tar.*}"
+        if ((v_O)); then
+            for x in ${!p[@]};do
+                [[ ${p[x]} == "-O" ]] && {
+                    p[x]=
+                    p[$((x+1))]=
+                    break;
+                }
+            done
+            i="${vopt[v_O]%/}"
+            x="${s##*/}"
+            if [[ -d "$i/${x%.tar.*}" ]] && ! ((v_f)); then
+                printf "lrztar: %s exists, use -f.\n" \
+                       "$i/${x%.tar.*}"
+                return 1
+            fi
+            if ! [[ -d $i ]]; then
+                printf "lrztar: %s output path does not exist.\n" \
+                       "$i"
+                return 1
+            fi
+        else
+            i="./"
+        fi
+        [ ! -z "$s" ] && {
+            lrzcat ${p[@]// /\\ } "$s" | tar x -C "$i"
+            x=$?
+        } || {
+            lrzcat ${p[@]// /\\ } | tar x -C "$i"
+            x=$?
+        }
+    } || {
+        if ((v_o)); then
+            ! ((v_f)) && [[ -e ${vopt[$v_o]} ]] && {
+                printf "lrztar: %s exists, use -f to overwrite.\n" \
+                       "${vopt[$v_o]}"
+                return 1
+            }
+        else
+            if ((v_O)); then
+                if ! [[ -d ${vopt[v_O]} ]]; then
+                    printf "lrztar: %s output path does not exist.\n" \
+                           "${vopt[v_O]}"
+                    return 1
+                fi
+                for x in ${!p[@]};do
+                    [[ ${p[x]} == "-O" ]] && {
+                        p[x]=
+                        i="${p[$((x+1))]%/}"
+                        p[$((x+1))]=
+                        s="${!#}"
+                        break;
+                    }
+                done
+            fi
+            s="${s%/}"
+            p+=(-o "$i/${s##*/}.tar.${vopt[v_S]}");
+        fi
+        if ! ((v_o)); then 
+            ! ((v_f)) && [[ -e $i/${s##*/}.tar.${vopt[v_S]} ]] && {
+                printf "lrztar: %s exists, use -f to overwrite\n" \
+                    "$i/${s##*/}.tar.${vopt[v_S]}"
+                return 1
+            }
+        fi
+        tar c "$s" | lrzip "${p[@]}"
+        x=$?
+    }
+    return $x
+}
+
+lrztar_local "${@}"

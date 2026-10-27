@@ -1,12 +1,88 @@
 use crate::core::domain::{CancelInProgressCompressionPayload, CustomEvents, TauriEvents};
+use crate::utils::event::EventListenerGuard;
 use shared_child::SharedChild;
 use std::{
+    collections::VecDeque,
     io::{BufRead, BufReader},
     process::Command,
-    sync::{Arc, Mutex},
+    sync::{Arc, Mutex, Weak},
 };
 use strum::EnumProperty;
 use tauri::{AppHandle, Listener, Manager};
+
+/// Running processes, killed when the app quits: they are separate processes, so they would keep
+/// running otherwise (closing the main window already kills them). Weak, so finished processes are
+/// not kept alive.
+static RUNNING_PROCESSES: Mutex<Vec<Weak<SharedChild>>> = Mutex::new(Vec::new());
+
+pub(super) fn register_running_process(process: &Arc<SharedChild>) {
+    if let Ok(mut processes) = RUNNING_PROCESSES.lock() {
+        processes.retain(|process| process.strong_count() > 0);
+        processes.push(Arc::downgrade(process));
+    }
+}
+
+/// Kills every process still running (e.g. compressions), when the app quits
+pub fn kill_running_processes() {
+    if let Ok(mut processes) = RUNNING_PROCESSES.lock() {
+        for process in processes.drain(..).filter_map(|process| process.upgrade()) {
+            process.kill().ok();
+        }
+    }
+}
+
+/// Lines of a process's error output kept, logged if it fails (ffmpeg prints why it failed last)
+const ERROR_OUTPUT_LINES: usize = 40;
+
+/// The last lines of a process's error output
+type ErrorOutputTail = Arc<Mutex<VecDeque<String>>>;
+
+fn keep_error_output_line(tail: &ErrorOutputTail, line: &str) {
+    if let Ok(mut lines) = tail.lock() {
+        if lines.len() == ERROR_OUTPUT_LINES {
+            lines.pop_front();
+        }
+        lines.push_back(line.trim_end().to_string());
+    }
+}
+
+/// The command a process runs, for the log: its program's name & arguments
+fn describe_command(command: &Command) -> String {
+    let program = std::path::Path::new(command.get_program())
+        .file_name()
+        .map(|name| name.to_string_lossy().to_string())
+        .unwrap_or_default();
+    let args = command
+        .get_args()
+        .map(|arg| arg.to_string_lossy().to_string())
+        .collect::<Vec<_>>()
+        .join(" ");
+    format!("{} {}", program, args)
+}
+
+/// Logs a process that failed, with its command & the end of its error output (once read)
+async fn log_failed_process(
+    command: &str,
+    exit_code: Option<u8>,
+    tail: &ErrorOutputTail,
+    reader: Option<tokio::task::JoinHandle<()>>,
+) {
+    if let Some(reader) = reader {
+        let _ = tokio::time::timeout(std::time::Duration::from_secs(2), reader).await;
+    }
+    let output = tail
+        .lock()
+        .map(|lines| lines.iter().cloned().collect::<Vec<_>>().join("\n"))
+        .unwrap_or_default();
+    log::warn!(
+        "[media_process] Failed{}: {}\n{}",
+        exit_code
+            .map(|code| format!(" (exit code {})", code))
+            .unwrap_or_default(),
+        command,
+        output
+    );
+}
 
 pub type CancelCallback = Arc<dyn Fn() + Send + Sync>;
 
@@ -22,12 +98,14 @@ pub struct MediaProcessExecutorBuilder {
     stdout_callback: Option<StdoutCallback>,
     stderr_callback: Option<StderrCallback>,
     piped: bool,
+    owner_window: Option<String>,
 }
 
 impl MediaProcessExecutorBuilder {
     pub fn new(app: AppHandle) -> Self {
         Self {
             app,
+            owner_window: Some(String::from("main")),
             commands: Vec::new(),
             cancel_ids: Vec::new(),
             cancel_callback: None,
@@ -68,6 +146,12 @@ impl MediaProcessExecutorBuilder {
         self
     }
 
+    /// Window the processes belong to (the main window by default): they are stopped when it closes
+    pub fn owner_window(mut self, label: &str) -> Self {
+        self.owner_window = Some(label.to_string());
+        self
+    }
+
     pub fn with_piped(mut self) -> Self {
         self.piped = true;
         self
@@ -93,6 +177,7 @@ impl MediaProcessExecutorBuilder {
             stdout_callback: self.stdout_callback,
             stderr_callback: self.stderr_callback,
             piped: self.piped,
+            owner_window: self.owner_window,
         })
     }
 }
@@ -105,6 +190,7 @@ pub struct MediaProcessExecutor {
     stdout_callback: Option<StdoutCallback>,
     stderr_callback: Option<StderrCallback>,
     piped: bool,
+    owner_window: Option<String>,
 }
 
 impl MediaProcessExecutor {
@@ -141,38 +227,45 @@ impl MediaProcessExecutor {
         capture_stdout: bool,
     ) -> Result<(Option<String>, u8), String> {
         let mut processes: Vec<Arc<SharedChild>> = Vec::new();
-        let mut event_ids: Vec<tauri::EventId> = Vec::new();
         let should_cancel = Arc::new(Mutex::new(false));
         let captured_stdout = Arc::new(Mutex::new(None));
+        let command_descriptions: Vec<String> = self.commands.iter().map(describe_command).collect();
 
         for mut cmd in self.commands {
             let child = SharedChild::spawn(&mut cmd).map_err(|e| e.to_string())?;
             let cp = Arc::new(child);
+            register_running_process(&cp);
             processes.push(cp.clone());
         }
 
-        let window = self
-            .app
-            .get_webview_window("main")
-            .ok_or("Could not attach to main window")?;
-
-        let destroy_id = window.listen(TauriEvents::Destroyed.get_str("key").unwrap(), {
-            let processes = processes.clone();
-            move |_| {
-                log::info!("[tauri] window destroyed, killing processes");
-                for proc in &processes {
-                    proc.kill().ok();
+        // Removed on every return, including cancellations
+        let mut _listener_guards: Vec<EventListenerGuard<_>> = Vec::new();
+        // The processes belong to the window that started them, and are stopped when it is closed.
+        // Without it (e.g. closed already), they still run, and are stopped when the app quits.
+        let owner_window = self
+            .owner_window
+            .as_deref()
+            .and_then(|label| self.app.get_webview_window(label));
+        if let Some(window) = &owner_window {
+            let destroy_id = window.listen(TauriEvents::Destroyed.get_str("key").unwrap(), {
+                let processes = processes.clone();
+                move |_| {
+                    log::info!("[tauri] window destroyed, killing processes");
+                    for proc in &processes {
+                        proc.kill().ok();
+                    }
                 }
-            }
-        });
-        event_ids.push(destroy_id);
+            });
+            _listener_guards.push(EventListenerGuard::new(window.clone(), destroy_id));
+        }
 
         if !self.cancel_ids.is_empty() {
             let cancel_ids = self.cancel_ids.clone();
             let processes_clone = processes.clone();
             let should_cancel_clone = should_cancel.clone();
 
-            let cancel_id = window.listen(
+            // Cancelled from any window, by the ids (`listen_any`: the main window sends it to itself)
+            let cancel_id = self.app.listen_any(
                 CustomEvents::CancelInProgressCompression.as_ref(),
                 move |evt| {
                     let payload_str = evt.payload();
@@ -195,13 +288,17 @@ impl MediaProcessExecutor {
                     }
                 },
             );
-            event_ids.push(cancel_id);
+            _listener_guards.push(EventListenerGuard::for_app(self.app.clone(), cancel_id));
         }
 
+        let mut error_outputs: Vec<(ErrorOutputTail, Option<tokio::task::JoinHandle<()>>)> =
+            Vec::new();
         for (idx, proc) in processes.iter().enumerate() {
             let proc_clone = proc.clone();
             let callback_clone = self.stderr_callback.clone();
-            tokio::spawn(async move {
+            let tail: ErrorOutputTail = Arc::new(Mutex::new(VecDeque::new()));
+            let tail_clone = tail.clone();
+            let reader = tokio::spawn(async move {
                 if let Some(stderr) = proc_clone.take_stderr() {
                     let mut reader = BufReader::new(stderr);
                     loop {
@@ -214,6 +311,7 @@ impl MediaProcessExecutor {
                                 if let Ok(val) = std::str::from_utf8(&buf) {
                                     #[cfg(debug_assertions)]
                                     log::debug!("[media:process {}] stderr: {:?}", idx, val);
+                                    keep_error_output_line(&tail_clone, val);
 
                                     if let Some(ref callback) = callback_clone {
                                         callback(idx, val.to_string());
@@ -225,6 +323,7 @@ impl MediaProcessExecutor {
                     }
                 }
             });
+            error_outputs.push((tail, Some(reader)));
         }
 
         let mut wait_handles: Vec<tokio::task::JoinHandle<u8>> = Vec::new();
@@ -326,9 +425,6 @@ impl MediaProcessExecutor {
             }
         }
 
-        for event_id in event_ids {
-            window.unlisten(event_id);
-        }
 
         for proc in &processes {
             proc.kill().ok();
@@ -340,6 +436,13 @@ impl MediaProcessExecutor {
                 callback();
             }
             return Err("CANCELLED".to_string());
+        }
+
+        if final_exit_code != 0 {
+            for (idx, (tail, reader)) in error_outputs.into_iter().enumerate() {
+                let command = command_descriptions.get(idx).map(String::as_str).unwrap_or("");
+                log_failed_process(command, Some(final_exit_code), &tail, reader).await;
+            }
         }
 
         let stdout = if capture_stdout {
@@ -357,12 +460,12 @@ impl MediaProcessExecutor {
         _capture_stdout: bool,
     ) -> Result<(Option<String>, u8), String> {
         let mut processes: Vec<Arc<SharedChild>> = Vec::new();
-        let mut event_ids: Vec<tauri::EventId> = Vec::new();
         let should_cancel = Arc::new(Mutex::new(false));
         let processes_shared = Arc::new(Mutex::new(Vec::<Arc<SharedChild>>::new()));
 
         let mut previous_stdout: Option<std::process::ChildStdout> = None;
         let command_count = self.commands.len();
+        let command_descriptions: Vec<String> = self.commands.iter().map(describe_command).collect();
 
         for (idx, mut cmd) in self.commands.into_iter().enumerate() {
             if idx > 0 {
@@ -410,6 +513,7 @@ impl MediaProcessExecutor {
                 previous_stdout = None;
             }
 
+            register_running_process(&child);
             processes.push(child.clone());
             log::debug!(
                 "[media_process] Piped processes spawned process {} successfully",
@@ -420,29 +524,35 @@ impl MediaProcessExecutor {
         *processes_shared.lock().unwrap() = processes.clone();
         let process_count = processes_shared.lock().unwrap().len();
 
-        let window = self
-            .app
-            .get_webview_window("main")
-            .ok_or("Could not attach to main window")?;
-
-        let destroy_id = window.listen(TauriEvents::Destroyed.get_str("key").unwrap(), {
-            let processes_shared = processes_shared.clone();
-            move |_| {
-                log::info!("[media_process] window destroyed, killing piped processes");
-                let processes = processes_shared.lock().unwrap();
-                for process in processes.iter() {
-                    process.kill().ok();
+        // Removed on every return, including cancellations
+        let mut _listener_guards: Vec<EventListenerGuard<_>> = Vec::new();
+        // The processes belong to the window that started them, and are stopped when it is closed.
+        // Without it (e.g. closed already), they still run, and are stopped when the app quits.
+        let owner_window = self
+            .owner_window
+            .as_deref()
+            .and_then(|label| self.app.get_webview_window(label));
+        if let Some(window) = &owner_window {
+            let destroy_id = window.listen(TauriEvents::Destroyed.get_str("key").unwrap(), {
+                let processes_shared = processes_shared.clone();
+                move |_| {
+                    log::info!("[media_process] window destroyed, killing piped processes");
+                    let processes = processes_shared.lock().unwrap();
+                    for process in processes.iter() {
+                        process.kill().ok();
+                    }
                 }
-            }
-        });
-        event_ids.push(destroy_id);
+            });
+            _listener_guards.push(EventListenerGuard::new(window.clone(), destroy_id));
+        }
 
         if !self.cancel_ids.is_empty() {
             let cancel_ids = self.cancel_ids.clone();
             let should_cancel_clone = should_cancel.clone();
             let processes_shared_clone = processes_shared.clone();
 
-            let cancel_id = window.listen(
+            // Cancelled from any window, by the ids (`listen_any`: the main window sends it to itself)
+            let cancel_id = self.app.listen_any(
                 CustomEvents::CancelInProgressCompression.as_ref(),
                 move |evt| {
                     let payload_str = evt.payload();
@@ -466,13 +576,17 @@ impl MediaProcessExecutor {
                     }
                 },
             );
-            event_ids.push(cancel_id);
+            _listener_guards.push(EventListenerGuard::for_app(self.app.clone(), cancel_id));
         }
 
+        let mut error_outputs: Vec<(ErrorOutputTail, Option<tokio::task::JoinHandle<()>>)> =
+            Vec::new();
         for (idx, proc) in processes.iter().enumerate() {
             let proc_clone = proc.clone();
             let callback_clone = self.stderr_callback.clone();
-            tokio::spawn(async move {
+            let tail: ErrorOutputTail = Arc::new(Mutex::new(VecDeque::new()));
+            let tail_clone = tail.clone();
+            let reader = tokio::spawn(async move {
                 if let Some(stderr) = proc_clone.take_stderr() {
                     let mut reader = BufReader::new(stderr);
                     loop {
@@ -485,6 +599,7 @@ impl MediaProcessExecutor {
                                 if let Ok(val) = std::str::from_utf8(&buf) {
                                     #[cfg(debug_assertions)]
                                     log::debug!("[media:piped process {}] stderr: {:?}", idx, val);
+                                    keep_error_output_line(&tail_clone, val);
                                     if let Some(ref callback) = callback_clone {
                                         callback(idx, val.to_string());
                                     }
@@ -495,6 +610,7 @@ impl MediaProcessExecutor {
                     }
                 }
             });
+            error_outputs.push((tail, Some(reader)));
         }
 
         // Capture stdout from LAST process in piped mode
@@ -643,11 +759,12 @@ impl MediaProcessExecutor {
             }
         }
 
-        for event_id in event_ids {
-            window.unlisten(event_id);
-        }
 
         if !all_success {
+            for (idx, (tail, reader)) in error_outputs.into_iter().enumerate() {
+                let command = command_descriptions.get(idx).map(String::as_str).unwrap_or("");
+                log_failed_process(command, Some(final_exit_code), &tail, reader).await;
+            }
             return Err("Piped process chain failed".to_string());
         }
 

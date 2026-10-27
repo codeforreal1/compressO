@@ -1,0 +1,59 @@
+README.Assembler
+
+Update November 2019
+
+Assembler is enabled by
+./configure --enable-asm
+and disabled by
+./configure --disable-asm
+not
+ASM=no ./configure 
+
+New files replace 32 and 64 bit assembler code.
+fixes to lzma/C/Makefile.am permit libtool linking.
+
+Original text follows.
+==========================
+
+Notes about CRC Assembly Language Coding.
+
+lrzip-0.21 makes use of an x86 assembly language file
+that optimizes CRC computation used in lrzip. It includes
+a wrapper C file, 7zCrcT8.c and the assembler code,
+7zCrcT8U.s.
+
+configure should detect your host system properly
+and adjust the Makefile accordingly. If you don't
+have the nasm assembler or have a ppc or other non-
+x86 system, the standard C CRC routines will be
+compiled and linked in.
+
+If for any reason configure does not properly
+detect your system type, or you do not want assembler
+modules to be compiled, you can run
+
+ASM=no ./configure
+
+which will automatically not include the asm module or
+change the line
+
+ASM_OBJ=7zCrcT8.o 7zCrcT8U.o
+to 
+ASM_OBJ=7zCrc.o
+
+in Makefile. This will change the dependency tree.
+
+To force assembly module compilation and linking (if
+configure does not detect your system type properly),
+type
+
+ASM=yes ./configure
+
+or change the Makefile to include the ASM_OBJ files
+as described above.
+
+
+Type `make clean' and then re-run make.
+
+Peter Hyman
+pete@peterhyman.com

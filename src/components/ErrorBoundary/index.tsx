@@ -1,5 +1,7 @@
 import React from 'react'
 
+import { t } from '@/i18n'
+
 interface Props {
   children?: React.ReactNode
 }
@@ -30,12 +32,12 @@ class ErrorBoundary extends React.Component<Props, State> {
     if (hasError) {
       return (
         <div className="w-full h-full flex justify-center items-center">
-          <h2>Oops, there is an error!</h2>
+          <h2>{t('errorBoundary.title')}</h2>
           <button
             type="button"
             onClick={() => this.setState({ hasError: false })}
           >
-            Try again?
+            {t('errorBoundary.retry')}
           </button>
         </div>
       )

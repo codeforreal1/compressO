@@ -14,7 +14,7 @@
 - `CompressO_{{version}}_x64.exe`: Windows build
 
 ### Upgrade
-To upgrade, just download the latest build from the releases page and install it in your platform.
+To upgrade, just download the latest build from the [website](https://compresso.codeforreal.com/#download) or GitHub releases page and install it in your platform.
 
 ### Upgrade via Homebrew (MacOS only)
 If you've installed CompressO via Homebrew, then use the following command to upgrade:

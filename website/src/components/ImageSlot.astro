@@ -1,0 +1,91 @@
+---
+import type { ImageMetadata } from "astro";
+
+/**
+ * An image of the page, or a labeled placeholder until it is given one: pass `src` (an imported
+ * image or a URL) to show the image. The label says which image belongs there.
+ */
+interface Props {
+  label: string;
+  src?: ImageMetadata | string;
+  alt?: string;
+  /** Width / height of the placeholder (images keep their own) */
+  aspect?: string;
+  class?: string;
+  loading?: "eager" | "lazy";
+}
+
+const {
+  label,
+  src,
+  alt = label,
+  aspect = "16 / 10",
+  class: className,
+  loading = "lazy",
+} = Astro.props;
+const imageSrc = typeof src === "string" ? src : src?.src;
+---
+
+{
+  imageSrc ? (
+    <img
+      src={imageSrc}
+      alt={alt}
+      loading={loading}
+      class:list={["image-slot-image", className]}
+    />
+  ) : (
+    <div
+      class:list={["image-slot", className]}
+      style={{ aspectRatio: aspect }}
+      role="img"
+      aria-label={alt}
+    >
+      <svg
+        width="22"
+        height="22"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <rect x="3" y="3" width="18" height="18" rx="3" />
+        <circle cx="8.5" cy="8.5" r="1.5" />
+        <path d="m21 15-5-5L5 21" />
+      </svg>
+      <span>{label}</span>
+    </div>
+  )
+}
+
+<style>
+  .image-slot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    border-radius: 14px;
+    border: 1px dashed rgba(255, 255, 255, 0.14);
+    background:
+      repeating-linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.018) 0 10px,
+        transparent 10px 20px
+      ),
+      rgba(255, 255, 255, 0.02);
+    color: var(--text-faint);
+    font-size: 13px;
+    text-align: center;
+    padding: 16px;
+  }
+  .image-slot-image {
+    display: block;
+    width: 100%;
+    border-radius: 14px;
+  }
+</style>

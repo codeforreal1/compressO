@@ -1,0 +1,1002 @@
+{
+  "toolPreparation": {
+    "title": "Menyiapkan CompressO",
+    "checking": "Memeriksa alat kompresi…",
+    "verifying": "Memverifikasi alat kompresi…",
+    "extracting": "Mengekstrak alat kompresi…",
+    "validating": "Memvalidasi alat kompresi…",
+    "failed": "Tidak dapat menyiapkan alat kompresi. Lihat log untuk detailnya.",
+    "statusUnavailable": "Tidak dapat memeriksa status alat. Coba lagi.",
+    "retry": "Coba lagi",
+    "exit": "Keluar",
+    "showLogs": "Tampilkan log",
+    "logOpenFailed": "Tidak dapat membuka berkas log.",
+    "onlyOnce": "Ini hanya terjadi sekali."
+  },
+  "settings": {
+    "general": {
+      "startup": {
+        "title": "Mulai",
+        "changeFailed": "Pengaturan tidak dapat diubah.",
+        "openAtLogin": {
+          "title": "Buka saat masuk",
+          "description": "Buka CompressO secara otomatis saat Anda masuk ke komputer."
+        },
+        "needsApproval": {
+          "title": "Dinonaktifkan di Pengaturan Sistem",
+          "description": "CompressO tidak diizinkan dibuka saat masuk. Izinkan di Pengaturan Sistem, pada Umum dan Item Masuk.",
+          "button": "Buka Item Masuk"
+        },
+        "openInTrayOnly": {
+          "title_macos": "Buka hanya di bar menu",
+          "title_windows": "Buka hanya di baki sistem",
+          "description_macos": "Jangan tampilkan jendela utama saat dibuka ketika masuk. Media tetap dapat dikompresi dari bar menu.",
+          "description_windows": "Jangan tampilkan jendela utama saat dibuka ketika masuk. Media tetap dapat dikompresi dari baki sistem.",
+          "needsTrayIcon_macos": "Aktifkan “<setting>Tampilkan ikon bar menu</setting>” untuk menggunakan ini, karena aplikasi dibuka dari sana.",
+          "needsTrayIcon_windows": "Aktifkan “<setting>Tampilkan ikon baki sistem</setting>” untuk menggunakan ini, karena aplikasi dibuka dari sana."
+        }
+      },
+      "appearance": {
+        "title": "Tampilan",
+        "language": {
+          "title": "Bahasa",
+          "description": "Bahasa aplikasi."
+        },
+        "theme": {
+          "title": "Tema",
+          "description": "Ikuti sistem, atau selalu gunakan terang atau gelap."
+        },
+        "accentColor": {
+          "title": "Warna aksen",
+          "description": "Warna untuk tombol, sorotan, dan kemajuan."
+        },
+        "tintedWindow": {
+          "title": "Jendela berwarna",
+          "description": "Biarkan desktop terlihat samar melalui latar belakang jendela."
+        },
+        "tintOpacity": {
+          "title": "Opasitas warna",
+          "description": "Seberapa banyak desktop yang terlihat. Nilai lebih rendah menampilkan lebih banyak."
+        }
+      },
+      "tray": {
+        "title_macos": "Bar menu",
+        "title_windows": "Baki sistem",
+        "showIcon": {
+          "title_macos": "Tampilkan ikon bar menu",
+          "title_windows": "Tampilkan ikon baki sistem",
+          "description_macos": "Tampilkan ikon CompressO, kemajuan kompresi, dan zona taruh di bar menu.",
+          "description_windows": "Tampilkan ikon CompressO, kemajuan kompresi, dan zona taruh di baki sistem.",
+          "locked": "Media di zona taruh sedang dikompresi. Ini dapat dinonaktifkan setelah selesai atau dihentikan."
+        }
+      },
+      "preview": {
+        "title": "Pratinjau",
+        "videoPreviews": {
+          "title": "Pratinjau video",
+          "description": "Putar video di dalam aplikasi. Video tidak diputar dengan baik di beberapa sistem Linux, sehingga secara default ditampilkan gambar diam. Perubahan berlaku setelah dimulai ulang."
+        },
+        "restart": "Mulai ulang"
+      },
+      "sleep": {
+        "title": "Tidur",
+        "preventSleep": {
+          "title": "Cegah tidur saat mengompresi",
+          "description": "Jaga komputer tetap aktif hingga kompresi selesai. Layar tetap dapat mati. Menutup penutup laptop tetap membuatnya tidur."
+        },
+        "keepScreenOn": {
+          "title": "Biarkan layar tetap menyala",
+          "description": "Juga cegah layar mati saat mengompresi."
+        }
+      },
+      "sound": {
+        "audioWaveforms": {
+          "title": "Gelombang audio",
+          "description": "Tampilkan pratinjau audio animasi dan gelombang pada linimasa audio dan video."
+        },
+        "title": "Suara",
+        "completionSound": {
+          "title": "Suara selesai",
+          "description": "Putar suara saat kompresi selesai."
+        }
+      },
+      "troubleshooting": {
+        "title": "Pemecahan masalah",
+        "logFiles": {
+          "title": "File log",
+          "description": "Catatan tentang apa yang dilakukan aplikasi, yang membantu menemukan penyebab masalah. Sertakan file ini saat melaporkan masalah. File ini berisi nama file yang Anda kompresi.",
+          "button": "Tampilkan file log",
+          "failed": "File log tidak dapat ditampilkan."
+        }
+      }
+    },
+    "presets": {
+      "copyName": "Salinan {{name}}",
+      "isDefault_video": "Default untuk video baru. Pilih untuk menggunakan preset Standar sebagai gantinya.",
+      "isDefault_image": "Default untuk gambar baru. Pilih untuk menggunakan preset Standar sebagai gantinya.",
+      "isDefault_audio": "Default untuk file audio baru. Pilih untuk menggunakan preset Standar sebagai gantinya.",
+      "setDefault_video": "Jadikan default untuk video baru",
+      "setDefault_image": "Jadikan default untuk gambar baru",
+      "setDefault_audio": "Jadikan default untuk file audio baru",
+      "name": "Nama preset",
+      "moveUp": "Pindahkan ke atas",
+      "moveDown": "Pindahkan ke bawah",
+      "duplicate": "Duplikat",
+      "delete": "Hapus preset",
+      "empty_video": "Belum ada preset video. Sesuaikan pengaturan sebuah video, lalu pilih tombol plus di samping menu Preset untuk menyimpannya sebagai preset.",
+      "empty_image": "Belum ada preset gambar. Sesuaikan pengaturan sebuah gambar, lalu pilih tombol plus di samping menu Preset untuk menyimpannya sebagai preset.",
+      "empty_audio": "Belum ada preset audio. Sesuaikan pengaturan sebuah file audio, lalu pilih tombol plus di samping menu Preset untuk menyimpannya sebagai preset.",
+      "mediaType": "Jenis media",
+      "standardOutput": "Lokasi penyimpanan dan awalan nama filenya diatur di <setting>Keluaran</setting>.",
+      "cannotDeleteStandard": "Preset Standar tidak dapat dihapus."
+    },
+    "dropZone": {
+      "turnOnTrayIcon_macos": "Zona taruh berada di bar menu. Aktifkan terlebih dahulu “<setting>Tampilkan ikon bar menu</setting>” di Umum.",
+      "turnOnTrayIcon_windows": "Zona taruh berada di baki sistem. Aktifkan terlebih dahulu “<setting>Tampilkan ikon baki sistem</setting>” di Umum.",
+      "compression": {
+        "title": "Kompresi",
+        "autoCompress": {
+          "title": "Kompresi otomatis",
+          "description": "Kompres media segera setelah ditambahkan ke zona letak, satu per satu, dan simpan ke lokasi penyimpanan presetnya.",
+          "needsSaveLocation": "Pilih lokasi penyimpanan selain Tanyakan setiap kali, di <setting>Keluaran</setting> atau di preset zona letak, agar media terkompresi dapat disimpan tanpa bertanya."
+        }
+      },
+      "preset": {
+        "title_video": "Preset video",
+        "title_image": "Preset gambar",
+        "title_audio": "Preset audio",
+        "description_video": "Pengaturan yang digunakan untuk video.",
+        "description_image": "Pengaturan yang digunakan untuk gambar.",
+        "description_audio": "Pengaturan yang digunakan untuk file audio."
+      },
+      "clipboard": {
+        "title": "Papan klip",
+        "watch": {
+          "title": "Pantau papan klip",
+          "description_macos": "Tambahkan media yang Anda salin, seperti file atau gambar dari browser, ke zona taruh di bar menu.",
+          "description_windows": "Tambahkan media yang Anda salin, seperti file atau gambar dari browser, ke zona taruh di baki sistem."
+        }
+      },
+      "watchedFolders": {
+        "add": {
+          "title": "Pantau folder",
+          "description": "Media baru yang ditambahkan ke folder ini, seperti rekaman layar atau unduhan, dikompres secara otomatis.",
+          "button": "Tambah folder",
+          "dialogTitle": "Pilih folder untuk dipantau.",
+          "alreadyWatched": "Folder ini sudah dipantau.",
+          "description_linux": "Media baru yang ditambahkan ke folder ini, seperti rekaman layar atau unduhan, dikompres secara otomatis selama CompressO terbuka."
+        },
+        "watch": "Pantau {{name}}",
+        "missing": "Folder tidak ada. Folder ini tidak dipantau.",
+        "needsSaveLocation": "Pilih lokasi penyimpanan selain Tanyakan setiap kali, di <setting>Keluaran</setting> atau di salah satu presetnya, agar medianya dapat disimpan tanpa bertanya. Folder ini tidak sedang dipantau.",
+        "presetAsks": "Lokasi penyimpanannya adalah Tanyakan setiap kali. Pilih lokasi lain, di <setting>Keluaran</setting> atau di preset ini, agar folder ini dapat dipantau.",
+        "stillMissing": "Folder belum ada. Buat kembali sebelum mengaktifkan pemantauan.",
+        "checkFailed": "Tidak dapat memeriksa apakah folder ini ada. Coba lagi.",
+        "remove": "Berhenti memantau",
+        "preset_video": "Video",
+        "preset_image": "Gambar",
+        "preset_audio": "Audio"
+      }
+    },
+    "output": {
+      "saving": {
+        "title": "Penyimpanan",
+        "location": {
+          "option_ask": "Tanyakan setiap kali",
+          "option_fixedFolder": "Folder tetap",
+          "option_sameFolder": "Folder yang sama dengan file asli",
+          "title": "Lokasi penyimpanan",
+          "description_ask": "Pilih lokasi penyimpanan setelah setiap kompresi.",
+          "description_fixedFolder": "Simpan otomatis ke folder yang dipilih setelah setiap kompresi.",
+          "description_sameFolder": "Simpan otomatis di samping file asli, di folder yang sama."
+        },
+        "folder": {
+          "none": "Tidak ada folder yang dipilih",
+          "change": "Ubah",
+          "dialogTitle": "Pilih folder untuk menyimpan media yang dikompresi.",
+          "title": "Folder"
+        },
+        "preserveFolders": {
+          "title": "Pertahankan struktur folder",
+          "description": "Pertahankan struktur folder asli saat menyimpan."
+        },
+        "skipLarger": {
+          "title": "Lewati output yang lebih besar",
+          "description": "Jangan simpan media yang dikompresi jika ukurannya lebih besar dari aslinya."
+        },
+        "replaceOriginal": {
+          "title": "Ganti file asli",
+          "description": "Jika file terkompresi disimpan dengan nama yang sama di folder yang sama dengan file aslinya, file asli dipindahkan ke Tempat Sampah dan hanya file terkompresi yang disimpan.",
+          "description_windows": "Jika file terkompresi disimpan dengan nama yang sama di folder yang sama dengan file aslinya, file asli dipindahkan ke Recycle Bin dan hanya file terkompresi yang disimpan."
+        },
+        "prefix": {
+          "title": "Awalan nama file",
+          "placeholder": "Tanpa awalan",
+          "description": "Teks yang ditambahkan di awal nama file yang disimpan. Biarkan kosong untuk mempertahankan nama asli."
+        },
+        "appliesTo": "Berlaku hanya untuk preset Standar."
+      },
+      "clipboard": {
+        "title": "Papan klip",
+        "copyOutput": {
+          "title": "Salin output ke papan klip",
+          "description": "Salin media yang dikompresi ke papan klip setelah setiap kompresi, agar dapat langsung ditempel."
+        },
+        "includeBatch": {
+          "title": "Sertakan output batch",
+          "description": "Salin juga file saat beberapa file dikompresi sekaligus."
+        }
+      },
+      "performance": {
+        "title": "Performa",
+        "hardwareAcceleration": {
+          "title": "Gunakan akselerasi perangkat keras",
+          "description": "Kompresi video lebih cepat dengan akselerasi perangkat keras (ukuran file dapat sedikit lebih besar)",
+          "unavailable": "Akselerasi perangkat keras tidak tersedia di komputer ini."
+        },
+        "retryTargetSizeOnCpu": {
+          "title": "Capai ukuran target tanpa akselerasi",
+          "description": "Hanya berlaku untuk \"Ukuran target\". Jika video tidak mencapai ukuran targetnya, video dikompres ulang tanpa akselerasi perangkat keras, yang lebih lambat tetapi lebih mendekati ukurannya."
+        }
+      },
+      "storage": {
+        "title": "Penyimpanan",
+        "clearCache": {
+          "title": "Hapus cache",
+          "confirm": "Hapus sekarang",
+          "description": "Kosongkan ruang dengan menghapus file sementara. File yang Anda simpan tidak terpengaruh.",
+          "mediaOpen": "Tutup terlebih dahulu media yang sedang Anda kerjakan, karena media tersebut menggunakan cache.",
+          "cleared": "Semua cache telah dihapus.",
+          "failed": "Terjadi masalah saat menghapus cache."
+        }
+      },
+      "savedFiles": {
+        "title": "File tersimpan"
+      }
+    },
+    "open": "Buka Pengaturan",
+    "search": {
+      "label": "Cari pengaturan",
+      "results": "Hasil pencarian",
+      "noResults": "Pengaturan tidak ditemukan."
+    },
+    "groups": {
+      "settings": "Pengaturan",
+      "app": "CompressO"
+    },
+    "pages": {
+      "general": "Umum",
+      "output": "Output",
+      "presets": "Preset",
+      "dropZone": "Zona Taruh",
+      "about": "Tentang",
+      "credits": "Kredit",
+      "watchedFolders": "Pantau folder",
+      "history": "Riwayat"
+    },
+    "about": {
+      "updateAvailable": "Pembaruan tersedia",
+      "tagline": "Kompresi gambar atau video apa pun menjadi ukuran yang sangat kecil.",
+      "version": "Versi {{version}}",
+      "newVersion": "Versi {{version}} tersedia. Mulai ulang aplikasi setelah memperbarui untuk menggunakannya.",
+      "upToDate": "Anda menggunakan versi terbaru.",
+      "checkDescription": "Periksa apakah versi CompressO yang lebih baru tersedia.",
+      "updateNow": "Perbarui sekarang",
+      "checkForUpdates": "Periksa pembaruan",
+      "website": {
+        "title": "Situs web",
+        "description": "Unduhan, fitur, dan dokumentasi."
+      },
+      "openSource": {
+        "title": "Gratis dan sumber terbuka",
+        "license": "Berlisensi AGPL-3.0"
+      },
+      "madeBy": "Dibuat dengan <heart></heart> secara terbuka oleh <link>Code For Real⚡</link>",
+      "releaseNotes": "Catatan rilis",
+      "releaseNotesOnline": {
+        "title": "Lihat yang baru di versi {{version}}",
+        "description": "Catatan rilis tidak dapat dimuat di sini.",
+        "view": "Lihat secara daring"
+      },
+      "changelog": {
+        "title": "Catatan perubahan",
+        "description": "Hal baru di setiap versi CompressO.",
+        "view": "Lihat catatan perubahan"
+      }
+    },
+    "credits": {
+      "tools": {
+        "title": "Alat sumber terbuka",
+        "description": "CompressO tidak akan ada tanpa alat dan pustaka sumber terbuka yang luar biasa ini."
+      },
+      "license": "Berlisensi {{license}}",
+      "notices": {
+        "title": "Pemberitahuan pihak ketiga",
+        "description": "Pemberitahuan dan lisensi pihak ketiga selengkapnya.",
+        "view": "Lihat"
+      }
+    },
+    "watchedFolders": {
+      "folders": "Folder",
+      "openFailed": "Folder tidak dapat dibuka. Folder mungkin telah dipindahkan atau dihapus."
+    },
+    "history": {
+      "clear": "Hapus riwayat",
+      "clearConfirm": "Hapus semua entri",
+      "clearFailed": "Riwayat tidak dapat dihapus.",
+      "search": "Cari berdasarkan nama, folder, atau preset",
+      "empty": "Media yang dikompres akan tercantum di sini.",
+      "noResults": "Tidak ada kompresi yang cocok dengan pencarian.",
+      "source_main": "Jendela utama",
+      "source_dropZone": "Zona letak",
+      "source_watchedFolder": "Folder yang dipantau {{name}}",
+      "original": "Asli",
+      "output": "Hasil",
+      "missing": "File ini telah dipindahkan atau dihapus.",
+      "notSaved": "Hasil ini tidak disimpan.",
+      "fileCount": "File: {{count}}",
+      "showFiles": "Tampilkan file di {{name}}",
+      "hideFiles": "Sembunyikan file di {{name}}",
+      "stats": {
+        "saved": "Ruang yang dihemat",
+        "files": "File yang dikompres",
+        "original": "Ukuran asli",
+        "output": "Ukuran terkompresi",
+        "reduction": "Rata-rata pengurangan"
+      }
+    }
+  },
+  "common": {
+    "sameFormatAsInput": "Format sama dengan input",
+    "lossless": "Lossless",
+    "mono": "Mono",
+    "stereo": "Stereo",
+    "kbps": "{{value}} kbps",
+    "delete": "Hapus",
+    "cancel": "Batal",
+    "save": "Simpan",
+    "sizeChange": "{{from}} menjadi {{to}}",
+    "showInFileManager": "Tampilkan di File Explorer",
+    "showNameInFileManager": "Tampilkan {{name}} di File Explorer",
+    "copied": "Disalin ke papan klip.",
+    "close": "Tutup",
+    "reset": "Atur ulang",
+    "apply": "Terapkan",
+    "yes": "Ya",
+    "edit": "Edit",
+    "decrease": "Kurangi",
+    "increase": "Tambah"
+  },
+  "presets": {
+    "standard": "Standar",
+    "defaultChoice": "Default ({{name}})",
+    "summary": {
+      "rotated": "Diputar {{degrees}}°",
+      "flipped": "Dibalik",
+      "cropped": "Dipotong menjadi {{aspectRatio}}",
+      "quality": "Kualitas {{value}}%",
+      "resolution": "Sisi panjang {{size}} px",
+      "fps": "{{fps}} FPS",
+      "speed": "Kecepatan {{speed}}x",
+      "audioRemoved": "Audio dihapus",
+      "volume": "Volume {{value}}%",
+      "audioCodec": "Audio {{codec}}",
+      "metadataRemoved": "Metadata dihapus",
+      "metadataKept": "Metadata dipertahankan",
+      "svgScale": "Skala SVG {{scale}}x",
+      "customSvg": "Konversi SVG kustom",
+      "targetSize": "Ukuran target {{size}} MB",
+      "targetSizeImage": "Ukuran target {{size}}"
+    },
+    "save": {
+      "title_video": "Simpan Preset Video",
+      "title_image": "Simpan Preset Gambar",
+      "title_audio": "Simpan Preset Audio",
+      "name": "Nama",
+      "placeholder_video": "mis. Web 1080p",
+      "placeholder_image": "mis. Web",
+      "placeholder_audio": "mis. Podcast",
+      "nameTaken": "Preset dengan nama ini sudah ada.",
+      "hint": "Preset dapat diganti namanya, diurutkan ulang, dan dihapus di Pengaturan, pada <setting>Preset</setting>."
+    },
+    "updated": "Preset “{{name}}” telah diperbarui.",
+    "saved": "Preset “{{name}}” telah disimpan.",
+    "revertFailed": "Pengaturan tidak dapat dikembalikan.",
+    "applyFailed": "Preset tidak dapat diterapkan.",
+    "label": "Preset:",
+    "update": "Perbarui “{{name}}”",
+    "saveAsNew": "Simpan sebagai preset baru",
+    "revert": "Kembalikan ke preset",
+    "output": {
+      "location": "Lokasi penyimpanan",
+      "followStandard": "Sama dengan preset Standar"
+    }
+  },
+  "dropZone": {
+    "unsupportedType": "Jenis file ini tidak didukung.",
+    "unsupportedSkipped": "File yang tidak didukung dilewati.",
+    "addFailed": "Media tidak dapat ditambahkan.",
+    "openFailed": "CompressO tidak dapat dibuka.",
+    "quitFailed": "CompressO tidak dapat ditutup.",
+    "pin": "Sematkan",
+    "unpin": "Lepas sematan",
+    "openApp": "Buka Aplikasi",
+    "openAppCompressing": "Buka aplikasi, mengompresi {{progress}}%",
+    "openAppPaused": "Buka aplikasi, dijeda di {{progress}}%",
+    "quitApp": "Tutup Aplikasi",
+    "release": "Lepaskan untuk menambahkan media",
+    "dropToCompress": "Taruh atau tempel media di sini untuk dikompresi",
+    "dropToStore": "Taruh atau tempel media di sini untuk disimpan sementara",
+    "mediaTypes": "Video, gambar, atau folder…",
+    "itemsReady_other": "{{count}} item siap",
+    "discardAll": "Buang semua",
+    "remove": "Hapus {{name}}",
+    "storedBusy": "Disimpan sementara. Buka aplikasi untuk mengompresinya setelah media saat ini.",
+    "storedIdle": "Taruh media lainnya, atau buka aplikasi untuk memulai kompresi.",
+    "needsSaveLocation": "Pilih lokasi penyimpanan di Pengaturan, di <setting>Keluaran</setting> atau di preset zona letak, agar media terkompresi dapat disimpan tanpa bertanya."
+  },
+  "queue": {
+    "notSavedLarger": "Tidak disimpan, karena ukurannya lebih besar dari aslinya.",
+    "noSaveLocation": "Pilih lokasi penyimpanan untuk presetnya, di Pengaturan.",
+    "chooseSaveLocation": "Pilih lokasi penyimpanan",
+    "saveFailed": "Media yang dikompresi tidak dapat disimpan.",
+    "compressFailed": "Media tidak dapat dikompresi.",
+    "summary": {
+      "cancelledAndFailed": "{{cancelled}}, {{failed}}",
+      "cancelled_other": "{{count}} dibatalkan",
+      "failed_other": "{{count}} tidak dapat dikompresi",
+      "complete": "Kompresi selesai",
+      "pausing": "Dijeda setelah {{position}} dari {{total}}",
+      "paused_other": "Dijeda, {{count}} menunggu",
+      "compressing": "Mengompresi {{position}} dari {{total}}",
+      "waiting_other": "{{count}} menunggu"
+    },
+    "compressingName": "Mengompresi {{name}}",
+    "status": {
+      "waiting": "Menunggu",
+      "cancelled": "Dibatalkan",
+      "done": "Selesai",
+      "failed": "Gagal",
+      "smaller": "{{value}}% lebih kecil"
+    },
+    "tryAgain": "Coba lagi",
+    "tryNameAgain": "Coba {{name}} lagi",
+    "resume": "Lanjutkan",
+    "pause": "Jeda",
+    "pauseAfterCurrent": "Jeda setelah file saat ini",
+    "stop": "Hentikan",
+    "clear": "Bersihkan",
+    "stopAndCancel": "Hentikan kompresi dan batalkan media yang menunggu",
+    "clearFinished": "Bersihkan media yang selesai",
+    "stopCompression": "Hentikan kompresi",
+    "clearAll": "Bersihkan semua",
+    "collapse": "Ciutkan",
+    "showDropZone": "Tampilkan zona taruh",
+    "filesCompressed_other": "{{count}} file dikompresi",
+    "accessDenied": "Tidak diizinkan membuka file ini. Izinkan akses di pengaturan sistem.",
+    "fromWatchedFolder": "Dari folder yang dipantau {{name}}",
+    "compressAgain": "Kompres lagi",
+    "compressNameAgain": "Kompres {{name}} lagi"
+  },
+  "subtitles": {
+    "unknownLanguage": "Tidak diketahui",
+    "selectFile": "Pilih file subtitel (SRT)",
+    "selectFailed": "File subtitel tidak dapat dipilih.",
+    "title": "Subtitel",
+    "preserveExisting": "Pertahankan subtitel yang ada",
+    "untitled": "Subtitel {{number}}",
+    "language": "Bahasa",
+    "add": "Tambahkan Subtitel",
+    "unsupported": "{{container}} tidak mendukung subtitel terpisah"
+  },
+  "mediaInfo": {
+    "videoInformation": "Informasi Video",
+    "fullPath": "Jalur Lengkap",
+    "formatName": "Nama Format",
+    "format": "Format",
+    "duration": "Durasi",
+    "size": "Ukuran",
+    "bitrate": "Bitrate",
+    "totalStreams": "Total Stream",
+    "codec": "Codec",
+    "profile": "Profil",
+    "width": "Lebar",
+    "height": "Tinggi",
+    "codedWidth": "Lebar Terenkode",
+    "codedHeight": "Tinggi Terenkode",
+    "frameRate": "Frame Rate",
+    "avgFrameRate": "Frame Rate Rata-rata",
+    "pixelFormat": "Format Piksel",
+    "colorSpace": "Ruang Warna",
+    "colorRange": "Rentang Warna",
+    "colorPrimaries": "Warna Primer",
+    "colorTransfer": "Transfer Warna",
+    "chromaLocation": "Lokasi Kroma",
+    "totalFrames": "Total Frame",
+    "referenceFrames": "Frame Referensi",
+    "gopSize": "Ukuran GOP",
+    "codecLevel": "Level Codec",
+    "fieldOrder": "Urutan Field",
+    "timeBase": "Basis Waktu",
+    "rotation": "Rotasi",
+    "channels": "Saluran",
+    "channelLayout": "Tata Letak Saluran",
+    "sampleRate": "Sample Rate",
+    "sampleFormat": "Format Sampel",
+    "bitsPerSample": "Bit per Sampel",
+    "metadataTags": "Tag Metadata",
+    "subtitleFormat": "Format subtitel",
+    "language": "Bahasa",
+    "title": "Judul",
+    "disposition": "Disposisi",
+    "start": "Awal",
+    "end": "Akhir",
+    "imageInformation": "Informasi Gambar",
+    "fileName": "Nama File",
+    "mimeType": "Jenis MIME",
+    "aspectRatio": "Rasio Aspek",
+    "orientation": "Orientasi",
+    "dpi": "DPI",
+    "megapixels": "Megapiksel",
+    "colorType": "Jenis Warna",
+    "bitDepth": "Kedalaman Bit",
+    "alphaChannel": "Saluran Alfa",
+    "make": "Pembuat",
+    "model": "Model",
+    "lensModel": "Model Lensa",
+    "software": "Perangkat Lunak",
+    "iso": "ISO",
+    "exposureTime": "Waktu Eksposur",
+    "aperture": "Apertur",
+    "focalLength": "Panjang Fokus",
+    "flash": "Lampu Kilat",
+    "dateTaken": "Tanggal Diambil",
+    "dateDigitized": "Tanggal Digitalisasi",
+    "artist": "Artis",
+    "copyright": "Hak Cipta",
+    "coordinates": "Koordinat",
+    "tabs": {
+      "container": "Kontainer",
+      "video": "Video",
+      "audio": "Audio",
+      "subtitles": "Subtitel",
+      "chapters": "Bab",
+      "metadata": "Metadata",
+      "color": "Warna",
+      "exif": "EXIF"
+    },
+    "noMetadata": "Metadata tidak ditemukan",
+    "notAvailable": "T/A",
+    "videoStream": "Stream Video",
+    "audioStream": "Stream Audio",
+    "noAudioStreams": "Stream audio tidak ditemukan",
+    "noSubtitleStreams": "Stream subtitel tidak ditemukan",
+    "noVideoPath": "Jalur video tidak tersedia",
+    "subtitleFiles": "File Subtitel",
+    "subtitleSaved": "Subtitel diekstrak dan disimpan sebagai {{format}}.",
+    "subtitleStream": "Stream Subtitel {{number}}",
+    "subtitleNotExtractable": "Format subtitel ini ({{codec}}) tidak dapat dikonversi ke SRT. Kemungkinan ini adalah format berbasis gambar (mis. Blu-ray PGS atau DVD VobSub). Karena itu, subtitel ini tidak dapat diunduh.",
+    "downloading": "Mengunduh…",
+    "unsupported": "Tidak didukung",
+    "downloadAs": "Unduh sebagai {{format}}",
+    "dispositions": {
+      "default": "Default",
+      "forced": "Paksa",
+      "attachedPicture": "Gambar Terlampir",
+      "comment": "Komentar",
+      "karaoke": "Karaoke",
+      "lyrics": "Lirik"
+    },
+    "noChapters": "Bab tidak ditemukan",
+    "chapter": "Bab {{number}}",
+    "noExif": "Data EXIF tidak ditemukan",
+    "cameraInformation": "Informasi Kamera",
+    "shootingInformation": "Informasi Pemotretan",
+    "dateInformation": "Informasi Tanggal",
+    "copyrightInformation": "Informasi Hak Cipta",
+    "gpsInformation": "Informasi GPS",
+    "allTags": "Semua Tag"
+  },
+  "svg": {
+    "advanced": "Pengaturan SVG Lanjutan",
+    "blackAndWhite": "Hitam Putih",
+    "levels": {
+      "low": "Rendah",
+      "medium": "Sedang",
+      "high": "Tinggi",
+      "few": "Sedikit",
+      "many": "Banyak",
+      "sharp": "Tajam",
+      "smooth": "Halus",
+      "fine": "Detail",
+      "coarse": "Kasar",
+      "accurate": "Akurat",
+      "less": "Kurang"
+    },
+    "filterSpeckle": {
+      "title": "Filter Bintik",
+      "tooltip": "Nilai lebih tinggi lebih bersih dan halus"
+    },
+    "colorPrecision": {
+      "title": "Presisi Warna",
+      "tooltip": "Nilai lebih tinggi lebih akurat, tetapi dapat terlalu jenuh"
+    },
+    "layerDifference": {
+      "title": "Perbedaan Lapisan",
+      "tooltip": "Nilai lebih tinggi berarti lebih sedikit lapisan"
+    },
+    "cornerThreshold": {
+      "title": "Ambang Sudut",
+      "tooltip": "Nilai lebih tinggi lebih halus"
+    },
+    "segmentLength": {
+      "title": "Panjang Segmen",
+      "tooltip": "Nilai lebih tinggi lebih kasar"
+    },
+    "spliceThreshold": {
+      "title": "Ambang Sambungan",
+      "tooltip": "Nilai lebih tinggi kurang akurat"
+    },
+    "scaleFactor": "Faktor Skala"
+  },
+  "batch": {
+    "copyOutput": "Salin output ke papan klip",
+    "compareOutput": "Bandingkan output",
+    "processing": "Memproses",
+    "paused": "Dijeda",
+    "inputSize": "Ukuran Input",
+    "outputSize": "Ukuran Output",
+    "extension": "Ekstensi",
+    "duration": "Durasi",
+    "dimensions": "Dimensi",
+    "compressed_videos": "Video Dikompresi",
+    "compressed_audio": "Audio Dikompresi",
+    "compressed_images": "Gambar Dikompresi",
+    "compressed_media": "Media Dikompresi",
+    "label_videos": "Video",
+    "label_audio": "Audio",
+    "label_images": "Gambar",
+    "label_media": "Media",
+    "sizeSaved": "Ukuran Dihemat",
+    "addMoreTooltip": "Tambahkan media lainnya. Anda juga dapat menaruh atau menempel file.",
+    "addMoreMedia": "Tambahkan media lainnya",
+    "addMore": "Tambah lagi"
+  },
+  "preview": {
+    "showFailed": "File tidak dapat ditampilkan.",
+    "compare": "Bandingkan",
+    "showEdits": "Tampilkan edit",
+    "smaller": "lebih kecil",
+    "size": "Ukuran",
+    "fps": "FPS",
+    "viewFullInfo": "Lihat Info Lengkap",
+    "progress": "Kemajuan {{value}}%",
+    "mediaToCompress": "Media yang akan dikompresi",
+    "waitingForDropZone": "Menunggu zona taruh…",
+    "processing": "Memproses…",
+    "estimatingSize": "Memperkirakan ukuran keluaran...",
+    "estimatedSize": "Perkiraan ukuran: sekitar {{size}}",
+    "estimatedSizeUpTo": "Perkiraan ukuran: hingga {{size}}"
+  },
+  "thumbnail": {
+    "copyFrameUnavailable": "Frame tidak dapat disalin",
+    "frameCopied": "Frame disalin ke papan klip",
+    "copyFrameFailed": "Gagal menyalin frame ke papan klip",
+    "coverArt": "Sampul",
+    "copyFrame": "Salin frame saat ini",
+    "audioUnplayable": "Audio ini tidak dapat diputar di sini, tetapi tetap dapat dikompresi.",
+    "switchingToImage": "Beralih ke thumbnail gambar…",
+    "pauseAudio": "Jeda audio",
+    "playAudio": "Putar audio",
+    "videoUnplayable": "Video ini tidak dapat diputar oleh aplikasi ini karena berisi codec atau konfigurasi lanjutan. Video seperti ini memerlukan pemutar khusus seperti VLC.",
+    "previewsOff": "Pratinjau video dinonaktifkan. Pratinjau dapat diaktifkan di Pengaturan, pada <setting>Umum</setting>.",
+    "stillCompressible": "Anda tetap dapat menerapkan pengaturan output dan melakukan semua konversi.",
+    "enlarge": "Perbesar gambar",
+    "select": "Pilih gambar thumbnail.",
+    "selectFailed": "Gambar thumbnail tidak dapat dipilih.",
+    "title": "Thumbnail",
+    "noneSelected": "Tidak ada thumbnail yang dipilih",
+    "custom": "Thumbnail kustom",
+    "choose": "Pilih",
+    "unsupported": "{{container}} tidak mendukung thumbnail kustom"
+  },
+  "codecs": {
+    "video": {
+      "libx264": "Paling kompatibel, kualitas baik",
+      "libx265": "Kompresi lebih baik, standar lebih baru",
+      "libvpx_vp9": "Sumber terbuka, ideal untuk web",
+      "libaom_av1": "Kompresi terbaik, lebih lambat",
+      "mpeg4": "Codec lama, dukungan luas"
+    },
+    "audio": {
+      "aac": "Codec standar, kompatibilitas luas",
+      "libmp3lame": "Format audio universal",
+      "libopus": "Modern, kualitas tinggi",
+      "libvorbis": "Sumber terbuka, kualitas baik",
+      "ac3": "Dolby Digital, suara surround",
+      "alac": "Kompresi lossless yang dioptimalkan untuk perangkat Apple",
+      "flac": "Kompresi lossless",
+      "pcm_s16le": "Tanpa kompresi, kualitas terbaik"
+    },
+    "title": "Codec",
+    "select": "Pilih Codec:",
+    "default": "Default",
+    "defaultDescription": "Codec default untuk kontainer yang dipilih",
+    "unusableIn_other": "{{codec}} tidak dapat digunakan dalam file {{containers}}, sehingga {{count}} video tetap menggunakan codec default-nya.",
+    "videoCount_other": "{{usable}} dari {{count}} video",
+    "partial": "Hanya {{videos}} yang dapat menggunakan {{codec}}. Video lainnya tetap menggunakan codec default-nya."
+  },
+  "metadata": {
+    "limitation_mov": "File MOV tidak dapat menyimpan deskripsi atau sinopsis.",
+    "limitation_avi": "File AVI tidak dapat menyimpan deskripsi, sinopsis, atau tanggal pembuatan.",
+    "limitation_ts": "File TS hanya dapat menyimpan judul. Detail lainnya tidak disimpan.",
+    "strip": "Hapus Metadata",
+    "keepHint": "Biarkan kolom kosong untuk mempertahankan nilai asli",
+    "removeHint": "Atau, masukkan spasi untuk menghapus nilai asli",
+    "title": {
+      "label": "Judul",
+      "placeholder": "Masukkan judul",
+      "placeholderVideo": "Masukkan judul video"
+    },
+    "artist": {
+      "label": "Artis",
+      "placeholder": "Masukkan nama artis"
+    },
+    "album": {
+      "label": "Album",
+      "placeholder": "Masukkan nama album"
+    },
+    "genre": {
+      "label": "Genre",
+      "placeholder": "Masukkan genre"
+    },
+    "year": {
+      "label": "Tahun/Tanggal",
+      "placeholder": "Masukkan tahun atau tanggal"
+    },
+    "description": {
+      "label": "Deskripsi",
+      "placeholder": "Masukkan deskripsi"
+    },
+    "synopsis": {
+      "label": "Sinopsis",
+      "placeholder": "Masukkan sinopsis"
+    },
+    "comment": {
+      "label": "Komentar",
+      "placeholder": "Masukkan komentar"
+    },
+    "copyright": {
+      "label": "Hak Cipta",
+      "placeholder": "Masukkan informasi hak cipta"
+    },
+    "creationTime": {
+      "label": "Waktu Pembuatan",
+      "placeholder": "Masukkan waktu pembuatan"
+    }
+  },
+  "media": {
+    "addAfterCompression": "Media tidak dapat ditambahkan setelah kompresi. Mulai kompresi baru untuk menambahkan media lainnya.",
+    "noValidFiles": "File media yang valid tidak ditemukan.",
+    "alreadyAdded": "Media yang dipilih sudah ditambahkan.",
+    "someCorrupted": "Beberapa file tampaknya rusak atau tidak valid dan tidak ditambahkan.",
+    "corrupted": "File tampaknya rusak atau tidak valid.",
+    "selectTitle": "Pilih gambar, video, atau audio untuk dikompresi.",
+    "selectFailed": "Media tidak dapat dipilih.",
+    "invalidFiles": "File atau folder tidak valid",
+    "accessDenied_other": "CompressO tidak diizinkan membuka {{count}} file. Izinkan akses ke foldernya di pengaturan sistem, lalu tambahkan lagi.",
+    "openSettings": "Buka pengaturan"
+  },
+  "save": {
+    "partiallySaved_other": "{{saved}} dari {{count}} file disimpan. {{failed}} tidak dapat disimpan. Gunakan “Simpan Media” untuk memilih lokasi lain.",
+    "autoSaveFailed": "Tidak dapat menyimpan secara otomatis, kemungkinan karena izin folder tidak ada. Gunakan “Simpan Media” untuk memilih lokasi.",
+    "failed": "Media tidak dapat disimpan ke jalur yang ditentukan.",
+    "chooseDirectory": "Pilih folder untuk menyimpan media yang dikompresi.",
+    "chooseLocation": "Pilih lokasi untuk menyimpan media yang dikompresi.",
+    "largerSkipped_other": "{{count}} output lebih besar dari aslinya dan tidak disimpan secara otomatis. Gunakan “Simpan” jika Anda tetap ingin menyimpannya.",
+    "copyFailed": "Output tidak dapat disalin ke papan klip.",
+    "saving": "Menyimpan…",
+    "saved": "Disimpan",
+    "saveMedia": "Simpan Media",
+    "saveThisFile": "Simpan Berkas"
+  },
+  "home": {
+    "dragAndDrop": "Seret & Taruh",
+    "or": "Atau",
+    "clickToSelect": "Klik untuk memilih media",
+    "dropAnywhere": "Taruh di mana saja…"
+  },
+  "compression": {
+    "cannotCancel": "Kompresi tidak dapat dibatalkan saat ini.",
+    "confirmCancel": "Konfirmasi Pembatalan",
+    "cancelling": "Membatalkan…",
+    "reconfigure": "Konfigurasi Ulang",
+    "reconfigureOriginalReplaced_other": "File asli telah dipindahkan ke Tempat Sampah karena <setting>Ganti file asli</setting> aktif, sehingga tidak dapat dikompresi lagi.",
+    "reconfigureOriginalReplaced_windows_other": "File asli telah dipindahkan ke Recycle Bin karena <setting>Ganti file asli</setting> aktif, sehingga tidak dapat dikompresi lagi.",
+    "pauseFailed": "Kompresi tidak dapat dijeda.",
+    "resumeFailed": "Kompresi tidak dapat dilanjutkan.",
+    "failed": "Terjadi kesalahan saat kompresi.",
+    "process": "Proses"
+  },
+  "exit": {
+    "title": "Keluar",
+    "notSaved": "Media belum disimpan",
+    "discardConfirm_other": "Media yang dikompresi belum disimpan. Apakah Anda yakin ingin membuangnya?",
+    "goBack": "Kembali"
+  },
+  "mediaConfig": {
+    "filter": "Filter Media",
+    "all": "Semua",
+    "outputSettings": "Pengaturan Output",
+    "batchSettings": "Pengaturan Batch"
+  },
+  "compare": {
+    "input": "Input",
+    "output": "Output",
+    "enlargeInput": "Perbesar input",
+    "enlargeOutput": "Perbesar output",
+    "svgTooLarge": "File SVG terlalu besar. Hal ini dapat memengaruhi performa perbandingan."
+  },
+  "transform": {
+    "free": "Bebas",
+    "rotateLeft": "Putar ke Kiri",
+    "flipVertical": "Balik Vertikal",
+    "flipHorizontal": "Balik Horizontal",
+    "resetZoom": "Atur Ulang Zoom",
+    "expand": "Perluas",
+    "title": "Transformasi"
+  },
+  "outputSettings": {
+    "video": "Pengaturan Video",
+    "image": "Pengaturan Gambar",
+    "audio": "Pengaturan Audio",
+    "compressionSettings": "Pengaturan Kompresi",
+    "tabs": {
+      "image": "Gambar",
+      "video": "Video",
+      "audio": "Audio",
+      "others": "Lainnya"
+    },
+    "noAudio": "Audio tidak ditemukan"
+  },
+  "quality": {
+    "unsupportedAudio": "Format atau codec audio yang dipilih tidak mendukung penyesuaian kualitas.",
+    "lossless": "Kompresi Lossless",
+    "title": "Kualitas"
+  },
+  "dimensions": {
+    "resolution": "Resolusi",
+    "revert": "Kembalikan ke resolusi asli",
+    "width": "Lebar",
+    "height": "Tinggi",
+    "original": "Asli",
+    "resolutionLabel": "Resolusi:"
+  },
+  "extension": {
+    "label": "Ekstensi:",
+    "sameAsInput": "Sama dengan input",
+    "noAudio": "Video ini tidak memiliki audio untuk diekstrak.",
+    "extractAudio": "Ekstrak audio",
+    "extractAudioNone": "Ekstrak audio (audio tidak ditemukan)"
+  },
+  "trim": {
+    "title": "Pangkas",
+    "instructions": "Petunjuk",
+    "controls": "Kontrol Linimasa:",
+    "select": "Klik untuk memilih trek",
+    "split": "Klik dua kali pada trek untuk membaginya",
+    "add": "Klik dua kali pada area kosong untuk menambahkan trek baru",
+    "delete": "Pilih trek lalu tekan <key>Delete</key> untuk menghapusnya",
+    "hideInstructions": "Sembunyikan Petunjuk"
+  },
+  "audio": {
+    "bitrate": "Bitrate",
+    "bitrateLabel": "Bitrate:",
+    "channels": "Saluran",
+    "layout": "Tata Letak:",
+    "monoSource": "Sumber Mono:",
+    "left": "Kiri",
+    "right": "Kanan",
+    "swapChannels": "Tukar saluran kiri dan kanan",
+    "tracks": "Trek",
+    "track": "Trek #{{number}}",
+    "channelCount_other": "{{count}} saluran",
+    "volumeLabel": "Volume:",
+    "volume": "Volume Audio",
+    "mute": "Bisu"
+  },
+  "fps": {
+    "label": "Frame per Detik:"
+  },
+  "speed": {
+    "title": "Kecepatan"
+  },
+  "keys": {
+    "ctrl": "Ctrl",
+    "shift": "Shift",
+    "enter": "Enter"
+  },
+  "theme": {
+    "title": "Tema",
+    "options": {
+      "system": "Sistem",
+      "light": "Terang",
+      "dark": "Gelap"
+    }
+  },
+  "errorBoundary": {
+    "title": "Terjadi kesalahan.",
+    "retry": "Coba lagi"
+  },
+  "player": {
+    "play": "Putar",
+    "pause": "Jeda"
+  },
+  "update": {
+    "installed": "Pembaruan berhasil dipasang. Mulai ulang aplikasi untuk menggunakan versi baru.",
+    "installFailed": "Pembaruan gagal dipasang. Silakan coba lagi.",
+    "error": "Kesalahan pembaruan: {{message}}"
+  },
+  "native": {
+    "quit": "Keluar",
+    "continueCompressing": "Lanjutkan Kompresi",
+    "goBack": "Kembali",
+    "compressingTitle": "Kompresi sedang berlangsung",
+    "compressingMessage": "Media masih dikompresi. Keluar sekarang akan membatalkan kompresi.",
+    "unsavedTitle": "Media belum disimpan",
+    "unsavedMessage": "Media yang dikompresi belum disimpan. Keluar sekarang akan membuangnya.",
+    "dropQueueMessage": "Media di zona taruh masih dikompresi. Keluar sekarang akan menghentikannya.",
+    "openApp": "Buka CompressO",
+    "quitApp": "Keluar dari CompressO",
+    "aboutApp": "Tentang CompressO",
+    "settings": "Pengaturan…",
+    "services": "Layanan",
+    "hideApp": "Sembunyikan CompressO",
+    "hideOthers": "Sembunyikan Lainnya",
+    "file": "File",
+    "closeWindow": "Tutup Jendela",
+    "edit": "Edit",
+    "undo": "Urungkan",
+    "redo": "Ulangi",
+    "cut": "Potong",
+    "copy": "Salin",
+    "paste": "Tempel",
+    "selectAll": "Pilih Semua",
+    "view": "Tampilan",
+    "fullScreen": "Masuk/Keluar Layar Penuh",
+    "window": "Jendela",
+    "minimize": "Minimalkan",
+    "zoom": "Zoom",
+    "help": "Bantuan"
+  },
+  "targetSize": {
+    "mode": "Kompres berdasarkan",
+    "modes": {
+      "quality": "Kualitas",
+      "size": "Ukuran target"
+    },
+    "size": "Ukuran target",
+    "estimate": "Sekitar {{width}}×{{height}} pada {{fps}} fps, dalam {{size}} MB.",
+    "estimateLowered": "Diturunkan ke {{width}}×{{height}} pada {{fps}} fps agar muat dalam {{size}} MB.",
+    "notForGif": "GIF tidak dapat dikompres ke suatu ukuran. Pilih format lain, atau kompres berdasarkan kualitas.",
+    "audioEstimate": "Sekitar {{bitrate}} kbps.",
+    "audioLossless": "Format atau codec audio yang dipilih tidak dapat mencapai sembarang ukuran target melalui pengaturan bitrate. Pilih format atau codec lain, atau kompres berdasarkan kualitas. Pilihan Anda tidak akan diubah secara otomatis.",
+    "audioDurationMissing": "Durasi audio harus diketahui sebelum mengompres ke ukuran target.",
+    "audioTooSmall": "Ukuran target ini terlalu kecil untuk format dan durasi audio yang dipilih. Perbesar ukuran atau pangkas rekaman.",
+    "notReachedAudio": "Ukuran target tidak dapat dicapai dalam format audio yang dipilih. File keluaran terkecil yang tersedia ditampilkan.",
+    "round": "Putaran {{round}}",
+    "roundDetail": "Putaran {{round}}: mendekati ukuran target",
+    "roundWithoutHardwareAcceleration": "Putaran {{round}}: tanpa akselerasi perangkat keras, untuk mendekati ukuran target",
+    "fitsAtQuality": "Kualitas yang dipilih sudah sesuai, sekitar {{size}}, sehingga kualitas tersebut digunakan.",
+    "switchUnit": "Tampilkan ukuran dalam {{unit}}",
+    "notForSvgOrGif": "SVG dan GIF tidak dapat dikompres ke suatu ukuran. Pilih format lain, atau kompres berdasarkan kualitas.",
+    "notReachedImage": "Gambar tidak dapat dibuat lebih kecil lagi tanpa menjadi terlalu kecil. Ukuran targetnya adalah {{size}}."
+  },
+  "outputOptions": {
+    "title": "Opsi lainnya",
+    "choose": "Tampilkan keluaran {{size}}",
+    "withinTarget": "Dalam target",
+    "overTarget": "Melebihi target",
+    "replace": "Ganti berkas yang disimpan"
+  }
+}

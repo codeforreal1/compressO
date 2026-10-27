@@ -1,13 +1,17 @@
 import { Checkbox } from '@heroui/react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useCallback, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
 import Switch from '@/components/Switch'
+import { t } from '@/i18n'
 import { AudioStream } from '@/types/compression'
 import { slideDownTransition } from '@/utils/animation'
+import { isAudioOutput } from '@/utils/audio'
 import { cn } from '@/utils/tailwind'
 import { appProxy, normalizeBatchMediaConfig } from '../../../../-state'
+import { useBatchVideoConfigKey } from '../-batchConfig'
 
 type AudioTracksProps = {
   mediaIndex: number
@@ -16,7 +20,7 @@ type AudioTracksProps = {
 function getLanguageFromTags(
   tags: readonly (readonly [string, string])[] | null,
 ): string {
-  if (!tags) return 'Unknown'
+  if (!tags) return t('subtitles.unknownLanguage')
   const langTag = tags.find(([key]) => key.toLowerCase() === 'language')
   return langTag ? langTag[1] : '-'
 }
@@ -30,6 +34,7 @@ function getTitleFromTags(
 }
 
 function AudioTracks({ mediaIndex }: AudioTracksProps) {
+  const { t } = useTranslation()
   if (mediaIndex < 0) return null
 
   const {
@@ -41,6 +46,7 @@ function AudioTracks({ mediaIndex }: AudioTracksProps) {
       isLoadingMediaFiles,
     },
   } = useSnapshot(appProxy)
+  const batchConfigKey = useBatchVideoConfigKey()
   const video =
     media.length > 0 && mediaIndex >= 0 && media[mediaIndex].type === 'video'
       ? media[mediaIndex]
@@ -51,7 +57,7 @@ function AudioTracks({ mediaIndex }: AudioTracksProps) {
     selectedAudioTracks,
     audioConfig,
     convertToExtension,
-  } = config ?? commonConfigForBatchCompression.videoConfig ?? {}
+  } = config ?? commonConfigForBatchCompression[batchConfigKey] ?? {}
 
   const audioStreams = videoInfoRaw?.audioStreams ?? []
 
@@ -71,8 +77,9 @@ function AudioTracks({ mediaIndex }: AudioTracksProps) {
           allTrackIndices
       } else {
         if (appProxy.state.media.length > 1) {
-          appProxy.state.commonConfigForBatchCompression.videoConfig.selectedAudioTracks =
-            allTrackIndices
+          appProxy.state.commonConfigForBatchCompression[
+            batchConfigKey
+          ].selectedAudioTracks = allTrackIndices
           normalizeBatchMediaConfig()
         }
       }
@@ -82,6 +89,7 @@ function AudioTracks({ mediaIndex }: AudioTracksProps) {
     mediaIndex,
     audioStreams,
     selectedAudioTracks,
+    batchConfigKey,
   ])
 
   const handleSwitchToggle = useCallback(() => {
@@ -102,19 +110,27 @@ function AudioTracks({ mediaIndex }: AudioTracksProps) {
       }
     } else {
       if (appProxy.state.media.length > 1) {
-        appProxy.state.commonConfigForBatchCompression.videoConfig.shouldEnableAudioTrackSelection =
-          !shouldEnableAudioTrackSelection
+        appProxy.state.commonConfigForBatchCompression[
+          batchConfigKey
+        ].shouldEnableAudioTrackSelection = !shouldEnableAudioTrackSelection
         if (!shouldEnableAudioTrackSelection) {
-          appProxy.state.commonConfigForBatchCompression.videoConfig.selectedAudioTracks =
-            audioStreams.map((_, index) => index)
+          appProxy.state.commonConfigForBatchCompression[
+            batchConfigKey
+          ].selectedAudioTracks = audioStreams.map((_, index) => index)
         } else {
-          appProxy.state.commonConfigForBatchCompression.videoConfig.selectedAudioTracks =
-            []
+          appProxy.state.commonConfigForBatchCompression[
+            batchConfigKey
+          ].selectedAudioTracks = []
         }
         normalizeBatchMediaConfig()
       }
     }
-  }, [mediaIndex, shouldEnableAudioTrackSelection, audioStreams])
+  }, [
+    mediaIndex,
+    shouldEnableAudioTrackSelection,
+    audioStreams,
+    batchConfigKey,
+  ])
 
   const handleTrackToggle = useCallback(
     (trackIndex: number) => {
@@ -139,13 +155,14 @@ function AudioTracks({ mediaIndex }: AudioTracksProps) {
         appProxy.state.media[mediaIndex].isConfigDirty = true
       } else {
         if (appProxy.state.media.length > 1) {
-          appProxy.state.commonConfigForBatchCompression.videoConfig.selectedAudioTracks =
-            newSelected
+          appProxy.state.commonConfigForBatchCompression[
+            batchConfigKey
+          ].selectedAudioTracks = newSelected
           normalizeBatchMediaConfig()
         }
       }
     },
-    [mediaIndex, selectedAudioTracks],
+    [mediaIndex, selectedAudioTracks, batchConfigKey],
   )
 
   const hasNoAudio = audioStreams.length === 0
@@ -156,7 +173,13 @@ function AudioTracks({ mediaIndex }: AudioTracksProps) {
     isProcessCompleted ||
     isLoadingMediaFiles ||
     hasNoAudio ||
-    audioConfig?.volume === 0 ||
+    // Muted, an audio output is still written (as silence), so its settings stay available
+    (audioConfig?.volume === 0 &&
+      !isAudioOutput({
+        isAudioFile: video?.isAudioFile,
+        isAudioFileSettings: batchConfigKey === 'audioFileConfig',
+        convertToExtension,
+      })) ||
     convertToExtension === 'gif'
 
   return (
@@ -167,12 +190,12 @@ function AudioTracks({ mediaIndex }: AudioTracksProps) {
         isDisabled={shouldDisableInput || audioStreams.length === 0}
       >
         <p className="text-gray-600 dark:text-gray-400 text-sm mr-2 w-full">
-          Tracks
+          {t('audio.tracks')}
         </p>
       </Switch>
       <AnimatePresence mode="wait">
         {shouldEnableAudioTrackSelection && audioStreams.length > 0 ? (
-          <motion.div {...slideDownTransition} className="mt-1">
+          <motion.div {...slideDownTransition} className="pt-1">
             <div className="w-full rounded-2xl overflow-hidden">
               {audioStreams.map((stream: AudioStream, index: number) => {
                 const isSelected = (selectedAudioTracks ?? []).includes(index)
@@ -190,8 +213,7 @@ function AudioTracks({ mediaIndex }: AudioTracksProps) {
                     size="sm"
                     classNames={{
                       base: cn(
-                        'inline-flex w-full max-w-md bg-content1',
-                        'hover:bg-content2 items-center justify-start',
+                        'inline-flex w-full max-w-md items-center justify-start',
                         'cursor-pointer rounded-xl gap-2 p-4 py-2 pl-6 border-2 border-transparent',
                       ),
                       label: 'w-full',
@@ -200,13 +222,13 @@ function AudioTracks({ mediaIndex }: AudioTracksProps) {
                   >
                     <div className="flex flex-col ml-2">
                       <span className="text-sm font-medium">
-                        Track #{index + 1}
+                        {t('audio.track', { number: index + 1 })}
                         {title ? ` - ${title}` : ''}
                       </span>
                       <span className="text-xs text-gray-500 dark:text-gray-400">
                         {language ? `${language} • ` : ''}
-                        {stream.codec.toUpperCase?.() ?? ''} • {stream.channels}{' '}
-                        channels
+                        {stream.codec.toUpperCase?.() ?? ''} •{' '}
+                        {t('audio.channelCount', { count: stream.channels })}
                       </span>
                     </div>
                   </Checkbox>

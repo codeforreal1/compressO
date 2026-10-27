@@ -1,0 +1,125 @@
+lrzip-0.6x file format
+March 2011
+Con Kolivas
+
+Byte	Content
+0-23	Magic
+---
+24+	Rzip Chunk Data (RCD)
+RCD+	Data blocks
+--- repeat
+(end-MD5_DIGEST_SIZE)->(end) md5 hash
+
+Magic data:
+0->3	LRZI
+4	LRZIP Major Version Number
+5	LRZIP Minor Version Number
+6->14	Source File Size or 0 if unknown, or salt in encrypted file
+16->20	LZMA Properties Encoded (lc,lp,pb,fb, and dictionary size)
+21	1 = md5sum hash is stored at the end of the archive
+22	1 = data is encrypted with sha512/aes128
+23	Unused
+
+Encrypted salt (bytes 6->14 in magic if encrypted):
+0->1	Encoded number of loops to hash password
+2->7	Random data
+(RCD0 is set to 8 bytes always on encrypted files)
+
+Rzip Chunk Data:
+0	Data offsets byte width (meaning length is < (2 * 8)^RCD0)
+1	Flag that there is no chunk beyond this
+(RCD0 bytes)	Chunk decompressed size (not stored in encrypted file)
+XX	Stream 0 header data
+XX	Stream 1 header data
+
+Stream Header Data: 
+Byte:
+0	Compressed data type
+(RCD0 bytes)	Compressed data length
+(RCD0 bytes)	Uncompressed data length
+(RCD0 bytes)	Next block head
+
+Data blocks:
+0->(end-2) data
+(end-1)->end crc data
+
+
+lrzip-0.5x file format
+March 2011
+Con Kolivas
+
+Byte	Content
+0->23	Magic
+--
+24->74	Rzip chunk data
+75+	Data blocks
+-- repeat
+(end-MD5_DIGEST_SIZE)->(end) md5 hash
+
+Magic data:
+0->3	LRZI
+4	LRZIP Major Version Number
+5	LRZIP Minor Version Number
+6->14	Source File Size
+16->20	LZMA Properties Encoded (lc,lp,pb,fb, and dictionary size)
+21	Flag that md5sum hash is stored at the end of the archive
+22-23	not used
+
+Rzip chunk data:
+0	Data offsets byte width
+1-25	Stream 0 header data
+26-50	Stream 1 header data
+
+Stream Header Data:
+Byte:
+0	Compressed data type
+1-8	Compressed data length
+9-16	Uncompressed data length
+17-24	Next block head
+
+Data blocks:
+0->(end-2) data
+(end-1)->end crc data
+
+
+lrzip-0.40+ file header format
+November 2009
+Con Kolivas
+
+Byte	Content
+0-3	LRZI
+4	LRZIP Major Version Number
+5	LRZIP Minor Version Number
+6-14	Source File Size
+16-20	LZMA Properties Encoded (lc,lp,pb,fb, and dictionary size)
+21-24	not used
+24-48	Stream 1 header data
+49-74	Stream 2 header data
+
+Block Data:
+Byte:
+0	Compressed data type
+1-8	Compressed data length
+9-16	Uncompressed data length
+17-24	Next block head
+25+	Data
+
+End:
+0-1	crc data
+
+
+lrzip-0.24+ file header format
+January 2009
+Peter Hyman, pete@peterhyman.com
+
+Byte	Content
+0-3	LRZI
+4	LRZIP Major Version Number
+5	LRZIP Minor Version Number
+6-9	Source File Size (no HAVE_LARGE_FILES)
+6-14	Source File Size
+16-20	LZMA Properties Encoded (lc,lp,pb,fb, and dictionary size)
+21-23	not used
+24-36	Stream 1 header data
+37-50	Stream 2 header data
+51	Compressed data type

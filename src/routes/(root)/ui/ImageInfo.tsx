@@ -2,6 +2,7 @@ import { Tab } from '@heroui/react'
 import { motion } from 'framer-motion'
 import { startCase } from 'lodash'
 import { useCallback, useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
 import Code from '@/components/Code'
@@ -29,22 +30,15 @@ type ImageInfoProps = {
   onClose?: () => void
 }
 
+/** Titled with `mediaInfo.tabs.<id>` */
 const TABS = {
-  container: {
-    id: 'container',
-    title: 'Container',
-  },
-  color: {
-    id: 'color',
-    title: 'Color',
-  },
-  exif: {
-    id: 'exif',
-    title: 'EXIF',
-  },
+  container: { id: 'container' },
+  color: { id: 'color' },
+  exif: { id: 'exif' },
 } as const
 
 function ImageInfo({ mediaIndex, onClose }: ImageInfoProps) {
+  const { t } = useTranslation()
   if (mediaIndex < 0) return null
 
   const {
@@ -136,20 +130,27 @@ function ImageInfo({ mediaIndex, onClose }: ImageInfoProps) {
   }, [onClose])
 
   return (
-    <section className="w-full h-full bg-white1 dark:bg-black1 p-6">
+    <section
+      data-tint-transparent=""
+      className="w-full h-full bg-white1 dark:bg-black1 p-6"
+    >
       <div className="w-full flex justify-center">
         <Tabs
-          aria-label="Image Information"
+          aria-label={t('mediaInfo.imageInformation')}
           size="sm"
           selectedKey={tab}
-          onSelectionChange={(t) => setTab(t as keyof typeof TABS)}
+          onSelectionChange={(key) => setTab(key as keyof typeof TABS)}
           classNames={{
             tabContent: 'text-[11px]',
             tab: 'h-6',
           }}
         >
-          {Object.values(TABS).map((t) => (
-            <Tab key={t.id} value={t.id} title={t.title} />
+          {Object.values(TABS).map((item) => (
+            <Tab
+              key={item.id}
+              value={item.id}
+              title={t(`mediaInfo.tabs.${item.id}`)}
+            />
           ))}
         </Tabs>
       </div>
@@ -195,12 +196,13 @@ function BasicInfoDisplay({
   dimensions?: ImageDimensions
   imagePathRaw?: string | null
 }) {
+  const { t } = useTranslation()
   return (
     <div className="space-y-4">
       {imagePathRaw ? (
         <>
           <InfoItem
-            label="Full Path"
+            label={t('mediaInfo.fullPath')}
             value={
               <Code size="sm" className="text-xs max-w-[100%] truncate">
                 {imagePathRaw}
@@ -213,28 +215,31 @@ function BasicInfoDisplay({
 
       {info.filename ? (
         <>
-          <InfoItem label="File Name" value={info.filename} />
+          <InfoItem label={t('mediaInfo.fileName')} value={info.filename} />
           <Divider className="my-1" />
         </>
       ) : null}
 
       {info.format ? (
         <>
-          <InfoItem label="Format" value={info.format} />
+          <InfoItem label={t('mediaInfo.format')} value={info.format} />
           <Divider className="my-1" />
         </>
       ) : null}
 
       {info.mimeType ? (
         <>
-          <InfoItem label="MIME Type" value={info.mimeType} />
+          <InfoItem label={t('mediaInfo.mimeType')} value={info.mimeType} />
           <Divider className="my-1" />
         </>
       ) : null}
 
       {info.size > 0 ? (
         <>
-          <InfoItem label="Size" value={formatBytes(info.size)} />
+          <InfoItem
+            label={t('mediaInfo.size')}
+            value={formatBytes(info.size)}
+          />
           <Divider className="my-1" />
         </>
       ) : null}
@@ -243,18 +248,27 @@ function BasicInfoDisplay({
         <>
           <div className="grid grid-cols-2 gap-4 mt-4">
             <div>
-              <InfoItem label="Width" value={`${dimensions.width}px`} />
+              <InfoItem
+                label={t('mediaInfo.width')}
+                value={`${dimensions.width}px`}
+              />
               <Divider className="!my-2" />
             </div>
             <div>
-              <InfoItem label="Height" value={`${dimensions.height}px`} />
+              <InfoItem
+                label={t('mediaInfo.height')}
+                value={`${dimensions.height}px`}
+              />
               <Divider className="!my-2" />
             </div>
           </div>
 
           {dimensions.aspectRatio ? (
             <>
-              <InfoItem label="Aspect Ratio" value={dimensions.aspectRatio} />
+              <InfoItem
+                label={t('mediaInfo.aspectRatio')}
+                value={dimensions.aspectRatio}
+              />
               <Divider className="!my-2" />
             </>
           ) : null}
@@ -262,7 +276,7 @@ function BasicInfoDisplay({
           {dimensions.orientation ? (
             <>
               <InfoItem
-                label="Orientation"
+                label={t('mediaInfo.orientation')}
                 value={`${dimensions.orientation}°`}
               />
               <Divider className="!my-2" />
@@ -272,7 +286,7 @@ function BasicInfoDisplay({
           {dimensions.dpi ? (
             <>
               <InfoItem
-                label="DPI"
+                label={t('mediaInfo.dpi')}
                 value={`${dimensions.dpi[0]} × ${dimensions.dpi[1]}`}
               />
               <Divider className="!my-2" />
@@ -280,7 +294,7 @@ function BasicInfoDisplay({
           ) : null}
 
           <InfoItem
-            label="Megapixels"
+            label={t('mediaInfo.megapixels')}
             value={`${dimensions.megapixels.toFixed(2)} MP`}
           />
           <Divider className="!my-2" />
@@ -291,35 +305,45 @@ function BasicInfoDisplay({
 }
 
 function ColorInfoDisplay({ info }: { info: ImageColorInfo }) {
+  const { t } = useTranslation()
   return (
     <div className="space-y-4">
       {info.colorType ? (
         <>
-          <InfoItem label="Color Type" value={info.colorType} />
+          <InfoItem label={t('mediaInfo.colorType')} value={info.colorType} />
           <Divider className="!my-2" />
         </>
       ) : null}
 
       {info.bitDepth ? (
         <>
-          <InfoItem label="Bit Depth" value={`${info.bitDepth}-bit`} />
+          <InfoItem
+            label={t('mediaInfo.bitDepth')}
+            value={`${info.bitDepth}-bit`}
+          />
           <Divider className="!my-2" />
         </>
       ) : null}
 
-      <InfoItem label="Alpha Channel" value={info.hasAlpha ? 'Yes' : 'No'} />
+      <InfoItem
+        label={t('mediaInfo.alphaChannel')}
+        value={info.hasAlpha ? 'Yes' : 'No'}
+      />
       <Divider className="!my-2" />
 
       {info.colorSpace ? (
         <>
-          <InfoItem label="Color Space" value={info.colorSpace} />
+          <InfoItem label={t('mediaInfo.colorSpace')} value={info.colorSpace} />
           <Divider className="!my-2" />
         </>
       ) : null}
 
       {info.pixelFormat ? (
         <>
-          <InfoItem label="Pixel Format" value={info.pixelFormat} />
+          <InfoItem
+            label={t('mediaInfo.pixelFormat')}
+            value={info.pixelFormat}
+          />
           <Divider className="!my-2" />
         </>
       ) : null}
@@ -328,6 +352,7 @@ function ColorInfoDisplay({ info }: { info: ImageColorInfo }) {
 }
 
 function ExifDisplay({ exif }: { exif: ExifInfo }) {
+  const { t } = useTranslation()
   const hasCameraInfo =
     exif.make || exif.model || exif.lensModel || exif.software
   const hasShootingInfo =
@@ -350,7 +375,7 @@ function ExifDisplay({ exif }: { exif: ExifInfo }) {
   ) {
     return (
       <p className="text-center text-zinc-500 py-8 select-text">
-        No EXIF data found
+        {t('mediaInfo.noExif')}
       </p>
     )
   }
@@ -364,33 +389,36 @@ function ExifDisplay({ exif }: { exif: ExifInfo }) {
           className="space-y-4"
         >
           <h3 className="text-lg font-semibold text-primary select-text">
-            Camera Information
+            {t('mediaInfo.cameraInformation')}
           </h3>
 
           {exif.make ? (
             <>
-              <InfoItem label="Make" value={exif.make} />
+              <InfoItem label={t('mediaInfo.make')} value={exif.make} />
               <Divider className="!my-2" />
             </>
           ) : null}
 
           {exif.model ? (
             <>
-              <InfoItem label="Model" value={exif.model} />
+              <InfoItem label={t('mediaInfo.model')} value={exif.model} />
               <Divider className="!my-2" />
             </>
           ) : null}
 
           {exif.lensModel ? (
             <>
-              <InfoItem label="Lens Model" value={exif.lensModel} />
+              <InfoItem
+                label={t('mediaInfo.lensModel')}
+                value={exif.lensModel}
+              />
               <Divider className="!my-2" />
             </>
           ) : null}
 
           {exif.software ? (
             <>
-              <InfoItem label="Software" value={exif.software} />
+              <InfoItem label={t('mediaInfo.software')} value={exif.software} />
               <Divider className="!my-2" />
             </>
           ) : null}
@@ -405,40 +433,49 @@ function ExifDisplay({ exif }: { exif: ExifInfo }) {
           className="space-y-4"
         >
           <h3 className="text-lg font-semibold text-primary select-text">
-            Shooting Information
+            {t('mediaInfo.shootingInformation')}
           </h3>
 
           {exif.iso ? (
             <>
-              <InfoItem label="ISO" value={`ISO ${exif.iso}`} />
+              <InfoItem label={t('mediaInfo.iso')} value={`ISO ${exif.iso}`} />
               <Divider className="!my-1" />
             </>
           ) : null}
 
           {exif.exposureTime ? (
             <>
-              <InfoItem label="Exposure Time" value={exif.exposureTime} />
+              <InfoItem
+                label={t('mediaInfo.exposureTime')}
+                value={exif.exposureTime}
+              />
               <Divider className="!my-1" />
             </>
           ) : null}
 
           {exif.fNumber ? (
             <>
-              <InfoItem label="Aperture" value={`f/${exif.fNumber}`} />
+              <InfoItem
+                label={t('mediaInfo.aperture')}
+                value={`f/${exif.fNumber}`}
+              />
               <Divider className="!my-1" />
             </>
           ) : null}
 
           {exif.focalLength ? (
             <>
-              <InfoItem label="Focal Length" value={exif.focalLength} />
+              <InfoItem
+                label={t('mediaInfo.focalLength')}
+                value={exif.focalLength}
+              />
               <Divider className="!my-1" />
             </>
           ) : null}
 
           {exif.flash ? (
             <>
-              <InfoItem label="Flash" value={exif.flash} />
+              <InfoItem label={t('mediaInfo.flash')} value={exif.flash} />
               <Divider className="!my-1" />
             </>
           ) : null}
@@ -453,19 +490,25 @@ function ExifDisplay({ exif }: { exif: ExifInfo }) {
           className="space-y-4"
         >
           <h3 className="text-lg font-semibold text-primary select-text">
-            Date Information
+            {t('mediaInfo.dateInformation')}
           </h3>
 
           {exif.dateTimeOriginal ? (
             <>
-              <InfoItem label="Date Taken" value={exif.dateTimeOriginal} />
+              <InfoItem
+                label={t('mediaInfo.dateTaken')}
+                value={exif.dateTimeOriginal}
+              />
               <Divider className="!my-2" />
             </>
           ) : null}
 
           {exif.dateTimeDigitized ? (
             <>
-              <InfoItem label="Date Digitized" value={exif.dateTimeDigitized} />
+              <InfoItem
+                label={t('mediaInfo.dateDigitized')}
+                value={exif.dateTimeDigitized}
+              />
               <Divider className="!my-2" />
             </>
           ) : null}
@@ -480,19 +523,22 @@ function ExifDisplay({ exif }: { exif: ExifInfo }) {
           className="space-y-4"
         >
           <h3 className="text-lg font-semibold text-primary select-text">
-            Copyright Information
+            {t('mediaInfo.copyrightInformation')}
           </h3>
 
           {exif.artist ? (
             <>
-              <InfoItem label="Artist" value={exif.artist} />
+              <InfoItem label={t('mediaInfo.artist')} value={exif.artist} />
               <Divider className="!my-2" />
             </>
           ) : null}
 
           {exif.copyright ? (
             <>
-              <InfoItem label="Copyright" value={exif.copyright} />
+              <InfoItem
+                label={t('mediaInfo.copyright')}
+                value={exif.copyright}
+              />
               <Divider className="!my-2" />
             </>
           ) : null}
@@ -507,13 +553,13 @@ function ExifDisplay({ exif }: { exif: ExifInfo }) {
           className="space-y-4"
         >
           <h3 className="text-lg font-semibold text-primary select-text">
-            GPS Information
+            {t('mediaInfo.gpsInformation')}
           </h3>
 
           {exif.gpsCoordinates ? (
             <>
               <InfoItem
-                label="Coordinates"
+                label={t('mediaInfo.coordinates')}
                 value={`${exif.gpsCoordinates[0].toFixed(6)}°, ${exif.gpsCoordinates[1].toFixed(6)}°`}
               />
               <Divider className="!my-2" />
@@ -532,7 +578,7 @@ function ExifDisplay({ exif }: { exif: ExifInfo }) {
           >
             <div className="space-y-2">
               <h3 className="text-lg font-semibold text-primary select-text">
-                All Tags
+                {t('mediaInfo.allTags')}
               </h3>
               {exif.tags.map((tag, index) => (
                 <div key={index}>
@@ -549,13 +595,14 @@ function ExifDisplay({ exif }: { exif: ExifInfo }) {
 }
 
 function InfoItem({ label, value }: { label: string; value: React.ReactNode }) {
+  const { t } = useTranslation()
   return (
     <div className="flex items-baseline justify-between select-text">
       <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
         {label}:
       </span>
       <span className="text-[13px] text-zinc-800 dark:text-zinc-200 ml-2 max-w-[75%] text-end">
-        {value || 'N/A'}
+        {value || t('mediaInfo.notAvailable')}
       </span>
     </div>
   )

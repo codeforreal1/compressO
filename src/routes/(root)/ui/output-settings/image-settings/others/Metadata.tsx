@@ -1,5 +1,6 @@
 import cloneDeep from 'lodash/cloneDeep'
 import { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
 import Switch from '@/components/Switch'
@@ -15,6 +16,7 @@ type MetadataProps = {
 }
 
 function Metadata({ mediaIndex }: MetadataProps) {
+  const { t } = useTranslation()
   const {
     state: {
       isCompressing,
@@ -76,10 +78,10 @@ function Metadata({ mediaIndex }: MetadataProps) {
     isCompressing ||
     isProcessCompleted ||
     isLoadingMediaFiles ||
-    (['gif', 'svg', 'webp'] as ImageExtension[]).includes(
-      image?.extension as ImageExtension,
+    ['gif', 'svg', 'webp', 'avif', 'bmp', 'tiff', 'tif'].includes(
+      image?.extension ?? '',
     ) ||
-    (['svg', 'webp'] as ImageExtension[]).includes(
+    (['svg', 'webp', 'avif'] as ImageExtension[]).includes(
       convertToExtension as ImageExtension,
     )
 
@@ -92,7 +94,7 @@ function Metadata({ mediaIndex }: MetadataProps) {
       >
         <div className="flex justify-center items-center">
           <span className="text-gray-600 dark:text-gray-400 block mr-2 text-sm">
-            Strip Metadata
+            {t('metadata.strip')}
           </span>
         </div>
       </Switch>

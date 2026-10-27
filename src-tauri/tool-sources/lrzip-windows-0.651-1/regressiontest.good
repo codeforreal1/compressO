@@ -1,0 +1,49 @@
+Test basic use
+Test decompression in read-only dir
+   1000    1000    3893
+this should be silent
+man page for lrz should exist
+0
+compress stdin to stdout
+Respect $TMPDIR
+   1000    1000    3893
+Decompress in read only dir
+   1000    1000    3893
+Test -cd
+   1000    1000    3893
+Test -cfd should not remove testfile.lrz
+   1000    1000    3893
+testfile.lrz
+Test -1c
+   1002    1002    3975
+Test -r
+t10.lrz
+t1.lrz
+t2.lrz
+t3.lrz
+t4.lrz
+t5.lrz
+t6.lrz
+t7.lrz
+t8.lrz
+t9.lrz
+Test tar compatibility
+t/
+t/t8
+t/t7
+t/t3
+t/t5
+t/t2
+t/t6
+t/t10
+t/t4
+t/t9
+t/t1
+11
+test compress of 1 GB data with parallel --pipe --compress
+1073741824
+test compress of 1 GB with sort --compress-program
+1073741825
+test should not lrz -dc removes file
+OK
+testfile.lrz

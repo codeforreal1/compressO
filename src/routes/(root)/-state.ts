@@ -3,6 +3,21 @@ import cloneDeep from 'lodash/cloneDeep'
 import { proxy } from 'valtio'
 
 import {
+  getAudioFileOutputExtension,
+  getBatchResolutionLongerSide,
+  isAudioExtension,
+  isVideoCodecCompatible,
+  type MediaTransformHistory,
+} from '@/types/compression'
+import { DEFAULT_IMAGE_TARGET_SIZE_IN_KB } from '@/utils/imageTargetSize'
+import { DEFAULT_TARGET_SIZE_IN_MB } from '@/utils/targetSize'
+import { applyPortableTransform } from '@/utils/transform'
+import {
+  getLongerSideDimensions,
+  getOutputVideoContainer,
+  getTransformedDimensions,
+} from '@/utils/video'
+import {
   App,
   ImageConfig,
   MediaMetadataConfig,
@@ -25,7 +40,6 @@ export const videoMetadataConfigInitialState: MediaMetadataConfig = {
 
 export const videoConfigInitialState: VideoConfig = {
   convertToExtension: '-',
-  presetName: 'ironclad',
   shouldDisableCompression: false,
   shouldEnableCustomVideoCodec: false,
   shouldEnableCustomDimensions: false,
@@ -40,6 +54,8 @@ export const videoConfigInitialState: VideoConfig = {
   },
   shouldEnableAudioTrackSelection: false,
   quality: 50,
+  shouldUseTargetSize: false,
+  targetSizeInMB: DEFAULT_TARGET_SIZE_IN_MB,
   shouldStripMetadata: true,
   metadataConfig: null,
   customThumbnailPath: null,
@@ -56,6 +72,12 @@ export const videoConfigInitialState: VideoConfig = {
   customSpeed: undefined,
 }
 
+/** Settings of an audio file, before its own (or the batch's) are applied */
+export const audioFileConfigInitialState: VideoConfig = {
+  ...videoConfigInitialState,
+  subtitlesConfig: null,
+}
+
 export const svgSettingInitialState = {
   filterSpeckle: 4,
   colorPrecision: 6,
@@ -70,6 +92,8 @@ export const imageConfigInitialState: ImageConfig = {
   convertToExtension: '-',
   isLossless: false,
   quality: 50,
+  shouldUseTargetSize: false,
+  targetSizeInKB: DEFAULT_IMAGE_TARGET_SIZE_IN_KB,
   shouldStripMetadata: true,
   svgScaleFactor: 1,
   shouldEnableAdvancedSvgSetting: false,
@@ -81,6 +105,7 @@ const appInitialState: App = {
   media: [],
   isLoadingMediaFiles: false,
   totalSelectedMediaCount: 0,
+  isAppendingMedia: false,
   currentMediaIndex: 0,
   isCompressing: false,
   totalProgress: 0,
@@ -92,6 +117,7 @@ const appInitialState: App = {
   commonConfigForBatchCompression: {
     videoConfig: videoConfigInitialState,
     imageConfig: imageConfigInitialState,
+    audioFileConfig: audioFileConfigInitialState,
   },
 }
 
@@ -145,22 +171,130 @@ export const appProxy: AppProxy = proxy({
 })
 
 /**
- * Normalizes the individual non-dirty media config to match with batch config.
+ * Normalizes the individual non-dirty media config to match with batch config. The batch's
+ * transform (rotation, flips, crop shape) & resolution are set as each media's own (computed from
+ * its size), so the settings of a single media show what it is compressed to.
  */
 export function normalizeBatchMediaConfig() {
   if (appProxy.state.media.length > 1) {
+    const { videoConfig, imageConfig, audioFileConfig } =
+      appProxy.state.commonConfigForBatchCompression
+    const videoLongerSide = getBatchResolutionLongerSide(
+      videoConfig.batchResolution,
+    )
+    const imageLongerSide = imageConfig.batchLongerSide ?? null
     for (const index in appProxy.state.media) {
-      if (!appProxy.state.media[index]?.isConfigDirty) {
-        if (appProxy.state.media[index].type === 'video') {
-          appProxy.state.media[index].config = cloneDeep(
-            appProxy.state.commonConfigForBatchCompression.videoConfig,
+      const mediaFile = appProxy.state.media[index]
+      if (mediaFile?.isConfigDirty) continue
+      if (mediaFile.type === 'video' && mediaFile.isAudioFile) {
+        mediaFile.config = getAudioFileBatchConfig(
+          audioFileConfig,
+          mediaFile.extension,
+        )
+      } else if (mediaFile.type === 'video') {
+        const config = cloneDeep(videoConfig)
+        // Only the batch's config holds the batch transform
+        delete config.batchTransform
+        // The batch's codec is used where the video's output container can hold it (e.g. not VP9
+        // in a TS file, with "Same as input"); the others keep their default codec
+        if (
+          config.shouldEnableCustomVideoCodec &&
+          config.customVideoCodec &&
+          !isVideoCodecCompatible(
+            config.customVideoCodec,
+            getOutputVideoContainer(
+              config.convertToExtension,
+              mediaFile.extension,
+            ),
           )
-        } else if (appProxy.state.media[index].type === 'image') {
-          appProxy.state.media[index].config = cloneDeep(
-            appProxy.state.commonConfigForBatchCompression.imageConfig,
+        ) {
+          config.customVideoCodec = undefined
+        }
+        if (!isAudioExtension(config.convertToExtension)) {
+          applyPortableTransform(
+            config,
+            'video',
+            videoConfig.batchTransform,
+            mediaFile.dimensions,
           )
         }
+        applyBatchSize(
+          config,
+          getOutputDimensions(
+            mediaFile.dimensions,
+            config.shouldTransformVideo
+              ? config.transformVideoConfig?.transformHistory
+              : null,
+          ),
+          videoLongerSide,
+        )
+        mediaFile.config = config
+      } else if (mediaFile.type === 'image') {
+        const config = cloneDeep(imageConfig)
+        delete config.batchTransform
+        // SVGs cannot be transformed, and are resized with the SVG scale factor instead
+        if (
+          mediaFile.extension !== 'svg' &&
+          config.convertToExtension !== 'svg'
+        ) {
+          applyPortableTransform(
+            config,
+            'image',
+            imageConfig.batchTransform,
+            mediaFile.dimensions,
+          )
+          applyBatchSize(
+            config,
+            getOutputDimensions(
+              mediaFile.dimensions,
+              config.shouldTransformImage
+                ? config.transformImageConfig?.transformHistory
+                : null,
+            ),
+            imageLongerSide,
+          )
+        }
+        mediaFile.config = config
       }
     }
   }
+}
+
+/**
+ * The batch's audio settings as an audio file's own: always written as audio, in its own format
+ * when the batch keeps "Same as input"
+ */
+export function getAudioFileBatchConfig(
+  audioFileConfig: VideoConfig,
+  sourceExtension: string | null | undefined,
+): VideoConfig {
+  const config = cloneDeep(audioFileConfig)
+  if (!isAudioExtension(config.convertToExtension)) {
+    config.convertToExtension = getAudioFileOutputExtension(sourceExtension)
+  }
+  return config
+}
+
+/** Size of a media after its transforms (rotations & crop) */
+function getOutputDimensions(
+  dimensions: { width: number; height: number } | undefined,
+  transformHistory: readonly MediaTransformHistory[] | null | undefined,
+) {
+  return dimensions?.width && dimensions?.height
+    ? getTransformedDimensions(dimensions, transformHistory)
+    : undefined
+}
+
+/** Sets the batch's size (of the longer side) as a media's custom dimensions */
+function applyBatchSize(
+  config: VideoConfig | ImageConfig,
+  dimensions: { width: number; height: number } | undefined,
+  longerSide: number | null,
+) {
+  const customDimensions =
+    longerSide && dimensions?.width && dimensions?.height
+      ? getLongerSideDimensions(dimensions, longerSide)
+      : null
+  config.shouldEnableCustomDimensions = !!customDimensions
+  config.customDimensions = customDimensions ?? undefined
 }

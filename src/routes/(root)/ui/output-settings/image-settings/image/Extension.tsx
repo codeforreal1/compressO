@@ -1,5 +1,6 @@
 import { SelectItem, SelectSection } from '@heroui/react'
 import { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
 import Select from '@/components/Select'
@@ -12,6 +13,7 @@ type ExtensionProps = {
 }
 
 const Extension = ({ mediaIndex, disabled }: ExtensionProps) => {
+  const { t } = useTranslation()
   const {
     state: {
       media,
@@ -61,7 +63,7 @@ const Extension = ({ mediaIndex, disabled }: ExtensionProps) => {
   return (
     <Select
       fullWidth
-      label="Extension:"
+      label={t('extension.label')}
       value={convertToExtension}
       selectedKeys={[convertToExtension]}
       onChange={(evt) => {
@@ -75,7 +77,7 @@ const Extension = ({ mediaIndex, disabled }: ExtensionProps) => {
       }}
       isDisabled={shouldDisableInput}
     >
-      <SelectItem key="-">Same as input</SelectItem>
+      <SelectItem key="-">{t('extension.sameAsInput')}</SelectItem>
       <SelectSection>
         {Object.values(extensions.image)
           .filter(

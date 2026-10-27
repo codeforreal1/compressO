@@ -1,13 +1,15 @@
 use crate::core::domain::{
     BatchImageCompressionProgress, CustomEvents, ImageBatchCompressionResult,
     ImageBatchIndividualCompressionResult, ImageCompressionConfig, ImageCompressionProgress,
-    ImageCompressionResult, ImageContainer, MediaTransformHistory, SvgConfig,
+    ImageCompressionResult, ImageContainer, ImageTargetSize, MediaTransformHistory, SvgConfig,
 };
-use crate::core::ffmpeg::build_ffmpeg_filters;
+use crate::core::ffmpeg::build_transform_filters;
 use crate::core::ffmpeg::FFMPEG;
 use crate::core::media_process::MediaProcessExecutorBuilder;
+use crate::core::orientation::{get_image_orientation, reset_exif_orientation, write_upright_copy};
 use crate::sys::fs::{ensure_assets_dir, get_file_metadata, get_image_dimension};
-use image::{ImageEncoder, ImageReader};
+use crate::utils::event::EventListenerGuard;
+use image::{ImageDecoder, ImageEncoder, ImageReader};
 use img_parts::{
     jpeg::Jpeg,
     png::{Png, PngChunk},
@@ -23,14 +25,234 @@ use std::path::Path;
 use std::path::PathBuf;
 use std::process::Command;
 use std::sync::Arc;
-use tauri::{AppHandle, Emitter, Listener, Manager};
-use tauri_plugin_shell::ShellExt;
+use tauri::{AppHandle, Emitter, Listener};
 
-pub const EXTENSIONS: [&str; 6] = ["png", "jpg", "jpeg", "webp", "gif", "svg"];
+pub const EXTENSIONS: [&str; 10] = [
+    "png", "jpg", "jpeg", "webp", "gif", "svg", "avif", "jxl", "heic", "heif",
+];
+
+/// Formats accepted as input but never written; they're converted to PNG by default.
+pub const INPUT_ONLY_EXTENSIONS: [&str; 3] = ["bmp", "tiff", "tif"];
+
+/// The qualities searched for a target size (see `ImageCompressor::compress_image_to_size`): the
+/// highest is tried first (above it, outputs grow much more than they improve)
+const TARGET_SIZE_MAX_QUALITY: u8 = 95;
+/// Below this quality an image looks worse than a smaller one at it: the dimensions are lowered
+/// first, & lower qualities are only tried at the smallest dimensions
+const TARGET_SIZE_FLOOR_QUALITY: u8 = 40;
+const TARGET_SIZE_MIN_QUALITY: u8 = 1;
+/// The search stops when the qualities that fit & that are too large are this close
+const TARGET_SIZE_QUALITY_PRECISION: u8 = 3;
+/// An output this close under the size (as a part of it) is kept without searching further
+const TARGET_SIZE_CLOSE_ENOUGH: f64 = 0.93;
+/// How many times the dimensions are lowered at most
+const TARGET_SIZE_SCALE_ROUNDS: usize = 5;
+/// The dimensions are never lowered below this longer side, in pixels
+const TARGET_SIZE_MIN_LONGER_SIDE: f64 = 320.0;
+
+/// Whether an image can be compressed to a target size: not SVGs (vector) & GIFs (animated), as
+/// input or output
+pub fn supports_target_size(input_path: &str, convert_to_extension: &str) -> bool {
+    let input = super::image_codecs::extension(input_path);
+    let output = convert_to_extension.to_lowercase();
+    !matches!(input.as_str(), "svg" | "gif") && !matches!(output.as_str(), "svg" | "gif")
+}
+
+#[cfg(test)]
+mod webp_tests {
+    use super::*;
+
+    struct Fixture(PathBuf);
+
+    impl Fixture {
+        fn new() -> Self {
+            let path = std::env::temp_dir().join(format!("WebP 日本語 {}", nanoid!()));
+            fs::create_dir(&path).unwrap();
+            Self(path)
+        }
+
+        fn path(&self, name: &str) -> String {
+            self.0.join(name).to_string_lossy().into_owned()
+        }
+    }
+
+    impl Drop for Fixture {
+        fn drop(&mut self) {
+            let _ = fs::remove_dir_all(&self.0);
+        }
+    }
+
+    #[test]
+    fn native_avif_encoder_and_bundled_decoder_are_available() {
+        let fixture = Fixture::new();
+        let source = image::RgbaImage::from_fn(48, 32, |x, y| {
+            image::Rgba([(x * 5) as u8, (y * 7) as u8, 42, 255])
+        });
+        let mut bytes = Vec::new();
+        image::codecs::avif::AvifEncoder::new_with_speed_quality(&mut bytes, 6, 60)
+            .write_image(source.as_raw(), 48, 32, image::ExtendedColorType::Rgba8)
+            .unwrap();
+        fs::write(fixture.path("encoded.avif"), bytes).unwrap();
+        let ffmpeg = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("bin")
+            .join(format!(
+                "compresso_ffmpeg-{}{}",
+                env!("COMPRESSO_TARGET"),
+                if cfg!(windows) { ".exe" } else { "" }
+            ));
+        let output = Command::new(ffmpeg)
+            .args([
+                "-v",
+                "error",
+                "-i",
+                &fixture.path("encoded.avif"),
+                "-frames:v",
+                "1",
+                &fixture.path("decoded.png"),
+            ])
+            .output()
+            .unwrap();
+        assert!(
+            output.status.success(),
+            "{}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        assert_eq!(
+            image::image_dimensions(fixture.path("decoded.png")).unwrap(),
+            source.dimensions()
+        );
+    }
+
+    #[test]
+    fn jpeg_conversion_uses_native_webp_quality_range() {
+        let fixture = Fixture::new();
+        let source = image::RgbImage::from_fn(160, 120, |x, y| {
+            image::Rgb([
+                (x * 17 + y * 31) as u8,
+                (x * 43 + y * 13) as u8,
+                (x * 7 + y * 61) as u8,
+            ])
+        });
+        source.save(fixture.path("input.jpg")).unwrap();
+        for quality in [1, 40, 95] {
+            let output = fixture.path(&format!("quality-{quality}.webp"));
+            encode_webp_file(&fixture.path("input.jpg"), &output, false, quality).unwrap();
+            assert_eq!(
+                image::image_dimensions(&output).unwrap(),
+                source.dimensions()
+            );
+            assert_eq!(
+                image::guess_format(&fs::read(&output).unwrap()).unwrap(),
+                image::ImageFormat::WebP
+            );
+        }
+        assert!(
+            fs::metadata(fixture.path("quality-1.webp")).unwrap().len()
+                < fs::metadata(fixture.path("quality-95.webp")).unwrap().len()
+        );
+    }
+
+    #[test]
+    fn lossless_webp_preserves_alpha_and_guesses_intermediate_format() {
+        let fixture = Fixture::new();
+        let source = image::RgbaImage::from_fn(32, 24, |x, y| {
+            image::Rgba([
+                (x * 7) as u8,
+                (y * 9) as u8,
+                42,
+                if x < 8 { 0 } else { 255 },
+            ])
+        });
+        source
+            .save_with_format(fixture.path("input.temp"), image::ImageFormat::Png)
+            .unwrap();
+        encode_webp_file(
+            &fixture.path("input.temp"),
+            &fixture.path("lossless.webp"),
+            true,
+            50,
+        )
+        .unwrap();
+        let restored = image::open(fixture.path("lossless.webp"))
+            .unwrap()
+            .to_rgba8();
+        assert_eq!(source.dimensions(), restored.dimensions());
+        for (original, decoded) in source.pixels().zip(restored.pixels()) {
+            assert_eq!(original[3], decoded[3]);
+            if original[3] != 0 {
+                assert_eq!(original, decoded);
+            }
+        }
+    }
+
+    #[test]
+    fn invalid_webp_input_and_unsupported_dimensions_return_errors() {
+        let fixture = Fixture::new();
+        fs::write(fixture.path("bad.png"), b"invalid image").unwrap();
+        assert!(encode_webp_file(
+            &fixture.path("bad.png"),
+            &fixture.path("bad.webp"),
+            false,
+            50
+        )
+        .is_err());
+        image::RgbaImage::new(16384, 1)
+            .save(fixture.path("wide.png"))
+            .unwrap();
+        assert!(encode_webp_file(
+            &fixture.path("wide.png"),
+            &fixture.path("wide.webp"),
+            false,
+            50
+        )
+        .is_err());
+        assert!(!Path::new(&fixture.path("wide.webp")).exists());
+    }
+}
+
+// Use the statically linked encoder for both conversion and recompression. Some bundled
+// FFmpeg builds have a WebP decoder but no encoder, so encoding must not depend on FFmpeg.
+fn encode_webp_file(
+    input_path: &str,
+    output_path: &str,
+    lossless: bool,
+    quality: u8,
+) -> Result<(), String> {
+    let image = ImageReader::open(input_path)
+        .and_then(|reader| reader.with_guessed_format())
+        .map_err(|error| error.to_string())?
+        .decode()
+        .map_err(|error| error.to_string())?
+        .to_rgba8();
+    let encoder = webp::Encoder::from_rgba(image.as_raw(), image.width(), image.height());
+    // The convenience encode()/encode_lossless() methods unwrap errors and can panic.
+    let encoded = encoder
+        .encode_simple(
+            lossless,
+            if lossless {
+                75.0
+            } else {
+                quality.min(100) as f32
+            },
+        )
+        .map_err(|error| format!("{error:?}"))?;
+    fs::write(output_path, &*encoded).map_err(|error| error.to_string())
+}
+
+/// One compression of an image while reaching a target size, kept aside
+#[derive(Clone)]
+struct SizeAttempt {
+    path: PathBuf,
+    size: u64,
+    quality: u8,
+    /// The part of its size it was compressed at (1 for its full size)
+    scale: f64,
+}
 
 pub struct ImageCompressor {
     app: AppHandle,
     assets_dir: PathBuf,
+    owner_window: String,
 }
 
 impl ImageCompressor {
@@ -40,7 +262,14 @@ impl ImageCompressor {
         Ok(Self {
             app: app.to_owned(),
             assets_dir,
+            owner_window: String::from("main"),
         })
+    }
+
+    /// Window the processes belong to (the main window by default), see `MediaProcessExecutorBuilder`
+    pub fn with_owner_window(mut self, label: &str) -> Self {
+        self.owner_window = label.to_string();
+        self
     }
 
     pub fn get_asset_dir(&self) -> String {
@@ -48,26 +277,17 @@ impl ImageCompressor {
     }
 
     pub fn get_pngquant_command(&self) -> Result<Command, String> {
-        self.app
-            .shell()
-            .sidecar("compresso_pngquant")
-            .map(Command::from)
+        super::tool_bundle::command(&self.app, "pngquant")
             .map_err(|e| format!("Failed to create pngquant command: {}", e))
     }
 
     pub fn get_jpegoptim_command(&self) -> Result<Command, String> {
-        self.app
-            .shell()
-            .sidecar("compresso_jpegoptim")
-            .map(Command::from)
+        super::tool_bundle::command(&self.app, "jpegoptim")
             .map_err(|e| format!("Failed to create jpegoptim command: {}", e))
     }
 
     pub fn get_gifski_command(&self) -> Result<Command, String> {
-        self.app
-            .shell()
-            .sidecar("compresso_gifski")
-            .map(Command::from)
+        super::tool_bundle::command(&self.app, "gifski")
             .map_err(|e| format!("Failed to create gifski command: {}", e))
     }
 
@@ -93,7 +313,32 @@ impl ImageCompressor {
         let original_metadata = get_file_metadata(input_path)?;
         let original_extension = original_metadata.extension.to_lowercase();
 
+        let convert_to_extension = if INPUT_ONLY_EXTENSIONS.contains(&convert_to_extension) {
+            "png"
+        } else {
+            convert_to_extension
+        };
         let output_extension = convert_to_extension;
+
+        if super::image_codecs::is_modern(&original_extension)
+            || super::image_codecs::is_modern(output_extension)
+        {
+            return self
+                .compress_modern_image(
+                    input_path,
+                    output_extension,
+                    svg_scale_factor,
+                    is_lossless,
+                    quality,
+                    image_id,
+                    batch_id,
+                    strip_metadata,
+                    svg_config,
+                    dimensions,
+                    transform_history,
+                )
+                .await;
+        }
 
         let supported = EXTENSIONS.iter().any(|&ext| ext == output_extension);
         if !supported {
@@ -110,8 +355,15 @@ impl ImageCompressor {
 
         let need_conversion = convert_to_extension != original_extension;
 
+        // avif is decoded to png upfront, so its intermediate files hold png data
+        let working_extension = if original_extension == "avif" {
+            "png"
+        } else {
+            original_extension.as_str()
+        };
+
         let intermediate_path: Option<PathBuf> = if need_conversion {
-            let temp_filename = format!("{}_temp.{}", image_id, original_extension);
+            let temp_filename = format!("{}_temp.{}", image_id, working_extension);
             Some(
                 [self.assets_dir.clone(), PathBuf::from(&temp_filename)]
                     .iter()
@@ -126,11 +378,60 @@ impl ImageCompressor {
             None => nanoid!(),
         };
 
+        let decoded_avif_path: Option<PathBuf> = if original_extension == "avif" {
+            let decoded_path: PathBuf = [
+                self.assets_dir.clone(),
+                PathBuf::from(format!("{}_decoded.png", image_id)),
+            ]
+            .iter()
+            .collect();
+            self.decode_avif_to_png(input_path, decoded_path.to_str().unwrap())
+                .await?;
+            Some(decoded_path)
+        } else {
+            None
+        };
+        let source_path = decoded_avif_path
+            .as_ref()
+            .and_then(|p| p.to_str())
+            .unwrap_or(input_path);
+
+        // Photos stored sideways with an EXIF orientation (e.g. portrait photos from phones) are made
+        // upright first: the transforms, the dimensions & the crop are all for the image as it is
+        // displayed, and the compressors drop the orientation
+        let orientation = if matches!(
+            original_extension.as_str(),
+            "jpg" | "jpeg" | "png" | "webp" | "tiff" | "tif"
+        ) {
+            get_image_orientation(input_path)
+        } else {
+            None
+        };
+        let upright_path: Option<PathBuf> = match orientation {
+            Some(orientation) => {
+                let upright_path: PathBuf = [
+                    self.assets_dir.clone(),
+                    PathBuf::from(format!("{}_upright.{}", image_id, working_extension)),
+                ]
+                .iter()
+                .collect();
+                write_upright_copy(source_path, upright_path.to_str().unwrap(), orientation)?;
+                Some(upright_path)
+            }
+            None => None,
+        };
+        let source_path = upright_path
+            .as_ref()
+            .and_then(|p| p.to_str())
+            .unwrap_or(source_path);
+
+        // Removed once the image is done (not on a timer: an image compressed again right away, e.g.
+        // to reach a target size, writes the same file)
+        let mut transform_temp_to_remove: Option<PathBuf> = None;
         let transform_input_path = if !original_extension.eq("svg")
             && (dimensions.is_some() || transform_history.is_some())
         {
-            let transform_temp_filename =
-                format!("{}_transformed.{}", image_id, original_extension);
+            let transform_temp_filename = format!("{}_transformed.{}", image_id, working_extension);
             let transform_temp_path: PathBuf = [
                 self.assets_dir.clone(),
                 PathBuf::from(&transform_temp_filename),
@@ -158,23 +459,18 @@ impl ImageCompressor {
             };
 
             self.apply_spatial_transformations(
-                input_path,
+                source_path,
                 transform_temp_path.to_str().unwrap(),
                 filtered_dimensions,
                 transform_history,
             )
             .await?;
 
-            let transform_temp_path_clone = transform_temp_path.clone();
-            tokio::spawn(async move {
-                // Give it a moment before cleanup
-                tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
-                let _ = fs::remove_file(&transform_temp_path_clone);
-            });
-
-            transform_temp_path.to_str().unwrap().to_string()
+            let transform_temp_path_string = transform_temp_path.to_str().unwrap().to_string();
+            transform_temp_to_remove = Some(transform_temp_path);
+            transform_temp_path_string
         } else {
-            input_path.to_string()
+            source_path.to_string()
         };
 
         let compression_output_path = intermediate_path.as_ref().unwrap_or(&output_path);
@@ -223,6 +519,17 @@ impl ImageCompressor {
                 )
                 .await?
             }
+            "avif" if !need_conversion => {
+                self.compress_avif(
+                    &transform_input_path,
+                    compression_output_path.to_str().unwrap(),
+                    quality,
+                )
+                .await?
+            }
+            "bmp" | "tiff" | "tif" | "avif" => {
+                // No dedicated compressor; these are re-encoded during the conversion below
+            }
             "svg" => {
                 if convert_to_extension != "svg" {
                     // Completely skip the compression for svg if converting to another format
@@ -250,7 +557,7 @@ impl ImageCompressor {
         if need_conversion {
             let convert_to_ext = convert_to_extension;
             match original_extension.as_str() {
-                "png" | "jpg" | "jpeg" | "webp" => {
+                "png" | "jpg" | "jpeg" | "webp" | "bmp" | "tiff" | "tif" | "avif" => {
                     if convert_to_ext.eq("svg") {
                         let svg_result = self.convert_raster_to_svg_img(
                             compression_output_path.to_str().unwrap(),
@@ -295,6 +602,13 @@ impl ImageCompressor {
                         } else {
                             svg_result?;
                         }
+                    } else if convert_to_ext.eq("avif") {
+                        self.compress_avif(
+                            compression_output_path.to_str().unwrap(),
+                            output_path.to_str().unwrap(),
+                            quality,
+                        )
+                        .await?;
                     } else {
                         self.convert_image_via_ffmpeg(
                             compression_output_path.to_str().unwrap(),
@@ -304,6 +618,23 @@ impl ImageCompressor {
                         )
                         .await?;
                     }
+                }
+                "svg" if convert_to_ext.eq("avif") => {
+                    let temp_png_path = format!(
+                        "{}_temp_png.png",
+                        output_path.to_str().unwrap().trim_end_matches(".avif")
+                    );
+                    self.convert_svg_to_raster_img(
+                        compression_output_path.to_str().unwrap(),
+                        &temp_png_path,
+                        "png",
+                        svg_scale_factor,
+                    )?;
+                    let avif_result = self
+                        .compress_avif(&temp_png_path, output_path.to_str().unwrap(), quality)
+                        .await;
+                    let _ = fs::remove_file(&temp_png_path);
+                    avif_result?;
                 }
                 "svg" => self.convert_svg_to_raster_img(
                     compression_output_path.to_str().unwrap(),
@@ -318,6 +649,16 @@ impl ImageCompressor {
             if let Some(intermediate) = intermediate_path {
                 let _ = fs::remove_file(&intermediate);
             }
+        }
+
+        if let Some(decoded_avif) = decoded_avif_path {
+            let _ = fs::remove_file(&decoded_avif);
+        }
+        if let Some(upright) = upright_path {
+            let _ = fs::remove_file(&upright);
+        }
+        if let Some(transform_temp) = transform_temp_to_remove {
+            let _ = fs::remove_file(&transform_temp);
         }
 
         if !strip_metadata.unwrap_or(true) {
@@ -340,6 +681,10 @@ impl ImageCompressor {
                     // No support for now
                 }
             }
+            // The kept orientation would rotate the upright pixels again
+            if orientation.is_some() {
+                let _ = reset_exif_orientation(output_path.to_str().unwrap());
+            }
         }
 
         let compressed_metadata = get_file_metadata(&output_path.to_string_lossy().to_string())?;
@@ -349,7 +694,311 @@ impl ImageCompressor {
             file_name: output_filename,
             file_path: output_path.display().to_string(),
             file_metadata: Some(compressed_metadata),
+            is_target_size_reached: None,
         })
+    }
+
+    /// Compresses an image as its config says: to fit within its target size when it has one (see
+    /// `compress_image_to_size`), otherwise at its quality
+    pub async fn compress_image_config(
+        &mut self,
+        config: &ImageCompressionConfig,
+        batch_id: Option<&str>,
+    ) -> Result<ImageCompressionResult, String> {
+        if let Some(target) = &config.target_size {
+            if supports_target_size(&config.image_path, &config.convert_to_extension) {
+                return self.compress_image_to_size(config, batch_id, target).await;
+            }
+        }
+        self.compress_image(
+            &config.image_path,
+            config.convert_to_extension.as_str(),
+            config.svg_scale_factor,
+            config.is_lossless,
+            config.quality,
+            &config.image_id,
+            batch_id,
+            config.strip_metadata,
+            config.svg_config.clone(),
+            config.dimensions,
+            config.transform_history.as_ref(),
+        )
+        .await
+    }
+
+    /// Compresses an image to fit within a size (see `ImageTargetSize`). The output's size is never
+    /// predicted, only measured: each attempt is a full compression, & the one kept becomes the
+    /// output as it is (nothing is encoded again after it is chosen), so encoders need not give the
+    /// same bytes every time.
+    ///
+    /// The highest quality that fits is found by halving the range of qualities. When even a
+    /// fairly low quality (`TARGET_SIZE_FLOOR_QUALITY`) is larger, the dimensions are lowered by
+    /// how much it is over (the size of an image follows its number of pixels) & the qualities
+    /// searched again, down to a smallest size, where lower qualities are tried last. The largest
+    /// attempt within the size is kept (the most quality), or the smallest when none fits.
+    pub async fn compress_image_to_size(
+        &mut self,
+        config: &ImageCompressionConfig,
+        batch_id: Option<&str>,
+        target: &ImageTargetSize,
+    ) -> Result<ImageCompressionResult, String> {
+        let limit = target.size_in_bytes.max(1);
+        // Without its dimensions, only the quality is lowered
+        let smallest_scale = match target.dimensions {
+            Some((width, height)) => {
+                (TARGET_SIZE_MIN_LONGER_SIDE / width.max(height).max(1.0)).min(1.0)
+            }
+            None => 1.0,
+        };
+        let output_extension = config.convert_to_extension.as_str();
+
+        // Each attempt is moved aside as `<id>_size<n>.<extension>`, as the next one writes the
+        // same output
+        let mut attempts: Vec<SizeAttempt> = Vec::new();
+        let result = async {
+            let mut scale = 1.0_f64;
+            for round in 0..TARGET_SIZE_SCALE_ROUNDS {
+                let highest = self
+                    .size_attempt(
+                        config,
+                        batch_id,
+                        scale,
+                        TARGET_SIZE_MAX_QUALITY,
+                        &mut attempts,
+                    )
+                    .await?;
+                if highest <= limit {
+                    break;
+                }
+                let at_floor = self
+                    .size_attempt(
+                        config,
+                        batch_id,
+                        scale,
+                        TARGET_SIZE_FLOOR_QUALITY,
+                        &mut attempts,
+                    )
+                    .await?;
+                if at_floor <= limit {
+                    self.search_quality(
+                        config,
+                        batch_id,
+                        scale,
+                        limit,
+                        (TARGET_SIZE_FLOOR_QUALITY, TARGET_SIZE_MAX_QUALITY),
+                        &mut attempts,
+                    )
+                    .await?;
+                    break;
+                }
+                let is_smallest =
+                    scale <= smallest_scale + f64::EPSILON || round + 1 == TARGET_SIZE_SCALE_ROUNDS;
+                if is_smallest {
+                    // At the smallest dimensions, a lower quality is the only way left
+                    let lowest = self
+                        .size_attempt(
+                            config,
+                            batch_id,
+                            scale,
+                            TARGET_SIZE_MIN_QUALITY,
+                            &mut attempts,
+                        )
+                        .await?;
+                    if lowest <= limit {
+                        self.search_quality(
+                            config,
+                            batch_id,
+                            scale,
+                            limit,
+                            (TARGET_SIZE_MIN_QUALITY, TARGET_SIZE_FLOOR_QUALITY),
+                            &mut attempts,
+                        )
+                        .await?;
+                    }
+                    break;
+                }
+                // Pixels for the size it is over at the floor quality, & a little less, as smaller
+                // images compress slightly less well; always lower by a step, never below the
+                // smallest size
+                let estimated = scale * (limit as f64 / at_floor as f64).sqrt() * 0.95;
+                scale = estimated.min(scale * 0.9).max(smallest_scale);
+            }
+            // The lowered dimensions are estimated: an output well under the size is made once
+            // more a little larger, at the same quality (below a size that was too large)
+            if let Some(fitting) = attempts
+                .iter()
+                .filter(|attempt| attempt.size <= limit)
+                .max_by_key(|attempt| attempt.size)
+                .cloned()
+            {
+                if fitting.scale < 1.0
+                    && (fitting.size as f64) < limit as f64 * TARGET_SIZE_CLOSE_ENOUGH
+                {
+                    let too_large = attempts
+                        .iter()
+                        .filter(|attempt| {
+                            attempt.size > limit
+                                && attempt.quality == fitting.quality
+                                && attempt.scale > fitting.scale
+                        })
+                        .map(|attempt| attempt.scale)
+                        .fold(1.0_f64, f64::min);
+                    let larger =
+                        (fitting.scale * (limit as f64 / fitting.size as f64).sqrt() * 0.97)
+                            .min(too_large - 0.01)
+                            .min(1.0);
+                    if larger > fitting.scale * 1.03 {
+                        self.size_attempt(config, batch_id, larger, fitting.quality, &mut attempts)
+                            .await?;
+                    }
+                }
+            }
+            Ok::<(), String>(())
+        }
+        .await;
+
+        if let Err(error) = result {
+            for attempt in &attempts {
+                let _ = fs::remove_file(&attempt.path);
+            }
+            return Err(error);
+        }
+
+        let best = attempts
+            .iter()
+            .filter(|attempt| attempt.size <= limit)
+            .max_by_key(|attempt| attempt.size)
+            .or_else(|| attempts.iter().min_by_key(|attempt| attempt.size))
+            .cloned()
+            .ok_or_else(|| String::from("The image could not be compressed."))?;
+        log::info!(
+            "[image] Target size {} bytes: kept {} bytes (quality {}, {:.0}% of its size) of {} attempts",
+            limit,
+            best.size,
+            best.quality,
+            best.scale * 100.0,
+            attempts.len()
+        );
+
+        // The extension the attempts were written with (e.g. PNG for a BMP)
+        let extension = best
+            .path
+            .extension()
+            .and_then(|extension| extension.to_str())
+            .unwrap_or(output_extension);
+        let output_filename = format!("{}.{}", config.image_id, extension);
+        let output_path = self.assets_dir.join(&output_filename);
+        for attempt in &attempts {
+            if attempt.path != best.path {
+                let _ = fs::remove_file(&attempt.path);
+            }
+        }
+        fs::rename(&best.path, &output_path).map_err(|e| e.to_string())?;
+
+        Ok(ImageCompressionResult {
+            image_id: config.image_id.clone(),
+            file_name: output_filename,
+            file_path: output_path.display().to_string(),
+            file_metadata: Some(get_file_metadata(output_path.to_str().unwrap())?),
+            is_target_size_reached: Some(best.size <= limit),
+        })
+    }
+
+    /// The highest quality in `(fits, too_large)` whose output is within `limit`, at a part of the
+    /// image's size, by halving the range (see `compress_image_to_size`)
+    async fn search_quality(
+        &mut self,
+        config: &ImageCompressionConfig,
+        batch_id: Option<&str>,
+        scale: f64,
+        limit: u64,
+        (mut fits, mut too_large): (u8, u8),
+        attempts: &mut Vec<SizeAttempt>,
+    ) -> Result<(), String> {
+        while too_large - fits > TARGET_SIZE_QUALITY_PRECISION {
+            let quality = fits + (too_large - fits) / 2;
+            let size = self
+                .size_attempt(config, batch_id, scale, quality, attempts)
+                .await?;
+            if size <= limit {
+                fits = quality;
+                if size as f64 >= limit as f64 * TARGET_SIZE_CLOSE_ENOUGH {
+                    break;
+                }
+            } else {
+                too_large = quality;
+            }
+        }
+        Ok(())
+    }
+
+    /// One attempt to reach a target size (see `compress_image_to_size`): the image compressed at a
+    /// quality & a part of its size, moved aside; its size in bytes
+    async fn size_attempt(
+        &mut self,
+        config: &ImageCompressionConfig,
+        batch_id: Option<&str>,
+        scale: f64,
+        quality: u8,
+        attempts: &mut Vec<SizeAttempt>,
+    ) -> Result<u64, String> {
+        let dimensions = if scale < 1.0 {
+            let (width, height) = config
+                .target_size
+                .as_ref()
+                .and_then(|target| target.dimensions)
+                .ok_or("The image has no dimensions to lower")?;
+            Some((
+                (width * scale).round().max(1.0),
+                (height * scale).round().max(1.0),
+            ))
+        } else {
+            config.dimensions
+        };
+        let result = self
+            .compress_image(
+                &config.image_path,
+                config.convert_to_extension.as_str(),
+                config.svg_scale_factor,
+                // A lossless output cannot be made smaller by its quality
+                Some(false),
+                quality,
+                &config.image_id,
+                batch_id,
+                config.strip_metadata,
+                config.svg_config.clone(),
+                dimensions,
+                config.transform_history.as_ref(),
+            )
+            .await?;
+        let output = PathBuf::from(&result.file_path);
+        let extension = output
+            .extension()
+            .and_then(|extension| extension.to_str())
+            .unwrap_or(config.convert_to_extension.as_str())
+            .to_string();
+        let path = self.assets_dir.join(format!(
+            "{}_size{}.{}",
+            config.image_id,
+            attempts.len(),
+            extension
+        ));
+        fs::rename(&output, &path).map_err(|e| e.to_string())?;
+        let size = fs::metadata(&path).map_err(|e| e.to_string())?.len();
+        log::info!(
+            "[image] Target size attempt {}: quality {}, {:.0}% of its size, {} bytes",
+            attempts.len(),
+            quality,
+            scale * 100.0,
+            size
+        );
+        attempts.push(SizeAttempt {
+            path,
+            size,
+            quality,
+            scale,
+        });
+        Ok(size)
     }
 
     pub async fn compress_images_batch(
@@ -368,58 +1017,40 @@ impl ImageCompressor {
             let batch_id_clone = batch_id.to_string();
             let image_id_clone = image_id.clone();
 
-            tokio::spawn(async move {
-                if let Some(window) = app_clone.get_webview_window("main") {
-                    let _ = window.clone().listen(
-                        CustomEvents::ImageCompressionProgress.as_ref(),
-                        move |evt| {
-                            if let Ok(progress) =
-                                serde_json::from_str::<ImageCompressionProgress>(evt.payload())
-                            {
-                                if progress.image_id == image_id_clone {
-                                    let batch_progress = BatchImageCompressionProgress {
-                                        batch_id: batch_id_clone.to_owned(),
-                                        current_index: index,
-                                        total_count,
-                                        image_progress: progress,
-                                    };
-                                    let _ = window.emit(
-                                        CustomEvents::BatchImageCompressionProgress.as_ref(),
-                                        batch_progress,
-                                    );
-                                }
+            // Removed again once this media is done (see `EventListenerGuard`)
+            // Progress of the whole app (from any window)
+            let _progress_listener = {
+                let window = app_clone.clone();
+                let event_id = app_clone.listen_any(
+                    CustomEvents::ImageCompressionProgress.as_ref(),
+                    move |evt| {
+                        if let Ok(progress) =
+                            serde_json::from_str::<ImageCompressionProgress>(evt.payload())
+                        {
+                            if progress.image_id == image_id_clone {
+                                let batch_progress = BatchImageCompressionProgress {
+                                    batch_id: batch_id_clone.to_owned(),
+                                    current_index: index,
+                                    total_count,
+                                    image_progress: progress,
+                                };
+                                let _ = window.emit(
+                                    CustomEvents::BatchImageCompressionProgress.as_ref(),
+                                    batch_progress,
+                                );
                             }
-                        },
-                    );
-                }
-            });
+                        }
+                    },
+                );
+                EventListenerGuard::for_app(app_clone.clone(), event_id)
+            };
 
-            let input_path = &image_config.image_path;
-            let quality = image_config.quality;
-            let convert_to_extension = image_config.convert_to_extension.as_str();
-            let svg_scale_factor = image_config.svg_scale_factor;
-            let strip_metadata = image_config.strip_metadata.unwrap_or(true);
-            let is_lossless = image_config.is_lossless;
-            let svg_config = image_config.svg_config.clone();
-            let dimensions = image_config.dimensions;
-            let transform_history = image_config.transform_history.as_ref();
+            let config = ImageCompressionConfig {
+                strip_metadata: Some(image_config.strip_metadata.unwrap_or(true)),
+                ..image_config.clone()
+            };
 
-            match self
-                .compress_image(
-                    input_path,
-                    convert_to_extension,
-                    svg_scale_factor,
-                    is_lossless,
-                    quality,
-                    image_id,
-                    Some(batch_id),
-                    Some(strip_metadata),
-                    svg_config,
-                    dimensions,
-                    transform_history,
-                )
-                .await
-            {
+            match self.compress_image_config(&config, Some(batch_id)).await {
                 Ok(result) => {
                     let image_id = result.image_id.clone();
                     results.insert(image_id.clone(), result.clone());
@@ -428,7 +1059,9 @@ impl ImageCompressor {
                     let batch_id_clone2 = batch_id.to_string();
 
                     tokio::spawn(async move {
-                        if let Some(window) = app_clone2.get_webview_window("main") {
+                        {
+                            // To the whole app (any window can be compressing)
+                            let window = app_clone2.clone();
                             let individual_result = ImageBatchIndividualCompressionResult {
                                 batch_id: batch_id_clone2,
                                 result,
@@ -477,12 +1110,16 @@ impl ImageCompressor {
 
             return Ok(());
         } else {
+            // pngquant compresses this copy in place: on Windows it reads its arguments in the
+            // system's legacy code page, so it cannot open originals whose names have other
+            // characters (e.g. the narrow space before "PM" in macOS screenshot names). The copy's
+            // name is plain.
             std::fs::copy(input_path, &output_path).map_err(|e| e.to_string())?;
 
             let quality_str = quality.clamp(1, 100).to_string();
 
             let result = self
-                .run_pngquant(input_path, output_path, image_id, batch_id, &quality_str)
+                .run_pngquant(output_path, output_path, image_id, batch_id, &quality_str)
                 .await;
 
             match result {
@@ -498,7 +1135,7 @@ impl ImageCompressor {
                     );
 
                     self.run_pngquant(
-                        input_path,
+                        output_path,
                         output_path,
                         image_id,
                         batch_id,
@@ -539,6 +1176,7 @@ impl ImageCompressor {
         });
 
         let executor = MediaProcessExecutorBuilder::new(self.app.clone())
+            .owner_window(&self.owner_window)
             .command(pngquant_cmd)
             .with_cancel_support(
                 vec![image_id.to_string(), batch_id.to_string()],
@@ -590,6 +1228,7 @@ impl ImageCompressor {
         });
 
         let executor = MediaProcessExecutorBuilder::new(self.app.clone())
+            .owner_window(&self.owner_window)
             .command(jpegoptim_cmd)
             .with_cancel_support(
                 vec![image_id.to_string(), batch_id.to_string()],
@@ -606,6 +1245,189 @@ impl ImageCompressor {
         Ok(())
     }
 
+    async fn compress_modern_image(
+        &mut self,
+        input: &str,
+        format: &str,
+        svg_scale: Option<f32>,
+        lossless: Option<bool>,
+        quality: u8,
+        image_id: &str,
+        batch_id: Option<&str>,
+        strip_metadata: Option<bool>,
+        svg_config: Option<SvgConfig>,
+        dimensions: Option<(f64, f64)>,
+        transforms: Option<&MediaTransformHistory>,
+    ) -> Result<ImageCompressionResult, String> {
+        let work = super::image_codecs::Workspace::new(&self.app)?;
+        let cancel_ids = vec![
+            image_id.to_string(),
+            batch_id.unwrap_or(image_id).to_string(),
+        ];
+        let ext = super::image_codecs::extension(input);
+        if format == "jxl"
+            && matches!(ext.as_str(), "jpg" | "jpeg")
+            && lossless.unwrap_or(true)
+            && dimensions.is_none()
+            && transforms.is_none()
+            && get_image_orientation(input).is_none()
+        {
+            let output_filename = format!("{image_id}.jxl");
+            let output = self.assets_dir.join(&output_filename);
+            super::image_codecs::transcode_jpeg(
+                &self.app,
+                input,
+                output.to_str().unwrap(),
+                strip_metadata.unwrap_or(true),
+                &self.owner_window,
+                &cancel_ids,
+            )
+            .await?;
+            return Ok(ImageCompressionResult {
+                image_id: image_id.to_string(),
+                file_name: output_filename,
+                file_path: output.to_string_lossy().into_owned(),
+                file_metadata: Some(get_file_metadata(output.to_str().unwrap())?),
+                is_target_size_reached: None,
+            });
+        }
+        let decoded = if super::image_codecs::is_modern(&ext) {
+            super::image_codecs::decoded_png(&self.app, input, &self.owner_window, &cancel_ids)
+                .await?
+        } else if ext == "svg" {
+            let path = work.0.join("source.png");
+            self.convert_svg_to_raster_img(
+                input,
+                path.to_str().ok_or("Invalid cache path")?,
+                "png",
+                svg_scale,
+            )?;
+            path
+        } else if ext == "avif" {
+            let path = work.0.join("source.png");
+            self.decode_avif_to_png(input, path.to_str().ok_or("Invalid cache path")?)
+                .await?;
+            path
+        } else if ext == "gif" {
+            return Err("Converting GIF to JPEG XL or HEIC/HEIF is not supported yet; export a still image first".into());
+        } else {
+            PathBuf::from(input)
+        };
+        let decoded_str = decoded.to_str().ok_or("Invalid image path")?;
+        if !super::image_codecs::is_modern(format) {
+            return Box::pin(self.compress_image(
+                decoded_str,
+                format,
+                svg_scale,
+                lossless,
+                quality,
+                image_id,
+                batch_id,
+                strip_metadata,
+                svg_config,
+                dimensions,
+                transforms,
+            ))
+            .await;
+        }
+        // Normalize all supported raster sources to lossless PNG, never recompress the source
+        // JPEG/WebP at the requested output quality before the final encode.
+        let orientation = get_image_orientation(decoded_str);
+        let normalized = work.0.join("normalized.png");
+        let profile = {
+            let mut decoder = ImageReader::open(&decoded)
+                .map_err(|e| e.to_string())?
+                .with_guessed_format()
+                .map_err(|e| e.to_string())?
+                .into_decoder()
+                .map_err(|e| e.to_string())?;
+            let profile = decoder.icc_profile().map_err(|e| e.to_string())?;
+            let exif = if !strip_metadata.unwrap_or(true) {
+                let mut exif = decoder.exif_metadata().map_err(|e| e.to_string())?;
+                if let Some(data) = &mut exif {
+                    let _ = image::metadata::Orientation::remove_from_exif_chunk(data);
+                }
+                exif
+            } else {
+                None
+            };
+            let mut pixels =
+                image::DynamicImage::from_decoder(decoder).map_err(|e| e.to_string())?;
+            if let Some(orientation) = orientation {
+                pixels.apply_orientation(orientation);
+            }
+            let mut encoder = image::codecs::png::PngEncoder::new(
+                fs::File::create(&normalized).map_err(|e| e.to_string())?,
+            );
+            if let Some(profile) = &profile {
+                encoder
+                    .set_icc_profile(profile.clone())
+                    .map_err(|e| e.to_string())?;
+            }
+            if let Some(exif) = exif {
+                encoder.set_exif_metadata(exif).map_err(|e| e.to_string())?;
+            }
+            pixels
+                .write_with_encoder(encoder)
+                .map_err(|e| e.to_string())?;
+            profile
+        };
+        super::image_codecs::preserve_png_color(&decoded, &normalized)?;
+        let transformed = work.0.join("transformed.png");
+        let source = if dimensions.is_some() || transforms.is_some() {
+            self.apply_spatial_transformations(
+                normalized.to_str().unwrap(),
+                transformed.to_str().unwrap(),
+                dimensions,
+                transforms,
+            )
+            .await?;
+            if let Some(profile) = profile {
+                let pixels = image::open(&transformed).map_err(|e| e.to_string())?;
+                let mut encoder = image::codecs::png::PngEncoder::new(
+                    fs::File::create(&transformed).map_err(|e| e.to_string())?,
+                );
+                encoder
+                    .set_icc_profile(profile)
+                    .map_err(|e| e.to_string())?;
+                pixels
+                    .write_with_encoder(encoder)
+                    .map_err(|e| e.to_string())?;
+            }
+            super::image_codecs::preserve_png_color(&normalized, &transformed)?;
+            if !strip_metadata.unwrap_or(true) {
+                self.copy_image_metadata(
+                    ImageContainer::Png,
+                    normalized.to_str().unwrap(),
+                    transformed.to_str().unwrap(),
+                )?;
+            }
+            &transformed
+        } else {
+            &normalized
+        };
+        let output_filename = format!("{image_id}.{format}");
+        let output = self.assets_dir.join(&output_filename);
+        super::image_codecs::encode(
+            &self.app,
+            source.to_str().unwrap(),
+            output.to_str().unwrap(),
+            format,
+            quality,
+            lossless.unwrap_or(true),
+            &self.owner_window,
+            &cancel_ids,
+        )
+        .await?;
+        Ok(ImageCompressionResult {
+            image_id: image_id.to_string(),
+            file_name: output_filename,
+            file_path: output.to_string_lossy().into_owned(),
+            file_metadata: Some(get_file_metadata(output.to_str().unwrap())?),
+            is_target_size_reached: None,
+        })
+    }
+
     async fn compress_webp(
         &mut self,
         input_path: &str,
@@ -613,7 +1435,18 @@ impl ImageCompressor {
         is_lossless: bool,
         quality: u8,
     ) -> Result<(), String> {
+        encode_webp_file(input_path, output_path, is_lossless, quality)
+    }
+
+    async fn compress_avif(
+        &self,
+        input_path: &str,
+        output_path: &str,
+        quality: u8,
+    ) -> Result<(), String> {
+        // Intermediate files may carry another format's extension, so detect it from content
         let img = ImageReader::open(input_path)
+            .and_then(|reader| reader.with_guessed_format())
             .map_err(|e| e.to_string())?
             .decode()
             .map_err(|e| e.to_string())?;
@@ -622,18 +1455,52 @@ impl ImageCompressor {
         let height = img.height();
         let rgba: Vec<u8> = img.to_rgba8().into_raw();
 
-        let webp_data = if is_lossless {
-            let encoder = webp::Encoder::from_rgba(&rgba, width, height);
-            encoder.encode_lossless()
-        } else {
-            let encoder_quality = quality.clamp(0, 100);
-            let encoder = webp::Encoder::from_rgba(&rgba, width, height);
-            encoder.encode(encoder_quality as f32)
-        };
-
-        std::fs::write(&output_path, webp_data.to_vec()).map_err(|e| e.to_string())?;
+        let file = fs::File::create(output_path).map_err(|e| e.to_string())?;
+        let mut writer = BufWriter::new(file);
+        // speed: 1 (slowest, smallest) - 10 (fastest)
+        let encoder = image::codecs::avif::AvifEncoder::new_with_speed_quality(
+            &mut writer,
+            6,
+            quality.clamp(1, 100),
+        );
+        encoder
+            .write_image(&rgba, width, height, image::ExtendedColorType::Rgba8)
+            .map_err(|e| e.to_string())?;
 
         Ok(())
+    }
+
+    /// The image crate can't decode avif, so let ffmpeg decode it to png first
+    async fn decode_avif_to_png(&self, input_path: &str, output_path: &str) -> Result<(), String> {
+        // ffmpeg exposes the avif alpha plane as a second stream, so merge it back when present
+        let with_alpha = vec![
+            "-i",
+            input_path,
+            "-filter_complex",
+            "[0:v:0][0:v:1]alphamerge",
+            "-frames:v",
+            "1",
+            "-y",
+            output_path,
+        ];
+        let without_alpha = vec!["-i", input_path, "-frames:v", "1", "-y", output_path];
+
+        for cmd_args in [with_alpha, without_alpha] {
+            let ffmpeg = FFMPEG::new(&self.app)?.with_owner_window(&self.owner_window);
+            let mut ffmpeg_cmd = ffmpeg.get_ffmpeg_command()?;
+            ffmpeg_cmd.args(&cmd_args);
+
+            let executor = MediaProcessExecutorBuilder::new(self.app.clone())
+                .owner_window(&self.owner_window)
+                .command(ffmpeg_cmd)
+                .build()?;
+
+            if executor.spawn_and_wait().await?.success() && Path::new(output_path).exists() {
+                return Ok(());
+            }
+        }
+
+        Err(String::from("Failed to decode avif image."))
     }
 
     async fn compress_gif(
@@ -682,6 +1549,7 @@ impl ImageCompressor {
         });
 
         let executor = MediaProcessExecutorBuilder::new(self.app.clone())
+            .owner_window(&self.owner_window)
             .command(gifski_cmd)
             .with_cancel_support(
                 vec![image_id.to_string(), batch_id.to_string()],
@@ -702,7 +1570,8 @@ impl ImageCompressor {
         let svg_content =
             svgcleaner::cleaner::load_file(input_path).map_err(|err| err.to_string())?;
 
-        let tree = usvg::Tree::from_str(&svg_content, &usvg::Options::default()).unwrap();
+        let tree = usvg::Tree::from_str(&svg_content, &usvg::Options::default())
+            .map_err(|err| err.to_string())?;
         let normalized_svg = tree.to_string(&usvg::WriteOptions::default());
 
         let mut doc =
@@ -881,6 +1750,10 @@ impl ImageCompressor {
             return Err(String::from("Input image file does not exist."));
         }
 
+        if output_format.eq_ignore_ascii_case("webp") {
+            return encode_webp_file(input_path, output_path, false, quality);
+        }
+
         let mut cmd_args: Vec<String> = Vec::new();
 
         cmd_args.push("-i".to_string());
@@ -909,13 +1782,6 @@ impl ImageCompressor {
                 cmd_args.push("-pred".to_string());
                 cmd_args.push("mixed".to_string());
             }
-            "webp" => {
-                let webp_quality = ((quality as f32 - 1.0) / 99.0 * 50.0 + 50.0).round() as u8;
-                cmd_args.push("-q:v".to_string());
-                cmd_args.push(webp_quality.to_string()); // 0-100 (higher is better) but we'll interpolate between 50-100 only
-                cmd_args.push("-lossless".to_string());
-                cmd_args.push("0".to_string());
-            }
             _ => {
                 return Err("Unsupported output format".to_string());
             }
@@ -929,7 +1795,7 @@ impl ImageCompressor {
 
         log::info!("[ffmpeg-image] conversion command: {:?}", cmd_args);
 
-        let ffmpeg = FFMPEG::new(&self.app)?;
+        let ffmpeg = FFMPEG::new(&self.app)?.with_owner_window(&self.owner_window);
         let mut ffmpeg_cmd = ffmpeg.get_ffmpeg_command()?;
 
         ffmpeg_cmd.args(&cmd_args);
@@ -937,6 +1803,7 @@ impl ImageCompressor {
         let conversion_id = format!("img_convert_{}", nanoid!());
 
         let executor = MediaProcessExecutorBuilder::new(self.app.clone())
+            .owner_window(&self.owner_window)
             .command(ffmpeg_cmd)
             .with_cancel_support(vec![conversion_id], None)
             .build()?;
@@ -1043,7 +1910,37 @@ impl ImageCompressor {
             return Err(String::from("Input image file does not exist."));
         }
 
-        let filter_complex = build_ffmpeg_filters(transform_history, dimensions);
+        let mut filters = build_transform_filters(transform_history, dimensions);
+
+        // Palette images (e.g. pngquant output) can't go through the transform filters as-is, and
+        // ffmpeg's automatic conversion picks a format without alpha, turning transparent pixels
+        // opaque. Converting to rgba first keeps the transparency.
+        let extension = Path::new(input_path)
+            .extension()
+            .and_then(|ext| ext.to_str())
+            .unwrap_or_default()
+            .to_lowercase();
+        if !filters.is_empty() && !["jpg", "jpeg", "gif"].contains(&extension.as_str()) {
+            let high_depth = ImageReader::open(input_path)
+                .ok()
+                .and_then(|reader| reader.with_guessed_format().ok())
+                .and_then(|reader| reader.into_decoder().ok())
+                .is_some_and(|decoder| {
+                    decoder.color_type().bits_per_pixel()
+                        / decoder.color_type().channel_count() as u16
+                        > 8
+                });
+            filters.insert(
+                0,
+                if high_depth {
+                    "format=rgba64le"
+                } else {
+                    "format=rgba"
+                }
+                .to_string(),
+            );
+        }
+        let filter_complex = filters.join(",");
 
         let mut cmd_args: Vec<String> = Vec::new();
         cmd_args.push("-i".to_string());
@@ -1062,12 +1959,13 @@ impl ImageCompressor {
 
         log::info!("[image-transform] FFmpeg command: {:?}", cmd_args);
 
-        let ffmpeg = FFMPEG::new(&self.app)?;
+        let ffmpeg = FFMPEG::new(&self.app)?.with_owner_window(&self.owner_window);
         let mut ffmpeg_cmd = ffmpeg.get_ffmpeg_command()?;
 
         ffmpeg_cmd.args(&cmd_args);
 
         let executor = MediaProcessExecutorBuilder::new(self.app.clone())
+            .owner_window(&self.owner_window)
             .command(ffmpeg_cmd)
             .build()?;
 

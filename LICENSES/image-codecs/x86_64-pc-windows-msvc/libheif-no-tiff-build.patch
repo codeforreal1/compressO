@@ -1,0 +1,37 @@
+diff --git a/examples/heif_enc.cc b/examples/heif_enc.cc
+--- a/examples/heif_enc.cc
++++ b/examples/heif_enc.cc
+@@ -2272,9 +2272,8 @@
+     InputImage input_image;
+     heif_image_tiling tiling{};
+     std::shared_ptr<input_tiles_generator> tile_generator;
+-    std::shared_ptr<TiledTiffReader> tiff_reader_for_pyramid;
+-
+ #if HAVE_LIBTIFF
++    std::shared_ptr<TiledTiffReader> tiff_reader_for_pyramid;
+     // Auto-detect tiled TIFFs when not using explicit tiling options
+     if (!use_tiling && cut_tiles == 0) {
+       std::string suffix;
+diff --git a/heifio/stubs.cc b/heifio/stubs.cc
+--- a/heifio/stubs.cc
++++ b/heifio/stubs.cc
+@@ -26,6 +26,7 @@
+ 
+ #include "libheif/heif.h"
+ #include "decoder.h"
++#include "decoder_tiff.h"
+ 
+ 
+ #if !HAVE_LIBJPEG
+@@ -53,7 +54,10 @@
+ 
+ 
+ #if !HAVE_LIBTIFF
+-heif_error loadTIFF(const char *filename, InputImage *input_image)
++TiledTiffReader::~TiledTiffReader() = default;
++void TiledTiffReader::TiffCloser::operator()(void*) const {}
++
++heif_error loadTIFF(const char *filename, int output_bit_depth, InputImage *input_image)
+ {
+   struct heif_error err = {
+       .code = heif_error_Unsupported_feature,

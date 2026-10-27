@@ -1,6 +1,17 @@
 import { core } from '@tauri-apps/api'
 
-import { FileMetadata } from '@/types/fs'
+import { CollectedFile, FileMetadata } from '@/types/fs'
+
+/**
+ * Starts the error of a file the system does not allow the app to read (e.g. macOS, when access to
+ * the folder was denied), see `PERMISSION_DENIED_ERROR` in `src-tauri/src/sys/fs.rs`
+ */
+const PERMISSION_DENIED_ERROR = 'PERMISSION_DENIED'
+
+/** Whether a command failed because the system denied access to the file */
+export function isPermissionDeniedError(error: unknown) {
+  return String(error).startsWith(PERMISSION_DENIED_ERROR)
+}
 
 export function getFileMetadata(filePath: string): Promise<FileMetadata> {
   return core.invoke('get_file_metadata', { filePath })
@@ -16,8 +27,29 @@ export function getSvgDimension(imagePath: string): Promise<[number, number]> {
   return core.invoke('get_svg_dimension', { imagePath })
 }
 
-export function moveFile(from: string, to: string) {
-  return core.invoke('move_file', { from, to })
+/**
+ * Moves a file without ever replacing an existing one (uses a numbered name like `clip (1).mp4`
+ * instead). Resolves to the path the file was saved to.
+ */
+/**
+ * Moves a file, never replacing an existing one (a numbered name is used instead), except
+ * `replaceOriginal`: when `to` is that original, it is moved to the Trash & the file takes its place
+ */
+export function moveFile(
+  from: string,
+  to: string,
+  { replaceOriginal }: { replaceOriginal?: string | null } = {},
+) {
+  return core.invoke<string>('move_file', {
+    from,
+    to,
+    replaceOriginal: replaceOriginal ?? null,
+  })
+}
+
+/** First unused path for `path`, numbered like `name (1)` if it already exists */
+export function getAvailablePath(path: string, isDir: boolean) {
+  return core.invoke<string>('get_available_path', { path, isDir })
 }
 
 export function deleteFile(path: string) {
@@ -38,10 +70,22 @@ export function copyFileToClipboard(filePath: string) {
   })
 }
 
+/**
+ * Copies several files to the clipboard at once. A file with a `fileName` is pasted under that name
+ * (the file itself is not renamed).
+ */
+export function copyFilesToClipboard(
+  files: { path: string; fileName?: string }[],
+) {
+  return core.invoke('copy_files_to_clipboard', {
+    files,
+  })
+}
+
 export function readFilesFromClipboard() {
-  return core.invoke<string[]>('read_files_from_clipboard')
+  return core.invoke<CollectedFile[]>('read_files_from_clipboard')
 }
 
 export function readFilesFromPaths(paths: string[]) {
-  return core.invoke<string[]>('read_files_from_paths', { paths })
+  return core.invoke<CollectedFile[]>('read_files_from_paths', { paths })
 }

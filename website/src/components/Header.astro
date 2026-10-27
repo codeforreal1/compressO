@@ -1,67 +1,140 @@
 ---
-import { Image } from "astro:assets";
-import LogoImage from "../assets/logo.png";
-import SocialLinks from "./SocialLinks.astro";
+import Icon from "./Icon.astro";
+
+/** The page's top bar: a floating, blurred bar with CompressO's name, GitHub & the download */
 ---
 
-<header>
-  <nav class="px-2 py-4">
-    <h2>
-      <a href="https://codeforreal.com">
-        <Image
-          src={LogoImage}
-          alt="codeforreal logo"
-          class="w-40 sm:w-55 opacity-50"
-          loading="eager"
-        />
+<header class="site-header" data-scrolled="false">
+  <nav class="nav">
+    <a href="/" class="brand" aria-label="CompressO home">
+      <img src="/android-chrome-512x512.png" alt="" width="30" height="30" />
+      <span>CompressO</span>
+    </a>
+    <div class="nav-actions">
+      <a href="/blog" class="nav-link">Blog</a>
+      <a href="/changelog" class="nav-link">Changelog</a>
+      <a
+        href="https://github.com/codeforreal1/compressO"
+        class="nav-icon"
+        aria-label="CompressO on GitHub"
+      >
+        <Icon name="github" size={18} />
       </a>
-    </h2>
-    <SocialLinks />
+      <a href="/#download" class="btn btn-primary btn-sm">Download</a>
+    </div>
   </nav>
 </header>
+
+<script is:inline>
+  // The bar is as wide as the page at the top, and becomes compact once the page is scrolled
+  (() => {
+    const header = document.querySelector(".site-header");
+    const update = () =>
+      header?.setAttribute("data-scrolled", String(window.scrollY > 24));
+    update();
+    window.addEventListener("scroll", update, { passive: true });
+  })();
+</script>
+
 <style>
-  header {
-    width: 1100px;
-    margin: 0 auto;
-    padding: 8px 0;
+  /* Floats over the page (not in its flow), so the hero's light starts at the very top */
+  .site-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    padding: 14px 16px 0;
+    pointer-events: none;
   }
-  h2 {
-    margin: 0;
-    font-size: 1em;
-  }
-  h2 a,
-  h2 a.active {
-    text-decoration: none;
-  }
-  nav {
+  .nav {
+    pointer-events: auto;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    max-width: 1072px;
+    height: 60px;
+    margin: 0 auto;
+    padding: 0 12px 0 18px;
+    border-radius: 18px;
+    transition:
+      max-width 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+      height 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+      padding 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+      border-radius 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+      background-color 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(22, 21, 20, 0.55);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.04) inset,
+      0 8px 32px rgba(0, 0, 0, 0.35);
   }
-  nav a {
-    color: var(--white);
-    text-decoration: none;
+  .site-header[data-scrolled="true"] .nav {
+    max-width: 720px;
+    height: 52px;
+    padding: 0 8px 0 14px;
+    border-radius: 16px;
+    background: rgba(22, 21, 20, 0.7);
   }
-  nav a.active {
-    text-decoration: none;
-  }
-  .social-links,
-  .social-links a {
+  .brand {
     display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
   }
-  @media (max-width: 720px) {
-    .social-links {
+  .brand img {
+    border-radius: 7px;
+  }
+  .nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .nav-link {
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-muted);
+    transition:
+      color 0.15s ease,
+      background-color 0.15s ease;
+  }
+  .nav-link:hover {
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.06);
+  }
+  .nav-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    color: var(--text-muted);
+    transition:
+      color 0.15s ease,
+      background-color 0.15s ease;
+  }
+  .nav-icon:hover {
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.06);
+  }
+  /* Phones: the logo alone, so the links & the download fit on one row */
+  @media (max-width: 520px) {
+    .brand span {
       display: none;
     }
-    header {
-      width: unset;
-      margin: 0 unset;
-      padding: 0 1em;
+    .nav-actions {
+      gap: 2px;
     }
-  }
-  @media screen and (min-width: 720px) and (max-width: 1000px) {
-    nav {
-      padding: 1rem;
+    .nav-link {
+      padding: 6px 8px;
+      font-size: 13px;
     }
   }
 </style>

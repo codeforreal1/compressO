@@ -3,6 +3,21 @@
   "app": {
     "security": {
       "csp": "default-src 'self'; img-src 'self' asset: http://asset.localhost https://asset.localhost blob: data:; media-src 'self' http://localhost:* http://127.0.0.1:* asset: http://asset.localhost https://asset.localhost blob:; style-src 'unsafe-inline' 'self'; connect-src 'self' http://localhost:* http://127.0.0.1:* ipc: http://ipc.localhost https://ipc.localhost asset: blob: blob:tauri://localhost;"
-    }
+    },
+    "windows": [
+      {
+        "title": "CompressO",
+        "fullscreen": false,
+        "height": 992,
+        "width": 1280,
+        "minWidth": 1080,
+        "minHeight": 800,
+        "resizable": true,
+        "hiddenTitle": true,
+        "backgroundColor": "#FFFFFF",
+        "visible": false,
+        "titleBarStyle": "Overlay"
+      }
+    ]
   }
 }

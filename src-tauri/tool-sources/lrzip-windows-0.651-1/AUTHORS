@@ -1,0 +1,23 @@
+Original concept and programming by Con Kolivas
+
+Beginning with version 0.19, Peter Hyman submitted bug fixes,
+patches, multi-threading support, assembler integration,
+SDK updating, and autoconf improvements.
+
+Thanks to:
+Andrew Tridgell for rzip
+Markus Oberhumer for lzo
+Igor Pavlov for lzma and CRC Assembler code
+Jean-loup Gailly and Mark Adler for the zlib compression library
+Christian Leber for lzma compat layer
+Lasse Collin for debugging the compat layer
+Michael J Cohen for Darwin support
+Jukka Laurila for newer Darwin support
+George Makrydakis for lrztar, lrzuntar
+Jari Aalto for documentation and typos and git help
+Jon Tibble for nasm tests & Solaris support
+Michael Blumenkrantz for updated autotools and liblrzip!
+Serge Belyshev for encryption help and code
+Ulrich Drepper for MD5 implementation
+PolarSSL authors for sha512 + aes128 implementation
+Fernando Auil for lrzip completion

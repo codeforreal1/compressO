@@ -11,7 +11,14 @@ const blogs = defineCollection({
       publishedDate: z.coerce.date(),
       updatedDate: z.coerce.date().optional(),
       heroImage: image().optional(),
+      /** What the hero image will show, labeling its placeholder until `heroImage` is set */
+      heroImageLabel: z.string().optional(),
     }),
 })
 
-export const collections = { blogs }
+/** The app's CHANGELOG.md (at the repository's root), read whenever the site is built */
+const changelog = defineCollection({
+  loader: glob({ base: '..', pattern: 'CHANGELOG.md' }),
+})
+
+export const collections = { blogs, changelog }

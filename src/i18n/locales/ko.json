@@ -1,0 +1,1002 @@
+{
+  "toolPreparation": {
+    "title": "CompressO 준비 중",
+    "checking": "압축 도구 확인 중…",
+    "verifying": "압축 도구 검증 중…",
+    "extracting": "압축 도구 추출 중…",
+    "validating": "압축 도구 유효성 검사 중…",
+    "failed": "압축 도구를 준비할 수 없습니다. 자세한 내용은 로그를 확인하세요.",
+    "statusUnavailable": "도구 상태를 확인할 수 없습니다. 다시 시도하세요.",
+    "retry": "다시 시도",
+    "exit": "종료",
+    "showLogs": "로그 보기",
+    "logOpenFailed": "로그 파일을 열 수 없습니다.",
+    "onlyOnce": "이 작업은 한 번만 수행됩니다."
+  },
+  "settings": {
+    "general": {
+      "startup": {
+        "title": "시작",
+        "changeFailed": "설정을 변경할 수 없습니다.",
+        "openAtLogin": {
+          "title": "로그인 시 열기",
+          "description": "컴퓨터에 로그인할 때 CompressO를 자동으로 엽니다."
+        },
+        "needsApproval": {
+          "title": "시스템 설정에서 꺼져 있음",
+          "description": "CompressO가 로그인 시 열리도록 허용되어 있지 않습니다. 시스템 설정의 일반 > 로그인 항목에서 허용하십시오.",
+          "button": "로그인 항목 열기"
+        },
+        "openInTrayOnly": {
+          "title_macos": "메뉴 막대에서만 열기",
+          "title_windows": "시스템 트레이에서만 열기",
+          "description_macos": "로그인 시 열릴 때 기본 창을 표시하지 않습니다. 메뉴 막대에서 계속 미디어를 압축할 수 있습니다.",
+          "description_windows": "로그인 시 열릴 때 기본 창을 표시하지 않습니다. 시스템 트레이에서 계속 미디어를 압축할 수 있습니다.",
+          "needsTrayIcon_macos": "앱이 메뉴 막대에서 열리므로 이 기능을 사용하려면 '<setting>메뉴 막대 아이콘 표시</setting>'를 켜십시오.",
+          "needsTrayIcon_windows": "앱이 시스템 트레이에서 열리므로 이 기능을 사용하려면 '<setting>시스템 트레이 아이콘 표시</setting>'를 켜십시오."
+        }
+      },
+      "appearance": {
+        "title": "화면 모드",
+        "language": {
+          "title": "언어",
+          "description": "앱의 언어입니다."
+        },
+        "theme": {
+          "title": "테마",
+          "description": "시스템 설정을 따르거나 항상 밝게 또는 어둡게 사용합니다."
+        },
+        "accentColor": {
+          "title": "강조 색상",
+          "description": "버튼, 강조 표시 및 진행률에 사용되는 색상입니다."
+        },
+        "tintedWindow": {
+          "title": "색조 창",
+          "description": "창 배경을 통해 데스크탑이 은은하게 비쳐 보이도록 합니다."
+        },
+        "tintOpacity": {
+          "title": "색조 불투명도",
+          "description": "데스크탑이 비쳐 보이는 정도입니다. 값이 낮을수록 더 많이 보입니다."
+        }
+      },
+      "tray": {
+        "title_macos": "메뉴 막대",
+        "title_windows": "시스템 트레이",
+        "showIcon": {
+          "title_macos": "메뉴 막대 아이콘 표시",
+          "title_windows": "시스템 트레이 아이콘 표시",
+          "description_macos": "메뉴 막대에 CompressO 아이콘, 압축 진행률 및 드롭 영역을 표시합니다.",
+          "description_windows": "시스템 트레이에 CompressO 아이콘, 압축 진행률 및 드롭 영역을 표시합니다.",
+          "locked": "드롭 영역의 미디어를 압축하는 중입니다. 완료되거나 중지된 후에 끌 수 있습니다."
+        }
+      },
+      "preview": {
+        "title": "미리보기",
+        "videoPreviews": {
+          "title": "비디오 미리보기",
+          "description": "앱 안에서 비디오를 재생합니다. 일부 Linux 시스템에서는 비디오가 잘 재생되지 않으므로 기본적으로 정지 이미지가 표시됩니다. 변경 사항은 재시작 후 적용됩니다."
+        },
+        "restart": "재시작"
+      },
+      "sleep": {
+        "title": "잠자기",
+        "preventSleep": {
+          "title": "압축 중 잠자기 방지",
+          "description": "압축이 완료될 때까지 컴퓨터가 잠자기 상태로 전환되지 않도록 합니다. 화면은 계속 꺼질 수 있습니다. 덮개를 닫으면 잠자기 상태로 전환됩니다."
+        },
+        "keepScreenOn": {
+          "title": "화면 켜 두기",
+          "description": "압축 중에는 화면도 꺼지지 않도록 합니다."
+        }
+      },
+      "sound": {
+        "audioWaveforms": {
+          "title": "오디오 파형",
+          "description": "움직이는 오디오 미리보기와 오디오 및 동영상 타임라인의 파형을 표시합니다."
+        },
+        "title": "사운드",
+        "completionSound": {
+          "title": "완료 사운드",
+          "description": "압축이 완료되면 사운드를 재생합니다."
+        }
+      },
+      "troubleshooting": {
+        "title": "문제 해결",
+        "logFiles": {
+          "title": "로그 파일",
+          "description": "앱이 수행한 작업의 기록으로, 문제의 원인을 찾는 데 도움이 됩니다. 문제를 보고할 때 첨부하십시오. 압축한 파일의 이름이 포함되어 있습니다.",
+          "button": "로그 파일 보기",
+          "failed": "로그 파일을 표시할 수 없습니다."
+        }
+      }
+    },
+    "presets": {
+      "copyName": "{{name}} 사본",
+      "isDefault_video": "새 비디오의 기본값입니다. 선택하면 대신 표준 프리셋을 사용합니다.",
+      "isDefault_image": "새 이미지의 기본값입니다. 선택하면 대신 표준 프리셋을 사용합니다.",
+      "isDefault_audio": "새 오디오 파일의 기본값입니다. 선택하면 대신 표준 프리셋을 사용합니다.",
+      "setDefault_video": "새 비디오의 기본값으로 설정",
+      "setDefault_image": "새 이미지의 기본값으로 설정",
+      "setDefault_audio": "새 오디오 파일의 기본값으로 설정",
+      "name": "프리셋 이름",
+      "moveUp": "위로 이동",
+      "moveDown": "아래로 이동",
+      "duplicate": "복제",
+      "delete": "프리셋 삭제",
+      "empty_video": "아직 비디오 프리셋이 없습니다. 비디오의 설정을 조정한 다음 프리셋 메뉴 옆의 더하기 버튼을 선택하여 프리셋으로 저장하십시오.",
+      "empty_image": "아직 이미지 프리셋이 없습니다. 이미지의 설정을 조정한 다음 프리셋 메뉴 옆의 더하기 버튼을 선택하여 프리셋으로 저장하십시오.",
+      "empty_audio": "아직 오디오 프리셋이 없습니다. 오디오 파일의 설정을 조정한 다음 프리셋 메뉴 옆의 더하기 버튼을 선택하여 프리셋으로 저장하십시오.",
+      "mediaType": "미디어 유형",
+      "standardOutput": "저장 위치와 파일 이름 접두사는 [<setting>출력</setting>]에서 설정합니다.",
+      "cannotDeleteStandard": "표준 프리셋은 삭제할 수 없습니다."
+    },
+    "dropZone": {
+      "turnOnTrayIcon_macos": "드롭 영역은 메뉴 막대에 있습니다. 먼저 일반에서 '<setting>메뉴 막대 아이콘 표시</setting>'를 켜십시오.",
+      "turnOnTrayIcon_windows": "드롭 영역은 시스템 트레이에 있습니다. 먼저 일반에서 '<setting>시스템 트레이 아이콘 표시</setting>'를 켜십시오.",
+      "compression": {
+        "title": "압축",
+        "autoCompress": {
+          "title": "자동으로 압축",
+          "description": "드롭 존에 추가된 미디어를 바로 하나씩 압축하고, 해당 프리셋의 저장 위치에 저장합니다.",
+          "needsSaveLocation": "압축된 미디어를 묻지 않고 저장할 수 있도록 [<setting>출력</setting>] 또는 드롭 존의 프리셋에서 [매번 묻기] 이외의 저장 위치를 선택하세요."
+        }
+      },
+      "preset": {
+        "title_video": "비디오 프리셋",
+        "title_image": "이미지 프리셋",
+        "title_audio": "오디오 프리셋",
+        "description_video": "비디오에 사용되는 설정입니다.",
+        "description_image": "이미지에 사용되는 설정입니다.",
+        "description_audio": "오디오 파일에 사용되는 설정입니다."
+      },
+      "clipboard": {
+        "title": "클립보드",
+        "watch": {
+          "title": "클립보드 감시",
+          "description_macos": "복사한 미디어(파일 또는 브라우저의 이미지 등)를 메뉴 막대의 드롭 영역에 추가합니다.",
+          "description_windows": "복사한 미디어(파일 또는 브라우저의 이미지 등)를 시스템 트레이의 드롭 영역에 추가합니다."
+        }
+      },
+      "watchedFolders": {
+        "add": {
+          "title": "폴더 감시",
+          "description": "이 폴더에 추가된 새 미디어(화면 녹화, 다운로드 등)는 자동으로 압축됩니다.",
+          "button": "폴더 추가",
+          "dialogTitle": "감시할 폴더를 선택하세요.",
+          "alreadyWatched": "이미 감시 중인 폴더입니다.",
+          "description_linux": "CompressO가 열려 있는 동안 이 폴더에 추가된 새 미디어(화면 녹화, 다운로드 등)는 자동으로 압축됩니다."
+        },
+        "watch": "{{name}} 감시",
+        "missing": "폴더가 존재하지 않아 감시하지 않습니다.",
+        "needsSaveLocation": "미디어를 묻지 않고 저장할 수 있도록 [<setting>출력</setting>] 또는 이 폴더의 프리셋에서 [매번 묻기] 이외의 저장 위치를 선택하세요. 현재 감시되지 않습니다.",
+        "presetAsks": "저장 위치가 [매번 묻기]로 설정되어 있습니다. 이 폴더를 감시할 수 있도록 [<setting>출력</setting>] 또는 이 프리셋에서 다른 저장 위치를 선택하세요.",
+        "stillMissing": "폴더가 아직 없습니다. 감시를 켜기 전에 다시 만드세요.",
+        "checkFailed": "이 폴더가 존재하는지 확인할 수 없습니다. 다시 시도하세요.",
+        "remove": "감시 중지",
+        "preset_video": "비디오",
+        "preset_image": "이미지",
+        "preset_audio": "오디오"
+      }
+    },
+    "output": {
+      "saving": {
+        "title": "저장",
+        "location": {
+          "option_ask": "매번 묻기",
+          "option_fixedFolder": "고정 폴더",
+          "option_sameFolder": "원본과 같은 폴더",
+          "title": "저장 위치",
+          "description_ask": "압축할 때마다 저장 위치를 선택합니다.",
+          "description_fixedFolder": "압축할 때마다 선택한 폴더에 자동으로 저장합니다.",
+          "description_sameFolder": "원본 파일 옆의 같은 폴더에 자동으로 저장합니다."
+        },
+        "folder": {
+          "none": "선택한 폴더 없음",
+          "change": "변경",
+          "dialogTitle": "압축된 미디어를 저장할 폴더를 선택하십시오.",
+          "title": "폴더"
+        },
+        "preserveFolders": {
+          "title": "폴더 구조 유지",
+          "description": "저장할 때 원래 폴더 구조를 유지합니다."
+        },
+        "skipLarger": {
+          "title": "더 큰 출력 건너뛰기",
+          "description": "압축된 미디어가 원본보다 크면 저장하지 않습니다."
+        },
+        "replaceOriginal": {
+          "title": "원본 파일 바꾸기",
+          "description": "압축된 파일이 원본과 같은 폴더에 같은 이름으로 저장되면 원본은 휴지통으로 이동되고 압축된 파일만 남습니다.",
+          "description_windows": "압축된 파일이 원본과 같은 폴더에 같은 이름으로 저장되면 원본은 휴지통으로 이동되고 압축된 파일만 남습니다."
+        },
+        "prefix": {
+          "title": "파일 이름 접두사",
+          "placeholder": "접두사 없음",
+          "description": "저장되는 파일 이름 앞에 추가되는 텍스트입니다. 원래 이름을 유지하려면 비워 두십시오."
+        },
+        "appliesTo": "이 설정은 표준 프리셋에만 적용됩니다."
+      },
+      "clipboard": {
+        "title": "클립보드",
+        "copyOutput": {
+          "title": "출력을 클립보드에 복사",
+          "description": "압축할 때마다 압축된 미디어를 클립보드에 복사하여 바로 붙여넣을 수 있도록 합니다."
+        },
+        "includeBatch": {
+          "title": "일괄 출력 포함",
+          "description": "여러 파일을 한 번에 압축할 때도 파일을 복사합니다."
+        }
+      },
+      "performance": {
+        "title": "성능",
+        "hardwareAcceleration": {
+          "title": "하드웨어 가속 사용",
+          "description": "하드웨어 가속으로 비디오를 더 빠르게 압축합니다(파일이 약간 커질 수 있음)",
+          "unavailable": "이 컴퓨터에서는 하드웨어 가속을 사용할 수 없습니다."
+        },
+        "retryTargetSizeOnCpu": {
+          "title": "가속 없이 목표 크기에 맞추기",
+          "description": "\"목표 크기\"에만 적용됩니다. 동영상이 목표 크기에 맞지 않으면 하드웨어 가속 없이 다시 압축합니다. 더 느리지만 크기에 더 가깝습니다."
+        }
+      },
+      "storage": {
+        "title": "저장 공간",
+        "clearCache": {
+          "title": "캐시 지우기",
+          "confirm": "지금 지우기",
+          "description": "임시 파일을 삭제하여 공간을 확보합니다. 저장된 파일에는 영향이 없습니다.",
+          "mediaOpen": "작업 중인 미디어가 캐시를 사용하므로 먼저 닫으십시오.",
+          "cleared": "모든 캐시를 지웠습니다.",
+          "failed": "캐시를 지우는 중 문제가 발생했습니다."
+        }
+      },
+      "savedFiles": {
+        "title": "저장된 파일"
+      }
+    },
+    "open": "설정 열기",
+    "search": {
+      "label": "설정 검색",
+      "results": "검색 결과",
+      "noResults": "설정을 찾을 수 없습니다."
+    },
+    "groups": {
+      "settings": "설정",
+      "app": "CompressO"
+    },
+    "pages": {
+      "general": "일반",
+      "output": "출력",
+      "presets": "프리셋",
+      "dropZone": "드롭 영역",
+      "about": "정보",
+      "credits": "크레딧",
+      "watchedFolders": "폴더 감시",
+      "history": "기록"
+    },
+    "about": {
+      "updateAvailable": "업데이트 사용 가능",
+      "tagline": "모든 이미지와 비디오를 아주 작은 크기로 압축합니다.",
+      "version": "버전 {{version}}",
+      "newVersion": "버전 {{version}}을(를) 사용할 수 있습니다. 업데이트 후 앱을 재시작하면 사용할 수 있습니다.",
+      "upToDate": "최신 버전을 사용하고 있습니다.",
+      "checkDescription": "CompressO의 새 버전이 있는지 확인합니다.",
+      "updateNow": "지금 업데이트",
+      "checkForUpdates": "업데이트 확인",
+      "website": {
+        "title": "웹사이트",
+        "description": "다운로드, 기능 및 문서입니다."
+      },
+      "openSource": {
+        "title": "무료 및 오픈 소스",
+        "license": "AGPL-3.0 라이선스"
+      },
+      "madeBy": "<link>Code For Real⚡</link>이(가) <heart></heart>을(를) 담아 공개적으로 개발",
+      "releaseNotes": "릴리스 노트",
+      "releaseNotesOnline": {
+        "title": "버전 {{version}}의 새로운 기능 보기",
+        "description": "여기에서 릴리스 노트를 불러올 수 없습니다.",
+        "view": "온라인으로 보기"
+      },
+      "changelog": {
+        "title": "변경 내역",
+        "description": "CompressO 각 버전의 새로운 기능.",
+        "view": "변경 내역 보기"
+      }
+    },
+    "credits": {
+      "tools": {
+        "title": "오픈 소스 도구",
+        "description": "이 훌륭한 오픈 소스 도구와 라이브러리가 없었다면 CompressO는 만들어질 수 없었습니다."
+      },
+      "license": "{{license}} 라이선스",
+      "notices": {
+        "title": "타사 고지",
+        "description": "타사 고지 및 라이선스 전문입니다.",
+        "view": "보기"
+      }
+    },
+    "watchedFolders": {
+      "folders": "폴더",
+      "openFailed": "폴더를 열 수 없습니다. 이동되었거나 삭제되었을 수 있습니다."
+    },
+    "history": {
+      "clear": "기록 지우기",
+      "clearConfirm": "모든 기록 지우기",
+      "clearFailed": "기록을 지울 수 없습니다.",
+      "search": "이름, 폴더 또는 프리셋으로 검색",
+      "empty": "압축한 미디어가 여기에 표시됩니다.",
+      "noResults": "검색과 일치하는 압축이 없습니다.",
+      "source_main": "메인 창",
+      "source_dropZone": "드롭 존",
+      "source_watchedFolder": "감시 폴더 {{name}}",
+      "original": "원본",
+      "output": "출력",
+      "missing": "이 파일은 이동되었거나 삭제되었습니다.",
+      "notSaved": "이 출력은 저장되지 않았습니다.",
+      "fileCount": "파일: {{count}}",
+      "showFiles": "{{name}}의 파일 보기",
+      "hideFiles": "{{name}}의 파일 숨기기",
+      "stats": {
+        "saved": "절약한 공간",
+        "files": "압축한 파일",
+        "original": "원본 크기",
+        "output": "압축 후 크기",
+        "reduction": "평균 감소율"
+      }
+    }
+  },
+  "common": {
+    "sameFormatAsInput": "입력과 같은 형식",
+    "lossless": "무손실",
+    "mono": "모노",
+    "stereo": "스테레오",
+    "kbps": "{{value}}kbps",
+    "delete": "삭제",
+    "cancel": "취소",
+    "save": "저장",
+    "sizeChange": "{{from}} → {{to}}",
+    "showInFileManager": "파일 탐색기에서 보기",
+    "showNameInFileManager": "파일 탐색기에서 {{name}} 보기",
+    "copied": "클립보드에 복사했습니다.",
+    "close": "닫기",
+    "reset": "재설정",
+    "apply": "적용",
+    "yes": "예",
+    "edit": "편집",
+    "decrease": "줄이기",
+    "increase": "늘리기"
+  },
+  "presets": {
+    "standard": "표준",
+    "defaultChoice": "기본값 ({{name}})",
+    "summary": {
+      "rotated": "{{degrees}}° 회전",
+      "flipped": "뒤집음",
+      "cropped": "{{aspectRatio}}(으)로 자름",
+      "quality": "품질 {{value}}%",
+      "resolution": "긴 변 {{size}}px",
+      "fps": "{{fps}}FPS",
+      "speed": "{{speed}}배속",
+      "audioRemoved": "오디오 제거",
+      "volume": "음량 {{value}}%",
+      "audioCodec": "{{codec}} 오디오",
+      "metadataRemoved": "메타데이터 제거",
+      "metadataKept": "메타데이터 유지",
+      "svgScale": "SVG 배율 {{scale}}배",
+      "customSvg": "사용자 지정 SVG 변환",
+      "targetSize": "목표 크기 {{size}} MB",
+      "targetSizeImage": "목표 크기 {{size}}"
+    },
+    "save": {
+      "title_video": "비디오 프리셋 저장",
+      "title_image": "이미지 프리셋 저장",
+      "title_audio": "오디오 프리셋 저장",
+      "name": "이름",
+      "placeholder_video": "예: 웹 1080p",
+      "placeholder_image": "예: 웹",
+      "placeholder_audio": "예: 팟캐스트",
+      "nameTaken": "같은 이름의 프리셋이 이미 있습니다.",
+      "hint": "프리셋은 설정의 <setting>프리셋</setting>에서 이름 변경, 순서 변경 및 삭제할 수 있습니다."
+    },
+    "updated": "'{{name}}' 프리셋을 업데이트했습니다.",
+    "saved": "'{{name}}' 프리셋을 저장했습니다.",
+    "revertFailed": "설정을 되돌릴 수 없습니다.",
+    "applyFailed": "프리셋을 적용할 수 없습니다.",
+    "label": "프리셋:",
+    "update": "'{{name}}' 업데이트",
+    "saveAsNew": "새 프리셋으로 저장",
+    "revert": "프리셋으로 되돌리기",
+    "output": {
+      "location": "저장 위치",
+      "followStandard": "표준 프리셋과 동일"
+    }
+  },
+  "dropZone": {
+    "unsupportedType": "지원되지 않는 파일 형식입니다.",
+    "unsupportedSkipped": "지원되지 않는 파일은 건너뛰었습니다.",
+    "addFailed": "미디어를 추가할 수 없습니다.",
+    "openFailed": "CompressO를 열 수 없습니다.",
+    "quitFailed": "CompressO를 종료할 수 없습니다.",
+    "pin": "고정",
+    "unpin": "고정 해제",
+    "openApp": "앱 열기",
+    "openAppCompressing": "앱 열기, 압축 중 {{progress}}%",
+    "openAppPaused": "앱 열기, {{progress}}%에서 일시정지됨",
+    "quitApp": "앱 종료",
+    "release": "놓으면 미디어가 추가됩니다",
+    "dropToCompress": "압축할 미디어를 여기에 드롭하거나 붙여넣으십시오",
+    "dropToStore": "보관할 미디어를 여기에 드롭하거나 붙여넣으십시오",
+    "mediaTypes": "비디오, 이미지 또는 폴더…",
+    "itemsReady_other": "{{count}}개 항목 준비됨",
+    "discardAll": "모두 버리기",
+    "remove": "{{name}} 제거",
+    "storedBusy": "보관했습니다. 앱을 열면 현재 미디어 다음에 압축합니다.",
+    "storedIdle": "미디어를 더 드롭하거나 앱을 열어 압축을 시작하십시오.",
+    "needsSaveLocation": "압축된 미디어를 묻지 않고 저장할 수 있도록 설정의 [<setting>출력</setting>] 또는 드롭 존의 프리셋에서 저장 위치를 선택하세요."
+  },
+  "queue": {
+    "notSavedLarger": "원본보다 크기 때문에 저장하지 않았습니다.",
+    "noSaveLocation": "설정에서 해당 프리셋의 저장 위치를 선택하세요.",
+    "chooseSaveLocation": "저장 위치 선택",
+    "saveFailed": "압축된 미디어를 저장할 수 없습니다.",
+    "compressFailed": "미디어를 압축할 수 없습니다.",
+    "summary": {
+      "cancelledAndFailed": "{{cancelled}}, {{failed}}",
+      "cancelled_other": "{{count}}개 취소됨",
+      "failed_other": "{{count}}개 압축 실패",
+      "complete": "압축 완료",
+      "pausing": "{{total}}개 중 {{position}}번째 후 일시정지",
+      "paused_other": "일시정지됨, {{count}}개 대기 중",
+      "compressing": "{{total}}개 중 {{position}}번째 압축 중",
+      "waiting_other": "{{count}}개 대기 중"
+    },
+    "compressingName": "{{name}} 압축 중",
+    "status": {
+      "waiting": "대기 중",
+      "cancelled": "취소됨",
+      "done": "완료",
+      "failed": "실패",
+      "smaller": "{{value}}% 감소"
+    },
+    "tryAgain": "다시 시도",
+    "tryNameAgain": "{{name}} 다시 시도",
+    "resume": "재개",
+    "pause": "일시정지",
+    "pauseAfterCurrent": "현재 파일 후 일시정지",
+    "stop": "중지",
+    "clear": "지우기",
+    "stopAndCancel": "압축을 중지하고 대기 중인 미디어 취소",
+    "clearFinished": "완료된 미디어 지우기",
+    "stopCompression": "압축 중지",
+    "clearAll": "모두 지우기",
+    "collapse": "접기",
+    "showDropZone": "드롭 영역 보기",
+    "filesCompressed_other": "파일 {{count}}개 압축됨",
+    "accessDenied": "이 파일을 열 권한이 없습니다. 시스템 설정에서 접근을 허용하십시오.",
+    "fromWatchedFolder": "감시 폴더 {{name}}에서",
+    "compressAgain": "다시 압축",
+    "compressNameAgain": "{{name}} 다시 압축"
+  },
+  "subtitles": {
+    "unknownLanguage": "알 수 없음",
+    "selectFile": "자막 파일 선택(SRT)",
+    "selectFailed": "자막 파일을 선택할 수 없습니다.",
+    "title": "자막",
+    "preserveExisting": "기존 자막 유지",
+    "untitled": "자막 {{number}}",
+    "language": "언어",
+    "add": "자막 추가",
+    "unsupported": "{{container}}은(는) 소프트 자막을 지원하지 않습니다"
+  },
+  "mediaInfo": {
+    "videoInformation": "비디오 정보",
+    "fullPath": "전체 경로",
+    "formatName": "형식 이름",
+    "format": "형식",
+    "duration": "길이",
+    "size": "크기",
+    "bitrate": "비트 전송률",
+    "totalStreams": "전체 스트림",
+    "codec": "코덱",
+    "profile": "프로파일",
+    "width": "너비",
+    "height": "높이",
+    "codedWidth": "인코딩 너비",
+    "codedHeight": "인코딩 높이",
+    "frameRate": "프레임률",
+    "avgFrameRate": "평균 프레임률",
+    "pixelFormat": "픽셀 형식",
+    "colorSpace": "색 공간",
+    "colorRange": "색상 범위",
+    "colorPrimaries": "색 원색",
+    "colorTransfer": "전달 특성",
+    "chromaLocation": "크로마 위치",
+    "totalFrames": "전체 프레임",
+    "referenceFrames": "참조 프레임",
+    "gopSize": "GOP 크기",
+    "codecLevel": "코덱 레벨",
+    "fieldOrder": "필드 순서",
+    "timeBase": "시간 기준",
+    "rotation": "회전",
+    "channels": "채널",
+    "channelLayout": "채널 레이아웃",
+    "sampleRate": "샘플 레이트",
+    "sampleFormat": "샘플 형식",
+    "bitsPerSample": "샘플당 비트",
+    "metadataTags": "메타데이터 태그",
+    "subtitleFormat": "자막 형식",
+    "language": "언어",
+    "title": "제목",
+    "disposition": "용도",
+    "start": "시작",
+    "end": "끝",
+    "imageInformation": "이미지 정보",
+    "fileName": "파일 이름",
+    "mimeType": "MIME 유형",
+    "aspectRatio": "화면비",
+    "orientation": "방향",
+    "dpi": "DPI",
+    "megapixels": "메가픽셀",
+    "colorType": "색상 유형",
+    "bitDepth": "비트 심도",
+    "alphaChannel": "알파 채널",
+    "make": "제조사",
+    "model": "모델",
+    "lensModel": "렌즈 모델",
+    "software": "소프트웨어",
+    "iso": "ISO",
+    "exposureTime": "노출 시간",
+    "aperture": "조리개",
+    "focalLength": "초점 거리",
+    "flash": "플래시",
+    "dateTaken": "촬영 날짜",
+    "dateDigitized": "디지털화 날짜",
+    "artist": "아티스트",
+    "copyright": "저작권",
+    "coordinates": "좌표",
+    "tabs": {
+      "container": "컨테이너",
+      "video": "비디오",
+      "audio": "오디오",
+      "subtitles": "자막",
+      "chapters": "챕터",
+      "metadata": "메타데이터",
+      "color": "색상",
+      "exif": "EXIF"
+    },
+    "noMetadata": "메타데이터를 찾을 수 없음",
+    "notAvailable": "없음",
+    "videoStream": "비디오 스트림",
+    "audioStream": "오디오 스트림",
+    "noAudioStreams": "오디오 스트림을 찾을 수 없음",
+    "noSubtitleStreams": "자막 스트림을 찾을 수 없음",
+    "noVideoPath": "비디오 경로를 사용할 수 없음",
+    "subtitleFiles": "자막 파일",
+    "subtitleSaved": "자막을 추출하여 {{format}}(으)로 저장했습니다.",
+    "subtitleStream": "자막 스트림 {{number}}",
+    "subtitleNotExtractable": "이 자막 형식({{codec}})은 SRT로 변환할 수 없습니다. 이미지 기반 형식(예: Blu-ray PGS 또는 DVD VobSub)일 가능성이 높으므로 다운로드할 수 없습니다.",
+    "downloading": "다운로드 중…",
+    "unsupported": "지원되지 않음",
+    "downloadAs": "{{format}}(으)로 다운로드",
+    "dispositions": {
+      "default": "기본",
+      "forced": "강제",
+      "attachedPicture": "첨부 이미지",
+      "comment": "코멘터리",
+      "karaoke": "노래방",
+      "lyrics": "가사"
+    },
+    "noChapters": "챕터를 찾을 수 없음",
+    "chapter": "챕터 {{number}}",
+    "noExif": "EXIF 데이터를 찾을 수 없음",
+    "cameraInformation": "카메라 정보",
+    "shootingInformation": "촬영 정보",
+    "dateInformation": "날짜 정보",
+    "copyrightInformation": "저작권 정보",
+    "gpsInformation": "GPS 정보",
+    "allTags": "모든 태그"
+  },
+  "svg": {
+    "advanced": "고급 SVG 설정",
+    "blackAndWhite": "흑백",
+    "levels": {
+      "low": "낮음",
+      "medium": "중간",
+      "high": "높음",
+      "few": "적음",
+      "many": "많음",
+      "sharp": "날카로움",
+      "smooth": "부드러움",
+      "fine": "세밀함",
+      "coarse": "거침",
+      "accurate": "정확함",
+      "less": "낮음"
+    },
+    "filterSpeckle": {
+      "title": "얼룩 필터",
+      "tooltip": "값이 클수록 더 깔끔하고 부드러워집니다"
+    },
+    "colorPrecision": {
+      "title": "색상 정밀도",
+      "tooltip": "값이 클수록 정확하지만 채도가 지나치게 높아질 수 있습니다"
+    },
+    "layerDifference": {
+      "title": "레이어 차이",
+      "tooltip": "값이 클수록 레이어가 적어집니다"
+    },
+    "cornerThreshold": {
+      "title": "모서리 임계값",
+      "tooltip": "값이 클수록 부드러워집니다"
+    },
+    "segmentLength": {
+      "title": "세그먼트 길이",
+      "tooltip": "값이 클수록 거칠어집니다"
+    },
+    "spliceThreshold": {
+      "title": "연결 임계값",
+      "tooltip": "값이 클수록 덜 정확해집니다"
+    },
+    "scaleFactor": "배율"
+  },
+  "batch": {
+    "copyOutput": "출력을 클립보드에 복사",
+    "compareOutput": "출력 비교",
+    "processing": "처리 중",
+    "paused": "일시정지됨",
+    "inputSize": "입력 크기",
+    "outputSize": "출력 크기",
+    "extension": "확장자",
+    "duration": "길이",
+    "dimensions": "크기",
+    "compressed_videos": "압축된 비디오",
+    "compressed_audio": "압축된 오디오",
+    "compressed_images": "압축된 이미지",
+    "compressed_media": "압축된 미디어",
+    "label_videos": "비디오",
+    "label_audio": "오디오",
+    "label_images": "이미지",
+    "label_media": "미디어",
+    "sizeSaved": "절약된 용량",
+    "addMoreTooltip": "미디어를 더 추가합니다. 파일을 드롭하거나 붙여넣을 수도 있습니다.",
+    "addMoreMedia": "미디어 더 추가",
+    "addMore": "더 추가"
+  },
+  "preview": {
+    "showFailed": "파일을 표시할 수 없습니다.",
+    "compare": "비교",
+    "showEdits": "편집 내용 보기",
+    "smaller": "감소",
+    "size": "크기",
+    "fps": "FPS",
+    "viewFullInfo": "전체 정보 보기",
+    "progress": "진행률 {{value}}%",
+    "mediaToCompress": "압축할 미디어",
+    "waitingForDropZone": "드롭 영역을 기다리는 중…",
+    "processing": "처리 중…",
+    "estimatingSize": "출력 크기를 추정하는 중...",
+    "estimatedSize": "예상 크기: 약 {{size}}",
+    "estimatedSizeUpTo": "예상 크기: 최대 {{size}}"
+  },
+  "thumbnail": {
+    "copyFrameUnavailable": "프레임을 복사할 수 없습니다",
+    "frameCopied": "프레임을 클립보드에 복사했습니다",
+    "copyFrameFailed": "프레임을 클립보드에 복사하지 못했습니다",
+    "coverArt": "커버 아트",
+    "copyFrame": "현재 프레임 복사",
+    "audioUnplayable": "이 오디오는 여기에서 재생할 수 없지만 압축할 수는 있습니다.",
+    "switchingToImage": "이미지 썸네일로 전환하는 중…",
+    "pauseAudio": "오디오 일시정지",
+    "playAudio": "오디오 재생",
+    "videoUnplayable": "이 비디오에는 고급 코덱 또는 구성이 포함되어 있어 이 앱에서 재생할 수 없습니다. 이러한 비디오에는 VLC 같은 전용 플레이어가 필요합니다.",
+    "previewsOff": "비디오 미리보기가 꺼져 있습니다. 설정의 <setting>일반</setting>에서 켤 수 있습니다.",
+    "stillCompressible": "그래도 출력 설정을 적용하고 모든 변환을 수행할 수 있습니다.",
+    "enlarge": "이미지 확대",
+    "select": "썸네일 이미지를 선택하십시오.",
+    "selectFailed": "썸네일 이미지를 선택할 수 없습니다.",
+    "title": "썸네일",
+    "noneSelected": "선택한 썸네일 없음",
+    "custom": "사용자 지정 썸네일",
+    "choose": "선택",
+    "unsupported": "{{container}}은(는) 사용자 지정 썸네일을 지원하지 않습니다"
+  },
+  "codecs": {
+    "video": {
+      "libx264": "호환성이 가장 높고 품질이 좋음",
+      "libx265": "더 나은 압축, 최신 표준",
+      "libvpx_vp9": "오픈 소스, 웹에 적합",
+      "libaom_av1": "최고의 압축, 느림",
+      "mpeg4": "구형 코덱, 폭넓은 지원"
+    },
+    "audio": {
+      "aac": "표준 코덱, 높은 호환성",
+      "libmp3lame": "범용 오디오 형식",
+      "libopus": "최신, 고품질",
+      "libvorbis": "오픈 소스, 좋은 품질",
+      "ac3": "돌비 디지털, 서라운드 사운드",
+      "alac": "Apple 기기에 최적화된 무손실 압축",
+      "flac": "무손실 압축",
+      "pcm_s16le": "비압축, 최고 품질"
+    },
+    "title": "코덱",
+    "select": "코덱 선택:",
+    "default": "기본값",
+    "defaultDescription": "선택한 컨테이너의 기본 코덱",
+    "unusableIn_other": "{{codec}}은(는) {{containers}} 파일에서 사용할 수 없으므로 비디오 {{count}}개는 기본 코덱을 유지합니다.",
+    "videoCount_other": "비디오 {{count}}개 중 {{usable}}개",
+    "partial": "{{videos}}만 {{codec}}을(를) 사용할 수 있습니다. 나머지는 기본 코덱을 유지합니다."
+  },
+  "metadata": {
+    "limitation_mov": "MOV 파일에는 설명과 시놉시스를 저장할 수 없습니다.",
+    "limitation_avi": "AVI 파일에는 설명, 시놉시스, 생성 날짜를 저장할 수 없습니다.",
+    "limitation_ts": "TS 파일에는 제목만 저장할 수 있습니다. 다른 정보는 저장되지 않습니다.",
+    "strip": "메타데이터 제거",
+    "keepHint": "원래 값을 유지하려면 필드를 비워 두십시오",
+    "removeHint": "원래 값을 제거하려면 공백을 입력하십시오",
+    "title": {
+      "label": "제목",
+      "placeholder": "제목 입력",
+      "placeholderVideo": "비디오 제목 입력"
+    },
+    "artist": {
+      "label": "아티스트",
+      "placeholder": "아티스트 이름 입력"
+    },
+    "album": {
+      "label": "앨범",
+      "placeholder": "앨범 이름 입력"
+    },
+    "genre": {
+      "label": "장르",
+      "placeholder": "장르 입력"
+    },
+    "year": {
+      "label": "연도/날짜",
+      "placeholder": "연도 또는 날짜 입력"
+    },
+    "description": {
+      "label": "설명",
+      "placeholder": "설명 입력"
+    },
+    "synopsis": {
+      "label": "시놉시스",
+      "placeholder": "시놉시스 입력"
+    },
+    "comment": {
+      "label": "코멘트",
+      "placeholder": "코멘트 입력"
+    },
+    "copyright": {
+      "label": "저작권",
+      "placeholder": "저작권 정보 입력"
+    },
+    "creationTime": {
+      "label": "생성 시간",
+      "placeholder": "생성 시간 입력"
+    }
+  },
+  "media": {
+    "addAfterCompression": "압축 후에는 미디어를 추가할 수 없습니다. 미디어를 더 추가하려면 새 압축을 시작하십시오.",
+    "noValidFiles": "유효한 미디어 파일을 찾을 수 없습니다.",
+    "alreadyAdded": "선택한 미디어가 이미 추가되어 있습니다.",
+    "someCorrupted": "일부 파일이 손상되었거나 유효하지 않아 추가되지 않았습니다.",
+    "corrupted": "파일이 손상되었거나 유효하지 않습니다.",
+    "selectTitle": "압축할 이미지, 비디오 또는 오디오를 선택하십시오.",
+    "selectFailed": "미디어를 선택할 수 없습니다.",
+    "invalidFiles": "유효하지 않은 파일 또는 폴더",
+    "accessDenied_other": "CompressO에 파일 {{count}}개를 열 권한이 없습니다. 시스템 설정에서 해당 폴더에 대한 접근을 허용한 다음 다시 추가하십시오.",
+    "openSettings": "설정 열기"
+  },
+  "save": {
+    "partiallySaved_other": "파일 {{count}}개 중 {{saved}}개를 저장했습니다. {{failed}}개는 저장할 수 없습니다. 다른 위치를 선택하려면 '미디어 저장'을 사용하십시오.",
+    "autoSaveFailed": "자동으로 저장할 수 없습니다. 폴더 권한이 없을 수 있습니다. 위치를 선택하려면 '미디어 저장'을 사용하십시오.",
+    "failed": "지정한 경로에 미디어를 저장할 수 없습니다.",
+    "chooseDirectory": "압축된 미디어를 저장할 폴더를 선택하십시오.",
+    "chooseLocation": "압축된 미디어를 저장할 위치를 선택하십시오.",
+    "largerSkipped_other": "출력 {{count}}개가 원본보다 커서 자동으로 저장되지 않았습니다. 그래도 보관하려면 '저장'을 사용하십시오.",
+    "copyFailed": "출력을 클립보드에 복사할 수 없습니다.",
+    "saving": "저장 중…",
+    "saved": "저장됨",
+    "saveMedia": "미디어 저장",
+    "saveThisFile": "파일 저장"
+  },
+  "home": {
+    "dragAndDrop": "드래그 앤 드롭",
+    "or": "또는",
+    "clickToSelect": "클릭하여 미디어 선택",
+    "dropAnywhere": "아무 곳에나 드롭…"
+  },
+  "compression": {
+    "cannotCancel": "지금은 압축을 취소할 수 없습니다.",
+    "confirmCancel": "취소 확인",
+    "cancelling": "취소하는 중…",
+    "reconfigure": "다시 구성",
+    "reconfigureOriginalReplaced_other": "<setting>원본 파일 바꾸기</setting>이(가) 켜져 있어 원본이 휴지통으로 이동되었기 때문에 다시 압축할 수 없습니다.",
+    "reconfigureOriginalReplaced_windows_other": "<setting>원본 파일 바꾸기</setting>이(가) 켜져 있어 원본이 휴지통으로 이동되었기 때문에 다시 압축할 수 없습니다.",
+    "pauseFailed": "압축을 일시정지할 수 없습니다.",
+    "resumeFailed": "압축을 재개할 수 없습니다.",
+    "failed": "압축 중 문제가 발생했습니다.",
+    "process": "처리"
+  },
+  "exit": {
+    "title": "나가기",
+    "notSaved": "미디어가 저장되지 않음",
+    "discardConfirm_other": "압축된 미디어가 아직 저장되지 않았습니다. 정말로 버리시겠습니까?",
+    "goBack": "돌아가기"
+  },
+  "mediaConfig": {
+    "filter": "미디어 필터",
+    "all": "모두",
+    "outputSettings": "출력 설정",
+    "batchSettings": "일괄 설정"
+  },
+  "compare": {
+    "input": "입력",
+    "output": "출력",
+    "enlargeInput": "입력 확대",
+    "enlargeOutput": "출력 확대",
+    "svgTooLarge": "SVG 파일이 너무 큽니다. 비교 화면의 성능에 영향을 줄 수 있습니다."
+  },
+  "transform": {
+    "free": "자유",
+    "rotateLeft": "왼쪽으로 회전",
+    "flipVertical": "상하 뒤집기",
+    "flipHorizontal": "좌우 뒤집기",
+    "resetZoom": "확대/축소 재설정",
+    "expand": "확장",
+    "title": "변형"
+  },
+  "outputSettings": {
+    "video": "비디오 설정",
+    "image": "이미지 설정",
+    "audio": "오디오 설정",
+    "compressionSettings": "압축 설정",
+    "tabs": {
+      "image": "이미지",
+      "video": "비디오",
+      "audio": "오디오",
+      "others": "기타"
+    },
+    "noAudio": "오디오를 찾을 수 없음"
+  },
+  "quality": {
+    "unsupportedAudio": "선택한 오디오 형식이나 코덱은 품질 조절을 지원하지 않습니다.",
+    "lossless": "무손실 압축",
+    "title": "품질"
+  },
+  "dimensions": {
+    "resolution": "해상도",
+    "revert": "원래 해상도로 되돌리기",
+    "width": "너비",
+    "height": "높이",
+    "original": "원본",
+    "resolutionLabel": "해상도:"
+  },
+  "extension": {
+    "label": "확장자:",
+    "sameAsInput": "입력과 동일",
+    "noAudio": "이 비디오에는 추출할 오디오가 없습니다.",
+    "extractAudio": "오디오 추출",
+    "extractAudioNone": "오디오 추출(오디오를 찾을 수 없음)"
+  },
+  "trim": {
+    "title": "트리밍",
+    "instructions": "사용 방법",
+    "controls": "타임라인 조작:",
+    "select": "클릭하여 트랙 선택",
+    "split": "트랙을 더블 클릭하여 분할",
+    "add": "빈 영역을 더블 클릭하여 새 트랙 추가",
+    "delete": "트랙을 선택하고 <key>Delete</key> 키를 눌러 삭제",
+    "hideInstructions": "사용 방법 숨기기"
+  },
+  "audio": {
+    "bitrate": "비트 전송률",
+    "bitrateLabel": "비트 전송률:",
+    "channels": "채널",
+    "layout": "레이아웃:",
+    "monoSource": "모노 소스:",
+    "left": "왼쪽",
+    "right": "오른쪽",
+    "swapChannels": "왼쪽과 오른쪽 채널 바꾸기",
+    "tracks": "트랙",
+    "track": "트랙 #{{number}}",
+    "channelCount_other": "{{count}}채널",
+    "volumeLabel": "음량:",
+    "volume": "오디오 음량",
+    "mute": "음소거"
+  },
+  "fps": {
+    "label": "초당 프레임 수:"
+  },
+  "speed": {
+    "title": "속도"
+  },
+  "keys": {
+    "ctrl": "Ctrl",
+    "shift": "Shift",
+    "enter": "Enter"
+  },
+  "theme": {
+    "title": "테마",
+    "options": {
+      "system": "시스템",
+      "light": "밝게",
+      "dark": "어둡게"
+    }
+  },
+  "errorBoundary": {
+    "title": "오류가 발생했습니다.",
+    "retry": "다시 시도"
+  },
+  "player": {
+    "play": "재생",
+    "pause": "일시정지"
+  },
+  "update": {
+    "installed": "업데이트를 설치했습니다. 새 버전을 사용하려면 앱을 재시작하십시오.",
+    "installFailed": "업데이트를 설치할 수 없습니다. 다시 시도하십시오.",
+    "error": "업데이트 오류: {{message}}"
+  },
+  "native": {
+    "quit": "종료",
+    "continueCompressing": "계속 압축",
+    "goBack": "돌아가기",
+    "compressingTitle": "압축 진행 중",
+    "compressingMessage": "미디어를 아직 압축하는 중입니다. 지금 종료하면 압축이 취소됩니다.",
+    "unsavedTitle": "미디어가 저장되지 않음",
+    "unsavedMessage": "압축된 미디어가 아직 저장되지 않았습니다. 지금 종료하면 버려집니다.",
+    "dropQueueMessage": "드롭 영역의 미디어를 아직 압축하는 중입니다. 지금 종료하면 압축이 중지됩니다.",
+    "openApp": "CompressO 열기",
+    "quitApp": "CompressO 종료",
+    "aboutApp": "CompressO에 관하여",
+    "settings": "설정…",
+    "services": "서비스",
+    "hideApp": "CompressO 가리기",
+    "hideOthers": "기타 가리기",
+    "file": "파일",
+    "closeWindow": "윈도우 닫기",
+    "edit": "편집",
+    "undo": "실행 취소",
+    "redo": "실행 복귀",
+    "cut": "오려두기",
+    "copy": "복사하기",
+    "paste": "붙여넣기",
+    "selectAll": "전체 선택",
+    "view": "보기",
+    "fullScreen": "전체 화면 전환",
+    "window": "윈도우",
+    "minimize": "최소화",
+    "zoom": "확대/축소",
+    "help": "도움말"
+  },
+  "targetSize": {
+    "mode": "압축 기준",
+    "modes": {
+      "quality": "화질",
+      "size": "목표 크기"
+    },
+    "size": "목표 크기",
+    "estimate": "약 {{width}}×{{height}}, {{fps}} fps, {{size}} MB 이내.",
+    "estimateLowered": "{{size}} MB 이내로 맞추기 위해 {{width}}×{{height}}, {{fps}} fps로 낮췄습니다.",
+    "notForGif": "GIF는 크기를 지정하여 압축할 수 없습니다. 다른 형식을 선택하거나 화질로 압축하십시오.",
+    "audioEstimate": "약 {{bitrate}} kbps.",
+    "audioLossless": "선택한 오디오 형식이나 코덱은 비트레이트 조절만으로 임의의 목표 크기를 맞출 수 없습니다. 다른 형식이나 코덱을 선택하거나 품질 기준으로 압축하세요. 선택한 설정은 자동으로 변경되지 않습니다.",
+    "audioDurationMissing": "목표 크기로 압축하려면 오디오 길이를 알아야 합니다.",
+    "audioTooSmall": "선택한 오디오 형식과 길이에 비해 목표 크기가 너무 작습니다. 크기를 늘리거나 녹음을 잘라내세요.",
+    "notReachedAudio": "선택한 오디오 형식으로 목표 크기를 맞추지 못했습니다. 생성된 출력 파일 중 가장 작은 파일을 표시합니다.",
+    "round": "{{round}}차",
+    "roundDetail": "{{round}}차: 목표 크기에 가까워지는 중입니다",
+    "roundWithoutHardwareAcceleration": "{{round}}차: 목표 크기에 가까워지기 위해 하드웨어 가속 없이 압축하는 중입니다",
+    "fitsAtQuality": "선택한 품질로 이미 맞으므로(약 {{size}}) 해당 품질을 사용합니다.",
+    "switchUnit": "크기를 {{unit}}(으)로 표시",
+    "notForSvgOrGif": "SVG와 GIF는 크기를 지정하여 압축할 수 없습니다. 다른 형식을 선택하거나 화질로 압축하십시오.",
+    "notReachedImage": "이미지를 너무 작게 만들지 않고는 더 줄일 수 없습니다. 목표 크기는 {{size}}였습니다."
+  },
+  "outputOptions": {
+    "title": "다른 옵션",
+    "choose": "{{size}} 출력 보기",
+    "withinTarget": "목표 이내",
+    "overTarget": "목표 초과",
+    "replace": "저장된 파일 바꾸기"
+  }
+}

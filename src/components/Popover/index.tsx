@@ -5,10 +5,18 @@ import {
   PopoverTrigger as NextUIPopoverTrigger,
 } from '@heroui/react'
 
+import { glassBorder, mergeClassNames } from '@/utils/glass'
+
 interface PopoverProps extends NextUIPopoverProps {}
 
+/** Its content has a thin grey border (see `utils/glass.ts`) */
 function Popover(props: PopoverProps) {
-  return <NextUIPopover {...props} />
+  return (
+    <NextUIPopover
+      {...props}
+      classNames={mergeClassNames({ content: glassBorder }, props.classNames)}
+    />
+  )
 }
 
 export function PopoverContent(

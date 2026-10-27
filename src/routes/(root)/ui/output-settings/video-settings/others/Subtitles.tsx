@@ -1,7 +1,8 @@
 import { AutocompleteItem } from '@heroui/react'
 import { open } from '@tauri-apps/plugin-dialog'
 import { AnimatePresence, motion } from 'framer-motion'
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { useSnapshot } from 'valtio'
 
@@ -10,11 +11,14 @@ import Button from '@/components/Button'
 import Card from '@/components/Card'
 import Icon from '@/components/Icon'
 import Switch from '@/components/Switch'
+import { t } from '@/i18n'
 import {
   slideDownStaggerAnimation,
   slideDownTransition,
 } from '@/utils/animation'
+import { getOutputVideoContainer } from '@/utils/video'
 import { appProxy, normalizeBatchMediaConfig } from '../../../../-state'
+import { useBatchVideoConfigKey } from '../-batchConfig'
 
 type SubtitlesProps = {
   mediaIndex: number
@@ -167,7 +171,31 @@ const LANGUAGE_OPTIONS: Subtitle[] = [
   { code: 'und', name: 'Unknown' },
 ]
 
+/**
+ * The language's name in the interface's language (from the system, e.g. "Deutsch" -> "German"), or
+ * its English name for the few languages the system does not name
+ */
+function getLanguageName(language: Subtitle, displayNames: Intl.DisplayNames) {
+  if (language.code === 'und') return t('subtitles.unknownLanguage')
+  try {
+    return displayNames.of(language.code) ?? language.name
+  } catch {
+    return language.name
+  }
+}
+
 function Subtitles({ mediaIndex }: SubtitlesProps) {
+  const { t, i18n } = useTranslation()
+  const languageOptions = useMemo(() => {
+    const displayNames = new Intl.DisplayNames([i18n.language, 'en'], {
+      type: 'language',
+      fallback: 'none',
+    })
+    return LANGUAGE_OPTIONS.map((language) => ({
+      ...language,
+      displayName: getLanguageName(language, displayNames),
+    }))
+  }, [i18n.language])
   const {
     state: {
       media,
@@ -177,6 +205,7 @@ function Subtitles({ mediaIndex }: SubtitlesProps) {
       isLoadingMediaFiles,
     },
   } = useSnapshot(appProxy)
+  const batchConfigKey = useBatchVideoConfigKey()
 
   const video =
     media.length > 0 && mediaIndex >= 0 && media[mediaIndex].type === 'video'
@@ -184,7 +213,7 @@ function Subtitles({ mediaIndex }: SubtitlesProps) {
       : null
   const { config } = video ?? {}
   const { subtitlesConfig, convertToExtension } =
-    config ?? commonConfigForBatchCompression.videoConfig ?? {}
+    config ?? commonConfigForBatchCompression[batchConfigKey] ?? {}
 
   const subtitles = subtitlesConfig?.subtitles ?? []
   const shouldEnableSubtitles = subtitlesConfig?.shouldEnableSubtitles ?? false
@@ -212,24 +241,25 @@ function Subtitles({ mediaIndex }: SubtitlesProps) {
       } else {
         if (appProxy.state.media.length > 1) {
           if (
-            !appProxy.state.commonConfigForBatchCompression.videoConfig
+            !appProxy.state.commonConfigForBatchCompression[batchConfigKey]
               .subtitlesConfig
           ) {
-            appProxy.state.commonConfigForBatchCompression.videoConfig.subtitlesConfig =
-              {
-                subtitles: [],
-                shouldEnableSubtitles: isSelected,
-                preserveExistingSubtitles: false,
-              }
+            appProxy.state.commonConfigForBatchCompression[
+              batchConfigKey
+            ].subtitlesConfig = {
+              subtitles: [],
+              shouldEnableSubtitles: isSelected,
+              preserveExistingSubtitles: false,
+            }
           } else {
-            appProxy.state.commonConfigForBatchCompression.videoConfig
+            appProxy.state.commonConfigForBatchCompression[batchConfigKey]
               .subtitlesConfig!.shouldEnableSubtitles = isSelected
           }
           normalizeBatchMediaConfig()
         }
       }
     },
-    [mediaIndex],
+    [mediaIndex, batchConfigKey],
   )
 
   const handlePreserveExistingChange = useCallback(
@@ -253,24 +283,25 @@ function Subtitles({ mediaIndex }: SubtitlesProps) {
       } else {
         if (appProxy.state.media.length > 1) {
           if (
-            !appProxy.state.commonConfigForBatchCompression.videoConfig
+            !appProxy.state.commonConfigForBatchCompression[batchConfigKey]
               .subtitlesConfig
           ) {
-            appProxy.state.commonConfigForBatchCompression.videoConfig.subtitlesConfig =
-              {
-                subtitles: [],
-                shouldEnableSubtitles: true,
-                preserveExistingSubtitles: isSelected,
-              }
+            appProxy.state.commonConfigForBatchCompression[
+              batchConfigKey
+            ].subtitlesConfig = {
+              subtitles: [],
+              shouldEnableSubtitles: true,
+              preserveExistingSubtitles: isSelected,
+            }
           } else {
-            appProxy.state.commonConfigForBatchCompression.videoConfig
+            appProxy.state.commonConfigForBatchCompression[batchConfigKey]
               .subtitlesConfig!.preserveExistingSubtitles = isSelected
           }
           normalizeBatchMediaConfig()
         }
       }
     },
-    [mediaIndex],
+    [mediaIndex, batchConfigKey],
   )
 
   const handleAddSubtitle = useCallback(async () => {
@@ -278,7 +309,7 @@ function Subtitles({ mediaIndex }: SubtitlesProps) {
       const filePath = await open({
         directory: false,
         multiple: false,
-        title: 'Select subtitle file (SRT)',
+        title: t('subtitles.selectFile'),
         filters: [
           {
             name: 'subtitle',
@@ -313,27 +344,28 @@ function Subtitles({ mediaIndex }: SubtitlesProps) {
         } else {
           if (appProxy.state.media.length > 1) {
             if (
-              !appProxy.state.commonConfigForBatchCompression.videoConfig
+              !appProxy.state.commonConfigForBatchCompression[batchConfigKey]
                 .subtitlesConfig
             ) {
-              appProxy.state.commonConfigForBatchCompression.videoConfig.subtitlesConfig =
-                {
-                  subtitles: [],
-                  shouldEnableSubtitles: true,
-                  preserveExistingSubtitles: false,
-                }
+              appProxy.state.commonConfigForBatchCompression[
+                batchConfigKey
+              ].subtitlesConfig = {
+                subtitles: [],
+                shouldEnableSubtitles: true,
+                preserveExistingSubtitles: false,
+              }
             }
-            appProxy.state.commonConfigForBatchCompression.videoConfig.subtitlesConfig!.subtitles.push(
-              newSubtitle,
-            )
+            appProxy.state.commonConfigForBatchCompression[
+              batchConfigKey
+            ].subtitlesConfig!.subtitles.push(newSubtitle)
             normalizeBatchMediaConfig()
           }
         }
       }
     } catch (error: any) {
-      toast.error(error?.message ?? 'Could not select subtitle file.')
+      toast.error(error?.message ?? t('subtitles.selectFailed'))
     }
-  }, [mediaIndex])
+  }, [mediaIndex, batchConfigKey, t])
 
   const handleRemoveSubtitle = useCallback(
     (index: number) => {
@@ -351,19 +383,18 @@ function Subtitles({ mediaIndex }: SubtitlesProps) {
       } else {
         if (appProxy.state.media.length > 1) {
           if (
-            appProxy.state.commonConfigForBatchCompression.videoConfig
+            appProxy.state.commonConfigForBatchCompression[batchConfigKey]
               .subtitlesConfig
           ) {
-            appProxy.state.commonConfigForBatchCompression.videoConfig.subtitlesConfig!.subtitles.splice(
-              index,
-              1,
-            )
+            appProxy.state.commonConfigForBatchCompression[
+              batchConfigKey
+            ].subtitlesConfig!.subtitles.splice(index, 1)
             normalizeBatchMediaConfig()
           }
         }
       }
     },
-    [mediaIndex],
+    [mediaIndex, batchConfigKey],
   )
 
   const handleLanguageChange = useCallback(
@@ -388,17 +419,17 @@ function Subtitles({ mediaIndex }: SubtitlesProps) {
       } else {
         if (appProxy.state.media.length > 1) {
           if (
-            appProxy.state.commonConfigForBatchCompression.videoConfig
+            appProxy.state.commonConfigForBatchCompression[batchConfigKey]
               .subtitlesConfig
           ) {
-            appProxy.state.commonConfigForBatchCompression.videoConfig
+            appProxy.state.commonConfigForBatchCompression[batchConfigKey]
               .subtitlesConfig!.subtitles[index].language = languageValue
             normalizeBatchMediaConfig()
           }
         }
       }
     },
-    [mediaIndex],
+    [mediaIndex, batchConfigKey],
   )
 
   const getDisplayLanguageCode = (code: string) => {
@@ -412,7 +443,11 @@ function Subtitles({ mediaIndex }: SubtitlesProps) {
     isLoadingMediaFiles ||
     convertToExtension === 'gif'
 
-  const isUnsupported = convertToExtension === 'avi'
+  const outputContainer = getOutputVideoContainer(
+    convertToExtension,
+    video?.extension,
+  )
+  const isUnsupported = outputContainer === 'avi' || outputContainer === 'ts'
 
   return (
     <>
@@ -427,14 +462,14 @@ function Subtitles({ mediaIndex }: SubtitlesProps) {
           >
             <div className="flex justify-center items-center">
               <span className="text-gray-600 dark:text-gray-400 block mr-2 text-sm">
-                Subtitles
+                {t('subtitles.title')}
               </span>
             </div>
           </Switch>
         </div>
         {shouldEnableSubtitles ? (
           <Card className="px-2 my-2 pb-4 shadow-none border-1 dark:border-none">
-            <motion.div {...slideDownTransition} className="mt-2">
+            <motion.div {...slideDownTransition} className="pt-2">
               <div className="flex items-center gap-2 mb-3">
                 <Switch
                   isSelected={preserveExistingSubtitles}
@@ -443,7 +478,7 @@ function Subtitles({ mediaIndex }: SubtitlesProps) {
                   size="sm"
                 >
                   <span className="text-sm text-gray-600 dark:text-gray-400">
-                    Preserve existing subtitles
+                    {t('subtitles.preserveExisting')}
                   </span>
                 </Switch>
               </div>
@@ -463,15 +498,16 @@ function Subtitles({ mediaIndex }: SubtitlesProps) {
                       className="mb-2 p-3 bg-default-50 rounded-xl border border-default-200 dark:border-default-100"
                     >
                       <div className="text-xs font-medium text-gray-700 dark:text-gray-300 truncate mb-2 text-center">
-                        {subtitle.fileName || `Subtitle ${index + 1}`}
+                        {subtitle.fileName ||
+                          t('subtitles.untitled', { number: index + 1 })}
                       </div>
                       <div className="flex items-center justify-center gap-2">
                         <div className="flex-1 min-w-0">
                           <Autocomplete
                             fullWidth
-                            label="Language"
+                            label={t('subtitles.language')}
                             size="sm"
-                            defaultItems={LANGUAGE_OPTIONS}
+                            defaultItems={languageOptions}
                             defaultSelectedKey={getDisplayLanguageCode(
                               subtitle.language ?? 'eng',
                             )}
@@ -484,13 +520,14 @@ function Subtitles({ mediaIndex }: SubtitlesProps) {
                             }}
                           >
                             {(lang) => {
-                              const language = lang as Subtitle
+                              const language =
+                                lang as (typeof languageOptions)[number]
                               return (
                                 <AutocompleteItem
                                   key={language.code}
-                                  textValue={language.name}
+                                  textValue={language.displayName}
                                 >
-                                  {language.name}
+                                  {language.displayName}
                                 </AutocompleteItem>
                               )
                             }}
@@ -521,13 +558,13 @@ function Subtitles({ mediaIndex }: SubtitlesProps) {
                 isDisabled={shouldDisableInput || isUnsupported}
                 className="mt-2"
               >
-                Add Subtitle
+                {t('subtitles.add')}
                 <Icon name="fileExplorer" size={14} />
               </Button>
 
               {isUnsupported ? (
                 <p className="text-xs italic text-danger-300 mt-2">
-                  {convertToExtension} does not support soft subtitles
+                  {t('subtitles.unsupported', { container: outputContainer })}
                 </p>
               ) : null}
             </motion.div>

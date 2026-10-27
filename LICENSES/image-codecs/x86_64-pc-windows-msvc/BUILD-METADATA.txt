@@ -1,0 +1,6 @@
+libheif v1.23.6
+libheif source SHA-256: c9a00b0452f5c16d72ef71e5e40c0e90fbe2ad37148d27a1b2f9bb21546f5f03
+vcpkg revision: 4f973280dd95e3902b3410933fb2ce108bb29d1d
+Triplet: x64-windows-static-release
+Libraries: x265, libde265, libpng, zlib
+Source patch: libheif-no-tiff-build.patch

@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { memo, useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
 import Button from '@/components/Button'
@@ -13,20 +14,40 @@ import Spinner from '@/components/Spinner'
 import { toast } from '@/components/Toast'
 import Tooltip from '@/components/Tooltip'
 import { copyFileToClipboard, showItemInFileManager } from '@/tauri/commands/fs'
+import type { MediaTab } from '@/types/app'
 import { zoomInStaggerAnimation } from '@/utils/animation'
 import { formatBytes } from '@/utils/fs'
 import { formatDuration } from '@/utils/string'
 import { cn } from '@/utils/tailwind'
+import { getCompressionLane, type MediaFile } from '../-compression'
+import { pickMediaToAdd } from '../-media'
 import { appProxy } from '../-state'
 
+type MediaKind = { type: 'video' | 'image'; isAudioFile?: boolean }
+
+/** Whether a media is shown with a filter tab ("Videos" leaves out audio files) */
+function isInTab(mediaFile: MediaKind, tab: MediaTab) {
+  switch (tab) {
+    case 'videos':
+      return mediaFile.type === 'video' && !mediaFile.isAudioFile
+    case 'audio':
+      return mediaFile.type === 'video' && !!mediaFile.isAudioFile
+    case 'images':
+      return mediaFile.type === 'image'
+    default:
+      return true
+  }
+}
+
 function PreviewBatchMedia() {
+  const { t } = useTranslation()
   const {
     state: {
       activeTab,
       media,
       isCompressing,
       isProcessCompleted,
-      currentMediaIndex,
+      isBatchPaused,
       totalSelectedMediaCount,
       isLoadingMediaFiles,
       isBatchCompressionCancelled,
@@ -34,16 +55,14 @@ function PreviewBatchMedia() {
   } = useSnapshot(appProxy)
 
   const compressionStats = useMemo(() => {
-    const filteredMediaForStats =
-      activeTab === 'videos'
-        ? media.filter((m) => m.type === 'video')
-        : activeTab === 'images'
-          ? media.filter((m) => m.type === 'image')
-          : media
+    const filteredMediaForStats = media.filter((m) => isInTab(m, activeTab))
 
     const totalMedia = filteredMediaForStats.length
-    const totalVideos = filteredMediaForStats.filter(
-      (m) => m.type === 'video',
+    const totalVideos = filteredMediaForStats.filter((m) =>
+      isInTab(m, 'videos'),
+    ).length
+    const totalAudioFiles = filteredMediaForStats.filter((m) =>
+      isInTab(m, 'audio'),
     ).length
     const totalImages = filteredMediaForStats.filter(
       (m) => m.type === 'image',
@@ -61,7 +80,11 @@ function PreviewBatchMedia() {
       ? totalMedia - compressedMediaCount
       : 0
     const cancelledVideosCount = isBatchCompressionCancelled
-      ? totalVideos - completedMedia.filter((m) => m.type === 'video').length
+      ? totalVideos - completedMedia.filter((m) => isInTab(m, 'videos')).length
+      : 0
+    const cancelledAudioFilesCount = isBatchCompressionCancelled
+      ? totalAudioFiles -
+        completedMedia.filter((m) => isInTab(m, 'audio')).length
       : 0
     const cancelledImagesCount = isBatchCompressionCancelled
       ? totalImages - completedMedia.filter((m) => m.type === 'image').length
@@ -99,8 +122,11 @@ function PreviewBatchMedia() {
       ? compressedMediaCount
       : totalMedia
     const displayTotalVideos = isBatchCompressionCancelled
-      ? completedMedia.filter((m) => m.type === 'video').length
+      ? completedMedia.filter((m) => isInTab(m, 'videos')).length
       : totalVideos
+    const displayTotalAudioFiles = isBatchCompressionCancelled
+      ? completedMedia.filter((m) => isInTab(m, 'audio')).length
+      : totalAudioFiles
     const displayTotalImages = isBatchCompressionCancelled
       ? completedMedia.filter((m) => m.type === 'image').length
       : totalImages
@@ -121,9 +147,11 @@ function PreviewBatchMedia() {
       totalProgress,
       cancelledMediaCount,
       cancelledVideosCount,
+      cancelledAudioFilesCount,
       cancelledImagesCount,
       displayTotalMedia,
       displayTotalVideos,
+      displayTotalAudioFiles,
       displayTotalImages,
       displayTotalSize,
     }
@@ -143,21 +171,31 @@ function PreviewBatchMedia() {
     } catch {}
   }, [])
 
-  const handleCopyToClipboard = useCallback(async (savedPath: string) => {
-    try {
-      await copyFileToClipboard(savedPath)
-      toast.success('Copied to clipboard.')
-    } catch {}
-  }, [])
+  const handleCopyToClipboard = useCallback(
+    async (savedPath: string) => {
+      try {
+        await copyFileToClipboard(savedPath)
+        toast.success(t('common.copied'))
+      } catch {}
+    },
+    [t],
+  )
 
-  const filteredMedia = useMemo(() => {
-    if (activeTab === 'videos') {
-      return media.filter((m) => m.type === 'video')
-    } else if (activeTab === 'images') {
-      return media.filter((m) => m.type === 'image')
-    }
-    return media
-  }, [media, activeTab])
+  // The last media of each lane that started: the ones before it are done (or failed)
+  const lastStartedIndexes = useMemo(() => {
+    const indexes = new Map<ReturnType<typeof getCompressionLane>, number>()
+    media.forEach((mediaFile, index) => {
+      if (mediaFile.isCompressing || mediaFile.isProcessCompleted) {
+        indexes.set(getCompressionLane(mediaFile as MediaFile), index)
+      }
+    })
+    return indexes
+  }, [media])
+
+  const filteredMedia = useMemo(
+    () => media.filter((m) => isInTab(m, activeTab)),
+    [media, activeTab],
+  )
 
   const getDisplayStats = useMemo(() => {
     const totalMedia = filteredMedia.length
@@ -206,7 +244,7 @@ function PreviewBatchMedia() {
 
     if (activeTab === 'videos') {
       return {
-        label: 'Videos',
+        label: 'videos' as const,
         count: compressionStats.displayTotalVideos,
         cancelledCount: compressionStats.cancelledVideosCount,
         totalMedia,
@@ -217,9 +255,22 @@ function PreviewBatchMedia() {
         percentageSaved,
         totalProgress,
       }
+    } else if (activeTab === 'audio') {
+      return {
+        label: 'audio' as const,
+        count: compressionStats.displayTotalAudioFiles,
+        cancelledCount: compressionStats.cancelledAudioFilesCount,
+        totalMedia,
+        compressedMediaCount,
+        displayTotalSize,
+        outputSize,
+        sizeSaved,
+        percentageSaved,
+        totalProgress,
+      }
     } else if (activeTab === 'images') {
       return {
-        label: 'Images',
+        label: 'images' as const,
         count: compressionStats.displayTotalImages,
         cancelledCount: compressionStats.cancelledImagesCount,
         totalMedia,
@@ -232,7 +283,7 @@ function PreviewBatchMedia() {
       }
     }
     return {
-      label: 'Media',
+      label: 'media' as const,
       count: compressionStats.displayTotalMedia,
       cancelledCount: compressionStats.cancelledMediaCount,
       totalMedia,
@@ -263,6 +314,15 @@ function PreviewBatchMedia() {
               const originalIndex = media.findIndex(
                 (m) => m.id === mediaFile.id,
               )
+              // Done (or failed): finished, or a later media of its lane started
+              const isPast =
+                !!mediaFile.isProcessCompleted ||
+                originalIndex <
+                  (lastStartedIndexes.get(
+                    getCompressionLane(mediaFile as MediaFile),
+                  ) ?? -1)
+              const isMediaCompressing =
+                isCompressing && !!mediaFile.isCompressing && !isPast
 
               const compressedSizeDiff =
                 typeof mediaFile?.compressedFile?.sizeInBytes === 'number' &&
@@ -280,10 +340,9 @@ function PreviewBatchMedia() {
                   layout
                   variants={zoomInStaggerAnimation.item}
                   className={cn([
-                    'relative rounded-xl border-2 overflow-hidden',
-                    currentMediaIndex > originalIndex ||
-                    mediaFile.isProcessCompleted
-                      ? 'border-green-400'
+                    'relative rounded-xl border-1 overflow-hidden',
+                    isPast
+                      ? 'border-primary'
                       : 'border-zinc-200 dark:border-zinc-900',
                   ])}
                 >
@@ -304,7 +363,7 @@ function PreviewBatchMedia() {
                           />
                           {mediaFile.type === 'video' ? (
                             <Icon
-                              name="video"
+                              name={mediaFile.isAudioFile ? 'music' : 'video'}
                               size={40}
                               className="text-zinc-400 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[10]"
                             />
@@ -313,7 +372,12 @@ function PreviewBatchMedia() {
                       ) : (
                         <div className="w-full aspect-video bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center">
                           <Icon
-                            name="video"
+                            name={
+                              mediaFile.type === 'video' &&
+                              mediaFile.isAudioFile
+                                ? 'music'
+                                : 'video'
+                            }
                             size={40}
                             className="text-zinc-400"
                           />
@@ -326,8 +390,8 @@ function PreviewBatchMedia() {
                           <>
                             {/* Can copy to output immediately after it's process is completed. no need to wait for other processes */}
                             <Tooltip
-                              content="Copy output to clipboard"
-                              aria-label="Copy output to clipboard"
+                              content={t('batch.copyOutput')}
+                              aria-label={t('batch.copyOutput')}
                             >
                               <Button
                                 size="sm"
@@ -344,14 +408,14 @@ function PreviewBatchMedia() {
                                 <Icon
                                   name="copy"
                                   size={28}
-                                  className="text-green-400"
+                                  className="text-primary"
                                 />
                               </Button>
                             </Tooltip>
                             {!isCompressing ? (
                               <Tooltip
-                                content="Compare output"
-                                aria-label="Compare output"
+                                content={t('batch.compareOutput')}
+                                aria-label={t('batch.compareOutput')}
                               >
                                 <Button
                                   size="sm"
@@ -360,14 +424,12 @@ function PreviewBatchMedia() {
                                     appProxy.state.selectedMediaIndexForCustomization =
                                       originalIndex
                                   }}
-                                  className={cn(
-                                    'rounded-full text-white hover:bg-zinc-700 transition-colors',
-                                  )}
+                                  className="rounded-full text-white"
                                 >
                                   <Icon
                                     name="compare"
                                     size={20}
-                                    className="text-green-400"
+                                    className="text-primary"
                                   />
                                 </Button>
                               </Tooltip>
@@ -379,8 +441,8 @@ function PreviewBatchMedia() {
                         mediaFile?.compressedFile?.savedPath ? (
                           <div>
                             <Tooltip
-                              content="Show in File Explorer"
-                              aria-label="Show in File Explorer"
+                              content={t('common.showInFileManager')}
+                              aria-label={t('common.showInFileManager')}
                             >
                               <Button
                                 size="sm"
@@ -395,7 +457,7 @@ function PreviewBatchMedia() {
                                 <Icon
                                   name="fileExplorer"
                                   size={20}
-                                  className="text-green-400"
+                                  className="text-primary"
                                 />
                               </Button>
                             </Tooltip>
@@ -432,7 +494,7 @@ function PreviewBatchMedia() {
                           </Button>
                         </>
                       ) : null}
-                      {isCompressing && currentMediaIndex === originalIndex ? (
+                      {isMediaCompressing ? (
                         <>
                           {mediaFile?.type === 'video' ? (
                             <CircularProgress
@@ -445,7 +507,7 @@ function PreviewBatchMedia() {
                                 track: 'dark:stroke-white/50',
                                 value: 'text-[12px] text-white1',
                               }}
-                              aria-label="Processing"
+                              aria-label={t('batch.processing')}
                             />
                           ) : (
                             <Spinner className="absolute left-1/2 top-1/2 z-20 -translate-x-1/2 -translate-y-1/2" />
@@ -453,6 +515,46 @@ function PreviewBatchMedia() {
                           <div className="absolute inset-0 bg-black/70 z-10 rounded-lg"></div>
                         </>
                       ) : null}
+                      {/* Compressed again to get closer to its target size: the round it is in */}
+                      <AnimatePresence>
+                        {isMediaCompressing &&
+                        mediaFile.type === 'video' &&
+                        mediaFile.targetSizeRound ? (
+                          <motion.div
+                            key={mediaFile.targetSizeRound.round}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.15 }}
+                            className="absolute bottom-2 left-2 z-20 flex items-center gap-1 rounded-full bg-black/60 px-2 py-0.5 text-[11px] text-white"
+                          >
+                            {t('targetSize.round', {
+                              round: mediaFile.targetSizeRound.round,
+                            })}
+                          </motion.div>
+                        ) : null}
+                      </AnimatePresence>
+                      {/* Media not compressed yet: waits for its turn, or for the batch to resume */}
+                      <AnimatePresence>
+                        {isCompressing && !isPast && !isMediaCompressing ? (
+                          <motion.div
+                            key={isBatchPaused ? 'paused' : 'waiting'}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.15 }}
+                            className="absolute bottom-2 left-2 z-20 flex items-center gap-1 rounded-full bg-black/60 px-2 py-0.5 text-[11px] text-white"
+                          >
+                            <Icon
+                              name={isBatchPaused ? 'pause' : 'clock'}
+                              size={12}
+                            />
+                            {isBatchPaused
+                              ? t('batch.paused')
+                              : t('queue.status.waiting')}
+                          </motion.div>
+                        ) : null}
+                      </AnimatePresence>
                     </div>
                     <section className="px-3 py-2 mt-1">
                       <p className={cn(['font-medium text-sm truncate block'])}>
@@ -490,15 +592,16 @@ function PreviewBatchMedia() {
                                   orientation="vertical"
                                   className="h-5"
                                 />
-                                <p className="block text-center text-[16px] text-green-500">
-                                  {compressedSizeDiff
-                                    .toFixed(2)
-                                    ?.endsWith('.00')
-                                    ? compressedSizeDiff
-                                        .toFixed(2)
-                                        ?.slice(0, -3)
-                                    : compressedSizeDiff.toFixed(2)}
-                                  %<span> smaller</span>
+                                <p className="block text-center text-[16px] text-primary">
+                                  {t('queue.status.smaller', {
+                                    value: compressedSizeDiff
+                                      .toFixed(2)
+                                      ?.endsWith('.00')
+                                      ? compressedSizeDiff
+                                          .toFixed(2)
+                                          ?.slice(0, -3)
+                                      : compressedSizeDiff.toFixed(2),
+                                  })}
                                 </p>
                               </>
                             ) : null}
@@ -507,7 +610,7 @@ function PreviewBatchMedia() {
                           <>
                             <div className="text-[11px] xl:text-[12px] xxl:text-[12px] 3xl:text-[12.5px]">
                               <p className=" text-gray-600 dark:text-gray-400 mb-1">
-                                Input Size
+                                {t('batch.inputSize')}
                               </p>
                               <span className="block font-black">
                                 {mediaFile.size}
@@ -516,7 +619,7 @@ function PreviewBatchMedia() {
                             <Divider orientation="vertical" className="h-5" />
                             <div className="text-[11px] xxl:text-[12px] 3xl:text-[12.5px]">
                               <p className=" text-gray-600 dark:text-gray-400 mb-1">
-                                Extension
+                                {t('batch.extension')}
                               </p>
                               <span className="block font-black">
                                 {mediaFile.extension ?? '-'}
@@ -531,7 +634,7 @@ function PreviewBatchMedia() {
                                 />
                                 <div className="text-[11px] xxl:text-[12px] 3xl:text-[12.5px]">
                                   <p className=" text-gray-600 dark:text-gray-400 mb-1">
-                                    Duration
+                                    {t('batch.duration')}
                                   </p>
                                   <span className="block font-black">
                                     {formatDuration(mediaFile.videoDuration) ??
@@ -548,7 +651,7 @@ function PreviewBatchMedia() {
                                 />
                                 <div className="text-[11px] xxl:text-[12px] 3xl:text-[12.5px]">
                                   <p className=" text-gray-600 dark:text-gray-400 mb-1">
-                                    Dimensions
+                                    {t('batch.dimensions')}
                                   </p>
                                   <span className="block font-black">
                                     {mediaFile.dimensions.width ?? '-'} x{' '}
@@ -585,7 +688,7 @@ function PreviewBatchMedia() {
               <div className="flex items-center gap-6">
                 <div>
                   <p className=" text-gray-600 dark:text-gray-400">
-                    Compressed {getDisplayStats.label}
+                    {t('batch.compressed', { context: getDisplayStats.label })}
                   </p>
                   <p className="font-black text-lg">
                     {getDisplayStats.compressedMediaCount ?? 0} /{' '}
@@ -595,9 +698,9 @@ function PreviewBatchMedia() {
                 <Divider orientation="vertical" className="h-8" />
                 <div>
                   <p className=" text-gray-600 dark:text-gray-400">
-                    Size Saved
+                    {t('batch.sizeSaved')}
                   </p>
-                  <p className="font-black text-lg text-green-600 dark:text-green-400">
+                  <p className="font-black text-lg text-primary">
                     {formatBytes(getDisplayStats.sizeSaved ?? 0) || '...'}
                     {getDisplayStats.percentageSaved
                       ? `(${(getDisplayStats.percentageSaved ?? 0).toFixed(0)}%)`
@@ -619,7 +722,7 @@ function PreviewBatchMedia() {
             <div className="flex items-center gap-6">
               <div>
                 <p className=" text-gray-600 dark:text-gray-400">
-                  {getDisplayStats.label}
+                  {t('batch.label', { context: getDisplayStats.label })}
                 </p>
                 <p
                   className={cn(
@@ -630,14 +733,20 @@ function PreviewBatchMedia() {
                   {getDisplayStats.count}
                   {getDisplayStats.cancelledCount > 0 ? (
                     <span className="text-xs  text-warning-400 ml-2">
-                      ({getDisplayStats.cancelledCount} cancelled)
+                      (
+                      {t('queue.summary.cancelled', {
+                        count: getDisplayStats.cancelledCount,
+                      })}
+                      )
                     </span>
                   ) : null}
                 </p>
               </div>
               <Divider orientation="vertical" className="h-8" />
               <div>
-                <p className=" text-gray-600 dark:text-gray-400">Input Size</p>
+                <p className=" text-gray-600 dark:text-gray-400">
+                  {t('batch.inputSize')}
+                </p>
                 <p
                   className={cn(
                     'font-black text-lg',
@@ -652,7 +761,7 @@ function PreviewBatchMedia() {
                   <Divider orientation="vertical" className="h-8" />
                   <div>
                     <p className=" text-gray-600 dark:text-gray-400">
-                      Output Size
+                      {t('batch.outputSize')}
                     </p>
                     <p className={cn('font-black text-lg')}>
                       {formatBytes(getDisplayStats.outputSize ?? 0) || '-'}
@@ -661,13 +770,13 @@ function PreviewBatchMedia() {
                   <Divider orientation="vertical" className="h-8" />
                   <div>
                     <p className=" text-gray-600 dark:text-gray-400">
-                      Size Saved
+                      {t('batch.sizeSaved')}
                     </p>
                     <p
                       className={cn(
                         'font-black text-lg',
                         (getDisplayStats.sizeSaved ?? 0) > 0
-                          ? 'text-green-600 dark:text-green-400'
+                          ? 'text-primary'
                           : '',
                       )}
                     >
@@ -679,7 +788,26 @@ function PreviewBatchMedia() {
                     </p>
                   </div>
                 </>
-              ) : null}
+              ) : (
+                <>
+                  <Divider orientation="vertical" className="h-8" />
+                  <Tooltip
+                    content={t('batch.addMoreTooltip')}
+                    aria-label={t('batch.addMoreMedia')}
+                  >
+                    <Button
+                      size="sm"
+                      variant="flat"
+                      onPress={pickMediaToAdd}
+                      isDisabled={isLoadingMediaFiles}
+                      className="h-7 min-w-[unset] px-3 text-xs"
+                    >
+                      <Icon name="addMedia" size={14} />
+                      {t('batch.addMore')}
+                    </Button>
+                  </Tooltip>
+                </>
+              )}
             </div>
           )}
         </div>

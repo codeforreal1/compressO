@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" width="640" height="360" role="img" aria-label="Presets for video, image and audio settings" font-family="Poppins, -apple-system, 'Segoe UI', sans-serif">
+<defs>
+  <linearGradient id="pill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b2b2b"/><stop offset="1" stop-color="#191919"/></linearGradient>
+  <linearGradient id="win" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1a1918"/><stop offset="1" stop-color="#0f0e0d"/></linearGradient>
+  <linearGradient id="brand" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffa04a"/><stop offset="1" stop-color="#ff7a00"/></linearGradient>
+  <linearGradient id="brandX" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ff7a00"/><stop offset="1" stop-color="#ffa04a"/></linearGradient>
+  <linearGradient id="folderBack" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a2928"/><stop offset="1" stop-color="#1b1a19"/></linearGradient>
+  <linearGradient id="folderFront" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#363432"/><stop offset="1" stop-color="#221f1d"/></linearGradient>
+  <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#ff8400" stop-opacity="0.45"/><stop offset="1" stop-color="#ff8400" stop-opacity="0"/></radialGradient>
+  <filter id="soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="7"/></filter>
+</defs>
+<rect width="640" height="360" fill="#000"/>
+<ellipse cx="320.0" cy="200" rx="260" ry="150" fill="url(#glow)" opacity="0.35"/>
+<rect x="170.5" y="24.5" width="299" height="45" rx="14" fill="url(#pill)" stroke="#fff" stroke-opacity="0.15"/>
+<text x="188" y="53" font-size="15" font-weight="500" fill="#e9e7e4" text-anchor="start">Web 1080p</text>
+<g transform="translate(434 35) scale(0.9166666666666666)" fill="none" stroke="#a9a5a0" stroke-width="2.181818181818182" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></g>
+<rect x="170.5" y="82.5" width="299" height="258" rx="18" fill="url(#win)" stroke="#fff" stroke-opacity="0.15"/>
+<text x="192" y="111" font-size="14" font-weight="500" fill="#e9e7e4" text-anchor="start">Standard</text>
+<text x="192" y="128" font-size="11.5" font-weight="400" fill="#7d7975" text-anchor="start">Default for new media</text>
+<rect x="178" y="140" width="284" height="48" rx="12" fill="#ff8400" fill-opacity="0.12" stroke="#ff8400" stroke-opacity="0.45"/>
+<g transform="translate(430 154) scale(0.8333333333333334)" fill="none" stroke="#ff9a3c" stroke-width="3.12" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></g>
+<text x="192" y="161" font-size="14" font-weight="500" fill="#fff" text-anchor="start">Web 1080p</text>
+<text x="192" y="178" font-size="11.5" font-weight="400" fill="#ff9a3c" text-anchor="start">H.264, 1080p, 30 fps</text>
+<text x="192" y="211" font-size="14" font-weight="500" fill="#e9e7e4" text-anchor="start">Email 10 MB</text>
+<text x="192" y="228" font-size="11.5" font-weight="400" fill="#7d7975" text-anchor="start">Target size, 10 MB</text>
+<text x="192" y="261" font-size="14" font-weight="500" fill="#e9e7e4" text-anchor="start">Social 4:5</text>
+<text x="192" y="278" font-size="11.5" font-weight="400" fill="#7d7975" text-anchor="start">Crop 4:5, 1080 × 1350</text>
+<line x1="186" y1="292" x2="454" y2="292" stroke="#fff" stroke-opacity="0.08"/>
+<g transform="translate(190 302) scale(0.6666666666666666)" fill="none" stroke="#a9a5a0" stroke-width="3.0" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></g>
+<text x="214" y="315" font-size="12.5" font-weight="400" fill="#a9a5a0" text-anchor="start">Save current settings as a preset</text>
+</svg>

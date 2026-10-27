@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480" width="640" height="480" role="img" aria-label="The CompressO source code, open on GitHub" font-family="Poppins, -apple-system, 'Segoe UI', sans-serif">
+<defs>
+  <linearGradient id="pill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b2b2b"/><stop offset="1" stop-color="#191919"/></linearGradient>
+  <linearGradient id="win" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1a1918"/><stop offset="1" stop-color="#0f0e0d"/></linearGradient>
+  <linearGradient id="brand" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffa04a"/><stop offset="1" stop-color="#ff7a00"/></linearGradient>
+  <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#ff8400" stop-opacity="0.45"/><stop offset="1" stop-color="#ff8400" stop-opacity="0"/></radialGradient>
+  <filter id="soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="8"/></filter>
+</defs>
+<rect width="640" height="480" fill="#000"/>
+<ellipse cx="300" cy="250" rx="300" ry="200" fill="url(#glow)" opacity="0.35"/>
+<rect x="40.5" y="60.5" width="429" height="359" rx="18" fill="url(#win)" stroke="#fff" stroke-opacity="0.14"/>
+<circle cx="60" cy="79" r="4.5" fill="#ff5f57" opacity="0.85"/>
+<circle cx="75" cy="79" r="4.5" fill="#febc2e" opacity="0.85"/>
+<circle cx="90" cy="79" r="4.5" fill="#28c840" opacity="0.85"/>
+<line x1="40" y1="98" x2="470" y2="98" stroke="#fff" stroke-opacity="0.08"/>
+<text x="255.0" y="83.5" text-anchor="middle" font-size="12" fill="#7d7975" font-family="'SF Mono', Menlo, Consolas, monospace">compress.rs</text>
+<text x="74" y="128" text-anchor="end" font-size="11" fill="#4f4c49" font-family="'SF Mono', Menlo, Consolas, monospace">1</text>
+<rect x="92" y="120" width="26" height="8" rx="4" fill="#ff9a3c" opacity="0.9"/>
+<rect x="126" y="120" width="70" height="8" rx="4" fill="#bdb8b2" opacity="0.9"/>
+<rect x="204" y="120" width="90" height="8" rx="4" fill="#e9e7e4" opacity="0.9"/>
+<text x="74" y="152" text-anchor="end" font-size="11" fill="#4f4c49" font-family="'SF Mono', Menlo, Consolas, monospace">2</text>
+<rect x="114" y="144" width="28" height="8" rx="4" fill="#ff9a3c" opacity="0.9"/>
+<rect x="150" y="144" width="60" height="8" rx="4" fill="#e9e7e4" opacity="0.9"/>
+<rect x="218" y="144" width="110" height="8" rx="4" fill="#8a8580" opacity="0.55"/>
+<text x="74" y="176" text-anchor="end" font-size="11" fill="#4f4c49" font-family="'SF Mono', Menlo, Consolas, monospace">3</text>
+<rect x="114" y="168" width="26" height="8" rx="4" fill="#ff9a3c" opacity="0.9"/>
+<rect x="148" y="168" width="48" height="8" rx="4" fill="#e9e7e4" opacity="0.9"/>
+<rect x="204" y="168" width="70" height="8" rx="4" fill="#ffc58f" opacity="0.9"/>
+<text x="74" y="200" text-anchor="end" font-size="11" fill="#4f4c49" font-family="'SF Mono', Menlo, Consolas, monospace">4</text>
+<text x="74" y="224" text-anchor="end" font-size="11" fill="#4f4c49" font-family="'SF Mono', Menlo, Consolas, monospace">5</text>
+<rect x="114" y="216" width="22" height="8" rx="4" fill="#ff9a3c" opacity="0.9"/>
+<rect x="144" y="216" width="56" height="8" rx="4" fill="#e9e7e4" opacity="0.9"/>
+<rect x="208" y="216" width="30" height="8" rx="4" fill="#8a8580" opacity="0.55"/>
+<text x="74" y="248" text-anchor="end" font-size="11" fill="#4f4c49" font-family="'SF Mono', Menlo, Consolas, monospace">6</text>
+<rect x="136" y="240" width="80" height="8" rx="4" fill="#bdb8b2" opacity="0.9"/>
+<rect x="224" y="240" width="64" height="8" rx="4" fill="#e9e7e4" opacity="0.9"/>
+<rect x="296" y="240" width="40" height="8" rx="4" fill="#ffc58f" opacity="0.9"/>
+<text x="74" y="272" text-anchor="end" font-size="11" fill="#4f4c49" font-family="'SF Mono', Menlo, Consolas, monospace">7</text>
+<rect x="136" y="264" width="54" height="8" rx="4" fill="#e9e7e4" opacity="0.9"/>
+<rect x="198" y="264" width="90" height="8" rx="4" fill="#8a8580" opacity="0.55"/>
+<text x="74" y="296" text-anchor="end" font-size="11" fill="#4f4c49" font-family="'SF Mono', Menlo, Consolas, monospace">8</text>
+<rect x="114" y="288" width="16" height="8" rx="4" fill="#e9e7e4" opacity="0.9"/>
+<text x="74" y="320" text-anchor="end" font-size="11" fill="#4f4c49" font-family="'SF Mono', Menlo, Consolas, monospace">9</text>
+<rect x="114" y="312" width="64" height="8" rx="4" fill="#bdb8b2" opacity="0.9"/>
+<rect x="186" y="312" width="80" height="8" rx="4" fill="#e9e7e4" opacity="0.9"/>
+<text x="74" y="344" text-anchor="end" font-size="11" fill="#4f4c49" font-family="'SF Mono', Menlo, Consolas, monospace">10</text>
+<rect x="92" y="336" width="12" height="8" rx="4" fill="#e9e7e4" opacity="0.9"/>
+<text x="74" y="368" text-anchor="end" font-size="11" fill="#4f4c49" font-family="'SF Mono', Menlo, Consolas, monospace">11</text>
+<text x="74" y="392" text-anchor="end" font-size="11" fill="#4f4c49" font-family="'SF Mono', Menlo, Consolas, monospace">12</text>
+<rect x="92" y="384" width="30" height="8" rx="4" fill="#8a8580" opacity="0.55"/>
+<rect x="130" y="384" width="150" height="8" rx="4" fill="#8a8580" opacity="0.55"/>
+<rect x="41" y="232" width="428" height="24" fill="#ff8400" opacity="0.07"/>
+<rect x="41" y="232" width="3" height="24" fill="#ff8400"/>
+<line x1="532" y1="96" x2="532" y2="384" stroke="#fff" stroke-opacity="0.18" stroke-width="2.5"/>
+<path d="M532 176 C 532 200, 576 192, 576 214 L 576 274 C 576 296, 532 290, 532 318" fill="none" stroke="#ff8400" stroke-opacity="0.75" stroke-width="2.5"/>
+<circle cx="532" cy="96" r="7" fill="#000" stroke="#fff" stroke-opacity="0.45" stroke-width="2.5"/>
+<circle cx="532" cy="140" r="7" fill="#000" stroke="#fff" stroke-opacity="0.45" stroke-width="2.5"/>
+<circle cx="532" cy="176" r="7" fill="#000" stroke="#fff" stroke-opacity="0.45" stroke-width="2.5"/>
+<circle cx="532" cy="250" r="7" fill="#000" stroke="#fff" stroke-opacity="0.45" stroke-width="2.5"/>
+<circle cx="532" cy="384" r="7" fill="#000" stroke="#fff" stroke-opacity="0.45" stroke-width="2.5"/>
+<circle cx="576" cy="224" r="7" fill="url(#brand)" stroke="#ffb066" stroke-opacity="0.8" stroke-width="2"/>
+<circle cx="576" cy="262" r="7" fill="url(#brand)" stroke="#ffb066" stroke-opacity="0.8" stroke-width="2"/>
+<circle cx="532" cy="318" r="12" fill="#ff8400" opacity="0.45" filter="url(#soft)"/>
+<circle cx="532" cy="318" r="8" fill="url(#brand)" stroke="#ffb066" stroke-width="2"/>
+<rect x="300" y="401" width="92" height="36" rx="18" fill="#ff8400" opacity="0.35" filter="url(#soft)"/>
+<rect x="300.5" y="398.5" width="91" height="35" rx="17.5" fill="url(#brand)" stroke="#ffb066" stroke-opacity="0.7"/>
+<g transform="translate(314 407) scale(0.75)" fill="none" stroke="#fff" stroke-width="2.0" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3.5 2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.3-4.1 5.9-.9Z"/></g>
+<text x="340" y="421" font-size="13" font-weight="500" fill="#fff">Star</text>
+<rect x="402.5" y="398.5" width="119" height="35" rx="17.5" fill="url(#pill)" stroke="#fff" stroke-opacity="0.16"/>
+<g transform="translate(416 407) scale(0.75)" fill="none" stroke="#d8d5d1" stroke-width="2.0" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="5" r="2"/><circle cx="6" cy="19" r="2"/><circle cx="18" cy="7" r="2"/><path d="M6 7v10M18 9c0 5-12 3-12 8"/></g>
+<text x="442" y="421" font-size="13" font-weight="500" fill="#e9e7e4">AGPL-3.0</text>
+</svg>

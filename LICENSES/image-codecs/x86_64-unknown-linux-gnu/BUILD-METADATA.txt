@@ -1,0 +1,9 @@
+Dedicated Linux HEIF tools
+Build baseline: Ubuntu 22.04 x86-64, GCC 11.4.0
+vcpkg revision: 4f973280dd95e3902b3410933fb2ce108bb29d1d
+libheif 1.23.6; libde265 1.1.3; x265 4.3; libpng 1.6.59; zlib 1.3.2; libjpeg-turbo 3.2.0
+Fully static, stripped ELF x86-64 executables; no runtime loader or shared libraries.
+x265 assembly enabled; runtime codec plugins disabled.
+heif-dec selects the primary image and rejects HEIF sequences.
+Rebuild: node scripts/build-image-tools.mjs x86_64-unknown-linux-gnu
+Matching sources, overlays and build script: src-tauri/tool-sources/image-codecs-x86_64-unknown-linux-gnu.tar.gz

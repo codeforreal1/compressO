@@ -52,7 +52,7 @@ pub async fn convert_svg_to_png(
     .iter()
     .collect();
 
-    let output_path_str = output_path.to_str().unwrap();
+    let output_path_str = &*output_path.to_string_lossy();
 
     let _ = image_compressor.convert_svg_to_raster_img(
         &image_path,
@@ -69,13 +69,54 @@ pub async fn get_image_basic_info(image_path: &str) -> Result<ImageBasicInfo, St
 }
 
 #[tauri::command]
-pub async fn get_image_dimensions(image_path: &str) -> Result<ImageDimensions, String> {
+pub async fn get_image_dimensions(
+    app: tauri::AppHandle,
+    image_path: &str,
+) -> Result<ImageDimensions, String> {
+    if crate::core::image_codecs::is_modern(&crate::core::image_codecs::extension(image_path)) {
+        let path = Box::pin(crate::core::image_codecs::decoded_png(
+            &app,
+            image_path,
+            "main",
+            &[],
+        ))
+        .await?;
+        return ImageInfo::get_dimensions(path.to_str().ok_or("Invalid cache path")?);
+    }
     ImageInfo::get_dimensions(image_path)
 }
 
 #[tauri::command]
-pub async fn get_image_color_info(image_path: &str) -> Result<ImageColorInfo, String> {
+pub async fn get_image_color_info(
+    app: tauri::AppHandle,
+    image_path: &str,
+) -> Result<ImageColorInfo, String> {
+    if crate::core::image_codecs::is_modern(&crate::core::image_codecs::extension(image_path)) {
+        let path = Box::pin(crate::core::image_codecs::decoded_png(
+            &app,
+            image_path,
+            "main",
+            &[],
+        ))
+        .await?;
+        return ImageInfo::get_color_info(path.to_str().ok_or("Invalid cache path")?);
+    }
     ImageInfo::get_color_info(image_path)
+}
+
+#[tauri::command]
+pub async fn prepare_image_preview(
+    app: tauri::AppHandle,
+    image_path: &str,
+) -> Result<String, String> {
+    Box::pin(crate::core::image_codecs::decoded_png(
+        &app,
+        image_path,
+        "main",
+        &[],
+    ))
+        .await
+        .map(|path| path.to_string_lossy().into_owned())
 }
 
 #[tauri::command]

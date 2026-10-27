@@ -6,24 +6,28 @@ use serde_json::Value;
 use std::path::Path;
 use std::process::Command;
 use tauri::AppHandle;
-use tauri_plugin_shell::ShellExt;
 
 pub struct FFPROBE {
     app: AppHandle,
+    owner_window: String,
 }
 
 impl FFPROBE {
     pub fn new(app: &tauri::AppHandle) -> Result<Self, String> {
         Ok(Self {
             app: app.to_owned(),
+            owner_window: String::from("main"),
         })
     }
 
+    /// Window the processes belong to (the main window by default), see `MediaProcessExecutorBuilder`
+    pub fn with_owner_window(mut self, label: &str) -> Self {
+        self.owner_window = label.to_string();
+        self
+    }
+
     pub fn get_ffprobe_command(&self) -> Result<Command, String> {
-        self.app
-            .shell()
-            .sidecar("compresso_ffprobe")
-            .map(Command::from)
+        super::tool_bundle::command(&self.app, "ffprobe")
             .map_err(|e| format!("Failed to create ffprobe command: {}", e))
     }
 
@@ -42,6 +46,8 @@ impl FFPROBE {
             "-show_entries",
             "stream=width,height,r_frame_rate,avg_frame_rate",
             "-show_entries",
+            "stream_tags=rotate:stream_side_data=rotation",
+            "-show_entries",
             "format=duration",
             "-of",
             "json",
@@ -49,6 +55,7 @@ impl FFPROBE {
         ]);
 
         let executor = MediaProcessExecutorBuilder::new(self.app.clone())
+            .owner_window(&self.owner_window)
             .command(ffprobe_cmd)
             .build()?;
 
@@ -82,7 +89,14 @@ impl FFPROBE {
                     stream.get("width").and_then(|v| v.as_u64()),
                     stream.get("height").and_then(|v| v.as_u64()),
                 ) {
-                    dimensions = Some((w as f64, h as f64));
+                    // Portrait videos from phones are often stored as landscape frames with a
+                    // rotation (which FFmpeg applies when compressing), so the size is reported
+                    // as displayed
+                    dimensions = Some(if is_quarter_turn(get_stream_rotation(stream)) {
+                        (h as f64, w as f64)
+                    } else {
+                        (w as f64, h as f64)
+                    });
                 }
 
                 // Parse FPS from r_frame_rate (e.g., "30000/1001" or "30/1")
@@ -133,6 +147,7 @@ impl FFPROBE {
         ]);
 
         let executor = MediaProcessExecutorBuilder::new(self.app.clone())
+            .owner_window(&self.owner_window)
             .command(ffprobe_cmd)
             .build()?;
 
@@ -341,6 +356,7 @@ impl FFPROBE {
         ]);
 
         let executor = MediaProcessExecutorBuilder::new(self.app.clone())
+            .owner_window(&self.owner_window)
             .command(ffprobe_cmd)
             .build()?;
 
@@ -439,6 +455,7 @@ impl FFPROBE {
         ]);
 
         let executor = MediaProcessExecutorBuilder::new(self.app.clone())
+            .owner_window(&self.owner_window)
             .command(ffprobe_cmd)
             .build()?;
 
@@ -585,6 +602,7 @@ impl FFPROBE {
         ]);
 
         let executor = MediaProcessExecutorBuilder::new(self.app.clone())
+            .owner_window(&self.owner_window)
             .command(ffprobe_cmd)
             .build()?;
 
@@ -705,6 +723,7 @@ impl FFPROBE {
         ]);
 
         let executor = MediaProcessExecutorBuilder::new(self.app.clone())
+            .owner_window(&self.owner_window)
             .command(ffprobe_cmd)
             .build()?;
 
@@ -765,4 +784,28 @@ fn parse_fraction(fraction: &str) -> Option<(u64, u64)> {
     } else {
         None
     }
+}
+
+/// Rotation of a video stream in degrees, from its display matrix (side data) or the older `rotate`
+/// tag
+fn get_stream_rotation(stream: &Value) -> Option<f64> {
+    stream
+        .get("side_data_list")
+        .and_then(|list| list.as_array())
+        .and_then(|list| {
+            list.iter()
+                .find_map(|side_data| side_data.get("rotation").and_then(|r| r.as_f64()))
+        })
+        .or_else(|| {
+            stream
+                .get("tags")
+                .and_then(|tags| tags.get("rotate"))
+                .and_then(|r| r.as_str())
+                .and_then(|r| r.parse::<f64>().ok())
+        })
+}
+
+/// Whether a rotation swaps the width & height (90° or 270°)
+fn is_quarter_turn(rotation: Option<f64>) -> bool {
+    rotation.is_some_and(|r| (r.round() as i64).rem_euclid(180) == 90)
 }

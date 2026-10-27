@@ -1,3 +1,4 @@
+import { t } from '@/i18n'
 import { AudioConfig, MediaMetadataConfig, SubtitlesConfig } from './app'
 import { FileMetadata } from './fs'
 
@@ -8,6 +9,7 @@ export const extensions = {
     mkv: 'mkv',
     webm: 'webm',
     avi: 'avi',
+    ts: 'ts',
     gif: 'gif',
   },
   image: {
@@ -17,22 +19,195 @@ export const extensions = {
     webp: 'webp',
     gif: 'gif',
     svg: 'svg',
+    avif: 'avif',
+    jxl: 'jxl',
+    heic: 'heic',
+    heif: 'heif',
+  },
+  // Audio extracted from a video
+  audio: {
+    mp3: 'mp3',
+    m4a: 'm4a',
+    wav: 'wav',
+    flac: 'flac',
+    ogg: 'ogg',
+    opus: 'opus',
   },
 } as const
 
+// Formats that can be opened but aren't offered as an output extension
+export const inputOnlyExtensions = {
+  video: ['m4v', 'mts', 'm2ts'],
+  image: ['bmp', 'tiff', 'tif'],
+  audio: ['aac', 'm4b', 'aiff', 'aif', 'wma', 'oga', 'mp2'],
+} as const
+
+export const inputExtensions = {
+  video: [...Object.keys(extensions.video), ...inputOnlyExtensions.video],
+  image: [...Object.keys(extensions.image), ...inputOnlyExtensions.image],
+  // Audio files (compressed as videos without a picture, see `Video.isAudioFile`)
+  audio: [...Object.keys(extensions.audio), ...inputOnlyExtensions.audio],
+}
+
 export type VideoExtension = keyof typeof extensions.video
 export type ImageExtension = keyof typeof extensions.image
+export type AudioExtension = keyof typeof extensions.audio
 
-export const compressionPresets = {
-  ironclad: 'ironclad',
-  thunderbolt: 'thunderbolt',
+export type VideoCodecOption = {
+  value: string
+  name: string
+  description: string
+  compatible_containers: VideoExtension[]
+}
+
+/** Video codecs that can be chosen, with the output containers that can hold them */
+export const VIDEO_CODECS: readonly VideoCodecOption[] = [
+  {
+    value: 'libx264',
+    name: 'H.264 (AVC)',
+    get description() {
+      return t('codecs.video.libx264')
+    },
+    compatible_containers: [
+      'mp4',
+      'mov',
+      'mkv',
+      'avi',
+      'ts',
+    ] as VideoExtension[],
+  },
+  {
+    value: 'libx265',
+    name: 'H.265 (HEVC)',
+    get description() {
+      return t('codecs.video.libx265')
+    },
+    compatible_containers: ['mp4', 'mov', 'mkv', 'ts'] as VideoExtension[],
+  },
+  {
+    value: 'libvpx-vp9',
+    name: 'VP9',
+    get description() {
+      return t('codecs.video.libvpx_vp9')
+    },
+    compatible_containers: ['webm', 'mkv'] as VideoExtension[],
+  },
+  {
+    // Kept as is for saved presets; compressed with SVT-AV1 when ffmpeg has it (see `ffmpeg.rs`)
+    value: 'libaom-av1',
+    name: 'AV1',
+    get description() {
+      return t('codecs.video.libaom_av1')
+    },
+    compatible_containers: ['mp4', 'mkv', 'webm'] as VideoExtension[],
+  },
+  {
+    value: 'mpeg4',
+    name: 'MPEG-4',
+    get description() {
+      return t('codecs.video.mpeg4')
+    },
+    compatible_containers: ['mp4', 'mov', 'mkv', 'avi'] as VideoExtension[],
+  },
+]
+
+/**
+ * Whether a video codec (a `VIDEO_CODECS` value) can be written in an output container (see
+ * `getOutputVideoContainer`); unknown codecs are left to ffmpeg
+ */
+export function isVideoCodecCompatible(codec: string, container: string) {
+  const option = VIDEO_CODECS.find((c) => c.value === codec)
+  return (
+    !option ||
+    option.compatible_containers.includes(container as VideoExtension)
+  )
+}
+
+/**
+ * Resolutions as the size of the longer side (the width of a landscape media, the height of a
+ * portrait one; 16:9 sizes, e.g. 1080p is 1920x1080 or 1080x1920). Used by the resolution buttons,
+ * the batch resolution & presets. Smaller media is upscaled. `original` keeps the original size.
+ */
+export const batchResolutions = {
+  original: null,
+  '480p': 854,
+  '720p': 1280,
+  '1080p': 1920,
+  '2k': 2560,
+  '4k': 3840,
 } as const
+
+/** A listed resolution, or another size of the longer side (e.g. `1700px`, from a preset) */
+export type BatchResolution = keyof typeof batchResolutions | `${number}px`
+
+/** Size of the longer side of a batch resolution (`null` keeps the original size) */
+export function getBatchResolutionLongerSide(
+  resolution: BatchResolution | null | undefined,
+): number | null {
+  if (!resolution) return null
+  if (resolution in batchResolutions) {
+    return batchResolutions[resolution as keyof typeof batchResolutions]
+  }
+  const longerSide = Number.parseInt(resolution, 10)
+  return Number.isFinite(longerSide) && longerSide > 0 ? longerSide : null
+}
+
+/** Batch resolution for a size of the longer side, e.g. `1920` -> `1080p`, `1700` -> `1700px` */
+export function getBatchResolutionForLongerSide(
+  longerSide: number | null | undefined,
+): BatchResolution {
+  if (!longerSide) return 'original'
+  const listed = (
+    Object.keys(batchResolutions) as (keyof typeof batchResolutions)[]
+  ).find((key) => batchResolutions[key] === longerSide)
+  return listed ?? `${longerSide}px`
+}
+
+/** Whether an output extension extracts only the audio of a video */
+export function isAudioExtension(
+  extension: string | null | undefined,
+): extension is AudioExtension {
+  return !!extension && extension in extensions.audio
+}
+
+/** Whether a file with this extension is opened as an audio file (see `inputExtensions.audio`) */
+export function isAudioFileExtension(extension: string | null | undefined) {
+  return (
+    !!extension &&
+    (inputExtensions.audio as string[]).includes(extension.toLowerCase())
+  )
+}
+
+/**
+ * Format an audio file is written in when its output format is "Same as input" (or a video format,
+ * in a batch): its own, or the closest one that can be written for formats that can only be read
+ */
+export function getAudioFileOutputExtension(
+  extension: string | null | undefined,
+): AudioExtension {
+  const source = extension?.toLowerCase()
+  if (isAudioExtension(source)) return source
+  switch (source) {
+    case 'aac':
+    case 'm4b':
+      return 'm4a'
+    case 'aiff':
+    case 'aif':
+      return 'wav'
+    case 'oga':
+      return 'ogg'
+    default:
+      return 'mp3'
+  }
+}
 
 export type VideoCompressionResult = {
   videoId: string
   fileName: string
   filePath: string
   fileMetadata: FileMetadata
+  /** The other outputs made for a target size (each attempt), any of which can be used instead */
+  otherOutputs?: { filePath: string; size: number }[]
 }
 
 export enum CustomEvents {
@@ -165,6 +340,29 @@ export type MediaTransforms = {
   flip: { horizontal: boolean; vertical: boolean }
 }
 
+/** Shapes a crop can be locked to, as width:height */
+export const cropAspectRatios = {
+  '1:1': [1, 1],
+  '4:5': [4, 5],
+  '9:16': [9, 16],
+  '16:9': [16, 9],
+  '4:3': [4, 3],
+} as const
+
+export type CropAspectRatio = keyof typeof cropAspectRatios
+
+/**
+ * Transforms that apply to any media (e.g. in a preset): rotation & flips, and a crop as a shape
+ * (the largest centered area of the ratio), which is turned into each media's own crop
+ */
+export type PortableTransform = {
+  /** Clockwise, in degrees (0, 90, 180 or 270) */
+  rotate: number
+  /** Flips after the rotation, in the output's axes */
+  flip: { horizontal: boolean; vertical: boolean }
+  aspectRatio: CropAspectRatio | null
+}
+
 export type MediaTransformHistory =
   | {
       type: 'crop'
@@ -224,6 +422,17 @@ export type VideoCompressionConfig = {
   trimSegments?: VideoTrimSegment[] | null
   subtitlesConfig?: SubtitlesConfig | null
   speed?: number | null
+  /** Compressed to (just under) a size, at a video bitrate in kbit/s (see `utils/targetSize.ts`) */
+  targetSize?: {
+    sizeInBytes: number
+    videoBitrate: number
+    /** Audio-only target; videoBitrate is unused when set. */
+    audioBitrate?: number | null
+    /** Compresses again (when the size was missed) on the CPU, not the graphics card */
+    retryOnCpu: boolean
+    /** Compressed at its quality first (its estimated size fits), at the bitrate only when larger */
+    qualityFirst: boolean
+  } | null
 }
 
 export type ImageCompressionProgress = {
@@ -237,6 +446,8 @@ export type ImageCompressionResult = {
   fileName: string
   filePath: string
   fileMetadata?: FileMetadata
+  /** Compressed to a target size: whether the output fits within it */
+  isTargetSizeReached?: boolean
 }
 
 export type SvgConfig = {
@@ -260,6 +471,15 @@ export type ImageCompressionConfig = {
   svgConfig?: SvgConfig | null
   dimensions?: [number, number] | null
   transformHistory?: MediaTransformHistory[] | null
+  /** Compressed to fit within a size instead of at `quality` (see `utils/imageTargetSize.ts`) */
+  targetSize?: ImageTargetSize | null
+}
+
+/** See `ImageTargetSize` in `src-tauri/src/core/domain.rs` */
+export type ImageTargetSize = {
+  sizeInBytes: number
+  /** The image's size before it is lowered to fit (when unknown, only its quality is lowered) */
+  dimensions: [number, number] | null
 }
 
 export type MediaItem = {

@@ -1,23 +1,92 @@
 ---
-import { Image } from "astro:assets";
-import type { BlogPost } from "../../types/blog";
+import type { CollectionEntry } from "astro:content";
 import Date from "../Date.astro";
-import FallbackImage from "../../assets/placeholder.jpg";
+import ImageSlot from "../ImageSlot.astro";
+import Icon from "../Icon.astro";
 
-const { title, publishedDate, heroImage } = Astro.props as BlogPost;
+/** A post in the blog's list: its hero image (or placeholder), date, title & summary */
+interface Props {
+  post: CollectionEntry<"blogs">;
+}
+
+const { post } = Astro.props;
+const { title, description, publishedDate, heroImage, heroImageLabel } = post.data;
 ---
 
-<div>
-  <Image
-    width={720}
-    height={360}
-    src={heroImage! ?? FallbackImage}
+<a href={`/blog/${post.id}/`} class="post-card">
+  <ImageSlot
+    label={heroImageLabel ?? title}
+    src={heroImage}
     alt={title}
-    class="w-full overflow-hidden"
-    fit="cover"
+    aspect="16 / 9"
+    class="post-card-image"
   />
-  <h4 class="text-white opacity-85 mt-2! my-0!">{title}</h4>
-  <p class="text-[var(--gray)] m-0! text-sm">
-    <Date date={publishedDate} />
-  </p>
-</div>
+  <div class="post-card-text">
+    <span class="post-card-date"><Date date={publishedDate} /></span>
+    <h2>{title}</h2>
+    <p>{description}</p>
+    <span class="post-card-more">
+      Read the post
+      <Icon name="arrowRight" size={14} />
+    </span>
+  </div>
+</a>
+
+<style>
+  .post-card {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 36px;
+    align-items: center;
+    padding: 20px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    transition:
+      border-color 0.2s ease,
+      background-color 0.2s ease;
+  }
+  .post-card:hover {
+    border-color: var(--border-strong);
+    background: var(--surface-raised);
+  }
+  .post-card-text {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-right: 12px;
+  }
+  .post-card-date {
+    font-size: 13px;
+    color: var(--text-faint);
+  }
+  .post-card h2 {
+    font-size: clamp(22px, 2.6vw, 28px);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+  .post-card p {
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--text-muted);
+  }
+  .post-card-more {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--brand);
+  }
+  @media (max-width: 800px) {
+    .post-card {
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+    .post-card-text {
+      padding: 0 4px 4px;
+    }
+  }
+</style>

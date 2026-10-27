@@ -1,13 +1,15 @@
 use axum::{
     body::Body,
-    extract::{Query, Request},
+    extract::{Query, Request, State},
     http::{header, HeaderValue, StatusCode},
     response::{IntoResponse, Response},
     routing::get,
     Router,
 };
 use serde::Deserialize;
-use std::path::PathBuf;
+use std::path::{Component, PathBuf};
+use std::sync::Mutex;
+use tauri::{AppHandle, Manager};
 use std::time::Duration;
 use tokio::io::{AsyncReadExt, AsyncSeekExt};
 use tokio::net::TcpListener;
@@ -18,17 +20,37 @@ use tower_http::cors::CorsLayer;
 
 #[derive(Debug, Deserialize)]
 struct VideoQuery {
+    /// The server's secret (see `ServerState::token`)
+    token: String,
     path: String,
 }
 
 #[derive(Clone)]
 pub struct ServerState {
     pub port: u16,
+    /// A random secret made at each start, required by every request, so only CompressO (which
+    /// builds the links, see `construct_video_url`) can read files through the server
+    pub token: String,
     pub shutdown_tx: broadcast::Sender<()>,
 }
 
-pub async fn start_server() -> Result<ServerState, Box<dyn std::error::Error>> {
+/// What the requests are checked against
+#[derive(Clone)]
+struct ServerContext {
+    token: String,
+    app_handle: AppHandle,
+}
+
+/// The video server, started when the frontend asks for it: only with video previews on (Settings ->
+/// General), read when the app starts
+#[derive(Default)]
+pub struct VideoServer(pub Mutex<Option<ServerState>>);
+
+pub async fn start_server(
+    app_handle: AppHandle,
+) -> Result<ServerState, Box<dyn std::error::Error + Send + Sync>> {
     let (shutdown_tx, mut shutdown_rx) = broadcast::channel(1);
+    let token = nanoid::nanoid!(32);
 
     let listener = TcpListener::bind("127.0.0.1:0").await?;
     let port = listener.local_addr()?.port();
@@ -40,6 +62,10 @@ pub async fn start_server() -> Result<ServerState, Box<dyn std::error::Error>> {
     let app = Router::new()
         .route("/video", get(serve_video))
         .route("/ping", get(ping))
+        .with_state(ServerContext {
+            token: token.clone(),
+            app_handle,
+        })
         .layer(cors);
 
     let server = axum::serve(listener, app);
@@ -65,7 +91,11 @@ pub async fn start_server() -> Result<ServerState, Box<dyn std::error::Error>> {
 
     log::info!("Video server started successfully on port {}", port);
 
-    Ok(ServerState { port, shutdown_tx })
+    Ok(ServerState {
+        port,
+        token,
+        shutdown_tx,
+    })
 }
 
 pub fn shutdown_server(state: &ServerState) {
@@ -78,10 +108,29 @@ async fn ping() -> &'static str {
 }
 
 async fn serve_video(
+    State(context): State<ServerContext>,
     Query(params): Query<VideoQuery>,
     request: Request,
 ) -> Result<Response, StatusCode> {
+    if params.token != context.token {
+        log::error!("Video request with a wrong token");
+        return Err(StatusCode::FORBIDDEN);
+    }
+
     let path = PathBuf::from(&params.path);
+
+    // Only the files CompressO opened or created: those its asset protocol may load (its data
+    // folder, the media added, the saved outputs), as on macOS & Windows. Without `..`, which could
+    // leave an allowed folder.
+    let is_allowed = path.is_absolute()
+        && !path
+            .components()
+            .any(|component| matches!(component, Component::ParentDir))
+        && context.app_handle.asset_protocol_scope().is_allowed(&path);
+    if !is_allowed {
+        log::error!("Video request for a file CompressO did not open: {:?}", path);
+        return Err(StatusCode::FORBIDDEN);
+    }
 
     if !path.exists() {
         log::error!("Video file not found: {:?}", path);
@@ -203,15 +252,21 @@ fn mime_type_from_path(path: &PathBuf) -> &'static str {
             "webm" => "video/webm",
             "mkv" => "video/x-matroska",
             "avi" => "video/x-msvideo",
+            "ts" | "mts" | "m2ts" => "video/mp2t",
             "mov" => "video/quicktime",
             "flv" => "video/x-flv",
             "m4v" => "video/x-m4v",
             "mp3" => "audio/mpeg",
             "wav" => "audio/wav",
-            "ogg" => "audio/ogg",
+            "ogg" | "opus" => "audio/ogg",
             "flac" => "audio/flac",
             "m4a" => "audio/mp4",
             "aac" => "audio/aac",
+            "aiff" | "aif" => "audio/aiff",
+            "m4b" => "audio/mp4",
+            "oga" => "audio/ogg",
+            "mp2" => "audio/mpeg",
+            "wma" => "audio/x-ms-wma",
             _ => "application/octet-stream",
         })
         .unwrap_or("application/octet-stream")

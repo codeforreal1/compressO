@@ -1,6 +1,6 @@
 <div align="center">
   <div align="center">
-   <img width="150" height="150" src="public/app-icon.png" alt="Logo" />
+   <img width="150" height="150" src="public/app-icon-dark.png" alt="Logo" />
   </div>
 	<h1 align="center">CompressO</h1>
 	<p align="center">
@@ -155,10 +155,10 @@ xattr -cr /Applications/CompressO.app
 
 <details>
 <summary>
-  <strong>App not working on Debian 13 & Ubuntu 24</strong>
+  <strong>Linux: AppImage crashes on launch or displays white screen </strong>
 </summary>
 <p>
-  Tauri seems to be missing some packages that were removed in Debian 13 and its derivatives like Ubuntu 24. The Tauri team is investigating the issue, so unfortunately there is no solution at the moment.
+    Try setting `WEBKIT_DISABLE_DMABUF_RENDERER=1` or `WEBKIT_DISABLE_COMPOSITING_MODE=1` if app crashes on launch or displays a blank screen.
 </p>
 </details>
 

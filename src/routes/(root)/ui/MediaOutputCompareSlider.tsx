@@ -2,6 +2,7 @@ import { core } from '@tauri-apps/api'
 import merge from 'lodash/merge'
 import { memo, useCallback, useId } from 'react'
 import { ReactCompareSliderHandle } from 'react-compare-slider'
+import { useTranslation } from 'react-i18next'
 import { PhotoView } from 'react-photo-view'
 import { useSnapshot } from 'valtio'
 
@@ -10,6 +11,8 @@ import Icon from '@/components/Icon'
 import ImageViewer from '@/components/ImageViewer'
 import Tooltip from '@/components/Tooltip'
 import VideoPlayer from '@/components/VideoPlayer'
+import { useImagePreview } from '@/hooks/useImagePreview'
+import { needsImagePreview } from '@/tauri/commands/image'
 import { getPlatform } from '@/utils/fs'
 import { cn } from '@/utils/tailwind'
 import { appProxy } from '../-state'
@@ -43,13 +46,22 @@ const platform = getPlatform()
 function MediaOutputCompareSlider({
   mediaIndex,
 }: MediaOutputCompareSliderProps) {
+  const { t } = useTranslation()
   if (mediaIndex < 0) return
 
   const {
-    state: { media, isSaved },
+    state: { media },
   } = useSnapshot(appProxy)
   const mediaFile = media[mediaIndex]
 
+  const outputPreview = useImagePreview(
+    mediaFile?.type === 'image'
+      ? (mediaFile.compressedFile?.savedPath ??
+          mediaFile.compressedFile?.pathRaw)
+      : undefined,
+    mediaFile?.compressedFile,
+    mediaFile?.thumbnailPath,
+  )
   const id = useId()
 
   const renderImage = useCallback(
@@ -63,7 +75,7 @@ function MediaOutputCompareSlider({
         >
           <img
             src={src}
-            alt={`compare image ${options?.isOriginal ? 0 : 1}`}
+            alt={options?.isOriginal ? t('compare.input') : t('compare.output')}
             className="w-full h-full max-h-[60vh] object-contain"
           />
           {options?.enableZoomViewer ? (
@@ -85,7 +97,11 @@ function MediaOutputCompareSlider({
                 <PhotoView src={src!}>
                   <div>
                     <Tooltip
-                      content={`Enlarge ${options?.isOriginal ? 'input' : 'output'}`}
+                      content={
+                        options?.isOriginal
+                          ? t('compare.enlargeInput')
+                          : t('compare.enlargeOutput')
+                      }
                     >
                       <Icon name="zoom" size={18} className="cursor-pointer" />
                     </Tooltip>
@@ -97,7 +113,7 @@ function MediaOutputCompareSlider({
         </div>
       )
     },
-    [mediaFile?.isProcessCompleted, mediaFile?.config?.convertToExtension],
+    [mediaFile?.isProcessCompleted, mediaFile?.config?.convertToExtension, t],
   )
 
   const renderVideo = useCallback(
@@ -136,9 +152,21 @@ function MediaOutputCompareSlider({
     [mediaFile?.dimensions?.width, mediaFile?.dimensions?.height],
   )
 
-  const outputPath = isSaved
-    ? core.convertFileSrc(mediaFile?.compressedFile?.savedPath!)
-    : mediaFile?.compressedFile?.path
+  // Saving moves the output out of the cache, so a saved output is loaded from where it was saved
+  // (with its size, as another output of a target size can replace it there, see
+  // `chooseOutputOption`)
+  // Another output looked at while the saved one stays on disk (see `previewOutputOption`)
+  const previewOption =
+    mediaFile?.type === 'video' ? mediaFile.compressedFile?.previewOption : null
+  const outputPath =
+    outputPreview ??
+    (previewOption ? core.convertFileSrc(previewOption.pathRaw) : null) ??
+    (mediaFile?.compressedFile?.isSaved && mediaFile.compressedFile.savedPath
+      ? `${core.convertFileSrc(mediaFile.compressedFile.savedPath)}?v=${mediaFile.compressedFile.sizeInBytes ?? 0}`
+      : mediaFile?.compressedFile?.path)
+  const imageOutputPath = outputPath
+    ? `${outputPath}${outputPath.includes('?') ? '&' : '?'}id=${id}`
+    : ''
 
   return (
     <div id={id} className="rounded-3xl overflow-hidden px-4">
@@ -150,7 +178,7 @@ function MediaOutputCompareSlider({
           (mediaFile?.sizeInBytes ?? 0) >= SVG_MAX_RENDERING_SIZE_LIMIT)) ? (
         <p className="text-xs mb-2 flex justify-center items-center gap-1 text-warning-400">
           <Icon name="warning" />
-          SVG file too large. Might affect the comparison renderer performance.
+          {t('compare.svgTooLarge')}
         </p>
       ) : null}
       <div className="border-1 border-zinc-200 dark:border-zinc-900 overflow-hidden">
@@ -159,7 +187,13 @@ function MediaOutputCompareSlider({
           itemOne={
             mediaFile?.type === 'video'
               ? renderVideo(mediaFile?.path!)
-              : renderImage(mediaFile?.path!)
+              : renderImage(
+                  mediaFile?.pathRaw &&
+                    needsImagePreview(mediaFile.pathRaw) &&
+                    mediaFile.thumbnailPathRaw
+                    ? core.convertFileSrc(mediaFile.thumbnailPathRaw)
+                    : mediaFile?.path!,
+                )
           }
           itemTwo={
             mediaFile?.type === 'video'
@@ -175,7 +209,7 @@ function MediaOutputCompareSlider({
                       isOriginal: false,
                     },
                   )
-              : renderImage(`${outputPath!}?id={${id}}`, {
+              : renderImage(imageOutputPath, {
                   isOriginal: false,
                 })
           }

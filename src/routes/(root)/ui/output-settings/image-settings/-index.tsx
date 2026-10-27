@@ -1,5 +1,6 @@
 import { Divider, Tab } from '@heroui/react'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
 import Tabs from '@/components/Tabs'
@@ -12,23 +13,20 @@ import SvgConfig from './image/SvgConfig'
 import SvgScaleFactor from './image/SvgScaleFactor'
 import TransformImage from './image/TransformImage'
 import Others from './others/-index'
+import PresetSelector from '../PresetSelector'
 
 type ImageSettingsProps = {
   mediaIndex: number
 }
 
+/** Titled with `outputSettings.tabs.<id>` */
 const TABS = {
-  image: {
-    id: 'image',
-    title: 'Image',
-  },
-  others: {
-    id: 'others',
-    title: 'Others',
-  },
+  image: { id: 'image' },
+  others: { id: 'others' },
 } as const
 
 function ImageSettings({ mediaIndex }: ImageSettingsProps) {
+  const { t } = useTranslation()
   const {
     state: { media, commonConfigForBatchCompression },
   } = useSnapshot(appProxy)
@@ -45,11 +43,12 @@ function ImageSettings({ mediaIndex }: ImageSettingsProps) {
   return (
     <>
       <section>
+        <PresetSelector mediaType="image" mediaIndex={mediaIndex} />
         <Tabs
-          aria-label="Compression Settings"
+          aria-label={t('outputSettings.compressionSettings')}
           size="sm"
           selectedKey={tab}
-          onSelectionChange={(t) => setTab(t as keyof typeof TABS)}
+          onSelectionChange={(key) => setTab(key as keyof typeof TABS)}
           className="w-full"
           fullWidth
           classNames={{
@@ -57,8 +56,12 @@ function ImageSettings({ mediaIndex }: ImageSettingsProps) {
             tabContent: 'text-[11px]',
           }}
         >
-          {Object.values(TABS).map((t) => (
-            <Tab key={t.id} value={t.id} title={t.title} />
+          {Object.values(TABS).map((item) => (
+            <Tab
+              key={item.id}
+              value={item.id}
+              title={t(`outputSettings.tabs.${item.id}`)}
+            />
           ))}
         </Tabs>
         <div className="my-4">
@@ -72,18 +75,38 @@ function ImageSettings({ mediaIndex }: ImageSettingsProps) {
               {(['svg'] as ImageExtensionType[]).includes(
                 image?.extension as ImageExtensionType,
               ) &&
-              (['png', 'jpg', 'jpeg', 'webp'] as ImageExtensionType[]).includes(
-                convertToExtension as ImageExtensionType,
-              ) ? (
+              (
+                [
+                  'png',
+                  'jpg',
+                  'jpeg',
+                  'webp',
+                  'avif',
+                  'jxl',
+                  'heic',
+                  'heif',
+                ] as ImageExtensionType[]
+              ).includes(convertToExtension as ImageExtensionType) ? (
                 <div>
                   <SvgScaleFactor mediaIndex={mediaIndex} />
-                  <Divider className="my-3 !mt-6" />
+                  <Divider className="my-3 !mt-8" />
                 </div>
               ) : null}
 
-              {(
-                ['png', 'jpg', 'jpeg', 'webp', 'gif'] as ImageExtensionType[]
-              ).includes(imageExtension as ImageExtensionType) &&
+              {[
+                'png',
+                'jpg',
+                'jpeg',
+                'webp',
+                'gif',
+                'avif',
+                'jxl',
+                'heic',
+                'heif',
+                'bmp',
+                'tiff',
+                'tif',
+              ].includes(imageExtension ?? '') &&
               !(['svg'] as ImageExtensionType[]).includes(
                 convertToExtension as ImageExtensionType,
               ) ? (
@@ -94,7 +117,7 @@ function ImageSettings({ mediaIndex }: ImageSettingsProps) {
                   </div>
                   <div>
                     <TransformImage mediaIndex={mediaIndex} />
-                    <Divider className="my-3" />
+                    <Divider className="my-3 mb-2" />
                   </div>
                 </>
               ) : null}
@@ -106,7 +129,7 @@ function ImageSettings({ mediaIndex }: ImageSettingsProps) {
                 </div>
               ) : null}
 
-              <div className="!mt-8">
+              <div className="!mt-10">
                 <ImageExtension mediaIndex={mediaIndex} />
               </div>
             </div>

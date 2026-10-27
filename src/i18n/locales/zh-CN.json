@@ -1,0 +1,1002 @@
+{
+  "toolPreparation": {
+    "title": "正在准备 CompressO",
+    "checking": "正在检查压缩工具…",
+    "verifying": "正在验证压缩工具…",
+    "extracting": "正在解压压缩工具…",
+    "validating": "正在确认压缩工具可用…",
+    "failed": "无法准备压缩工具。请查看日志了解详情。",
+    "statusUnavailable": "无法检查工具状态。请重试。",
+    "retry": "重试",
+    "exit": "退出",
+    "showLogs": "显示日志",
+    "logOpenFailed": "无法打开日志文件。",
+    "onlyOnce": "此操作只会进行一次。"
+  },
+  "settings": {
+    "general": {
+      "startup": {
+        "title": "启动",
+        "changeFailed": "无法更改此设置。",
+        "openAtLogin": {
+          "title": "登录时打开",
+          "description": "登录电脑时自动打开 CompressO。"
+        },
+        "needsApproval": {
+          "title": "已在系统设置中关闭",
+          "description": "CompressO 未被允许在登录时打开。请在“系统设置”的“通用”>“登录项”中允许。",
+          "button": "打开登录项"
+        },
+        "openInTrayOnly": {
+          "title_macos": "仅在菜单栏中打开",
+          "title_windows": "仅在系统托盘中打开",
+          "description_macos": "登录时打开不显示主窗口。仍可通过菜单栏压缩媒体。",
+          "description_windows": "登录时打开不显示主窗口。仍可通过系统托盘压缩媒体。",
+          "needsTrayIcon_macos": "请打开“<setting>显示菜单栏图标</setting>”以使用此功能，因为应用从那里打开。",
+          "needsTrayIcon_windows": "请打开“<setting>显示系统托盘图标</setting>”以使用此功能，因为应用从那里打开。"
+        }
+      },
+      "appearance": {
+        "title": "外观",
+        "language": {
+          "title": "语言",
+          "description": "应用的语言。"
+        },
+        "theme": {
+          "title": "主题",
+          "description": "跟随系统，或始终使用浅色或深色。"
+        },
+        "accentColor": {
+          "title": "强调色",
+          "description": "用于按钮、高亮和进度的颜色。"
+        },
+        "tintedWindow": {
+          "title": "着色窗口",
+          "description": "让桌面透过窗口背景柔和地显现。"
+        },
+        "tintOpacity": {
+          "title": "着色不透明度",
+          "description": "桌面透出的程度。数值越低，透出越多。"
+        }
+      },
+      "tray": {
+        "title_macos": "菜单栏",
+        "title_windows": "系统托盘",
+        "showIcon": {
+          "title_macos": "显示菜单栏图标",
+          "title_windows": "显示系统托盘图标",
+          "description_macos": "在菜单栏中显示 CompressO 图标、压缩进度和拖放区。",
+          "description_windows": "在系统托盘中显示 CompressO 图标、压缩进度和拖放区。",
+          "locked": "拖放区中的媒体正在压缩。完成或停止后才能关闭此项。"
+        }
+      },
+      "preview": {
+        "title": "预览",
+        "videoPreviews": {
+          "title": "视频预览",
+          "description": "在应用内播放视频。部分 Linux 系统无法顺畅播放视频，因此默认改为显示静态图像。更改将在重新启动后生效。"
+        },
+        "restart": "重新启动"
+      },
+      "sleep": {
+        "title": "睡眠",
+        "preventSleep": {
+          "title": "压缩时阻止睡眠",
+          "description": "在压缩完成前保持电脑唤醒。屏幕仍可能关闭。合上盖子仍会使电脑进入睡眠。"
+        },
+        "keepScreenOn": {
+          "title": "保持屏幕开启",
+          "description": "压缩时同时阻止屏幕关闭。"
+        }
+      },
+      "sound": {
+        "audioWaveforms": {
+          "title": "音频波形",
+          "description": "显示动态音频预览，以及音频和视频时间轴上的波形。"
+        },
+        "title": "声音",
+        "completionSound": {
+          "title": "完成提示音",
+          "description": "压缩完成时播放提示音。"
+        }
+      },
+      "troubleshooting": {
+        "title": "故障排除",
+        "logFiles": {
+          "title": "日志文件",
+          "description": "应用操作的记录，有助于找出问题原因。报告问题时请附上日志文件。其中包含您压缩过的文件名称。",
+          "button": "显示日志文件",
+          "failed": "无法显示日志文件。"
+        }
+      }
+    },
+    "presets": {
+      "copyName": "{{name}} 副本",
+      "isDefault_video": "新视频的默认预设。选择以改用“标准”预设。",
+      "isDefault_image": "新图像的默认预设。选择以改用“标准”预设。",
+      "isDefault_audio": "新音频文件的默认预设。选择以改用“标准”预设。",
+      "setDefault_video": "设为新视频的默认预设",
+      "setDefault_image": "设为新图像的默认预设",
+      "setDefault_audio": "设为新音频文件的默认预设",
+      "name": "预设名称",
+      "moveUp": "上移",
+      "moveDown": "下移",
+      "duplicate": "复制",
+      "delete": "删除预设",
+      "empty_video": "尚无视频预设。调整某个视频的设置，然后选择“预设”菜单旁的加号按钮，即可将其保存为预设。",
+      "empty_image": "尚无图像预设。调整某个图像的设置，然后选择“预设”菜单旁的加号按钮，即可将其保存为预设。",
+      "empty_audio": "尚无音频预设。调整某个音频文件的设置，然后选择“预设”菜单旁的加号按钮，即可将其保存为预设。",
+      "mediaType": "媒体类型",
+      "standardOutput": "其保存位置和文件名前缀在“<setting>输出</setting>”中设置。",
+      "cannotDeleteStandard": "无法删除标准预设。"
+    },
+    "dropZone": {
+      "turnOnTrayIcon_macos": "拖放区位于菜单栏中。请先在“通用”中打开“<setting>显示菜单栏图标</setting>”。",
+      "turnOnTrayIcon_windows": "拖放区位于系统托盘中。请先在“通用”中打开“<setting>显示系统托盘图标</setting>”。",
+      "compression": {
+        "title": "压缩",
+        "autoCompress": {
+          "title": "自动压缩",
+          "description": "媒体添加到投放区后立即逐个压缩，并保存到其预设的保存位置。",
+          "needsSaveLocation": "请在“<setting>输出</setting>”或投放区的预设中选择“每次询问”以外的保存位置，以便无需询问即可保存压缩后的媒体。"
+        }
+      },
+      "preset": {
+        "title_video": "视频预设",
+        "title_image": "图像预设",
+        "title_audio": "音频预设",
+        "description_video": "用于视频的设置。",
+        "description_image": "用于图像的设置。",
+        "description_audio": "用于音频文件的设置。"
+      },
+      "clipboard": {
+        "title": "剪贴板",
+        "watch": {
+          "title": "监视剪贴板",
+          "description_macos": "将您复制的媒体（如文件或浏览器中的图像）添加到菜单栏中的拖放区。",
+          "description_windows": "将您复制的媒体（如文件或浏览器中的图像）添加到系统托盘中的拖放区。"
+        }
+      },
+      "watchedFolders": {
+        "add": {
+          "title": "监视文件夹",
+          "description": "添加到这些文件夹的新媒体（例如屏幕录制或下载内容）会被自动压缩。",
+          "button": "添加文件夹",
+          "dialogTitle": "选择要监视的文件夹。",
+          "alreadyWatched": "此文件夹已在监视中。",
+          "description_linux": "在 CompressO 打开时，添加到这些文件夹的新媒体（例如屏幕录制或下载内容）会被自动压缩。"
+        },
+        "watch": "监视 {{name}}",
+        "missing": "文件夹不存在，当前未监视。",
+        "needsSaveLocation": "请在“<setting>输出</setting>”或其某个预设中选择“每次询问”以外的保存位置，以便无需询问即可保存其媒体。当前未监视此文件夹。",
+        "presetAsks": "保存位置为“每次询问”。请在“<setting>输出</setting>”或此预设中选择其他位置，以便监视此文件夹。",
+        "stillMissing": "文件夹尚不存在。请先重新创建，再开启监视。",
+        "checkFailed": "无法检查此文件夹是否存在。请重试。",
+        "remove": "停止监视",
+        "preset_video": "视频",
+        "preset_image": "图片",
+        "preset_audio": "音频"
+      }
+    },
+    "output": {
+      "saving": {
+        "title": "保存",
+        "location": {
+          "option_ask": "每次询问",
+          "option_fixedFolder": "固定文件夹",
+          "option_sameFolder": "与原文件相同的文件夹",
+          "title": "保存位置",
+          "description_ask": "每次压缩后选择保存位置。",
+          "description_fixedFolder": "每次压缩后自动保存到所选文件夹。",
+          "description_sameFolder": "自动保存在原文件旁边的同一文件夹中。"
+        },
+        "folder": {
+          "none": "未选择文件夹",
+          "change": "更改",
+          "dialogTitle": "选择用于保存压缩媒体的文件夹。",
+          "title": "文件夹"
+        },
+        "preserveFolders": {
+          "title": "保留文件夹结构",
+          "description": "保存时保留原始文件夹结构。"
+        },
+        "skipLarger": {
+          "title": "跳过更大的输出",
+          "description": "压缩后的媒体比原文件更大时不保存。"
+        },
+        "replaceOriginal": {
+          "title": "替换原始文件",
+          "description": "当压缩后的文件以相同名称保存在原始文件所在的文件夹中时，原始文件将被移到废纸篓，仅保留压缩后的文件。",
+          "description_windows": "当压缩后的文件以相同名称保存在原始文件所在的文件夹中时，原始文件将被移到回收站，仅保留压缩后的文件。"
+        },
+        "prefix": {
+          "title": "文件名前缀",
+          "placeholder": "无前缀",
+          "description": "添加到保存文件名开头的文字。留空则保留原文件名。"
+        },
+        "appliesTo": "这些设置仅适用于标准预设。"
+      },
+      "clipboard": {
+        "title": "剪贴板",
+        "copyOutput": {
+          "title": "将输出复制到剪贴板",
+          "description": "每次压缩后将压缩后的媒体复制到剪贴板，以便立即粘贴。"
+        },
+        "includeBatch": {
+          "title": "包括批量输出",
+          "description": "同时压缩多个文件时也复制这些文件。"
+        }
+      },
+      "performance": {
+        "title": "性能",
+        "hardwareAcceleration": {
+          "title": "使用硬件加速",
+          "description": "使用硬件加速更快地压缩视频（文件可能略大）",
+          "unavailable": "此电脑不支持硬件加速。"
+        },
+        "retryTargetSizeOnCpu": {
+          "title": "不使用加速来达到目标大小",
+          "description": "仅适用于“按目标大小”。视频未达到目标大小时，将不使用硬件加速重新压缩，速度较慢但更接近目标大小。"
+        }
+      },
+      "storage": {
+        "title": "存储",
+        "clearCache": {
+          "title": "清除缓存",
+          "confirm": "立即清除",
+          "description": "删除临时文件以释放空间。已保存的文件不受影响。",
+          "mediaOpen": "请先关闭正在处理的媒体，因为它正在使用缓存。",
+          "cleared": "已清除所有缓存。",
+          "failed": "清除缓存时出现问题。"
+        }
+      },
+      "savedFiles": {
+        "title": "已保存的文件"
+      }
+    },
+    "open": "打开设置",
+    "search": {
+      "label": "搜索设置",
+      "results": "搜索结果",
+      "noResults": "未找到设置。"
+    },
+    "groups": {
+      "settings": "设置",
+      "app": "CompressO"
+    },
+    "pages": {
+      "general": "通用",
+      "output": "输出",
+      "presets": "预设",
+      "dropZone": "拖放区",
+      "about": "关于",
+      "credits": "致谢",
+      "watchedFolders": "监视文件夹",
+      "history": "历史记录"
+    },
+    "about": {
+      "updateAvailable": "有可用更新",
+      "tagline": "将任意图像或视频压缩到极小的体积。",
+      "version": "版本 {{version}}",
+      "newVersion": "版本 {{version}} 现已推出。更新后请重新启动应用以使用新版本。",
+      "upToDate": "您使用的是最新版本。",
+      "checkDescription": "检查是否有更新版本的 CompressO。",
+      "updateNow": "立即更新",
+      "checkForUpdates": "检查更新",
+      "website": {
+        "title": "网站",
+        "description": "下载、功能和文档。"
+      },
+      "openSource": {
+        "title": "免费且开源",
+        "license": "采用 AGPL-3.0 许可"
+      },
+      "madeBy": "由 <link>Code For Real⚡</link> 公开开发，倾注 <heart></heart>",
+      "releaseNotes": "版本说明",
+      "releaseNotesOnline": {
+        "title": "查看 {{version}} 版本的新功能",
+        "description": "无法在此处加载发行说明。",
+        "view": "在线查看"
+      },
+      "changelog": {
+        "title": "更新日志",
+        "description": "CompressO 每个版本的新功能。",
+        "view": "查看更新日志"
+      }
+    },
+    "credits": {
+      "tools": {
+        "title": "开源工具",
+        "description": "没有这些出色的开源工具和库，就没有 CompressO。"
+      },
+      "license": "采用 {{license}} 许可",
+      "notices": {
+        "title": "第三方声明",
+        "description": "完整的第三方声明和许可证。",
+        "view": "查看"
+      }
+    },
+    "watchedFolders": {
+      "folders": "文件夹",
+      "openFailed": "无法打开该文件夹。它可能已被移动或删除。"
+    },
+    "history": {
+      "clear": "清除历史记录",
+      "clearConfirm": "清除所有记录",
+      "clearFailed": "无法清除历史记录。",
+      "search": "按名称、文件夹或预设搜索",
+      "empty": "压缩过的媒体将列在这里。",
+      "noResults": "没有与搜索匹配的压缩记录。",
+      "source_main": "主窗口",
+      "source_dropZone": "投放区",
+      "source_watchedFolder": "监视的文件夹 {{name}}",
+      "original": "原始文件",
+      "output": "输出文件",
+      "missing": "此文件已被移动或删除。",
+      "notSaved": "此输出未保存。",
+      "fileCount": "文件：{{count}}",
+      "showFiles": "显示 {{name}} 中的文件",
+      "hideFiles": "隐藏 {{name}} 中的文件",
+      "stats": {
+        "saved": "节省的空间",
+        "files": "已压缩的文件",
+        "original": "原始大小",
+        "output": "压缩后大小",
+        "reduction": "平均缩减"
+      }
+    }
+  },
+  "common": {
+    "sameFormatAsInput": "与输入格式相同",
+    "lossless": "无损",
+    "mono": "单声道",
+    "stereo": "立体声",
+    "kbps": "{{value}} kbps",
+    "delete": "删除",
+    "cancel": "取消",
+    "save": "保存",
+    "sizeChange": "{{from}} → {{to}}",
+    "showInFileManager": "在文件资源管理器中显示",
+    "showNameInFileManager": "在文件资源管理器中显示 {{name}}",
+    "copied": "已复制到剪贴板。",
+    "close": "关闭",
+    "reset": "重置",
+    "apply": "应用",
+    "yes": "是",
+    "edit": "编辑",
+    "decrease": "减少",
+    "increase": "增加"
+  },
+  "presets": {
+    "standard": "标准",
+    "defaultChoice": "默认（{{name}}）",
+    "summary": {
+      "rotated": "旋转 {{degrees}}°",
+      "flipped": "已翻转",
+      "cropped": "裁剪为 {{aspectRatio}}",
+      "quality": "质量 {{value}}%",
+      "resolution": "长边 {{size}} 像素",
+      "fps": "{{fps}} FPS",
+      "speed": "{{speed}} 倍速",
+      "audioRemoved": "已移除音频",
+      "volume": "音量 {{value}}%",
+      "audioCodec": "{{codec}} 音频",
+      "metadataRemoved": "已移除元数据",
+      "metadataKept": "保留元数据",
+      "svgScale": "SVG 缩放 {{scale}} 倍",
+      "customSvg": "自定义 SVG 转换",
+      "targetSize": "目标大小 {{size}} MB",
+      "targetSizeImage": "目标大小 {{size}}"
+    },
+    "save": {
+      "title_video": "保存视频预设",
+      "title_image": "保存图像预设",
+      "title_audio": "保存音频预设",
+      "name": "名称",
+      "placeholder_video": "例如：网页 1080p",
+      "placeholder_image": "例如：网页",
+      "placeholder_audio": "例如：播客",
+      "nameTaken": "已存在同名预设。",
+      "hint": "可以在“设置”的“<setting>预设</setting>”中重命名、重新排序和删除预设。"
+    },
+    "updated": "预设“{{name}}”已更新。",
+    "saved": "预设“{{name}}”已保存。",
+    "revertFailed": "无法还原设置。",
+    "applyFailed": "无法应用预设。",
+    "label": "预设：",
+    "update": "更新“{{name}}”",
+    "saveAsNew": "另存为新预设",
+    "revert": "还原为预设",
+    "output": {
+      "location": "保存位置",
+      "followStandard": "与标准预设相同"
+    }
+  },
+  "dropZone": {
+    "unsupportedType": "不支持此文件类型。",
+    "unsupportedSkipped": "已跳过不支持的文件。",
+    "addFailed": "无法添加媒体。",
+    "openFailed": "无法打开 CompressO。",
+    "quitFailed": "无法退出 CompressO。",
+    "pin": "固定",
+    "unpin": "取消固定",
+    "openApp": "打开应用",
+    "openAppCompressing": "打开应用，正在压缩 {{progress}}%",
+    "openAppPaused": "打开应用，已暂停于 {{progress}}%",
+    "quitApp": "退出应用",
+    "release": "松开以添加媒体",
+    "dropToCompress": "将媒体拖放或粘贴到此处进行压缩",
+    "dropToStore": "将媒体拖放或粘贴到此处暂存",
+    "mediaTypes": "视频、图像或文件夹…",
+    "itemsReady_other": "{{count}} 项已就绪",
+    "discardAll": "全部放弃",
+    "remove": "移除 {{name}}",
+    "storedBusy": "已暂存。打开应用，可在当前媒体之后压缩它们。",
+    "storedIdle": "拖入更多媒体，或打开应用开始压缩。",
+    "needsSaveLocation": "请在“设置”的“<setting>输出</setting>”或投放区的预设中选择保存位置，以便无需询问即可保存压缩后的媒体。"
+  },
+  "queue": {
+    "notSavedLarger": "未保存，因为比原文件更大。",
+    "noSaveLocation": "请在“设置”中为其预设选择保存位置。",
+    "chooseSaveLocation": "选择保存位置",
+    "saveFailed": "无法保存压缩后的媒体。",
+    "compressFailed": "无法压缩该媒体。",
+    "summary": {
+      "cancelledAndFailed": "{{cancelled}}，{{failed}}",
+      "cancelled_other": "{{count}} 个已取消",
+      "failed_other": "{{count}} 个无法压缩",
+      "complete": "压缩完成",
+      "pausing": "将在第 {{position}}/{{total}} 个后暂停",
+      "paused_other": "已暂停，{{count}} 个等待中",
+      "compressing": "正在压缩第 {{position}}/{{total}} 个",
+      "waiting_other": "{{count}} 个等待中"
+    },
+    "compressingName": "正在压缩 {{name}}",
+    "status": {
+      "waiting": "等待中",
+      "cancelled": "已取消",
+      "done": "完成",
+      "failed": "失败",
+      "smaller": "缩小 {{value}}%"
+    },
+    "tryAgain": "重试",
+    "tryNameAgain": "重试 {{name}}",
+    "resume": "继续",
+    "pause": "暂停",
+    "pauseAfterCurrent": "当前文件完成后暂停",
+    "stop": "停止",
+    "clear": "清除",
+    "stopAndCancel": "停止压缩并取消等待中的媒体",
+    "clearFinished": "清除已完成的媒体",
+    "stopCompression": "停止压缩",
+    "clearAll": "全部清除",
+    "collapse": "收起",
+    "showDropZone": "显示拖放区",
+    "filesCompressed_other": "已压缩 {{count}} 个文件",
+    "accessDenied": "无权打开此文件。请在系统设置中允许访问。",
+    "fromWatchedFolder": "来自监视的文件夹 {{name}}",
+    "compressAgain": "再次压缩",
+    "compressNameAgain": "再次压缩 {{name}}"
+  },
+  "subtitles": {
+    "unknownLanguage": "未知",
+    "selectFile": "选择字幕文件（SRT）",
+    "selectFailed": "无法选择字幕文件。",
+    "title": "字幕",
+    "preserveExisting": "保留现有字幕",
+    "untitled": "字幕 {{number}}",
+    "language": "语言",
+    "add": "添加字幕",
+    "unsupported": "{{container}} 不支持软字幕"
+  },
+  "mediaInfo": {
+    "videoInformation": "视频信息",
+    "fullPath": "完整路径",
+    "formatName": "格式名称",
+    "format": "格式",
+    "duration": "时长",
+    "size": "大小",
+    "bitrate": "比特率",
+    "totalStreams": "流总数",
+    "codec": "编解码器",
+    "profile": "配置文件",
+    "width": "宽度",
+    "height": "高度",
+    "codedWidth": "编码宽度",
+    "codedHeight": "编码高度",
+    "frameRate": "帧率",
+    "avgFrameRate": "平均帧率",
+    "pixelFormat": "像素格式",
+    "colorSpace": "色彩空间",
+    "colorRange": "色彩范围",
+    "colorPrimaries": "色彩原色",
+    "colorTransfer": "色彩传输特性",
+    "chromaLocation": "色度位置",
+    "totalFrames": "总帧数",
+    "referenceFrames": "参考帧",
+    "gopSize": "GOP 大小",
+    "codecLevel": "编解码器级别",
+    "fieldOrder": "场序",
+    "timeBase": "时间基准",
+    "rotation": "旋转",
+    "channels": "声道",
+    "channelLayout": "声道布局",
+    "sampleRate": "采样率",
+    "sampleFormat": "采样格式",
+    "bitsPerSample": "每样本位数",
+    "metadataTags": "元数据标签",
+    "subtitleFormat": "字幕格式",
+    "language": "语言",
+    "title": "标题",
+    "disposition": "用途",
+    "start": "开始",
+    "end": "结束",
+    "imageInformation": "图像信息",
+    "fileName": "文件名",
+    "mimeType": "MIME 类型",
+    "aspectRatio": "宽高比",
+    "orientation": "方向",
+    "dpi": "DPI",
+    "megapixels": "百万像素",
+    "colorType": "颜色类型",
+    "bitDepth": "位深度",
+    "alphaChannel": "Alpha 通道",
+    "make": "制造商",
+    "model": "型号",
+    "lensModel": "镜头型号",
+    "software": "软件",
+    "iso": "ISO",
+    "exposureTime": "曝光时间",
+    "aperture": "光圈",
+    "focalLength": "焦距",
+    "flash": "闪光灯",
+    "dateTaken": "拍摄日期",
+    "dateDigitized": "数字化日期",
+    "artist": "作者",
+    "copyright": "版权",
+    "coordinates": "坐标",
+    "tabs": {
+      "container": "容器",
+      "video": "视频",
+      "audio": "音频",
+      "subtitles": "字幕",
+      "chapters": "章节",
+      "metadata": "元数据",
+      "color": "颜色",
+      "exif": "EXIF"
+    },
+    "noMetadata": "未找到元数据",
+    "notAvailable": "无",
+    "videoStream": "视频流",
+    "audioStream": "音频流",
+    "noAudioStreams": "未找到音频流",
+    "noSubtitleStreams": "未找到字幕流",
+    "noVideoPath": "视频路径不可用",
+    "subtitleFiles": "字幕文件",
+    "subtitleSaved": "字幕已提取并保存为 {{format}}。",
+    "subtitleStream": "字幕流 {{number}}",
+    "subtitleNotExtractable": "此字幕格式（{{codec}}）无法转换为 SRT。它可能是基于图像的格式（例如 Blu-ray PGS 或 DVD VobSub），因此无法下载。",
+    "downloading": "正在下载…",
+    "unsupported": "不支持",
+    "downloadAs": "下载为 {{format}}",
+    "dispositions": {
+      "default": "默认",
+      "forced": "强制",
+      "attachedPicture": "附加图片",
+      "comment": "注释",
+      "karaoke": "卡拉 OK",
+      "lyrics": "歌词"
+    },
+    "noChapters": "未找到章节",
+    "chapter": "章节 {{number}}",
+    "noExif": "未找到 EXIF 数据",
+    "cameraInformation": "相机信息",
+    "shootingInformation": "拍摄信息",
+    "dateInformation": "日期信息",
+    "copyrightInformation": "版权信息",
+    "gpsInformation": "GPS 信息",
+    "allTags": "全部标签"
+  },
+  "svg": {
+    "advanced": "高级 SVG 设置",
+    "blackAndWhite": "黑白",
+    "levels": {
+      "low": "低",
+      "medium": "中",
+      "high": "高",
+      "few": "少",
+      "many": "多",
+      "sharp": "锐利",
+      "smooth": "平滑",
+      "fine": "精细",
+      "coarse": "粗糙",
+      "accurate": "精确",
+      "less": "较低"
+    },
+    "filterSpeckle": {
+      "title": "过滤斑点",
+      "tooltip": "数值越高越干净、平滑"
+    },
+    "colorPrecision": {
+      "title": "颜色精度",
+      "tooltip": "数值越高越精确，但可能过度饱和"
+    },
+    "layerDifference": {
+      "title": "图层差异",
+      "tooltip": "数值越高图层越少"
+    },
+    "cornerThreshold": {
+      "title": "拐角阈值",
+      "tooltip": "数值越高越平滑"
+    },
+    "segmentLength": {
+      "title": "线段长度",
+      "tooltip": "数值越高越粗糙"
+    },
+    "spliceThreshold": {
+      "title": "拼接阈值",
+      "tooltip": "数值越高越不精确"
+    },
+    "scaleFactor": "缩放倍数"
+  },
+  "batch": {
+    "copyOutput": "将输出复制到剪贴板",
+    "compareOutput": "比较输出",
+    "processing": "正在处理",
+    "paused": "已暂停",
+    "inputSize": "输入大小",
+    "outputSize": "输出大小",
+    "extension": "扩展名",
+    "duration": "时长",
+    "dimensions": "尺寸",
+    "compressed_videos": "已压缩视频",
+    "compressed_audio": "已压缩音频",
+    "compressed_images": "已压缩图像",
+    "compressed_media": "已压缩媒体",
+    "label_videos": "视频",
+    "label_audio": "音频",
+    "label_images": "图像",
+    "label_media": "媒体",
+    "sizeSaved": "节省空间",
+    "addMoreTooltip": "添加更多媒体。您也可以拖放或粘贴文件。",
+    "addMoreMedia": "添加更多媒体",
+    "addMore": "添加更多"
+  },
+  "preview": {
+    "showFailed": "无法显示该文件。",
+    "compare": "比较",
+    "showEdits": "显示编辑",
+    "smaller": "更小",
+    "size": "大小",
+    "fps": "FPS",
+    "viewFullInfo": "查看完整信息",
+    "progress": "进度 {{value}}%",
+    "mediaToCompress": "待压缩的媒体",
+    "waitingForDropZone": "正在等待拖放区…",
+    "processing": "正在处理…",
+    "estimatingSize": "正在估算输出大小...",
+    "estimatedSize": "预计大小：约 {{size}}",
+    "estimatedSizeUpTo": "预计大小：最多 {{size}}"
+  },
+  "thumbnail": {
+    "copyFrameUnavailable": "无法复制该帧",
+    "frameCopied": "已将帧复制到剪贴板",
+    "copyFrameFailed": "无法将帧复制到剪贴板",
+    "coverArt": "封面",
+    "copyFrame": "复制当前帧",
+    "audioUnplayable": "此音频无法在此播放，但仍可压缩。",
+    "switchingToImage": "正在切换到图像缩略图…",
+    "pauseAudio": "暂停音频",
+    "playAudio": "播放音频",
+    "videoUnplayable": "此视频包含高级编解码器或配置，本应用无法播放。此类视频需要使用 VLC 等专用播放器。",
+    "previewsOff": "视频预览已关闭。可在“设置”的“<setting>通用</setting>”中打开。",
+    "stillCompressible": "您仍可应用输出设置并执行所有转换。",
+    "enlarge": "放大图像",
+    "select": "选择缩略图图像。",
+    "selectFailed": "无法选择缩略图图像。",
+    "title": "缩略图",
+    "noneSelected": "未选择缩略图",
+    "custom": "自定义缩略图",
+    "choose": "选择",
+    "unsupported": "{{container}} 不支持自定义缩略图"
+  },
+  "codecs": {
+    "video": {
+      "libx264": "兼容性最好，画质良好",
+      "libx265": "压缩更好，标准更新",
+      "libvpx_vp9": "开源，非常适合网页",
+      "libaom_av1": "压缩最好，速度较慢",
+      "mpeg4": "旧式编解码器，支持广泛"
+    },
+    "audio": {
+      "aac": "标准编解码器，兼容性广",
+      "libmp3lame": "通用音频格式",
+      "libopus": "现代，高音质",
+      "libvorbis": "开源，音质良好",
+      "ac3": "杜比数字，环绕声",
+      "alac": "针对 Apple 设备优化的无损压缩",
+      "flac": "无损压缩",
+      "pcm_s16le": "未压缩，音质最佳"
+    },
+    "title": "编解码器",
+    "select": "选择编解码器：",
+    "default": "默认",
+    "defaultDescription": "所选容器的默认编解码器",
+    "unusableIn_other": "{{codec}} 无法用于 {{containers}} 文件，因此 {{count}} 个视频保留其默认编解码器。",
+    "videoCount_other": "{{count}} 个视频中的 {{usable}} 个",
+    "partial": "仅 {{videos}} 可以使用 {{codec}}。其余视频保留默认编解码器。"
+  },
+  "metadata": {
+    "limitation_mov": "MOV 文件无法保存描述或简介。",
+    "limitation_avi": "AVI 文件无法保存描述、简介或创建日期。",
+    "limitation_ts": "TS 文件只能保存标题，其他信息不会保存。",
+    "strip": "移除元数据",
+    "keepHint": "留空以保留原始值",
+    "removeHint": "或输入一个空格以移除原始值",
+    "title": {
+      "label": "标题",
+      "placeholder": "输入标题",
+      "placeholderVideo": "输入视频标题"
+    },
+    "artist": {
+      "label": "艺术家",
+      "placeholder": "输入艺术家名称"
+    },
+    "album": {
+      "label": "专辑",
+      "placeholder": "输入专辑名称"
+    },
+    "genre": {
+      "label": "类型",
+      "placeholder": "输入类型"
+    },
+    "year": {
+      "label": "年份/日期",
+      "placeholder": "输入年份或日期"
+    },
+    "description": {
+      "label": "描述",
+      "placeholder": "输入描述"
+    },
+    "synopsis": {
+      "label": "简介",
+      "placeholder": "输入简介"
+    },
+    "comment": {
+      "label": "注释",
+      "placeholder": "输入注释"
+    },
+    "copyright": {
+      "label": "版权",
+      "placeholder": "输入版权信息"
+    },
+    "creationTime": {
+      "label": "创建时间",
+      "placeholder": "输入创建时间"
+    }
+  },
+  "media": {
+    "addAfterCompression": "压缩完成后无法添加媒体。请开始新的压缩以添加更多媒体。",
+    "noValidFiles": "未找到有效的媒体文件。",
+    "alreadyAdded": "所选媒体已添加。",
+    "someCorrupted": "部分文件似乎已损坏或无效，未被添加。",
+    "corrupted": "该文件似乎已损坏或无效。",
+    "selectTitle": "选择要压缩的图像、视频或音频。",
+    "selectFailed": "无法选择媒体。",
+    "invalidFiles": "无效的文件或文件夹",
+    "accessDenied_other": "CompressO 无权打开 {{count}} 个文件。请在系统设置中允许访问其所在文件夹，然后重新添加。",
+    "openSettings": "打开设置"
+  },
+  "save": {
+    "partiallySaved_other": "已保存 {{count}} 个文件中的 {{saved}} 个，{{failed}} 个无法保存。请使用“保存媒体”选择其他位置。",
+    "autoSaveFailed": "无法自动保存，可能是缺少文件夹权限。请使用“保存媒体”选择位置。",
+    "failed": "无法将媒体保存到指定路径。",
+    "chooseDirectory": "选择保存压缩媒体的文件夹。",
+    "chooseLocation": "选择保存压缩媒体的位置。",
+    "largerSkipped_other": "{{count}} 个输出比原文件更大，未自动保存。如仍要保留，请使用“保存”。",
+    "copyFailed": "无法将输出复制到剪贴板。",
+    "saving": "正在保存…",
+    "saved": "已保存",
+    "saveMedia": "保存媒体",
+    "saveThisFile": "保存文件"
+  },
+  "home": {
+    "dragAndDrop": "拖放",
+    "or": "或",
+    "clickToSelect": "点按以选择媒体",
+    "dropAnywhere": "拖放到任意位置…"
+  },
+  "compression": {
+    "cannotCancel": "目前无法取消压缩。",
+    "confirmCancel": "确认取消",
+    "cancelling": "正在取消…",
+    "reconfigure": "重新配置",
+    "reconfigureOriginalReplaced_other": "由于已开启<setting>替换原始文件</setting>，原始文件已移到废纸篓，因此无法再次压缩。",
+    "reconfigureOriginalReplaced_windows_other": "由于已开启<setting>替换原始文件</setting>，原始文件已移到回收站，因此无法再次压缩。",
+    "pauseFailed": "无法暂停压缩。",
+    "resumeFailed": "无法继续压缩。",
+    "failed": "压缩过程中出现错误。",
+    "process": "处理"
+  },
+  "exit": {
+    "title": "退出",
+    "notSaved": "媒体未保存",
+    "discardConfirm_other": "压缩后的媒体尚未保存。确定要放弃吗？",
+    "goBack": "返回"
+  },
+  "mediaConfig": {
+    "filter": "媒体筛选",
+    "all": "全部",
+    "outputSettings": "输出设置",
+    "batchSettings": "批量设置"
+  },
+  "compare": {
+    "input": "输入",
+    "output": "输出",
+    "enlargeInput": "放大输入",
+    "enlargeOutput": "放大输出",
+    "svgTooLarge": "SVG 文件过大，可能影响对比显示的性能。"
+  },
+  "transform": {
+    "free": "自由",
+    "rotateLeft": "向左旋转",
+    "flipVertical": "垂直翻转",
+    "flipHorizontal": "水平翻转",
+    "resetZoom": "重置缩放",
+    "expand": "展开",
+    "title": "变换"
+  },
+  "outputSettings": {
+    "video": "视频设置",
+    "image": "图像设置",
+    "audio": "音频设置",
+    "compressionSettings": "压缩设置",
+    "tabs": {
+      "image": "图像",
+      "video": "视频",
+      "audio": "音频",
+      "others": "其他"
+    },
+    "noAudio": "未找到音频"
+  },
+  "quality": {
+    "unsupportedAudio": "所选音频格式或编解码器不支持调整质量。",
+    "lossless": "无损压缩",
+    "title": "质量"
+  },
+  "dimensions": {
+    "resolution": "分辨率",
+    "revert": "恢复原始分辨率",
+    "width": "宽度",
+    "height": "高度",
+    "original": "原始",
+    "resolutionLabel": "分辨率："
+  },
+  "extension": {
+    "label": "扩展名：",
+    "sameAsInput": "与输入相同",
+    "noAudio": "此视频没有可提取的音频。",
+    "extractAudio": "提取音频",
+    "extractAudioNone": "提取音频（未找到音频）"
+  },
+  "trim": {
+    "title": "剪辑",
+    "instructions": "使用说明",
+    "controls": "时间轴操作：",
+    "select": "点按以选择片段",
+    "split": "双击片段以拆分",
+    "add": "双击空白区域以添加新片段",
+    "delete": "选择片段后按 <key>Delete</key> 删除",
+    "hideInstructions": "隐藏说明"
+  },
+  "audio": {
+    "bitrate": "比特率",
+    "bitrateLabel": "比特率：",
+    "channels": "声道",
+    "layout": "布局：",
+    "monoSource": "单声道来源：",
+    "left": "左",
+    "right": "右",
+    "swapChannels": "交换左右声道",
+    "tracks": "音轨",
+    "track": "音轨 #{{number}}",
+    "channelCount_other": "{{count}} 个声道",
+    "volumeLabel": "音量：",
+    "volume": "音频音量",
+    "mute": "静音"
+  },
+  "fps": {
+    "label": "每秒帧数："
+  },
+  "speed": {
+    "title": "速度"
+  },
+  "keys": {
+    "ctrl": "Ctrl",
+    "shift": "Shift",
+    "enter": "Enter"
+  },
+  "theme": {
+    "title": "主题",
+    "options": {
+      "system": "跟随系统",
+      "light": "浅色",
+      "dark": "深色"
+    }
+  },
+  "errorBoundary": {
+    "title": "出现错误。",
+    "retry": "重试"
+  },
+  "player": {
+    "play": "播放",
+    "pause": "暂停"
+  },
+  "update": {
+    "installed": "更新已安装。请重新启动应用以使用新版本。",
+    "installFailed": "无法安装更新，请重试。",
+    "error": "更新错误：{{message}}"
+  },
+  "native": {
+    "quit": "退出",
+    "continueCompressing": "继续压缩",
+    "goBack": "返回",
+    "compressingTitle": "正在压缩",
+    "compressingMessage": "媒体仍在压缩中。现在退出将取消压缩。",
+    "unsavedTitle": "媒体未保存",
+    "unsavedMessage": "压缩后的媒体尚未保存。现在退出将放弃这些媒体。",
+    "dropQueueMessage": "拖放区中的媒体仍在压缩中。现在退出将停止压缩。",
+    "openApp": "打开 CompressO",
+    "quitApp": "退出 CompressO",
+    "aboutApp": "关于 CompressO",
+    "settings": "设置…",
+    "services": "服务",
+    "hideApp": "隐藏 CompressO",
+    "hideOthers": "隐藏其他",
+    "file": "文件",
+    "closeWindow": "关闭窗口",
+    "edit": "编辑",
+    "undo": "撤销",
+    "redo": "重做",
+    "cut": "剪切",
+    "copy": "拷贝",
+    "paste": "粘贴",
+    "selectAll": "全选",
+    "view": "显示",
+    "fullScreen": "切换全屏",
+    "window": "窗口",
+    "minimize": "最小化",
+    "zoom": "缩放",
+    "help": "帮助"
+  },
+  "targetSize": {
+    "mode": "压缩方式",
+    "modes": {
+      "quality": "按质量",
+      "size": "按目标大小"
+    },
+    "size": "目标大小",
+    "estimate": "约 {{width}}×{{height}}，{{fps}} fps，不超过 {{size}} MB。",
+    "estimateLowered": "已降至 {{width}}×{{height}}，{{fps}} fps，以控制在 {{size}} MB 以内。",
+    "notForGif": "GIF 无法按大小压缩。请选择其他格式，或按质量压缩。",
+    "audioEstimate": "约 {{bitrate}} kbps。",
+    "audioLossless": "所选音频格式或编解码器无法通过控制比特率达到任意目标大小。请选择其他格式或编解码器，或按质量压缩。您的选择不会自动更改。",
+    "audioDurationMissing": "压缩到目标大小前，必须先确定音频时长。",
+    "audioTooSmall": "对于所选音频格式和时长，此目标大小过小。请增大目标大小或裁剪录音。",
+    "notReachedAudio": "所选音频格式未能达到目标大小。当前显示可用的最小输出文件。",
+    "round": "第 {{round}} 轮",
+    "roundDetail": "第 {{round}} 轮：正在接近目标大小",
+    "roundWithoutHardwareAcceleration": "第 {{round}} 轮：不使用硬件加速，以接近目标大小",
+    "fitsAtQuality": "所选质量已符合要求，约为 {{size}}，因此将使用该质量。",
+    "switchUnit": "以 {{unit}} 显示大小",
+    "notForSvgOrGif": "SVG 和 GIF 无法按大小压缩。请选择其他格式，或按质量压缩。",
+    "notReachedImage": "图片已无法在不变得过小的情况下进一步缩小。目标大小为 {{size}}。"
+  },
+  "outputOptions": {
+    "title": "其他选项",
+    "choose": "显示 {{size}} 的输出",
+    "withinTarget": "在目标以内",
+    "overTarget": "超出目标",
+    "replace": "替换已保存的文件"
+  }
+}

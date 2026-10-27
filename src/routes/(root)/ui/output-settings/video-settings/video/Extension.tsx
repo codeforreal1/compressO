@@ -1,18 +1,25 @@
 import { SelectItem, SelectSection } from '@heroui/react'
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
+import Icon from '@/components/Icon'
 import Select from '@/components/Select'
-import { extensions } from '@/types/compression'
+import { toast } from '@/components/Toast'
+import { getAudioStreams } from '@/tauri/commands/ffprobe'
+import { extensions, isAudioExtension } from '@/types/compression'
 import { appProxy, normalizeBatchMediaConfig } from '../../../../-state'
+import { useBatchVideoConfigKey } from '../-batchConfig'
 
 const videoExtensions = Object.keys(extensions?.video)
+const audioExtensions = Object.keys(extensions?.audio)
 
 type VideoExtensionProps = {
   mediaIndex: number
 }
 
 function Extension({ mediaIndex }: VideoExtensionProps) {
+  const { t } = useTranslation()
   const {
     state: {
       media,
@@ -22,34 +29,72 @@ function Extension({ mediaIndex }: VideoExtensionProps) {
       isLoadingMediaFiles,
     },
   } = useSnapshot(appProxy)
+  const batchConfigKey = useBatchVideoConfigKey()
   const video =
     media.length > 0 && mediaIndex >= 0 && media[mediaIndex].type === 'video'
       ? media[mediaIndex]
       : null
-  const { config } = video ?? {}
+  const { config, pathRaw: videoPathRaw } = video ?? {}
   const { convertToExtension } =
-    config ?? commonConfigForBatchCompression.videoConfig ?? {}
+    config ?? commonConfigForBatchCompression[batchConfigKey] ?? {}
+  // An audio file (or the audio files of a batch) is only written in audio formats
+  const isAudioFileSettings =
+    mediaIndex >= 0
+      ? !!video?.isAudioFile
+      : batchConfigKey === 'audioFileConfig'
+
+  // Audio can only be extracted from a video that has audio, so find out up front (the same probe &
+  // cache as the Audio tab)
+  const hasNoAudio = video?.videoInfoRaw?.audioStreams?.length === 0
+  const hasCheckedAudio = !!video?.videoInfoRaw?.audioStreams
+  useEffect(() => {
+    if (mediaIndex < 0 || !videoPathRaw || hasCheckedAudio) return
+    getAudioStreams(videoPathRaw)
+      .then((streams) => {
+        const targetVideo = appProxy.state.media[mediaIndex]
+        if (!streams || targetVideo?.type !== 'video') return
+        targetVideo.videoInfoRaw = {
+          ...(targetVideo.videoInfoRaw ?? {}),
+          audioStreams: streams,
+        }
+      })
+      .catch(() => {})
+  }, [mediaIndex, videoPathRaw, hasCheckedAudio])
 
   const handleValueChange = useCallback(
-    (value: keyof typeof extensions.video) => {
+    async (
+      value: keyof typeof extensions.video | keyof typeof extensions.audio,
+    ) => {
       if (value?.length > 0) {
         if (
           mediaIndex >= 0 &&
           appProxy.state.media[mediaIndex].type === 'video' &&
           appProxy.state.media[mediaIndex]?.config
         ) {
+          // Audio can only be extracted from a video that has audio
+          const targetVideo = appProxy.state.media[mediaIndex]
+          if (isAudioExtension(value) && targetVideo.pathRaw) {
+            const audioStreams =
+              targetVideo.videoInfoRaw?.audioStreams ??
+              (await getAudioStreams(targetVideo.pathRaw).catch(() => null))
+            if (audioStreams && audioStreams.length === 0) {
+              toast.error(t('extension.noAudio'))
+              return
+            }
+          }
           appProxy.state.media[mediaIndex].config.convertToExtension = value
           appProxy.state.media[mediaIndex].isConfigDirty = true
         } else {
           if (appProxy.state.media.length > 1) {
-            appProxy.state.commonConfigForBatchCompression.videoConfig.convertToExtension =
-              value
+            appProxy.state.commonConfigForBatchCompression[
+              batchConfigKey
+            ].convertToExtension = value
             normalizeBatchMediaConfig()
           }
         }
       }
     },
-    [mediaIndex],
+    [mediaIndex, batchConfigKey, t],
   )
 
   const shouldDisableInput =
@@ -61,14 +106,16 @@ function Extension({ mediaIndex }: VideoExtensionProps) {
   return (
     <Select
       fullWidth
-      label="Extension:"
+      label={t('extension.label')}
       className="block flex-shrink-0 rounded-2xl"
       size="sm"
       value={convertToExtension}
       selectedKeys={[convertToExtension!]}
+      disabledKeys={hasNoAudio ? audioExtensions : []}
       onChange={(evt) => {
-        const value = evt?.target
-          ?.value as unknown as keyof typeof extensions.video
+        const value = evt?.target?.value as unknown as
+          | keyof typeof extensions.video
+          | keyof typeof extensions.audio
         handleValueChange(value)
       }}
       selectionMode="single"
@@ -79,17 +126,45 @@ function Extension({ mediaIndex }: VideoExtensionProps) {
     >
       <SelectItem
         key="-"
-        textValue="Same as input"
+        textValue={t('extension.sameAsInput')}
         className="flex justify-center items-center"
       >
-        Same as input
+        {t('extension.sameAsInput')}
       </SelectItem>
       <SelectSection>
-        {videoExtensions?.map((ext) => (
+        {(isAudioFileSettings ? audioExtensions : videoExtensions).map(
+          (ext) => (
+            <SelectItem
+              key={ext}
+              textValue={ext}
+              className="flex justify-center items-center"
+            >
+              {ext}
+            </SelectItem>
+          ),
+        )}
+      </SelectSection>
+      <SelectSection
+        title={
+          hasNoAudio
+            ? t('extension.extractAudioNone')
+            : t('extension.extractAudio')
+        }
+        classNames={{
+          heading: hasNoAudio ? 'text-danger' : '',
+          base: isAudioFileSettings ? 'hidden' : '',
+        }}
+      >
+        {(isAudioFileSettings ? [] : audioExtensions).map((ext) => (
           <SelectItem
             key={ext}
             textValue={ext}
             className="flex justify-center items-center"
+            endContent={
+              hasNoAudio ? (
+                <Icon name="audioMuted" size={14} className="text-danger" />
+              ) : null
+            }
           >
             {ext}
           </SelectItem>

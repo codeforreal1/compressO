@@ -1,0 +1,8 @@
+BUGME
+
+Issues can be reported/tracked here:
+https://github.com/ckolivas/lrzip/issues
+
+Known issues:
+Mac may not be able to work with STDIN/STDOUT on very large files.
+MD5 is disabled on Mac due to not working properly.

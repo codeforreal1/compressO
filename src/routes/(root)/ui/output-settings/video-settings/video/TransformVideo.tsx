@@ -1,4 +1,5 @@
 import { core } from '@tauri-apps/api'
+import { useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
 import Button from '@/components/Button'
@@ -11,6 +12,7 @@ type TransformVideoProps = {
 }
 
 function TransformVideo({ mediaIndex }: TransformVideoProps) {
+  const { t } = useTranslation()
   if (mediaIndex < 0) return
 
   const {
@@ -46,6 +48,12 @@ function TransformVideo({ mediaIndex }: TransformVideoProps) {
             appProxy.state.media[mediaIndex].isConfigDirty = true
 
             if (shouldTransformVideo) {
+              const previewUrl =
+                appProxy.state.media[mediaIndex].config.transformVideoConfig
+                  ?.previewUrl
+              if (previewUrl) {
+                URL.revokeObjectURL(previewUrl)
+              }
               appProxy.state.media[mediaIndex].config.transformVideoConfig =
                 undefined
               appProxy.state.media[mediaIndex].thumbnailPath =
@@ -58,7 +66,7 @@ function TransformVideo({ mediaIndex }: TransformVideoProps) {
         isDisabled={shouldDisableInput}
       >
         <p className="text-gray-600 dark:text-gray-400 text-sm mr-2 w-full">
-          Transform
+          {t('transform.title')}
         </p>
       </Switch>
       {shouldTransformVideo ? (
@@ -76,7 +84,7 @@ function TransformVideo({ mediaIndex }: TransformVideoProps) {
             className="h-[unset] py-1 ml-auto"
             isDisabled={shouldDisableInput}
           >
-            Save
+            {t('common.save')}
           </Button>
         ) : (
           <Button
@@ -93,7 +101,7 @@ function TransformVideo({ mediaIndex }: TransformVideoProps) {
             className="h-[unset] py-1 ml-auto"
             isDisabled={shouldDisableInput}
           >
-            <Icon name="pencil" size={16} /> Edit
+            <Icon name="pencil" size={16} /> {t('common.edit')}
           </Button>
         )
       ) : null}

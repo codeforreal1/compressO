@@ -1,48 +1,38 @@
+// Focus outlines (accessibility highlights) are only shown when navigating with the keyboard, like
+// in native apps: hidden from the start (e.g. when the menu bar popover opens with a button
+// focused), shown once Tab is pressed, and hidden again on the next click. Arrow keys don't show
+// them, since they also seek videos.
 ;(function (document, window) {
   if (!document || !window) {
     return
   }
 
-  document.addEventListener('DOMContentLoaded', () => {
-    var styleText =
-      '::-moz-focus-inner{border:0 !important;}:focus{outline: none !important; -webkit-box-shadow: none; box-shadow: none;'
-    var unfocusStyle = document.createElement('STYLE')
+  var hideOutlinesStyle =
+    '::-moz-focus-inner{border:0 !important;}' +
+    ':focus{outline: none !important; -webkit-box-shadow: none; box-shadow: none;}'
 
-    window.unfocus = function () {
-      let keypressCount = 0
-      document.getElementsByTagName('HEAD')[0].appendChild(unfocusStyle)
-      document.addEventListener('mouseover', function () {
-        keypressCount = 0
-        disableAccessibilityOutline()
-      })
-      document.addEventListener('keyup', function (evt) {
-        if (keypressCount >= 1) {
-          enableAccessibilityOutline()
-        } else {
-          keypressCount += 1
-        }
-      })
-      window.addEventListener('blur', () => {
-        keypressCount = 0
-        disableAccessibilityOutline()
-      })
-      function disableAccessibilityOutline() {
-        if (
-          typeof unfocusStyle.innerHTML === 'string' &&
-          unfocusStyle.innerHTML.length === 0
-        ) {
-          unfocusStyle.innerHTML = styleText + '}'
-        }
+  var style = document.createElement('style')
+  // Hidden right away, before anything can be focused
+  style.textContent = hideOutlinesStyle
+  document.head.appendChild(style)
+
+  function showOutlines() {
+    style.textContent = ''
+  }
+
+  function hideOutlines() {
+    style.textContent = hideOutlinesStyle
+  }
+
+  document.addEventListener(
+    'keydown',
+    function (evt) {
+      if (evt.key === 'Tab') {
+        showOutlines()
       }
-      function enableAccessibilityOutline() {
-        unfocusStyle.innerHTML = ''
-      }
-    }
-
-    unfocus.style = function (style) {
-      styleText += style
-    }
-
-    unfocus()
-  })
+    },
+    true,
+  )
+  document.addEventListener('pointerdown', hideOutlines, true)
+  window.addEventListener('blur', hideOutlines)
 })(document, window)

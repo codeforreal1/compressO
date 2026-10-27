@@ -11,13 +11,13 @@ import {
   type ModalProps as NextUIModalProps,
 } from '@heroui/react'
 import React, { forwardRef } from 'react'
+import { useSnapshot } from 'valtio'
 
+import { isWindowTintSupported } from '@/hooks/useWindowTint'
+import { settingsStore } from '@/stores/settingsStore'
 import { BackdropBlurContent } from '@/ui/BackdropBlur'
-import { getPlatform } from '@/utils/fs'
 import { cn } from '@/utils/tailwind'
 import modalAnimationVariants from './modal.animation'
-
-const { isWindows, isMacOS } = getPlatform()
 
 interface ModalProps extends NextUIModalProps {
   motionVariant?: keyof typeof modalAnimationVariants
@@ -51,16 +51,22 @@ interface ModalContentProps extends NextUIModalContentProps {
   children: React.ReactNode
 }
 export function ModalContent(props: ModalContentProps) {
+  // Translucent (blurred) with the tinted window (General -> Tinted window), otherwise opaque
+  const { tintedWindow } = useSnapshot(settingsStore)
+  const isTranslucent = isWindowTintSupported && tintedWindow
+
   return (
     <NextUIModalContent
       {...props}
       className={cn([
-        isMacOS || isWindows ? 'relative bg-transparent' : '',
+        isTranslucent
+          ? 'relative bg-transparent'
+          : 'bg-zinc-100 dark:bg-zinc-900',
         props?.className,
       ])}
     >
       {props?.children}
-      {isMacOS || isWindows ? <BackdropBlurContent /> : null}
+      {isTranslucent ? <BackdropBlurContent /> : null}
     </NextUIModalContent>
   )
 }

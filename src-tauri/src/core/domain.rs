@@ -48,6 +48,17 @@ pub struct VideoCompressionResult {
     pub file_name: String,
     pub file_path: String,
     pub file_metadata: Option<FileMetadata>,
+    /// The other outputs made for a target size (each attempt), any of which can be used instead
+    #[serde(default)]
+    pub other_outputs: Vec<OutputOption>,
+}
+
+/// An output a video can be saved as instead (see `VideoCompressionResult::other_outputs`)
+#[derive(Serialize, Deserialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct OutputOption {
+    pub file_path: String,
+    pub size: u64,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -150,6 +161,28 @@ pub struct VideoCompressionConfig {
     pub trim_segments: Option<Vec<VideoTrimSegment>>,
     pub subtitles_config: Option<SubtitlesConfig>,
     pub speed: Option<f32>,
+    /// Compresses to (just under) a file size instead of a quality, see `TargetSize`
+    pub target_size: Option<TargetSize>,
+}
+
+/// A file size for video or audio-only output. The frontend budgets its bitrate from the output
+/// duration; measured attempts refine that bitrate while preserving the selected format and codec.
+#[derive(Serialize, Deserialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct TargetSize {
+    pub size_in_bytes: u64,
+    /// The video's average bitrate, in kbit/s
+    pub video_bitrate: u32,
+    /// Audio-only output bitrate in kbit/s; the video bitrate is unused.
+    #[serde(default)]
+    pub audio_bitrate: Option<u32>,
+    /// Encodes again (when the size was missed) on the CPU, not the graphics card
+    #[serde(default)]
+    pub retry_on_cpu: bool,
+    /// Encoded at its quality first (its estimated size fits), & at the bitrate only when that
+    /// came out larger
+    #[serde(default)]
+    pub quality_first: bool,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -358,6 +391,23 @@ pub struct ImageCompressionResult {
     pub file_name: String,
     pub file_path: String,
     pub file_metadata: Option<FileMetadata>,
+    /// Compressed to a target size (see `ImageTargetSize`): whether the output fits within it
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub is_target_size_reached: Option<bool>,
+}
+
+/// Compressing an image to a file size (e.g. 500 KB for a form) instead of a quality: the highest
+/// quality that fits, at smaller dimensions when even the lowest quality is larger (see
+/// `ImageCompressor::compress_image_to_size`)
+#[derive(Serialize, Deserialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct ImageTargetSize {
+    /// The size the output is kept within, in bytes
+    pub size_in_bytes: u64,
+    /// The image's size before it is lowered to fit: its custom dimensions, or its size after its
+    /// transforms (when unknown, only its quality is lowered)
+    #[serde(default)]
+    pub dimensions: Option<(f64, f64)>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -373,6 +423,9 @@ pub struct ImageCompressionConfig {
     pub svg_config: Option<SvgConfig>,
     pub dimensions: Option<(f64, f64)>,
     pub transform_history: Option<MediaTransformHistory>,
+    /// Compressed to fit within a size instead of at `quality` (not for SVGs & GIFs)
+    #[serde(default)]
+    pub target_size: Option<ImageTargetSize>,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -509,4 +562,15 @@ pub struct ExifInfo {
     pub f_number: Option<String>,
     pub focal_length: Option<String>,
     pub flash: Option<String>,
+}
+
+/// A file collected from a dropped/pasted path, with the folder it was in so outputs can mirror the
+/// original structure
+#[derive(Serialize, Deserialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct CollectedFile {
+    pub path: String,
+    /// Folder of the file relative to the dropped path's parent, `/` separated (e.g. `Vacation/Day1`
+    /// for a dropped `Vacation` folder). Empty for files that were dropped directly.
+    pub relative_dir: String,
 }

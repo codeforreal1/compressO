@@ -1,0 +1,31 @@
+JANUARY 2009
+
+This is an updated LZMA library wrapper provided with SDK 4.63.
+The SDK is available here: http://www.7-zip.org/sdk.html.
+
+It is written completely in C and compilation and integration
+is much simpler. To enable multithreading support, compile
+with COMPRESS_MF_MT and _REENTRANT defined. MF=Match Finder, 
+MT=Multi Thread. In addition, link in pthread. This is default
+behavior in lrzip. For single thread support, remove these
+defines in the Makefile.
+
+Some additional documentation is provided from the SDK.
+
+File ./C/7zCrcT8.c is added to support ASM CRC code. Taken
+from p7zip.org.
+
+Original README text follows.
+
+This is a zlib like library for the lzma encoder/decoder originally created
+by Oleg I. Vdovikin <oleg@cs.msu.su> and modified for lrzip by Con Kolivas
+<kernel@kolivas.org>
+It is based on a stripped down source tree of the lzma SDK by Igor Pavlov.
+http://www.7-zip.org
+
+You can build a standalone library called liblzma.a which gives functions
+equivalent to compress2() and uncompress() called lzma_compress() and
+lzma_uncompress().
+
+Updated for recent SDK 4.57 and added assembler routines for crc
+using p7zip.org variant by Peter Hyman

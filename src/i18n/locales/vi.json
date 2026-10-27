@@ -1,0 +1,1002 @@
+{
+  "toolPreparation": {
+    "title": "Đang chuẩn bị CompressO",
+    "checking": "Đang kiểm tra công cụ nén…",
+    "verifying": "Đang xác minh công cụ nén…",
+    "extracting": "Đang giải nén công cụ nén…",
+    "validating": "Đang kiểm tra tính hợp lệ của công cụ nén…",
+    "failed": "Không thể chuẩn bị công cụ nén. Xem nhật ký để biết chi tiết.",
+    "statusUnavailable": "Không thể kiểm tra trạng thái công cụ. Hãy thử lại.",
+    "retry": "Thử lại",
+    "exit": "Thoát",
+    "showLogs": "Hiện nhật ký",
+    "logOpenFailed": "Không thể mở tệp nhật ký.",
+    "onlyOnce": "Việc này chỉ diễn ra một lần."
+  },
+  "settings": {
+    "general": {
+      "startup": {
+        "title": "Khởi động",
+        "changeFailed": "Không thể thay đổi cài đặt.",
+        "openAtLogin": {
+          "title": "Mở khi đăng nhập",
+          "description": "Tự động mở CompressO khi bạn đăng nhập vào máy tính."
+        },
+        "needsApproval": {
+          "title": "Đã tắt trong Cài đặt hệ thống",
+          "description": "CompressO không được phép mở khi đăng nhập. Hãy cho phép trong Cài đặt hệ thống, mục Cài đặt chung > Mục đăng nhập.",
+          "button": "Mở Mục đăng nhập"
+        },
+        "openInTrayOnly": {
+          "title_macos": "Chỉ mở trên thanh menu",
+          "title_windows": "Chỉ mở trong khay hệ thống",
+          "description_macos": "Không hiển thị cửa sổ chính khi mở lúc đăng nhập. Vẫn có thể nén tệp phương tiện từ thanh menu.",
+          "description_windows": "Không hiển thị cửa sổ chính khi mở lúc đăng nhập. Vẫn có thể nén tệp phương tiện từ khay hệ thống.",
+          "needsTrayIcon_macos": "Bật “<setting>Hiển thị biểu tượng trên thanh menu</setting>” để sử dụng tính năng này, vì ứng dụng được mở từ đó.",
+          "needsTrayIcon_windows": "Bật “<setting>Hiển thị biểu tượng trong khay hệ thống</setting>” để sử dụng tính năng này, vì ứng dụng được mở từ đó."
+        }
+      },
+      "appearance": {
+        "title": "Giao diện",
+        "language": {
+          "title": "Ngôn ngữ",
+          "description": "Ngôn ngữ của ứng dụng."
+        },
+        "theme": {
+          "title": "Chủ đề",
+          "description": "Theo hệ thống, hoặc luôn dùng giao diện sáng hoặc tối."
+        },
+        "accentColor": {
+          "title": "Màu nhấn",
+          "description": "Màu dùng cho nút, phần tô sáng và tiến trình."
+        },
+        "tintedWindow": {
+          "title": "Cửa sổ phủ màu",
+          "description": "Để màn hình nền hiện nhẹ qua nền cửa sổ."
+        },
+        "tintOpacity": {
+          "title": "Độ mờ của lớp màu",
+          "description": "Mức độ màn hình nền hiện qua. Giá trị thấp hơn cho thấy nhiều hơn."
+        }
+      },
+      "tray": {
+        "title_macos": "Thanh menu",
+        "title_windows": "Khay hệ thống",
+        "showIcon": {
+          "title_macos": "Hiển thị biểu tượng trên thanh menu",
+          "title_windows": "Hiển thị biểu tượng trong khay hệ thống",
+          "description_macos": "Hiển thị biểu tượng CompressO, tiến trình nén và vùng thả trên thanh menu.",
+          "description_windows": "Hiển thị biểu tượng CompressO, tiến trình nén và vùng thả trong khay hệ thống.",
+          "locked": "Tệp phương tiện trong vùng thả đang được nén. Có thể tắt tùy chọn này khi quá trình hoàn tất hoặc bị dừng."
+        }
+      },
+      "preview": {
+        "title": "Xem trước",
+        "videoPreviews": {
+          "title": "Xem trước video",
+          "description": "Phát video ngay trong ứng dụng. Video không phát tốt trên một số hệ thống Linux, nên theo mặc định sẽ hiển thị ảnh tĩnh. Thay đổi có hiệu lực sau khi khởi động lại."
+        },
+        "restart": "Khởi động lại"
+      },
+      "sleep": {
+        "title": "Ngủ",
+        "preventSleep": {
+          "title": "Ngăn máy ngủ khi đang nén",
+          "description": "Giữ máy tính hoạt động cho đến khi nén xong. Màn hình vẫn có thể tắt. Gập nắp máy vẫn khiến máy ngủ."
+        },
+        "keepScreenOn": {
+          "title": "Giữ màn hình luôn bật",
+          "description": "Đồng thời ngăn màn hình tắt khi đang nén."
+        }
+      },
+      "sound": {
+        "audioWaveforms": {
+          "title": "Dạng sóng âm thanh",
+          "description": "Hiển thị bản xem trước âm thanh động và dạng sóng trên dòng thời gian âm thanh và video."
+        },
+        "title": "Âm thanh",
+        "completionSound": {
+          "title": "Âm báo hoàn tất",
+          "description": "Phát âm thanh khi quá trình nén hoàn tất."
+        }
+      },
+      "troubleshooting": {
+        "title": "Khắc phục sự cố",
+        "logFiles": {
+          "title": "Tệp nhật ký",
+          "description": "Bản ghi các hoạt động của ứng dụng, giúp tìm ra nguyên nhân của sự cố. Hãy đính kèm khi báo cáo sự cố. Tệp chứa tên các tệp bạn đã nén.",
+          "button": "Hiển thị tệp nhật ký",
+          "failed": "Không thể hiển thị tệp nhật ký."
+        }
+      }
+    },
+    "presets": {
+      "copyName": "Bản sao {{name}}",
+      "isDefault_video": "Mặc định cho video mới. Chọn để dùng cài đặt sẵn Tiêu chuẩn thay thế.",
+      "isDefault_image": "Mặc định cho hình ảnh mới. Chọn để dùng cài đặt sẵn Tiêu chuẩn thay thế.",
+      "isDefault_audio": "Mặc định cho tệp âm thanh mới. Chọn để dùng cài đặt sẵn Tiêu chuẩn thay thế.",
+      "setDefault_video": "Đặt làm mặc định cho video mới",
+      "setDefault_image": "Đặt làm mặc định cho hình ảnh mới",
+      "setDefault_audio": "Đặt làm mặc định cho tệp âm thanh mới",
+      "name": "Tên cài đặt sẵn",
+      "moveUp": "Di chuyển lên",
+      "moveDown": "Di chuyển xuống",
+      "duplicate": "Nhân bản",
+      "delete": "Xóa cài đặt sẵn",
+      "empty_video": "Chưa có cài đặt sẵn cho video. Hãy điều chỉnh cài đặt của một video và chọn nút dấu cộng bên cạnh menu Cài đặt sẵn để lưu thành cài đặt sẵn.",
+      "empty_image": "Chưa có cài đặt sẵn cho hình ảnh. Hãy điều chỉnh cài đặt của một hình ảnh và chọn nút dấu cộng bên cạnh menu Cài đặt sẵn để lưu thành cài đặt sẵn.",
+      "empty_audio": "Chưa có cài đặt sẵn cho âm thanh. Hãy điều chỉnh cài đặt của một tệp âm thanh và chọn nút dấu cộng bên cạnh menu Cài đặt sẵn để lưu thành cài đặt sẵn.",
+      "mediaType": "Loại phương tiện",
+      "standardOutput": "Vị trí lưu và tiền tố tên tệp của nó được đặt trong <setting>Đầu ra</setting>.",
+      "cannotDeleteStandard": "Không thể xóa cài đặt sẵn Tiêu chuẩn."
+    },
+    "dropZone": {
+      "turnOnTrayIcon_macos": "Vùng thả nằm trên thanh menu. Trước tiên, hãy bật “<setting>Hiển thị biểu tượng trên thanh menu</setting>” trong Chung.",
+      "turnOnTrayIcon_windows": "Vùng thả nằm trong khay hệ thống. Trước tiên, hãy bật “<setting>Hiển thị biểu tượng trong khay hệ thống</setting>” trong Chung.",
+      "compression": {
+        "title": "Nén",
+        "autoCompress": {
+          "title": "Tự động nén",
+          "description": "Nén phương tiện ngay khi được thêm vào vùng thả, lần lượt từng tệp, và lưu vào vị trí lưu của cài đặt sẵn tương ứng.",
+          "needsSaveLocation": "Hãy chọn vị trí lưu khác Hỏi mỗi lần, trong <setting>Đầu ra</setting> hoặc trong một cài đặt sẵn của vùng thả, để phương tiện đã nén được lưu mà không cần hỏi."
+        }
+      },
+      "preset": {
+        "title_video": "Cài đặt sẵn cho video",
+        "title_image": "Cài đặt sẵn cho hình ảnh",
+        "title_audio": "Cài đặt sẵn cho âm thanh",
+        "description_video": "Cài đặt dùng cho video.",
+        "description_image": "Cài đặt dùng cho hình ảnh.",
+        "description_audio": "Cài đặt dùng cho tệp âm thanh."
+      },
+      "clipboard": {
+        "title": "Bảng nhớ tạm",
+        "watch": {
+          "title": "Theo dõi bảng nhớ tạm",
+          "description_macos": "Thêm tệp phương tiện bạn sao chép, chẳng hạn tệp hoặc hình ảnh từ trình duyệt, vào vùng thả trên thanh menu.",
+          "description_windows": "Thêm tệp phương tiện bạn sao chép, chẳng hạn tệp hoặc hình ảnh từ trình duyệt, vào vùng thả trong khay hệ thống."
+        }
+      },
+      "watchedFolders": {
+        "add": {
+          "title": "Theo dõi thư mục",
+          "description": "Phương tiện mới được thêm vào các thư mục này, như bản ghi màn hình hoặc tệp tải xuống, sẽ được nén tự động.",
+          "button": "Thêm thư mục",
+          "dialogTitle": "Chọn thư mục để theo dõi.",
+          "alreadyWatched": "Thư mục này đã được theo dõi.",
+          "description_linux": "Phương tiện mới được thêm vào các thư mục này, như bản ghi màn hình hoặc tệp tải xuống, sẽ được nén tự động khi CompressO đang mở."
+        },
+        "watch": "Theo dõi {{name}}",
+        "missing": "Thư mục không tồn tại nên hiện không được theo dõi.",
+        "needsSaveLocation": "Hãy chọn vị trí lưu khác \"Hỏi mỗi lần\", trong <setting>Đầu ra</setting> hoặc trong một cài đặt sẵn của thư mục, để tệp phương tiện được lưu mà không cần hỏi. Thư mục này hiện không được theo dõi.",
+        "presetAsks": "Vị trí lưu đang là Hỏi mỗi lần. Hãy chọn vị trí khác, trong <setting>Đầu ra</setting> hoặc trong cài đặt sẵn này, để thư mục này có thể được theo dõi.",
+        "stillMissing": "Thư mục chưa tồn tại. Hãy tạo lại trước khi bật theo dõi.",
+        "checkFailed": "Không thể kiểm tra thư mục này có tồn tại hay không. Hãy thử lại.",
+        "remove": "Ngừng theo dõi",
+        "preset_video": "Video",
+        "preset_image": "Hình ảnh",
+        "preset_audio": "Âm thanh"
+      }
+    },
+    "output": {
+      "saving": {
+        "title": "Lưu",
+        "location": {
+          "option_ask": "Hỏi mỗi lần",
+          "option_fixedFolder": "Thư mục cố định",
+          "option_sameFolder": "Cùng thư mục với tệp gốc",
+          "title": "Vị trí lưu",
+          "description_ask": "Chọn nơi lưu sau mỗi lần nén.",
+          "description_fixedFolder": "Tự động lưu vào thư mục đã chọn sau mỗi lần nén.",
+          "description_sameFolder": "Tự động lưu bên cạnh tệp gốc, trong cùng thư mục."
+        },
+        "folder": {
+          "none": "Chưa chọn thư mục",
+          "change": "Thay đổi",
+          "dialogTitle": "Chọn thư mục để lưu tệp phương tiện đã nén.",
+          "title": "Thư mục"
+        },
+        "preserveFolders": {
+          "title": "Giữ nguyên cấu trúc thư mục",
+          "description": "Giữ nguyên cấu trúc thư mục gốc khi lưu."
+        },
+        "skipLarger": {
+          "title": "Bỏ qua đầu ra lớn hơn",
+          "description": "Không lưu tệp đã nén nếu nó lớn hơn tệp gốc."
+        },
+        "replaceOriginal": {
+          "title": "Thay thế tệp gốc",
+          "description": "Khi tệp đã nén được lưu cùng tên trong cùng thư mục với tệp gốc, tệp gốc sẽ được chuyển vào Thùng rác và chỉ giữ lại tệp đã nén.",
+          "description_windows": "Khi tệp đã nén được lưu cùng tên trong cùng thư mục với tệp gốc, tệp gốc sẽ được chuyển vào Thùng rác và chỉ giữ lại tệp đã nén."
+        },
+        "prefix": {
+          "title": "Tiền tố tên tệp",
+          "placeholder": "Không có tiền tố",
+          "description": "Văn bản thêm vào đầu tên tệp được lưu. Để trống để giữ tên gốc."
+        },
+        "appliesTo": "Chỉ áp dụng cho cài đặt sẵn Tiêu chuẩn."
+      },
+      "clipboard": {
+        "title": "Bảng nhớ tạm",
+        "copyOutput": {
+          "title": "Sao chép đầu ra vào bảng nhớ tạm",
+          "description": "Sao chép tệp đã nén vào bảng nhớ tạm sau mỗi lần nén để có thể dán ngay."
+        },
+        "includeBatch": {
+          "title": "Bao gồm đầu ra hàng loạt",
+          "description": "Cũng sao chép các tệp khi nén nhiều tệp cùng lúc."
+        }
+      },
+      "performance": {
+        "title": "Hiệu suất",
+        "hardwareAcceleration": {
+          "title": "Dùng tăng tốc phần cứng",
+          "description": "Nén video nhanh hơn bằng tăng tốc phần cứng (tệp có thể lớn hơn một chút)",
+          "unavailable": "Máy tính này không hỗ trợ tăng tốc phần cứng."
+        },
+        "retryTargetSizeOnCpu": {
+          "title": "Đạt kích thước mục tiêu không dùng tăng tốc",
+          "description": "Chỉ áp dụng cho \"Kích thước mục tiêu\". Khi video không đạt kích thước mục tiêu, nó được nén lại không dùng tăng tốc phần cứng, chậm hơn nhưng sát kích thước hơn."
+        }
+      },
+      "storage": {
+        "title": "Lưu trữ",
+        "clearCache": {
+          "title": "Xóa bộ nhớ đệm",
+          "confirm": "Xóa ngay",
+          "description": "Giải phóng dung lượng bằng cách xóa các tệp tạm thời. Các tệp bạn đã lưu không bị ảnh hưởng.",
+          "mediaOpen": "Hãy đóng tệp phương tiện đang xử lý trước, vì nó đang dùng bộ nhớ đệm.",
+          "cleared": "Đã xóa toàn bộ bộ nhớ đệm.",
+          "failed": "Đã xảy ra sự cố khi xóa bộ nhớ đệm."
+        }
+      },
+      "savedFiles": {
+        "title": "Tệp đã lưu"
+      }
+    },
+    "open": "Mở Cài đặt",
+    "search": {
+      "label": "Tìm kiếm cài đặt",
+      "results": "Kết quả tìm kiếm",
+      "noResults": "Không tìm thấy cài đặt nào."
+    },
+    "groups": {
+      "settings": "Cài đặt",
+      "app": "CompressO"
+    },
+    "pages": {
+      "general": "Chung",
+      "output": "Đầu ra",
+      "presets": "Cài đặt sẵn",
+      "dropZone": "Vùng thả",
+      "about": "Giới thiệu",
+      "credits": "Ghi công",
+      "watchedFolders": "Theo dõi thư mục",
+      "history": "Lịch sử"
+    },
+    "about": {
+      "updateAvailable": "Có bản cập nhật",
+      "tagline": "Nén mọi hình ảnh và video xuống kích thước rất nhỏ.",
+      "version": "Phiên bản {{version}}",
+      "newVersion": "Đã có phiên bản {{version}}. Khởi động lại ứng dụng sau khi cập nhật để sử dụng.",
+      "upToDate": "Bạn đang dùng phiên bản mới nhất.",
+      "checkDescription": "Kiểm tra xem có phiên bản CompressO mới hơn không.",
+      "updateNow": "Cập nhật ngay",
+      "checkForUpdates": "Kiểm tra bản cập nhật",
+      "website": {
+        "title": "Trang web",
+        "description": "Tải xuống, tính năng và tài liệu."
+      },
+      "openSource": {
+        "title": "Miễn phí và mã nguồn mở",
+        "license": "Cấp phép theo AGPL-3.0"
+      },
+      "madeBy": "Được <link>Code For Real⚡</link> phát triển công khai bằng cả <heart></heart>",
+      "releaseNotes": "Ghi chú phát hành",
+      "releaseNotesOnline": {
+        "title": "Xem những điểm mới trong phiên bản {{version}}",
+        "description": "Không thể tải ghi chú phát hành tại đây.",
+        "view": "Xem trực tuyến"
+      },
+      "changelog": {
+        "title": "Nhật ký thay đổi",
+        "description": "Những điểm mới trong mỗi phiên bản CompressO.",
+        "view": "Xem nhật ký thay đổi"
+      }
+    },
+    "credits": {
+      "tools": {
+        "title": "Công cụ mã nguồn mở",
+        "description": "CompressO sẽ không thể có được nếu thiếu những công cụ và thư viện mã nguồn mở tuyệt vời này."
+      },
+      "license": "Cấp phép theo {{license}}",
+      "notices": {
+        "title": "Thông báo của bên thứ ba",
+        "description": "Toàn bộ thông báo và giấy phép của bên thứ ba.",
+        "view": "Xem"
+      }
+    },
+    "watchedFolders": {
+      "folders": "Thư mục",
+      "openFailed": "Không thể mở thư mục. Có thể thư mục đã bị di chuyển hoặc xóa."
+    },
+    "history": {
+      "clear": "Xóa lịch sử",
+      "clearConfirm": "Xóa tất cả mục",
+      "clearFailed": "Không thể xóa lịch sử.",
+      "search": "Tìm theo tên, thư mục hoặc cài đặt sẵn",
+      "empty": "Phương tiện đã nén sẽ được liệt kê ở đây.",
+      "noResults": "Không có lần nén nào khớp với tìm kiếm.",
+      "source_main": "Cửa sổ chính",
+      "source_dropZone": "Vùng thả",
+      "source_watchedFolder": "Thư mục theo dõi {{name}}",
+      "original": "Gốc",
+      "output": "Đầu ra",
+      "missing": "Tệp này đã bị di chuyển hoặc xóa.",
+      "notSaved": "Đầu ra này chưa được lưu.",
+      "fileCount": "Tệp: {{count}}",
+      "showFiles": "Hiện các tệp của {{name}}",
+      "hideFiles": "Ẩn các tệp của {{name}}",
+      "stats": {
+        "saved": "Dung lượng tiết kiệm",
+        "files": "Tệp đã nén",
+        "original": "Kích thước gốc",
+        "output": "Kích thước sau nén",
+        "reduction": "Mức giảm trung bình"
+      }
+    }
+  },
+  "common": {
+    "sameFormatAsInput": "Cùng định dạng với đầu vào",
+    "lossless": "Không mất dữ liệu",
+    "mono": "Mono",
+    "stereo": "Stereo",
+    "kbps": "{{value}} kbps",
+    "delete": "Xóa",
+    "cancel": "Hủy",
+    "save": "Lưu",
+    "sizeChange": "{{from}} → {{to}}",
+    "showInFileManager": "Hiển thị trong File Explorer",
+    "showNameInFileManager": "Hiển thị {{name}} trong File Explorer",
+    "copied": "Đã sao chép vào bảng nhớ tạm.",
+    "close": "Đóng",
+    "reset": "Đặt lại",
+    "apply": "Áp dụng",
+    "yes": "Có",
+    "edit": "Sửa",
+    "decrease": "Giảm",
+    "increase": "Tăng"
+  },
+  "presets": {
+    "standard": "Tiêu chuẩn",
+    "defaultChoice": "Mặc định ({{name}})",
+    "summary": {
+      "rotated": "Đã xoay {{degrees}}°",
+      "flipped": "Đã lật",
+      "cropped": "Đã cắt theo {{aspectRatio}}",
+      "quality": "Chất lượng {{value}}%",
+      "resolution": "Cạnh dài {{size}} px",
+      "fps": "{{fps}} FPS",
+      "speed": "Tốc độ {{speed}}x",
+      "audioRemoved": "Đã xóa âm thanh",
+      "volume": "Âm lượng {{value}}%",
+      "audioCodec": "Âm thanh {{codec}}",
+      "metadataRemoved": "Đã xóa siêu dữ liệu",
+      "metadataKept": "Giữ siêu dữ liệu",
+      "svgScale": "Tỷ lệ SVG {{scale}}x",
+      "customSvg": "Chuyển đổi SVG tùy chỉnh",
+      "targetSize": "Kích thước mục tiêu {{size}} MB",
+      "targetSizeImage": "Kích thước mục tiêu {{size}}"
+    },
+    "save": {
+      "title_video": "Lưu cài đặt sẵn cho video",
+      "title_image": "Lưu cài đặt sẵn cho hình ảnh",
+      "title_audio": "Lưu cài đặt sẵn cho âm thanh",
+      "name": "Tên",
+      "placeholder_video": "ví dụ: Web 1080p",
+      "placeholder_image": "ví dụ: Web",
+      "placeholder_audio": "ví dụ: Podcast",
+      "nameTaken": "Đã có cài đặt sẵn mang tên này.",
+      "hint": "Có thể đổi tên, sắp xếp lại và xóa cài đặt sẵn trong Cài đặt, mục <setting>Cài đặt sẵn</setting>."
+    },
+    "updated": "Đã cập nhật cài đặt sẵn “{{name}}”.",
+    "saved": "Đã lưu cài đặt sẵn “{{name}}”.",
+    "revertFailed": "Không thể khôi phục cài đặt.",
+    "applyFailed": "Không thể áp dụng cài đặt sẵn.",
+    "label": "Cài đặt sẵn:",
+    "update": "Cập nhật “{{name}}”",
+    "saveAsNew": "Lưu thành cài đặt sẵn mới",
+    "revert": "Khôi phục cài đặt sẵn",
+    "output": {
+      "location": "Vị trí lưu",
+      "followStandard": "Giống cài đặt sẵn Tiêu chuẩn"
+    }
+  },
+  "dropZone": {
+    "unsupportedType": "Loại tệp này không được hỗ trợ.",
+    "unsupportedSkipped": "Đã bỏ qua các tệp không được hỗ trợ.",
+    "addFailed": "Không thể thêm tệp phương tiện.",
+    "openFailed": "Không thể mở CompressO.",
+    "quitFailed": "Không thể thoát CompressO.",
+    "pin": "Ghim",
+    "unpin": "Bỏ ghim",
+    "openApp": "Mở ứng dụng",
+    "openAppCompressing": "Mở ứng dụng, đang nén {{progress}}%",
+    "openAppPaused": "Mở ứng dụng, tạm dừng ở {{progress}}%",
+    "quitApp": "Thoát ứng dụng",
+    "release": "Thả ra để thêm tệp phương tiện",
+    "dropToCompress": "Thả hoặc dán tệp phương tiện vào đây để nén",
+    "dropToStore": "Thả hoặc dán tệp phương tiện vào đây để lưu tạm",
+    "mediaTypes": "Video, hình ảnh hoặc thư mục…",
+    "itemsReady_other": "{{count}} mục đã sẵn sàng",
+    "discardAll": "Bỏ tất cả",
+    "remove": "Xóa {{name}}",
+    "storedBusy": "Đã lưu tạm. Mở ứng dụng để nén các tệp này sau tệp phương tiện hiện tại.",
+    "storedIdle": "Thả thêm tệp phương tiện hoặc mở ứng dụng để bắt đầu nén.",
+    "needsSaveLocation": "Hãy chọn vị trí lưu trong Cài đặt, ở <setting>Đầu ra</setting> hoặc trong một cài đặt sẵn của vùng thả, để phương tiện đã nén được lưu mà không cần hỏi."
+  },
+  "queue": {
+    "notSavedLarger": "Không được lưu vì lớn hơn tệp gốc.",
+    "noSaveLocation": "Hãy chọn vị trí lưu cho cài đặt sẵn của nó, trong Cài đặt.",
+    "chooseSaveLocation": "Chọn vị trí lưu",
+    "saveFailed": "Không thể lưu tệp đã nén.",
+    "compressFailed": "Không thể nén tệp phương tiện.",
+    "summary": {
+      "cancelledAndFailed": "{{cancelled}}, {{failed}}",
+      "cancelled_other": "Đã hủy {{count}}",
+      "failed_other": "{{count}} không thể nén",
+      "complete": "Đã nén xong",
+      "pausing": "Tạm dừng sau {{position}}/{{total}}",
+      "paused_other": "Đã tạm dừng, {{count}} đang chờ",
+      "compressing": "Đang nén {{position}}/{{total}}",
+      "waiting_other": "{{count}} đang chờ"
+    },
+    "compressingName": "Đang nén {{name}}",
+    "status": {
+      "waiting": "Đang chờ",
+      "cancelled": "Đã hủy",
+      "done": "Xong",
+      "failed": "Thất bại",
+      "smaller": "Nhỏ hơn {{value}}%"
+    },
+    "tryAgain": "Thử lại",
+    "tryNameAgain": "Thử lại {{name}}",
+    "resume": "Tiếp tục",
+    "pause": "Tạm dừng",
+    "pauseAfterCurrent": "Tạm dừng sau tệp hiện tại",
+    "stop": "Dừng",
+    "clear": "Xóa",
+    "stopAndCancel": "Dừng nén và hủy các tệp đang chờ",
+    "clearFinished": "Xóa các tệp đã xong",
+    "stopCompression": "Dừng nén",
+    "clearAll": "Xóa tất cả",
+    "collapse": "Thu gọn",
+    "showDropZone": "Hiển thị vùng thả",
+    "filesCompressed_other": "Đã nén {{count}} tệp",
+    "accessDenied": "Không được phép mở tệp này. Hãy cho phép truy cập trong cài đặt hệ thống.",
+    "fromWatchedFolder": "Từ thư mục theo dõi {{name}}",
+    "compressAgain": "Nén lại",
+    "compressNameAgain": "Nén lại {{name}}"
+  },
+  "subtitles": {
+    "unknownLanguage": "Không xác định",
+    "selectFile": "Chọn tệp phụ đề (SRT)",
+    "selectFailed": "Không thể chọn tệp phụ đề.",
+    "title": "Phụ đề",
+    "preserveExisting": "Giữ phụ đề hiện có",
+    "untitled": "Phụ đề {{number}}",
+    "language": "Ngôn ngữ",
+    "add": "Thêm phụ đề",
+    "unsupported": "{{container}} không hỗ trợ phụ đề rời"
+  },
+  "mediaInfo": {
+    "videoInformation": "Thông tin video",
+    "fullPath": "Đường dẫn đầy đủ",
+    "formatName": "Tên định dạng",
+    "format": "Định dạng",
+    "duration": "Thời lượng",
+    "size": "Kích thước",
+    "bitrate": "Tốc độ bit",
+    "totalStreams": "Tổng số luồng",
+    "codec": "Codec",
+    "profile": "Cấu hình",
+    "width": "Chiều rộng",
+    "height": "Chiều cao",
+    "codedWidth": "Chiều rộng mã hóa",
+    "codedHeight": "Chiều cao mã hóa",
+    "frameRate": "Tốc độ khung hình",
+    "avgFrameRate": "Tốc độ khung hình trung bình",
+    "pixelFormat": "Định dạng điểm ảnh",
+    "colorSpace": "Không gian màu",
+    "colorRange": "Dải màu",
+    "colorPrimaries": "Màu cơ bản",
+    "colorTransfer": "Đặc tính truyền màu",
+    "chromaLocation": "Vị trí sắc độ",
+    "totalFrames": "Tổng số khung hình",
+    "referenceFrames": "Khung hình tham chiếu",
+    "gopSize": "Kích thước GOP",
+    "codecLevel": "Cấp độ codec",
+    "fieldOrder": "Thứ tự trường",
+    "timeBase": "Cơ sở thời gian",
+    "rotation": "Xoay",
+    "channels": "Kênh",
+    "channelLayout": "Bố cục kênh",
+    "sampleRate": "Tần số lấy mẫu",
+    "sampleFormat": "Định dạng mẫu",
+    "bitsPerSample": "Số bit mỗi mẫu",
+    "metadataTags": "Thẻ siêu dữ liệu",
+    "subtitleFormat": "Định dạng phụ đề",
+    "language": "Ngôn ngữ",
+    "title": "Tiêu đề",
+    "disposition": "Mục đích",
+    "start": "Bắt đầu",
+    "end": "Kết thúc",
+    "imageInformation": "Thông tin hình ảnh",
+    "fileName": "Tên tệp",
+    "mimeType": "Loại MIME",
+    "aspectRatio": "Tỷ lệ khung hình",
+    "orientation": "Hướng",
+    "dpi": "DPI",
+    "megapixels": "Megapixel",
+    "colorType": "Loại màu",
+    "bitDepth": "Độ sâu bit",
+    "alphaChannel": "Kênh alpha",
+    "make": "Hãng sản xuất",
+    "model": "Mẫu máy",
+    "lensModel": "Mẫu ống kính",
+    "software": "Phần mềm",
+    "iso": "ISO",
+    "exposureTime": "Thời gian phơi sáng",
+    "aperture": "Khẩu độ",
+    "focalLength": "Tiêu cự",
+    "flash": "Đèn flash",
+    "dateTaken": "Ngày chụp",
+    "dateDigitized": "Ngày số hóa",
+    "artist": "Nghệ sĩ",
+    "copyright": "Bản quyền",
+    "coordinates": "Tọa độ",
+    "tabs": {
+      "container": "Vùng chứa",
+      "video": "Video",
+      "audio": "Âm thanh",
+      "subtitles": "Phụ đề",
+      "chapters": "Chương",
+      "metadata": "Siêu dữ liệu",
+      "color": "Màu",
+      "exif": "EXIF"
+    },
+    "noMetadata": "Không tìm thấy siêu dữ liệu",
+    "notAvailable": "Không có",
+    "videoStream": "Luồng video",
+    "audioStream": "Luồng âm thanh",
+    "noAudioStreams": "Không tìm thấy luồng âm thanh",
+    "noSubtitleStreams": "Không tìm thấy luồng phụ đề",
+    "noVideoPath": "Không có đường dẫn video",
+    "subtitleFiles": "Tệp phụ đề",
+    "subtitleSaved": "Đã trích xuất phụ đề và lưu dưới dạng {{format}}.",
+    "subtitleStream": "Luồng phụ đề {{number}}",
+    "subtitleNotExtractable": "Không thể chuyển định dạng phụ đề này ({{codec}}) sang SRT. Đây có thể là định dạng dựa trên hình ảnh (ví dụ: Blu-ray PGS hoặc DVD VobSub). Vì vậy, không thể tải xuống.",
+    "downloading": "Đang tải xuống…",
+    "unsupported": "Không được hỗ trợ",
+    "downloadAs": "Tải xuống dưới dạng {{format}}",
+    "dispositions": {
+      "default": "Mặc định",
+      "forced": "Bắt buộc",
+      "attachedPicture": "Ảnh đính kèm",
+      "comment": "Bình luận",
+      "karaoke": "Karaoke",
+      "lyrics": "Lời bài hát"
+    },
+    "noChapters": "Không tìm thấy chương",
+    "chapter": "Chương {{number}}",
+    "noExif": "Không tìm thấy dữ liệu EXIF",
+    "cameraInformation": "Thông tin máy ảnh",
+    "shootingInformation": "Thông số chụp",
+    "dateInformation": "Thông tin ngày tháng",
+    "copyrightInformation": "Thông tin bản quyền",
+    "gpsInformation": "Thông tin GPS",
+    "allTags": "Tất cả thẻ"
+  },
+  "svg": {
+    "advanced": "Cài đặt SVG nâng cao",
+    "blackAndWhite": "Đen trắng",
+    "levels": {
+      "low": "Thấp",
+      "medium": "Trung bình",
+      "high": "Cao",
+      "few": "Ít",
+      "many": "Nhiều",
+      "sharp": "Sắc nét",
+      "smooth": "Mượt",
+      "fine": "Mịn",
+      "coarse": "Thô",
+      "accurate": "Chính xác",
+      "less": "Kém hơn"
+    },
+    "filterSpeckle": {
+      "title": "Lọc đốm",
+      "tooltip": "Giá trị cao hơn cho kết quả sạch và mượt hơn"
+    },
+    "colorPrecision": {
+      "title": "Độ chính xác màu",
+      "tooltip": "Giá trị cao hơn chính xác hơn nhưng có thể quá bão hòa"
+    },
+    "layerDifference": {
+      "title": "Chênh lệch lớp",
+      "tooltip": "Giá trị cao hơn nghĩa là ít lớp hơn"
+    },
+    "cornerThreshold": {
+      "title": "Ngưỡng góc",
+      "tooltip": "Giá trị cao hơn mượt hơn"
+    },
+    "segmentLength": {
+      "title": "Độ dài đoạn",
+      "tooltip": "Giá trị cao hơn thô hơn"
+    },
+    "spliceThreshold": {
+      "title": "Ngưỡng nối",
+      "tooltip": "Giá trị cao hơn kém chính xác hơn"
+    },
+    "scaleFactor": "Hệ số tỷ lệ"
+  },
+  "batch": {
+    "copyOutput": "Sao chép đầu ra vào bảng nhớ tạm",
+    "compareOutput": "So sánh đầu ra",
+    "processing": "Đang xử lý",
+    "paused": "Đã tạm dừng",
+    "inputSize": "Kích thước đầu vào",
+    "outputSize": "Kích thước đầu ra",
+    "extension": "Phần mở rộng",
+    "duration": "Thời lượng",
+    "dimensions": "Kích thước",
+    "compressed_videos": "Video đã nén",
+    "compressed_audio": "Âm thanh đã nén",
+    "compressed_images": "Hình ảnh đã nén",
+    "compressed_media": "Tệp phương tiện đã nén",
+    "label_videos": "Video",
+    "label_audio": "Âm thanh",
+    "label_images": "Hình ảnh",
+    "label_media": "Tệp phương tiện",
+    "sizeSaved": "Dung lượng tiết kiệm",
+    "addMoreTooltip": "Thêm tệp phương tiện. Bạn cũng có thể thả hoặc dán tệp.",
+    "addMoreMedia": "Thêm tệp phương tiện",
+    "addMore": "Thêm"
+  },
+  "preview": {
+    "showFailed": "Không thể hiển thị tệp.",
+    "compare": "So sánh",
+    "showEdits": "Hiển thị chỉnh sửa",
+    "smaller": "nhỏ hơn",
+    "size": "Kích thước",
+    "fps": "FPS",
+    "viewFullInfo": "Xem toàn bộ thông tin",
+    "progress": "Tiến trình {{value}}%",
+    "mediaToCompress": "Tệp phương tiện cần nén",
+    "waitingForDropZone": "Đang chờ vùng thả…",
+    "processing": "Đang xử lý…",
+    "estimatingSize": "Đang ước tính kích thước đầu ra...",
+    "estimatedSize": "Kích thước ước tính: khoảng {{size}}",
+    "estimatedSizeUpTo": "Kích thước ước tính: tối đa {{size}}"
+  },
+  "thumbnail": {
+    "copyFrameUnavailable": "Không thể sao chép khung hình",
+    "frameCopied": "Đã sao chép khung hình vào bảng nhớ tạm",
+    "copyFrameFailed": "Không thể sao chép khung hình vào bảng nhớ tạm",
+    "coverArt": "Ảnh bìa",
+    "copyFrame": "Sao chép khung hình hiện tại",
+    "audioUnplayable": "Không thể phát âm thanh này tại đây, nhưng vẫn có thể nén.",
+    "switchingToImage": "Đang chuyển sang ảnh thu nhỏ…",
+    "pauseAudio": "Tạm dừng âm thanh",
+    "playAudio": "Phát âm thanh",
+    "videoUnplayable": "Ứng dụng này không thể phát video vì video chứa codec hoặc cấu hình nâng cao. Những video như vậy cần trình phát chuyên dụng như VLC.",
+    "previewsOff": "Xem trước video đang tắt. Có thể bật trong Cài đặt, mục <setting>Chung</setting>.",
+    "stillCompressible": "Bạn vẫn có thể áp dụng cài đặt đầu ra và thực hiện mọi chuyển đổi.",
+    "enlarge": "Phóng to hình ảnh",
+    "select": "Chọn hình ảnh làm ảnh thu nhỏ.",
+    "selectFailed": "Không thể chọn hình ảnh làm ảnh thu nhỏ.",
+    "title": "Ảnh thu nhỏ",
+    "noneSelected": "Chưa chọn ảnh thu nhỏ",
+    "custom": "Ảnh thu nhỏ tùy chỉnh",
+    "choose": "Chọn",
+    "unsupported": "{{container}} không hỗ trợ ảnh thu nhỏ tùy chỉnh"
+  },
+  "codecs": {
+    "video": {
+      "libx264": "Tương thích nhất, chất lượng tốt",
+      "libx265": "Nén tốt hơn, tiêu chuẩn mới hơn",
+      "libvpx_vp9": "Mã nguồn mở, rất phù hợp cho web",
+      "libaom_av1": "Nén tốt nhất, chậm hơn",
+      "mpeg4": "Codec cũ, hỗ trợ rộng rãi"
+    },
+    "audio": {
+      "aac": "Codec tiêu chuẩn, tương thích rộng",
+      "libmp3lame": "Định dạng âm thanh phổ biến",
+      "libopus": "Hiện đại, chất lượng cao",
+      "libvorbis": "Mã nguồn mở, chất lượng tốt",
+      "ac3": "Dolby Digital, âm thanh vòm",
+      "alac": "Nén không mất dữ liệu, tối ưu cho thiết bị Apple",
+      "flac": "Nén không mất dữ liệu",
+      "pcm_s16le": "Không nén, chất lượng tốt nhất"
+    },
+    "title": "Codec",
+    "select": "Chọn codec:",
+    "default": "Mặc định",
+    "defaultDescription": "Codec mặc định của vùng chứa đã chọn",
+    "unusableIn_other": "Không thể dùng {{codec}} trong tệp {{containers}}, nên {{count}} video giữ codec mặc định.",
+    "videoCount_other": "{{usable}}/{{count}} video",
+    "partial": "Chỉ {{videos}} có thể dùng {{codec}}. Các video khác giữ codec mặc định."
+  },
+  "metadata": {
+    "limitation_mov": "Tệp MOV không thể lưu phần mô tả hoặc tóm tắt.",
+    "limitation_avi": "Tệp AVI không thể lưu phần mô tả, tóm tắt hoặc ngày tạo.",
+    "limitation_ts": "Tệp TS chỉ có thể lưu tiêu đề. Các thông tin khác không được lưu.",
+    "strip": "Xóa siêu dữ liệu",
+    "keepHint": "Để trống để giữ giá trị gốc",
+    "removeHint": "Hoặc nhập một khoảng trắng để xóa giá trị gốc",
+    "title": {
+      "label": "Tiêu đề",
+      "placeholder": "Nhập tiêu đề",
+      "placeholderVideo": "Nhập tiêu đề video"
+    },
+    "artist": {
+      "label": "Nghệ sĩ",
+      "placeholder": "Nhập tên nghệ sĩ"
+    },
+    "album": {
+      "label": "Album",
+      "placeholder": "Nhập tên album"
+    },
+    "genre": {
+      "label": "Thể loại",
+      "placeholder": "Nhập thể loại"
+    },
+    "year": {
+      "label": "Năm/Ngày",
+      "placeholder": "Nhập năm hoặc ngày"
+    },
+    "description": {
+      "label": "Mô tả",
+      "placeholder": "Nhập mô tả"
+    },
+    "synopsis": {
+      "label": "Tóm tắt",
+      "placeholder": "Nhập tóm tắt"
+    },
+    "comment": {
+      "label": "Bình luận",
+      "placeholder": "Nhập bình luận"
+    },
+    "copyright": {
+      "label": "Bản quyền",
+      "placeholder": "Nhập thông tin bản quyền"
+    },
+    "creationTime": {
+      "label": "Thời gian tạo",
+      "placeholder": "Nhập thời gian tạo"
+    }
+  },
+  "media": {
+    "addAfterCompression": "Không thể thêm tệp phương tiện sau khi nén. Hãy bắt đầu lần nén mới để thêm tệp.",
+    "noValidFiles": "Không tìm thấy tệp phương tiện hợp lệ.",
+    "alreadyAdded": "Tệp phương tiện đã chọn đã được thêm.",
+    "someCorrupted": "Một số tệp có vẻ bị hỏng hoặc không hợp lệ nên chưa được thêm.",
+    "corrupted": "Tệp có vẻ bị hỏng hoặc không hợp lệ.",
+    "selectTitle": "Chọn hình ảnh, video hoặc âm thanh để nén.",
+    "selectFailed": "Không thể chọn tệp phương tiện.",
+    "invalidFiles": "Tệp hoặc thư mục không hợp lệ",
+    "accessDenied_other": "CompressO không được phép mở {{count}} tệp. Hãy cho phép truy cập thư mục của tệp trong cài đặt hệ thống, rồi thêm lại.",
+    "openSettings": "Mở cài đặt"
+  },
+  "save": {
+    "partiallySaved_other": "Đã lưu {{saved}}/{{count}} tệp. Không thể lưu {{failed}} tệp. Hãy dùng “Lưu tệp” để chọn vị trí khác.",
+    "autoSaveFailed": "Không thể tự động lưu, có thể do thiếu quyền truy cập thư mục. Hãy dùng “Lưu tệp” để chọn vị trí.",
+    "failed": "Không thể lưu tệp phương tiện vào đường dẫn đã chỉ định.",
+    "chooseDirectory": "Chọn thư mục để lưu tệp phương tiện đã nén.",
+    "chooseLocation": "Chọn vị trí để lưu tệp đã nén.",
+    "largerSkipped_other": "{{count}} đầu ra lớn hơn tệp gốc nên không được tự động lưu. Hãy dùng “Lưu” nếu bạn vẫn muốn giữ lại.",
+    "copyFailed": "Không thể sao chép đầu ra vào bảng nhớ tạm.",
+    "saving": "Đang lưu…",
+    "saved": "Đã lưu",
+    "saveMedia": "Lưu tệp",
+    "saveThisFile": "Lưu tệp này"
+  },
+  "home": {
+    "dragAndDrop": "Kéo và thả",
+    "or": "Hoặc",
+    "clickToSelect": "Nhấp để chọn tệp phương tiện",
+    "dropAnywhere": "Thả vào bất kỳ đâu…"
+  },
+  "compression": {
+    "cannotCancel": "Không thể hủy quá trình nén vào lúc này.",
+    "confirmCancel": "Xác nhận hủy",
+    "cancelling": "Đang hủy…",
+    "reconfigure": "Cấu hình lại",
+    "reconfigureOriginalReplaced_other": "Tệp gốc đã được chuyển vào Thùng rác vì <setting>Thay thế tệp gốc</setting> đang bật, nên không thể nén lại.",
+    "reconfigureOriginalReplaced_windows_other": "Tệp gốc đã được chuyển vào Thùng rác vì <setting>Thay thế tệp gốc</setting> đang bật, nên không thể nén lại.",
+    "pauseFailed": "Không thể tạm dừng quá trình nén.",
+    "resumeFailed": "Không thể tiếp tục quá trình nén.",
+    "failed": "Đã xảy ra lỗi trong quá trình nén.",
+    "process": "Xử lý"
+  },
+  "exit": {
+    "title": "Thoát",
+    "notSaved": "Tệp chưa được lưu",
+    "discardConfirm_other": "Tệp đã nén chưa được lưu. Bạn có chắc chắn muốn bỏ không?",
+    "goBack": "Quay lại"
+  },
+  "mediaConfig": {
+    "filter": "Bộ lọc tệp phương tiện",
+    "all": "Tất cả",
+    "outputSettings": "Cài đặt đầu ra",
+    "batchSettings": "Cài đặt hàng loạt"
+  },
+  "compare": {
+    "input": "Đầu vào",
+    "output": "Đầu ra",
+    "enlargeInput": "Phóng to đầu vào",
+    "enlargeOutput": "Phóng to đầu ra",
+    "svgTooLarge": "Tệp SVG quá lớn. Có thể ảnh hưởng đến hiệu suất so sánh."
+  },
+  "transform": {
+    "free": "Tự do",
+    "rotateLeft": "Xoay trái",
+    "flipVertical": "Lật dọc",
+    "flipHorizontal": "Lật ngang",
+    "resetZoom": "Đặt lại thu phóng",
+    "expand": "Mở rộng",
+    "title": "Biến đổi"
+  },
+  "outputSettings": {
+    "video": "Cài đặt video",
+    "image": "Cài đặt hình ảnh",
+    "audio": "Cài đặt âm thanh",
+    "compressionSettings": "Cài đặt nén",
+    "tabs": {
+      "image": "Hình ảnh",
+      "video": "Video",
+      "audio": "Âm thanh",
+      "others": "Khác"
+    },
+    "noAudio": "Không tìm thấy âm thanh"
+  },
+  "quality": {
+    "unsupportedAudio": "Định dạng hoặc bộ mã hóa âm thanh đã chọn không hỗ trợ điều chỉnh chất lượng.",
+    "lossless": "Nén không mất dữ liệu",
+    "title": "Chất lượng"
+  },
+  "dimensions": {
+    "resolution": "Độ phân giải",
+    "revert": "Khôi phục độ phân giải gốc",
+    "width": "Chiều rộng",
+    "height": "Chiều cao",
+    "original": "Gốc",
+    "resolutionLabel": "Độ phân giải:"
+  },
+  "extension": {
+    "label": "Phần mở rộng:",
+    "sameAsInput": "Giống đầu vào",
+    "noAudio": "Video này không có âm thanh để trích xuất.",
+    "extractAudio": "Trích xuất âm thanh",
+    "extractAudioNone": "Trích xuất âm thanh (không tìm thấy âm thanh)"
+  },
+  "trim": {
+    "title": "Cắt",
+    "instructions": "Hướng dẫn",
+    "controls": "Điều khiển dòng thời gian:",
+    "select": "Nhấp để chọn một đoạn",
+    "split": "Nhấp đúp vào đoạn để chia tách",
+    "add": "Nhấp đúp vào vùng trống để thêm đoạn mới",
+    "delete": "Chọn đoạn rồi nhấn <key>Delete</key> để xóa",
+    "hideInstructions": "Ẩn hướng dẫn"
+  },
+  "audio": {
+    "bitrate": "Tốc độ bit",
+    "bitrateLabel": "Tốc độ bit:",
+    "channels": "Kênh",
+    "layout": "Bố cục:",
+    "monoSource": "Nguồn mono:",
+    "left": "Trái",
+    "right": "Phải",
+    "swapChannels": "Đổi kênh trái và phải",
+    "tracks": "Rãnh",
+    "track": "Rãnh #{{number}}",
+    "channelCount_other": "{{count}} kênh",
+    "volumeLabel": "Âm lượng:",
+    "volume": "Âm lượng",
+    "mute": "Tắt tiếng"
+  },
+  "fps": {
+    "label": "Khung hình mỗi giây:"
+  },
+  "speed": {
+    "title": "Tốc độ"
+  },
+  "keys": {
+    "ctrl": "Ctrl",
+    "shift": "Shift",
+    "enter": "Enter"
+  },
+  "theme": {
+    "title": "Chủ đề",
+    "options": {
+      "system": "Hệ thống",
+      "light": "Sáng",
+      "dark": "Tối"
+    }
+  },
+  "errorBoundary": {
+    "title": "Đã xảy ra lỗi.",
+    "retry": "Thử lại"
+  },
+  "player": {
+    "play": "Phát",
+    "pause": "Tạm dừng"
+  },
+  "update": {
+    "installed": "Đã cài đặt bản cập nhật. Khởi động lại ứng dụng để sử dụng phiên bản mới.",
+    "installFailed": "Không thể cài đặt bản cập nhật. Vui lòng thử lại.",
+    "error": "Lỗi cập nhật: {{message}}"
+  },
+  "native": {
+    "quit": "Thoát",
+    "continueCompressing": "Tiếp tục nén",
+    "goBack": "Quay lại",
+    "compressingTitle": "Đang nén",
+    "compressingMessage": "Tệp phương tiện vẫn đang được nén. Nếu thoát bây giờ, quá trình nén sẽ bị hủy.",
+    "unsavedTitle": "Tệp chưa được lưu",
+    "unsavedMessage": "Tệp đã nén chưa được lưu. Nếu thoát bây giờ, các tệp này sẽ bị bỏ.",
+    "dropQueueMessage": "Tệp phương tiện trong vùng thả vẫn đang được nén. Nếu thoát bây giờ, quá trình này sẽ dừng.",
+    "openApp": "Mở CompressO",
+    "quitApp": "Thoát CompressO",
+    "aboutApp": "Giới thiệu về CompressO",
+    "settings": "Cài đặt…",
+    "services": "Dịch vụ",
+    "hideApp": "Ẩn CompressO",
+    "hideOthers": "Ẩn các ứng dụng khác",
+    "file": "Tệp",
+    "closeWindow": "Đóng cửa sổ",
+    "edit": "Sửa",
+    "undo": "Hoàn tác",
+    "redo": "Làm lại",
+    "cut": "Cắt",
+    "copy": "Sao chép",
+    "paste": "Dán",
+    "selectAll": "Chọn tất cả",
+    "view": "Xem",
+    "fullScreen": "Bật/tắt toàn màn hình",
+    "window": "Cửa sổ",
+    "minimize": "Thu nhỏ",
+    "zoom": "Thu phóng",
+    "help": "Trợ giúp"
+  },
+  "targetSize": {
+    "mode": "Nén theo",
+    "modes": {
+      "quality": "Chất lượng",
+      "size": "Kích thước mục tiêu"
+    },
+    "size": "Kích thước mục tiêu",
+    "estimate": "Khoảng {{width}}×{{height}} ở {{fps}} fps, trong {{size}} MB.",
+    "estimateLowered": "Đã giảm xuống {{width}}×{{height}} ở {{fps}} fps để vừa trong {{size}} MB.",
+    "notForGif": "Không thể nén GIF theo kích thước. Hãy chọn định dạng khác hoặc nén theo chất lượng.",
+    "audioEstimate": "Khoảng {{bitrate}} kbps.",
+    "audioLossless": "Định dạng hoặc bộ mã hóa âm thanh đã chọn không thể đạt kích thước mục tiêu tùy ý bằng cách điều chỉnh tốc độ bit. Hãy chọn định dạng hoặc bộ mã hóa khác, hoặc nén theo chất lượng. Các lựa chọn của bạn sẽ không tự động thay đổi.",
+    "audioDurationMissing": "Cần biết thời lượng âm thanh trước khi nén đến kích thước mục tiêu.",
+    "audioTooSmall": "Kích thước mục tiêu này quá nhỏ so với định dạng và thời lượng âm thanh đã chọn. Hãy tăng kích thước hoặc cắt bớt bản ghi.",
+    "notReachedAudio": "Không thể đạt kích thước mục tiêu trong định dạng âm thanh đã chọn. Tệp đầu ra nhỏ nhất hiện có được hiển thị.",
+    "round": "Lượt {{round}}",
+    "roundDetail": "Lượt {{round}}: đang tiến gần kích thước mục tiêu",
+    "roundWithoutHardwareAcceleration": "Lượt {{round}}: không dùng tăng tốc phần cứng, để tiến gần kích thước mục tiêu",
+    "fitsAtQuality": "Chất lượng đã chọn đã vừa, khoảng {{size}}, nên chất lượng này được sử dụng.",
+    "switchUnit": "Hiển thị kích thước theo {{unit}}",
+    "notForSvgOrGif": "Không thể nén SVG và GIF theo kích thước. Hãy chọn định dạng khác hoặc nén theo chất lượng.",
+    "notReachedImage": "Không thể làm hình ảnh nhỏ hơn nữa mà không khiến nó quá nhỏ. Kích thước mục tiêu là {{size}}."
+  },
+  "outputOptions": {
+    "title": "Tùy chọn khác",
+    "choose": "Hiển thị tệp {{size}}",
+    "withinTarget": "Trong mục tiêu",
+    "overTarget": "Vượt mục tiêu",
+    "replace": "Thay thế tệp đã lưu"
+  }
+}

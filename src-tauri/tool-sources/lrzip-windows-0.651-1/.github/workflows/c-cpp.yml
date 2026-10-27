@@ -1,0 +1,29 @@
+name: check_build
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: prepare repo
+      run: git fetch --prune --unshallow
+    - name: autogen
+      run: ./autogen.sh
+    - name: install liblzo2-dev
+      run: sudo apt install -y liblzo2-dev
+    - name: install liblz4-dev
+      run: sudo apt install -y liblz4-dev
+    - name: configure
+      run: ./configure
+    - name: make
+      run: make
+    - name: make check
+      run: make check

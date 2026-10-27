@@ -9,6 +9,7 @@ import { save } from '@tauri-apps/plugin-dialog'
 import { motion } from 'framer-motion'
 import { startCase, upperCase } from 'lodash'
 import { useCallback, useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { useSnapshot } from 'valtio'
 
@@ -45,34 +46,18 @@ type VideoInfoProps = {
   onClose?: () => void
 }
 
+/** Titled with `mediaInfo.tabs.<id>` */
 const TABS = {
-  container: {
-    id: 'container',
-    title: 'Container',
-  },
-  video: {
-    id: 'video',
-    title: 'Video',
-  },
-  audio: {
-    id: 'audio',
-    title: 'Audio',
-  },
-  subtitles: {
-    id: 'subtitles',
-    title: 'Subtitles',
-  },
-  chapters: {
-    id: 'chapters',
-    title: 'Chapters',
-  },
-  metadata: {
-    id: 'metadata',
-    title: 'Metadata',
-  },
+  container: { id: 'container' },
+  video: { id: 'video' },
+  audio: { id: 'audio' },
+  subtitles: { id: 'subtitles' },
+  chapters: { id: 'chapters' },
+  metadata: { id: 'metadata' },
 } as const
 
 function VideoInfo({ mediaIndex, onClose }: VideoInfoProps) {
+  const { t } = useTranslation()
   if (mediaIndex < 0) return null
 
   const {
@@ -185,21 +170,35 @@ function VideoInfo({ mediaIndex, onClose }: VideoInfoProps) {
   }, [onClose])
 
   return (
-    <section className="w-full h-full bg-white1 dark:bg-black1 p-6">
+    <section
+      data-tint-transparent=""
+      className="w-full h-full bg-white1 dark:bg-black1 p-6"
+    >
       <div className="w-full flex justify-center">
         <Tabs
-          aria-label="Video Information"
+          aria-label={t('mediaInfo.videoInformation')}
           size="sm"
           selectedKey={tab}
-          onSelectionChange={(t) => setTab(t as keyof typeof TABS)}
+          onSelectionChange={(key) => setTab(key as keyof typeof TABS)}
           classNames={{
             tabContent: 'text-[11px]',
             tab: 'h-6',
           }}
         >
-          {Object.values(TABS).map((t) => (
-            <Tab key={t.id} value={t.id} title={t.title} />
-          ))}
+          {Object.values(TABS)
+            // An audio file has no picture or subtitles (chapters, e.g. of audiobooks, are kept)
+            .filter(
+              (item) =>
+                !video.isAudioFile ||
+                (item.id !== 'video' && item.id !== 'subtitles'),
+            )
+            .map((item) => (
+              <Tab
+                key={item.id}
+                value={item.id}
+                title={t(`mediaInfo.tabs.${item.id}`)}
+              />
+            ))}
         </Tabs>
       </div>
 
@@ -245,12 +244,13 @@ function VideoInfo({ mediaIndex, onClose }: VideoInfoProps) {
 }
 
 function ContainerInfoDisplay({ info }: { info: ContainerInfo }) {
+  const { t } = useTranslation()
   return (
     <div className="space-y-4 select-text">
       {info.filename ? (
         <>
           <InfoItem
-            label="Full Path"
+            label={t('mediaInfo.fullPath')}
             value={
               <Code size="sm" className="text-xs max-w-[100%] truncate">
                 {info.filename}
@@ -263,14 +263,14 @@ function ContainerInfoDisplay({ info }: { info: ContainerInfo }) {
 
       {info.formatName ? (
         <>
-          <InfoItem label="Format Name" value={info.formatName} />
+          <InfoItem label={t('mediaInfo.formatName')} value={info.formatName} />
           <Divider className="my-1" />
         </>
       ) : null}
 
       {info.formatLongName ? (
         <>
-          <InfoItem label="Format" value={info.formatLongName} />
+          <InfoItem label={t('mediaInfo.format')} value={info.formatLongName} />
           <Divider className="my-1" />
         </>
       ) : null}
@@ -278,7 +278,7 @@ function ContainerInfoDisplay({ info }: { info: ContainerInfo }) {
       {info.duration ? (
         <>
           <InfoItem
-            label="Duration"
+            label={t('mediaInfo.duration')}
             value={`${formatDuration(info.duration)}`}
           />
           <Divider className="my-1" />
@@ -287,7 +287,10 @@ function ContainerInfoDisplay({ info }: { info: ContainerInfo }) {
 
       {info.size > 0 ? (
         <>
-          <InfoItem label="Size" value={formatBytes(info.size)} />
+          <InfoItem
+            label={t('mediaInfo.size')}
+            value={formatBytes(info.size)}
+          />
           <Divider className="my-1" />
         </>
       ) : null}
@@ -295,7 +298,7 @@ function ContainerInfoDisplay({ info }: { info: ContainerInfo }) {
       {info.bitRate ? (
         <>
           <InfoItem
-            label="Bitrate"
+            label={t('mediaInfo.bitrate')}
             value={`${(info.bitRate / 1000).toFixed(0)} kbps`}
           />
           <Divider className="my-1" />
@@ -304,7 +307,10 @@ function ContainerInfoDisplay({ info }: { info: ContainerInfo }) {
 
       {info.nbStreams > 0 ? (
         <>
-          <InfoItem label="Total Streams" value={info.nbStreams.toString()} />
+          <InfoItem
+            label={t('mediaInfo.totalStreams')}
+            value={info.nbStreams.toString()}
+          />
           <Divider className="my-1" />
         </>
       ) : null}
@@ -313,10 +319,11 @@ function ContainerInfoDisplay({ info }: { info: ContainerInfo }) {
 }
 
 function MetadataDisplay({ info }: { info: ContainerInfo }) {
+  const { t } = useTranslation()
   if (!info.tags || info.tags.length === 0) {
     return (
       <p className="text-center text-zinc-500 py-8 select-text">
-        No metadata found
+        {t('mediaInfo.noMetadata')}
       </p>
     )
   }
@@ -330,7 +337,7 @@ function MetadataDisplay({ info }: { info: ContainerInfo }) {
               {startCase(key)}:
             </p>{' '}
             <span className="text-zinc-800 dark:text-zinc-200 text-[13px]">
-              {value ?? 'N/A'}
+              {value ?? t('mediaInfo.notAvailable')}
             </span>
             <Divider className="mt-2" />
           </div>
@@ -341,6 +348,7 @@ function MetadataDisplay({ info }: { info: ContainerInfo }) {
 }
 
 function VideoStreamsDisplay({ streams }: { streams: VideoStream[] }) {
+  const { t } = useTranslation()
   return (
     <div className="space-y-6 select-text">
       {streams.map((stream, index) => (
@@ -352,29 +360,36 @@ function VideoStreamsDisplay({ streams }: { streams: VideoStream[] }) {
           className="space-y-4"
         >
           <h3 className="text-lg font-semibold text-primary select-text">
-            Video Stream {streams.length > 1 ? `${index + 1}` : ''}
+            {t('mediaInfo.videoStream')}{' '}
+            {streams.length > 1 ? `${index + 1}` : ''}
           </h3>
 
           <InfoItem
-            label="Codec"
-            value={`${stream.codec} (${stream.codecLongName ?? 'N/A'})`}
+            label={t('mediaInfo.codec')}
+            value={`${stream.codec} (${stream.codecLongName ?? t('mediaInfo.notAvailable')})`}
           />
           <Divider className="my-3" />
 
           {stream.profile && (
             <>
-              <InfoItem label="Profile" value={stream.profile} />
+              <InfoItem label={t('mediaInfo.profile')} value={stream.profile} />
               <Divider className="my-3" />
             </>
           )}
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <InfoItem label="Width" value={`${stream.width ?? '-'}px`} />
+              <InfoItem
+                label={t('mediaInfo.width')}
+                value={`${stream.width ?? '-'}px`}
+              />
               <Divider className="my-3" />
             </div>
             <div>
-              <InfoItem label="Height" value={`${stream.height ?? '-'}px`} />
+              <InfoItem
+                label={t('mediaInfo.height')}
+                value={`${stream.height ?? '-'}px`}
+              />
               <Divider className="my-3" />
             </div>
           </div>
@@ -387,14 +402,14 @@ function VideoStreamsDisplay({ streams }: { streams: VideoStream[] }) {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <InfoItem
-                    label="Coded Width"
+                    label={t('mediaInfo.codedWidth')}
                     value={`${stream.codedWidth ?? '-'}px`}
                   />
                   <Divider className="my-3" />
                 </div>
                 <div>
                   <InfoItem
-                    label="Coded Height"
+                    label={t('mediaInfo.codedHeight')}
                     value={`${stream.codedHeight ?? '-'}px`}
                   />
                   <Divider className="my-3" />
@@ -405,56 +420,77 @@ function VideoStreamsDisplay({ streams }: { streams: VideoStream[] }) {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <InfoItem label="Frame Rate" value={stream.rFrameRate} />
+              <InfoItem
+                label={t('mediaInfo.frameRate')}
+                value={stream.rFrameRate}
+              />
               <Divider className="my-3" />
             </div>
             <div>
-              <InfoItem label="Avg Frame Rate" value={stream.avgFrameRate} />
+              <InfoItem
+                label={t('mediaInfo.avgFrameRate')}
+                value={stream.avgFrameRate}
+              />
               <Divider className="my-3" />
             </div>
           </div>
 
-          <InfoItem label="Pixel Format" value={stream.pixFmt} />
+          <InfoItem label={t('mediaInfo.pixelFormat')} value={stream.pixFmt} />
           <Divider className="my-3" />
 
           {stream.colorSpace ? (
             <>
-              <InfoItem label="Color Space" value={stream.colorSpace} />
+              <InfoItem
+                label={t('mediaInfo.colorSpace')}
+                value={stream.colorSpace}
+              />
               <Divider className="my-3" />
             </>
           ) : null}
 
           {stream.colorRange ? (
             <>
-              <InfoItem label="Color Range" value={stream.colorRange} />
+              <InfoItem
+                label={t('mediaInfo.colorRange')}
+                value={stream.colorRange}
+              />
               <Divider className="my-3" />
             </>
           ) : null}
 
           {stream.colorPrimaries ? (
             <>
-              <InfoItem label="Color Primaries" value={stream.colorPrimaries} />
+              <InfoItem
+                label={t('mediaInfo.colorPrimaries')}
+                value={stream.colorPrimaries}
+              />
               <Divider className="my-3" />
             </>
           ) : null}
 
           {stream.colorTransfer ? (
             <>
-              <InfoItem label="Color Transfer" value={stream.colorTransfer} />
+              <InfoItem
+                label={t('mediaInfo.colorTransfer')}
+                value={stream.colorTransfer}
+              />
               <Divider className="my-3" />
             </>
           ) : null}
 
           {stream.chromaLocation ? (
             <>
-              <InfoItem label="Chroma Location" value={stream.chromaLocation} />
+              <InfoItem
+                label={t('mediaInfo.chromaLocation')}
+                value={stream.chromaLocation}
+              />
               <Divider className="my-3" />
             </>
           ) : null}
 
           {stream.bitRate ? (
             <>
-              <InfoItem label="Bitrate" value={stream.bitRate} />
+              <InfoItem label={t('mediaInfo.bitrate')} value={stream.bitRate} />
               <Divider className="my-3" />
             </>
           ) : null}
@@ -462,7 +498,7 @@ function VideoStreamsDisplay({ streams }: { streams: VideoStream[] }) {
           {stream.duration ? (
             <>
               <InfoItem
-                label="Duration"
+                label={t('mediaInfo.duration')}
                 value={formatDuration(+stream.duration)}
               />
               <Divider className="my-3" />
@@ -471,7 +507,10 @@ function VideoStreamsDisplay({ streams }: { streams: VideoStream[] }) {
 
           {stream.nbFrames ? (
             <>
-              <InfoItem label="Total Frames" value={stream.nbFrames} />
+              <InfoItem
+                label={t('mediaInfo.totalFrames')}
+                value={stream.nbFrames}
+              />
               <Divider className="my-3" />
             </>
           ) : null}
@@ -479,7 +518,7 @@ function VideoStreamsDisplay({ streams }: { streams: VideoStream[] }) {
           {stream.refs ? (
             <>
               <InfoItem
-                label="Reference Frames"
+                label={t('mediaInfo.referenceFrames')}
                 value={stream.refs.toString()}
               />
               <Divider className="my-3" />
@@ -488,35 +527,50 @@ function VideoStreamsDisplay({ streams }: { streams: VideoStream[] }) {
 
           {stream.gopSize ? (
             <>
-              <InfoItem label="GOP Size" value={stream.gopSize.toString()} />
+              <InfoItem
+                label={t('mediaInfo.gopSize')}
+                value={stream.gopSize.toString()}
+              />
               <Divider className="my-3" />
             </>
           ) : null}
 
           {stream.level ? (
             <>
-              <InfoItem label="Codec Level" value={stream.level.toString()} />
+              <InfoItem
+                label={t('mediaInfo.codecLevel')}
+                value={stream.level.toString()}
+              />
               <Divider className="my-3" />
             </>
           ) : null}
 
           {stream.fieldOrder && stream.fieldOrder !== 'progressive' ? (
             <>
-              <InfoItem label="Field Order" value={stream.fieldOrder} />
+              <InfoItem
+                label={t('mediaInfo.fieldOrder')}
+                value={stream.fieldOrder}
+              />
               <Divider className="my-3" />
             </>
           ) : null}
 
           {stream.timeBase && stream.timeBase !== '0/0' ? (
             <>
-              <InfoItem label="Time Base" value={stream.timeBase} />
+              <InfoItem
+                label={t('mediaInfo.timeBase')}
+                value={stream.timeBase}
+              />
               <Divider className="my-3" />
             </>
           ) : null}
 
           {stream.rotation && stream.rotation !== 0 ? (
             <>
-              <InfoItem label="Rotation" value={`${stream.rotation}°`} />
+              <InfoItem
+                label={t('mediaInfo.rotation')}
+                value={`${stream.rotation}°`}
+              />
               <Divider className="my-3" />
             </>
           ) : null}
@@ -527,10 +581,11 @@ function VideoStreamsDisplay({ streams }: { streams: VideoStream[] }) {
 }
 
 function AudioStreamsDisplay({ streams }: { streams: AudioStream[] }) {
+  const { t } = useTranslation()
   if (streams.length === 0) {
     return (
       <p className="text-center text-zinc-500 py-8 select-text">
-        No audio streams found
+        {t('mediaInfo.noAudioStreams')}
       </p>
     )
   }
@@ -546,28 +601,32 @@ function AudioStreamsDisplay({ streams }: { streams: AudioStream[] }) {
           className="space-y-4"
         >
           <h3 className="text-lg font-semibold text-primary select-text">
-            Audio Stream {streams.length > 1 ? `${index + 1}` : ''}
+            {t('mediaInfo.audioStream')}{' '}
+            {streams.length > 1 ? `${index + 1}` : ''}
           </h3>
 
           <InfoItem
-            label="Codec"
-            value={`${upperCase(stream.codec ?? 'N/A')} / ${stream.codecLongName ?? 'N/A'}`}
+            label={t('mediaInfo.codec')}
+            value={`${upperCase(stream.codec ?? t('mediaInfo.notAvailable'))} / ${stream.codecLongName ?? t('mediaInfo.notAvailable')}`}
           />
           <Divider className="my-3" />
 
           {stream.profile ? (
             <>
-              <InfoItem label="Profile" value={stream.profile} />
+              <InfoItem label={t('mediaInfo.profile')} value={stream.profile} />
               <Divider className="my-3" />
             </>
           ) : null}
 
-          <InfoItem label="Channels" value={stream.channels} />
+          <InfoItem label={t('mediaInfo.channels')} value={stream.channels} />
           <Divider className="my-3" />
 
           {stream.channelLayout ? (
             <>
-              <InfoItem label="Channel Layout" value={stream.channelLayout} />
+              <InfoItem
+                label={t('mediaInfo.channelLayout')}
+                value={stream.channelLayout}
+              />
               <Divider className="my-3" />
             </>
           ) : null}
@@ -575,8 +634,8 @@ function AudioStreamsDisplay({ streams }: { streams: AudioStream[] }) {
           {stream.sampleRate ? (
             <>
               <InfoItem
-                label="Sample Rate"
-                value={`${stream.sampleRate ?? 'N/A'} Hz`}
+                label={t('mediaInfo.sampleRate')}
+                value={`${stream.sampleRate ?? t('mediaInfo.notAvailable')} Hz`}
               />
               <Divider className="my-3" />
             </>
@@ -584,7 +643,10 @@ function AudioStreamsDisplay({ streams }: { streams: AudioStream[] }) {
 
           {stream.sampleFmt ? (
             <>
-              <InfoItem label="Sample Format" value={stream.sampleFmt} />
+              <InfoItem
+                label={t('mediaInfo.sampleFormat')}
+                value={stream.sampleFmt}
+              />
               <Divider className="my-3" />
             </>
           ) : null}
@@ -592,7 +654,7 @@ function AudioStreamsDisplay({ streams }: { streams: AudioStream[] }) {
           {stream.bitsPerSample ? (
             <>
               <InfoItem
-                label="Bits Per Sample"
+                label={t('mediaInfo.bitsPerSample')}
                 value={stream.bitsPerSample.toString()}
               />
               <Divider className="my-3" />
@@ -602,7 +664,7 @@ function AudioStreamsDisplay({ streams }: { streams: AudioStream[] }) {
           {stream.bitRate ? (
             <>
               <InfoItem
-                label="Bitrate"
+                label={t('mediaInfo.bitrate')}
                 value={`${formatBytes(+stream.bitRate).toLowerCase?.() ?? '-'}ps (${stream.bitRate})`}
               />
               <Divider className="my-3" />
@@ -612,7 +674,7 @@ function AudioStreamsDisplay({ streams }: { streams: AudioStream[] }) {
           {stream.duration ? (
             <>
               <InfoItem
-                label="Duration"
+                label={t('mediaInfo.duration')}
                 value={formatDuration(+stream.duration)}
               />
               <Divider className="my-3" />
@@ -621,7 +683,7 @@ function AudioStreamsDisplay({ streams }: { streams: AudioStream[] }) {
 
           {stream.tags && stream.tags.length > 0 ? (
             <div>
-              <InfoItem label="Metadata Tags" value=" " />
+              <InfoItem label={t('mediaInfo.metadataTags')} value=" " />
               <div className="mt-2 space-y-2 mx-4">
                 {stream.tags.map(([key, value]) => (
                   <div key={key} className="select-text">
@@ -672,13 +734,14 @@ function SubtitleStreamsDisplay({
   streams: SubtitleStream[]
   videoPath?: string | null
 }) {
+  const { t } = useTranslation()
   const [downloadingIndex, setDownloadingIndex] = useState<number | null>(null)
   const [selectedFormat, setSelectedFormat] = useState<SubtitleFormat>('srt')
 
   if (streams.length === 0) {
     return (
       <p className="text-center text-zinc-500 py-8 select-text">
-        No subtitle streams found
+        {t('mediaInfo.noSubtitleStreams')}
       </p>
     )
   }
@@ -689,7 +752,7 @@ function SubtitleStreamsDisplay({
     format: SubtitleFormat,
   ) => {
     if (!videoPath) {
-      toast.error('Video path not available')
+      toast.error(t('mediaInfo.noVideoPath'))
       return
     }
 
@@ -704,7 +767,7 @@ function SubtitleStreamsDisplay({
         defaultPath: defaultFileName,
         filters: [
           {
-            name: 'Subtitle Files',
+            name: t('mediaInfo.subtitleFiles'),
             extensions: ['srt', 'vtt'],
           },
         ],
@@ -717,7 +780,9 @@ function SubtitleStreamsDisplay({
 
       await extractSubtitle(videoPath, stream.index, filePath, format)
 
-      toast.success(`Subtitle extracted and saved as ${format.toUpperCase()}.`)
+      toast.success(
+        t('mediaInfo.subtitleSaved', { format: format.toUpperCase() }),
+      )
     } catch {
       //
     } finally {
@@ -740,7 +805,7 @@ function SubtitleStreamsDisplay({
           >
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-primary select-text">
-                Subtitle Stream {index + 1}
+                {t('mediaInfo.subtitleStream', { number: index + 1 })}
               </h3>
               <div className="flex items-center">
                 {!isExtractable ? (
@@ -752,10 +817,9 @@ function SubtitleStreamsDisplay({
                     </PopoverTrigger>
                     <PopoverContent className="max-w-xs">
                       <p className="text-xs text-amber-600 dark:text-amber-400 select-text max-w-[250px]">
-                        This subtitle format ({stream.codec}) cannot be
-                        converted to SRT. It is likely an image-based format
-                        (e.g., Blu-ray PGS or DVD VobSub). Thus, it is not
-                        downloadable.
+                        {t('mediaInfo.subtitleNotExtractable', {
+                          codec: stream.codec,
+                        })}
                       </p>
                     </PopoverContent>
                   </Popover>
@@ -780,10 +844,12 @@ function SubtitleStreamsDisplay({
                     }
                   >
                     {downloadingIndex === index
-                      ? 'Downloading...'
+                      ? t('mediaInfo.downloading')
                       : !isExtractable
-                        ? 'Unsupported'
-                        : `Download as ${formatConfig.name}`}
+                        ? t('mediaInfo.unsupported')
+                        : t('mediaInfo.downloadAs', {
+                            format: formatConfig.name,
+                          })}
                   </Button>
                   <Dropdown size="sm">
                     <DropdownTrigger>
@@ -793,7 +859,7 @@ function SubtitleStreamsDisplay({
                     </DropdownTrigger>
                     <DropdownMenu
                       disallowEmptySelection
-                      aria-label="Subtitle format"
+                      aria-label={t('mediaInfo.subtitleFormat')}
                       selectedKeys={new Set([selectedFormat])}
                       selectionMode="single"
                       onSelectionChange={(keys) => {
@@ -814,21 +880,24 @@ function SubtitleStreamsDisplay({
             </div>
 
             <InfoItem
-              label="Codec"
+              label={t('mediaInfo.codec')}
               value={`${stream.codec} (${stream.codecLongName})`}
             />
             <Divider className="my-3" />
 
             {stream.language ? (
               <>
-                <InfoItem label="Language" value={stream.language} />
+                <InfoItem
+                  label={t('mediaInfo.language')}
+                  value={stream.language}
+                />
                 <Divider className="my-3" />
               </>
             ) : null}
 
             {stream.title ? (
               <>
-                <InfoItem label="Title" value={stream.title} />
+                <InfoItem label={t('mediaInfo.title')} value={stream.title} />
                 <Divider className="my-3" />
               </>
             ) : null}
@@ -840,36 +909,36 @@ function SubtitleStreamsDisplay({
             stream.disposition.karaoke ||
             stream.disposition.lyrics ? (
               <div className="select-text">
-                <InfoItem label="Disposition" value=" " />
+                <InfoItem label={t('mediaInfo.disposition')} value=" " />
                 <div className="mt-2 space-y-1 ml-4">
                   {stream.disposition.default ? (
                     <div className="text-zinc-600 dark:text-zinc-400 text-xs">
-                      - Default
+                      - {t('mediaInfo.dispositions.default')}
                     </div>
                   ) : null}
                   {stream.disposition.forced ? (
                     <div className="text-zinc-600 dark:text-zinc-400 text-xs">
-                      - Forced
+                      - {t('mediaInfo.dispositions.forced')}
                     </div>
                   ) : null}
                   {stream.disposition.attachedPic ? (
                     <div className="text-zinc-600 dark:text-zinc-400 text-xs">
-                      - Attached Picture
+                      - {t('mediaInfo.dispositions.attachedPicture')}
                     </div>
                   ) : null}
                   {stream.disposition.comment ? (
                     <div className="text-zinc-600 dark:text-zinc-400 text-xs">
-                      - Comment
+                      - {t('mediaInfo.dispositions.comment')}
                     </div>
                   ) : null}
                   {stream.disposition.karaoke ? (
                     <div className="text-zinc-600 dark:text-zinc-400 text-xs">
-                      - Karaoke
+                      - {t('mediaInfo.dispositions.karaoke')}
                     </div>
                   ) : null}
                   {stream.disposition.lyrics ? (
                     <div className="text-zinc-600 dark:text-zinc-400 text-xs">
-                      - Lyrics
+                      - {t('mediaInfo.dispositions.lyrics')}
                     </div>
                   ) : null}
                 </div>
@@ -883,10 +952,11 @@ function SubtitleStreamsDisplay({
 }
 
 function ChaptersDisplay({ chapters }: { chapters: Chapter[] }) {
+  const { t } = useTranslation()
   if (chapters.length === 0) {
     return (
       <p className="text-center text-zinc-500 py-8 select-text">
-        No chapters found
+        {t('mediaInfo.noChapters')}
       </p>
     )
   }
@@ -902,7 +972,8 @@ function ChaptersDisplay({ chapters }: { chapters: Chapter[] }) {
         >
           <div className="flex items-start justify-between select-text">
             <h3 className="text-lg font-semibold text-primary">
-              Chapter {index + 1} {chapter.id ? `(#${chapter.id})` : ''}
+              {t('mediaInfo.chapter', { number: index + 1 })}{' '}
+              {chapter.id ? `(#${chapter.id})` : ''}
             </h3>
             {chapter.title && (
               <span className="text-sm text-zinc-600 dark:text-zinc-400 ml-4">
@@ -912,21 +983,30 @@ function ChaptersDisplay({ chapters }: { chapters: Chapter[] }) {
           </div>
 
           <div className="mt-3 space-y-4">
-            <InfoItem label="Start" value={`${chapter.start.toFixed(2)}s`} />
-            <Divider className="my-3" />
-
-            <InfoItem label="End" value={`${chapter.end.toFixed(2)}s`} />
+            <InfoItem
+              label={t('mediaInfo.start')}
+              value={`${chapter.start.toFixed(2)}s`}
+            />
             <Divider className="my-3" />
 
             <InfoItem
-              label="Duration"
+              label={t('mediaInfo.end')}
+              value={`${chapter.end.toFixed(2)}s`}
+            />
+            <Divider className="my-3" />
+
+            <InfoItem
+              label={t('mediaInfo.duration')}
               value={`${formatDuration(chapter.end - chapter.start)}`}
             />
             <Divider className="my-3" />
 
             {chapter.timeBase && chapter.timeBase !== '0/0' ? (
               <>
-                <InfoItem label="Time Base" value={chapter.timeBase} />
+                <InfoItem
+                  label={t('mediaInfo.timeBase')}
+                  value={chapter.timeBase}
+                />
                 <Divider className="my-3" />
               </>
             ) : null}
@@ -938,13 +1018,14 @@ function ChaptersDisplay({ chapters }: { chapters: Chapter[] }) {
 }
 
 function InfoItem({ label, value }: { label: string; value: React.ReactNode }) {
+  const { t } = useTranslation()
   return (
     <div className="flex items-baseline justify-between select-text">
       <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
         {label}:
       </span>
       <span className="text-[13px] text-zinc-800 dark:text-zinc-200 ml-2 max-w-[75%] text-end">
-        {value || 'N/A'}
+        {value || t('mediaInfo.notAvailable')}
       </span>
     </div>
   )

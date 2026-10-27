@@ -1,6 +1,7 @@
 import { SelectItem } from '@heroui/react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useCallback, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
 import Select from '@/components/Select'
@@ -8,6 +9,7 @@ import Slider from '@/components/Slider'
 import Switch from '@/components/Switch'
 import { slideDownTransition } from '@/utils/animation'
 import { appProxy, normalizeBatchMediaConfig } from '../../../../-state'
+import { useBatchVideoConfigKey } from '../-batchConfig'
 
 const FPS_LIST = [24, 25, 30, 50, 60] as const
 const DEFAULT_FPS = 30
@@ -17,6 +19,7 @@ type VideoFPSProps = {
 }
 
 function FPS({ mediaIndex }: VideoFPSProps) {
+  const { t } = useTranslation()
   const {
     state: {
       media,
@@ -26,13 +29,14 @@ function FPS({ mediaIndex }: VideoFPSProps) {
       isLoadingMediaFiles,
     },
   } = useSnapshot(appProxy)
+  const batchConfigKey = useBatchVideoConfigKey()
   const video =
     media.length > 0 && mediaIndex >= 0 && media[mediaIndex].type === 'video'
       ? media[mediaIndex]
       : null
   const { config, fps: videoFps } = video ?? {}
   const { shouldEnableCustomFPS, customFPS, convertToExtension } =
-    config ?? commonConfigForBatchCompression.videoConfig ?? {}
+    config ?? commonConfigForBatchCompression[batchConfigKey] ?? {}
 
   const handleSwitchToggle = useCallback(() => {
     if (
@@ -50,13 +54,15 @@ function FPS({ mediaIndex }: VideoFPSProps) {
       }
     } else {
       if (appProxy.state.media.length > 1) {
-        appProxy.state.commonConfigForBatchCompression.videoConfig.shouldEnableCustomFPS =
-          !appProxy.state.commonConfigForBatchCompression.videoConfig
+        appProxy.state.commonConfigForBatchCompression[
+          batchConfigKey
+        ].shouldEnableCustomFPS =
+          !appProxy.state.commonConfigForBatchCompression[batchConfigKey]
             .shouldEnableCustomFPS
         normalizeBatchMediaConfig()
       }
     }
-  }, [mediaIndex])
+  }, [mediaIndex, batchConfigKey])
 
   const handleValueChange = useCallback(
     (value: number) => {
@@ -69,13 +75,14 @@ function FPS({ mediaIndex }: VideoFPSProps) {
         appProxy.state.media[mediaIndex].isConfigDirty = true
       } else {
         if (appProxy.state.media.length > 1) {
-          appProxy.state.commonConfigForBatchCompression.videoConfig.customFPS =
-            +value
+          appProxy.state.commonConfigForBatchCompression[
+            batchConfigKey
+          ].customFPS = +value
           normalizeBatchMediaConfig()
         }
       }
     },
-    [mediaIndex],
+    [mediaIndex, batchConfigKey],
   )
 
   const isGifTarget = convertToExtension === 'gif'
@@ -112,7 +119,7 @@ function FPS({ mediaIndex }: VideoFPSProps) {
         isDisabled={shouldDisableInput}
       >
         <p className="text-gray-600 dark:text-gray-400 text-sm mr-2 w-full">
-          FPS
+          {t('preview.fps')}
         </p>
       </Switch>
       <AnimatePresence mode="wait">
@@ -141,7 +148,7 @@ function FPS({ mediaIndex }: VideoFPSProps) {
             ) : (
               <Select
                 fullWidth
-                label="Frames Per Second:"
+                label={t('fps.label')}
                 className="block flex-shrink-0 rounded-2xl !mt-8"
                 selectedKeys={[String(initialFpsValue)!]}
                 size="sm"

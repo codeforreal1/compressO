@@ -1,0 +1,314 @@
+---
+import { getCollection, render } from "astro:content";
+
+import BaseHead from "../components/BaseHead.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import OGImage from "../assets/og.jpg";
+
+// The app's CHANGELOG.md, as it is when the site is built (see `content.config.ts`)
+const [changelog] = await getCollection("changelog");
+const { Content, headings } = await render(changelog);
+
+// Each version is a `### <version>` heading; the sidebar links to them, newest first (the file
+// does not always list older versions in order)
+const versionParts = (text: string) =>
+  text.replace(/^v/, "").split(".").map((part) => Number.parseInt(part, 10) || 0);
+const versions = headings
+  .filter((heading) => heading.depth === 3)
+  .map(({ slug, text }) => ({ slug, text }))
+  .sort((a, b) => {
+    const [x, y] = [versionParts(a.text), versionParts(b.text)];
+    for (let i = 0; i < Math.max(x.length, y.length); i++) {
+      if ((y[i] ?? 0) !== (x[i] ?? 0)) return (y[i] ?? 0) - (x[i] ?? 0);
+    }
+    return 0;
+  });
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <BaseHead
+      title="Changelog | CompressO"
+      description="What's new in CompressO?"
+      image={OGImage}
+    />
+  </head>
+  <body>
+    <Header />
+    <main class="changelog-page">
+      <div class="container">
+        <header class="section-header">
+          <span class="eyebrow">Changelog</span>
+          <h1 class="section-title">What's new in CompressO?</h1>
+          <p class="section-subtitle">
+            Every version, with its new features, improvements and fixes.
+          </p>
+        </header>
+        <div class="changelog-layout">
+          <nav class="versions" aria-label="Versions">
+            <span class="versions-title">Versions</span>
+            <ul>
+              {
+                versions.map((version, index) => (
+                  <li>
+                    <a
+                      href={`#${version.slug}`}
+                      data-version={version.slug}
+                      aria-current={index === 0 ? "true" : undefined}
+                    >
+                      {version.text}
+                    </a>
+                  </li>
+                ))
+              }
+            </ul>
+          </nav>
+          <article class="changelog">
+            <Content />
+          </article>
+        </div>
+      </div>
+    </main>
+    <Footer />
+
+    <script is:inline>
+      // The version being read is marked in the sidebar (and kept in view when the list scrolls)
+      (() => {
+        const nav = document.querySelector(".versions");
+        const links = [...document.querySelectorAll(".versions a")];
+        // Scrolls the list alone (not the page) so the link is visible
+        const reveal = (link) => {
+          const box = nav.getBoundingClientRect();
+          const item = link.getBoundingClientRect();
+          if (item.top < box.top) nav.scrollTop -= box.top - item.top + 8;
+          else if (item.bottom > box.bottom) nav.scrollTop += item.bottom - box.bottom + 8;
+          if (item.left < box.left) nav.scrollLeft -= box.left - item.left + 24;
+          else if (item.right > box.right) nav.scrollLeft += item.right - box.right + 24;
+        };
+        // In the page's order, which the sorted list may not follow
+        const slugs = new Set(links.map((link) => link.dataset.version));
+        const headings = [...document.querySelectorAll(".changelog h3")].filter((heading) =>
+          slugs.has(heading.id),
+        );
+        if (!headings.length) return;
+        const mark = (slug) => {
+          links.forEach((link) => {
+            const isCurrent = link.dataset.version === slug;
+            if (isCurrent) {
+              link.setAttribute("aria-current", "true");
+              reveal(link);
+            } else {
+              link.removeAttribute("aria-current");
+            }
+          });
+        };
+        let current = null;
+        const update = () => {
+          // The last version whose heading has passed the top third of the screen
+          const line = window.innerHeight * 0.3;
+          let found = headings[0];
+          for (const heading of headings) {
+            if (heading.getBoundingClientRect().top <= line) found = heading;
+          }
+          if (found.id !== current) {
+            current = found.id;
+            mark(current);
+          }
+        };
+        update();
+        window.addEventListener("scroll", update, { passive: true });
+      })();
+    </script>
+  </body>
+</html>
+
+<style>
+  .changelog-page {
+    padding: 160px 0 96px;
+  }
+  .changelog-layout {
+    display: grid;
+    grid-template-columns: 200px minmax(0, 760px);
+    justify-content: center;
+    gap: 72px;
+    margin-top: 56px;
+  }
+
+  /* The versions, beside the changelog: the one being read is marked */
+  .versions {
+    position: sticky;
+    top: 112px;
+    align-self: start;
+    max-height: calc(100vh - 140px);
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+  .versions::-webkit-scrollbar {
+    display: none;
+  }
+  .versions-title {
+    display: block;
+    margin-bottom: 18px;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+  }
+  .versions ul {
+    list-style: none;
+    border-left: 1px solid var(--border);
+  }
+  .versions a {
+    display: block;
+    margin-left: -1px;
+    padding: 7px 0 7px 18px;
+    border-left: 2px solid transparent;
+    font-size: 15px;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-faint);
+    transition:
+      color 0.15s ease,
+      border-color 0.15s ease;
+  }
+  .versions a:hover {
+    color: var(--text);
+  }
+  .versions a[aria-current="true"] {
+    border-left-color: var(--brand);
+    color: var(--text);
+  }
+
+  .changelog {
+    min-width: 0;
+    color: var(--text-muted);
+    font-size: 15px;
+    line-height: 1.7;
+  }
+  /* The newest version */
+  .changelog :global(h3:first-of-type)::after {
+    content: "Latest";
+    display: inline-block;
+    margin-left: 14px;
+    padding: 3px 10px;
+    border: 1px solid var(--brand-line);
+    border-radius: 7px;
+    background: var(--brand-soft);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    vertical-align: middle;
+    color: var(--brand);
+  }
+  /* Versions land below the floating header when jumped to */
+  .changelog :global(h3) {
+    scroll-margin-top: 104px;
+  }
+
+  /* Smaller screens: the versions as a row of pills that scrolls sideways, above the changelog */
+  @media (max-width: 900px) {
+    .changelog-layout {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 32px;
+    }
+    .versions {
+      position: sticky;
+      top: 66px;
+      z-index: 10;
+      max-height: none;
+      overflow-x: auto;
+      overflow-y: hidden;
+      margin: 0 -24px;
+      padding: 10px 24px;
+      background: rgba(10, 9, 8, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+    .versions-title {
+      display: none;
+    }
+    .versions ul {
+      display: flex;
+      gap: 6px;
+      width: max-content;
+      border-left: none;
+    }
+    .versions a {
+      margin: 0;
+      padding: 5px 12px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-size: 14px;
+    }
+    .versions a[aria-current="true"] {
+      border-color: var(--brand-line);
+      background: var(--brand-soft);
+      color: var(--brand);
+    }
+    .changelog :global(h3) {
+      scroll-margin-top: 140px;
+    }
+  }
+  /* The file's own title, already shown above */
+  .changelog :global(h1) {
+    display: none;
+  }
+  /* A version */
+  .changelog :global(h3) {
+    margin: 56px 0 20px;
+    padding-top: 40px;
+    border-top: 1px solid var(--border);
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--text);
+  }
+  .changelog :global(h3:first-of-type) {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+  }
+  .changelog :global(h4) {
+    margin: 24px 0 8px;
+    font-size: 16px;
+    color: var(--text);
+  }
+  .changelog :global(p) {
+    margin: 16px 0 8px;
+  }
+  .changelog :global(ul) {
+    margin: 8px 0 0;
+    padding-left: 20px;
+    list-style: disc;
+  }
+  .changelog :global(li) {
+    margin: 6px 0;
+  }
+  .changelog :global(li::marker) {
+    color: var(--text-faint);
+  }
+  .changelog :global(strong) {
+    font-weight: 500;
+    color: var(--text);
+  }
+  .changelog :global(a) {
+    color: var(--brand);
+  }
+  .changelog :global(a:hover) {
+    text-decoration: underline;
+  }
+  .changelog :global(code) {
+    padding: 2px 6px;
+    border-radius: 6px;
+    background: var(--surface-raised);
+    font-size: 13px;
+  }
+  @media (max-width: 720px) {
+    .changelog-page {
+      padding-top: 120px;
+    }
+  }
+</style>

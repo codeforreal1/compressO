@@ -1,0 +1,104 @@
+lrzip-0.60 update
+
+All files created with lrzip 0.6x are not backward compatible with versions
+prior to 0.60. v0.6x can read files generated with earlier versions.
+
+Con Kolivas March 2011.
+
+lrzip-0.50 update
+
+All files created with lrzip 0.5x are not backward compatible with versions
+prior to 0.50. v0.50 can read earlier generated files.
+
+lrzip-0.41 update
+
+Files created with lrzip 0.41 and selecting the -z option for
+ZPAQ compression are not backwardly compatible.
+
+lrzip-0.40 update!
+
+FILES CREATED WITH LRZIP 0.40+ are not backward compatible with
+versions prior to 0.40. The file format was completely changed
+to 64bit addressing throughout to allow massive compression windows
+on massive files. v0.40+ will detect older version files and
+decompress them fine though, but will always generate files in
+the new format.
+
+Con Kolivas November 2009.
+
+lrzip-0.24 update!
+
+FILES CREATED WITH LRZIP 0.23 and earlier are NOT
+BACKWARD COMPATIBLE if compressed with LZMA.
+
+All other compression schemes are compatible.
+
+The lrz file header is changed. It now stores the encoded
+parameters LZMA uses in bytes 16-20. This is a departure
+from the method used in lrzip-0.23.
+
+Please preserve the binary of lrzip-0.23 or earlier if you
+require access to lrzip files using LZMA compression created
+with an earlier version.
+
+FILES CREATED WITH LRZIP-0.22 MAY NOT BE BACKWARD COMPATIBLE!
+
+lrzip-0.22 uses a slightly different and improved method of
+compressing and decompressing files compared to lrzip-0.19 and
+earlier versions.
+
+ANY FILE COMPRESSED WITH LZMA USING A COMPRESSION LEVEL > 7
+cannot be decompressed with any earlier version of lrzip.
+
+ANY FILE COMPRESSED WITH LZMA USING A COMPRESSION LEVEL <=7
+CAN be decompressed with earlier versions of lrzip.
+
+ANY FILE COMPRESSED WITH AN EARLIER VERSION OF LRZIP CAN
+be decompressed with lrzip-0.22
+---------------------------------------------------------
+Brief Technical discussion.
+
+Earlier versions of lrzip used a variable dictionary buffer size
+when compressing files with LZMA. It used a formula of
+Compression Level + 14 bits. LZMA Dictionary buffer size was
+computed as 2^(level+14).  2MB, 21 bits had been the default for
+compression level 7. Level 8 was 4MB and level 9, 8MB.
+
+The default decompression level was fixed at 23 bits, 8MB. This
+was equal to the (then) largest possible dictionary buffer size,
+9+14=23, 2^23=8MB. So all data regardless of compression level
+could decompress.
+
+Beginning in lrzip-0.22, the default dictionary buffer size is
+Level + 16 bits (7+16=23 bits or 8MB). Files compressed with the
+default level or lower CAN be decompressed with an earlier lrzip
+version.
+
+Since the the maximum dictionary buffer size for lrzip-0.22 is
+now 25 bits, or 32MB. Files compressed using level 8 or level 9
+(24 or 25 bits) cannot be decompressed with earlier versions of
+lrzip since the fixed dictionary buffer size of 8MB used for
+decompression in lrzip-0.19 and earlier cannot hold the data from
+lrzip-0.22.
+
+Here is a table to show what can and cannot be decompressed with
+lrzip-0.19 and earlier
+
+LRZIP-0.22	LRZIP-0.19
+COMPRESSION	CAN		DICTIONARY
+LEVEL		DECOMPRESS?	BUFFER SIZE
+-----------	-----------	-----------
+<=7		YES		<=8MB (2^23)
+8		NO		16MB  (2^24)
+9		NO		32MB  (2^25)
+
+lrzip-0.22 can decompress all earlier files.
+
+lrzip-0.22 uses three bytes in the compressed file to store the
+compression level used. Thus, when decompressing, lrzip will read
+the proper dictionary buffer size and use it when decompressing
+the file. See the file magic.header.txt for more information.
+
+January 2008
+Peter Hyman
+pete@peterhyman.com

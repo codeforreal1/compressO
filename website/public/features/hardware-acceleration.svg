@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" width="640" height="360" role="img" aria-label="Compressing faster with the graphics card" font-family="Poppins, -apple-system, 'Segoe UI', 'Noto Sans', sans-serif">
+<defs>
+  <linearGradient id="pill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b2b2b"/><stop offset="1" stop-color="#191919"/></linearGradient>
+  <linearGradient id="brand" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffa04a"/><stop offset="1" stop-color="#ff7a00"/></linearGradient>
+  <linearGradient id="brandX" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ff7a00"/><stop offset="1" stop-color="#ffa04a"/></linearGradient>
+  <linearGradient id="streak" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ff8400"/><stop offset="1" stop-color="#ff8400" stop-opacity="0"/></linearGradient>
+  <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#ff8400" stop-opacity="0.45"/><stop offset="1" stop-color="#ff8400" stop-opacity="0"/></radialGradient>
+  <filter id="soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6"/></filter>
+</defs>
+<rect width="640" height="360" fill="#000"/>
+<circle cx="150" cy="180" r="120" fill="url(#glow)"/>
+<line x1="102" y1="108" x2="102" y2="92" stroke="#fff" stroke-opacity="0.28" stroke-width="3" stroke-linecap="round"/>
+<line x1="102" y1="252" x2="102" y2="268" stroke="#fff" stroke-opacity="0.28" stroke-width="3" stroke-linecap="round"/>
+<line x1="78" y1="132" x2="62" y2="132" stroke="#fff" stroke-opacity="0.28" stroke-width="3" stroke-linecap="round"/>
+<line x1="222" y1="132" x2="238" y2="132" stroke="#fff" stroke-opacity="0.28" stroke-width="3" stroke-linecap="round"/>
+<line x1="126" y1="108" x2="126" y2="92" stroke="#fff" stroke-opacity="0.28" stroke-width="3" stroke-linecap="round"/>
+<line x1="126" y1="252" x2="126" y2="268" stroke="#fff" stroke-opacity="0.28" stroke-width="3" stroke-linecap="round"/>
+<line x1="78" y1="156" x2="62" y2="156" stroke="#fff" stroke-opacity="0.28" stroke-width="3" stroke-linecap="round"/>
+<line x1="222" y1="156" x2="238" y2="156" stroke="#fff" stroke-opacity="0.28" stroke-width="3" stroke-linecap="round"/>
+<line x1="150" y1="108" x2="150" y2="92" stroke="#fff" stroke-opacity="0.28" stroke-width="3" stroke-linecap="round"/>
+<line x1="150" y1="252" x2="150" y2="268" stroke="#fff" stroke-opacity="0.28" stroke-width="3" stroke-linecap="round"/>
+<line x1="78" y1="180" x2="62" y2="180" stroke="#fff" stroke-opacity="0.28" stroke-width="3" stroke-linecap="round"/>
+<line x1="222" y1="180" x2="238" y2="180" stroke="#fff" stroke-opacity="0.28" stroke-width="3" stroke-linecap="round"/>
+<line x1="174" y1="108" x2="174" y2="92" stroke="#fff" stroke-opacity="0.28" stroke-width="3" stroke-linecap="round"/>
+<line x1="174" y1="252" x2="174" y2="268" stroke="#fff" stroke-opacity="0.28" stroke-width="3" stroke-linecap="round"/>
+<line x1="78" y1="204" x2="62" y2="204" stroke="#fff" stroke-opacity="0.28" stroke-width="3" stroke-linecap="round"/>
+<line x1="222" y1="204" x2="238" y2="204" stroke="#fff" stroke-opacity="0.28" stroke-width="3" stroke-linecap="round"/>
+<line x1="198" y1="108" x2="198" y2="92" stroke="#fff" stroke-opacity="0.28" stroke-width="3" stroke-linecap="round"/>
+<line x1="198" y1="252" x2="198" y2="268" stroke="#fff" stroke-opacity="0.28" stroke-width="3" stroke-linecap="round"/>
+<line x1="78" y1="228" x2="62" y2="228" stroke="#fff" stroke-opacity="0.28" stroke-width="3" stroke-linecap="round"/>
+<line x1="222" y1="228" x2="238" y2="228" stroke="#fff" stroke-opacity="0.28" stroke-width="3" stroke-linecap="round"/>
+<rect x="78" y="108" width="144" height="144" rx="26" fill="url(#pill)" stroke="#fff" stroke-opacity="0.18"/>
+<rect x="110" y="140" width="80" height="80" rx="16" fill="#ff8400" opacity="0.5" filter="url(#soft)"/>
+<rect x="110" y="140" width="80" height="80" rx="16" fill="url(#brand)" stroke="#ffb066" stroke-opacity="0.7"/>
+<path d="M154 158 L136 183 h13 l-4 19 L164 177 h-13 Z" fill="#fff" stroke="#fff" stroke-width="2" stroke-linejoin="round"/>
+<rect x="254" y="148.5" width="52" height="3" rx="1.5" fill="url(#streak)" opacity="0.6"/>
+<rect x="254" y="178.5" width="84" height="3" rx="1.5" fill="url(#streak)" opacity="0.95"/>
+<rect x="254" y="208.5" width="52" height="3" rx="1.5" fill="url(#streak)" opacity="0.6"/>
+<text x="360" y="140" font-size="14" fill="#a9a5a0">Processor</text>
+<text x="600" y="140" font-size="14" text-anchor="end" fill="#7d7975" font-weight="500">34%</text>
+<rect x="360" y="152" width="240" height="14" rx="7" fill="#1c1b1a" stroke="#fff" stroke-opacity="0.1"/>
+<rect x="360" y="152" width="81.60000000000001" height="14" rx="7" fill="#5c5955"/>
+<text x="360" y="206" font-size="14" fill="#a9a5a0">Graphics card</text>
+<text x="600" y="206" font-size="14" text-anchor="end" fill="#ff9a3c" font-weight="500">Done</text>
+<rect x="360" y="218" width="240" height="14" rx="7" fill="#1c1b1a" stroke="#fff" stroke-opacity="0.1"/>
+<rect x="360" y="220" width="240.0" height="14" rx="7" fill="#ff8400" opacity="0.5" filter="url(#soft)"/>
+<rect x="360" y="218" width="240.0" height="14" rx="7" fill="url(#brandX)"/>
+</svg>

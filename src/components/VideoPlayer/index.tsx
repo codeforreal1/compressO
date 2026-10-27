@@ -6,6 +6,7 @@ import {
   useEffect,
   useId,
   useImperativeHandle,
+  useMemo,
   useRef,
   useState,
 } from 'react'
@@ -13,7 +14,12 @@ import ReactPlayer from 'react-player'
 import { BaseReactPlayerProps } from 'react-player/base'
 import { ClassNameValue } from 'tailwind-merge'
 
+import { usePlayPauseOnSpace } from '@/hooks/usePlayPauseOnSpace'
+import { t } from '@/i18n'
+import { MediaTransformHistory } from '@/types/compression'
+import type { WaveformData } from '@/types/waveform'
 import { cn } from '@/utils/tailwind'
+import { getTransformPreview } from '@/utils/transform'
 import { constructVideoUrl } from '@/utils/video'
 import Button from '../Button'
 import Icon from '../Icon'
@@ -46,8 +52,18 @@ export interface VideoPlayerProps extends BaseReactPlayerProps {
   onSpaceKeydownForPlayPause?: () => void
   onArrowKeySeek?: (arrowKey: 'left' | 'right') => void
   disablePlayPauseControlAtCenter?: boolean
+  /**
+   * The play button at the bottom center, always shown (e.g. for audio, like its player after a
+   * compression), instead of in the center, hidden while playing
+   */
+  isPlayPauseControlAtBottom?: boolean
   autoPlay?: boolean
   disablePlayPauseViaContainerClick?: boolean
+  /** Previews these transforms (crop/rotate/flip) on the playing video */
+  transformHistory?: readonly MediaTransformHistory[] | null
+  /** Marks everything outside these segments as trimmed out on the timeline */
+  trimSegments?: readonly { start: number; end: number }[] | null
+  waveform?: WaveformData | null
 }
 
 const scales: TimelineScales = {
@@ -69,6 +85,7 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
       contextMenu,
       onSpaceKeydownForPlayPause,
       disablePlayPauseControlAtCenter,
+      isPlayPauseControlAtBottom,
       autoPlay,
       disablePlayPauseViaContainerClick,
       onArrowKeySeek,
@@ -78,6 +95,10 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
       onPause,
       onEnded,
       onReady,
+      transformHistory,
+      trimSegments,
+      waveform,
+      style,
 
       ...props
     },
@@ -92,6 +113,11 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
     const [contextMenuPosition, setContextMenuPosition] = useState<{
       x: number
       y: number
+    } | null>(null)
+
+    const [videoSize, setVideoSize] = useState<{
+      width: number
+      height: number
     } | null>(null)
 
     const playerRef = useRef<ReactPlayer | null>(null)
@@ -166,11 +192,7 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
           target instanceof HTMLTextAreaElement ||
           target.isContentEditable
 
-        if (e.code === 'Space' && !isInputField) {
-          e.preventDefault()
-          togglePlayPause()
-          onSpaceKeydownForPlayPause?.()
-        } else if (e.code === 'ArrowRight' && !isInputField) {
+        if (e.code === 'ArrowRight' && !isInputField) {
           e.preventDefault()
           if (playerRef.current && duration) {
             const currentTime = playerRef.current.getCurrentTime()
@@ -198,10 +220,8 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
         }
       },
       [
-        togglePlayPause,
         duration,
         closeContextMenu,
-        onSpaceKeydownForPlayPause,
         autoScrollCursorToCurrentTime,
         onArrowKeySeek,
       ],
@@ -290,6 +310,12 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
       }
     }, [handleKeyDown, playPauseOnSpaceKeydown])
 
+    usePlayPauseOnSpace(!!playPauseOnSpaceKeydown, () => {
+      closeContextMenu()
+      togglePlayPause()
+      onSpaceKeydownForPlayPause?.()
+    })
+
     useEffect(() => {
       if (playPauseButtonRef.current) {
         playPauseButtonRef.current.focus()
@@ -322,7 +348,11 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
     }, [disableClosedCaptions, toggleClosedCaptions])
 
     useEffect(() => {
-      if (isPlaying && playPauseButtonRef.current) {
+      if (
+        isPlaying &&
+        playPauseButtonRef.current &&
+        !isPlayPauseControlAtBottom
+      ) {
         if (playPauseButtonRefIntervalId.current) {
           clearInterval(playPauseButtonRefIntervalId.current)
         }
@@ -333,14 +363,16 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
         }, 1000)
       } else {
         clearInterval(playPauseButtonRefIntervalId.current!)
+        // Cleared rather than set to `visible`, which would show it even inside a hidden parent
+        // (e.g. covered by the full media info with the tinted window, see `global.css`)
         if (playPauseButtonRef.current) {
-          playPauseButtonRef.current.style.visibility = 'visible'
+          playPauseButtonRef.current.style.visibility = ''
         }
       }
       return () => {
         clearInterval(playPauseButtonRefIntervalId.current!)
       }
-    }, [isPlaying])
+    }, [isPlaying, isPlayPauseControlAtBottom])
 
     useEffect(() => {
       // On platforms like Linux, native Webview does not support accessing local asset like video. We have to serve the video asset via a local server from the backend.
@@ -381,6 +413,19 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
         }) satisfies VideoPlayerRef,
     )
 
+    // Uses the decoded size (not ffprobe's) since the webview & ffmpeg both apply rotation metadata
+    const transformPreview = useMemo(
+      () =>
+        transformHistory && videoSize
+          ? getTransformPreview(
+              transformHistory,
+              videoSize.width,
+              videoSize.height,
+            )
+          : null,
+      [transformHistory, videoSize],
+    )
+
     return (
       <div className={cn('w-full h-full', containerClassName)}>
         <div
@@ -397,69 +442,125 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
             }
           }}
         >
-          <ReactPlayer
-            ref={playerRef}
-            url={videoUrl!}
-            controls
-            width="100%"
-            height="100%"
-            playing={isPlaying}
-            onPlay={() => {
-              setIsPlaying(true)
-              onPlay?.()
-              setTimeout(() => {
-                autoScrollCursorToCurrentTime(scales)
-              }, 100)
-            }}
-            onPause={() => {
-              setIsPlaying(false)
-              onPause?.()
-            }}
-            onEnded={() => {
-              onEnded?.()
-              setIsPlaying(false)
-            }}
-            onProgress={(progress) => {
-              onProgress?.(progress)
-              if (timelinePlayerRef.current) {
-                timelinePlayerRef.current.setTime(progress.playedSeconds)
-                autoScrollCursorToCurrentTime(scales)
+          {/* Wrappers stay mounted (as `display: contents` when unused) so toggling the
+          preview doesn't remount & reload the video */}
+          <div
+            className={
+              transformPreview ? 'relative overflow-hidden mx-auto' : ''
+            }
+            style={
+              transformPreview
+                ? {
+                    aspectRatio: transformPreview.aspectRatio,
+                    // fit within the max height while keeping the output's aspect ratio
+                    width: style?.maxHeight
+                      ? `min(100%, calc(${style.maxHeight} * ${transformPreview.aspectRatio}))`
+                      : '100%',
+                  }
+                : { display: 'contents' }
+            }
+          >
+            <div
+              style={
+                transformPreview
+                  ? transformPreview.frameStyle
+                  : { display: 'contents' }
               }
-            }}
-            onDuration={(duration) => {
-              onDuration?.(duration)
-              setDuration(duration)
-              if (timelinePlayerRef.current) {
-                refreshTimeline()
-              }
-            }}
-            onReady={(player) => {
-              onReady?.(player)
-              toggleClosedCaptions(disableClosedCaptions)
-              if (autoPlay) {
-                setIsPlaying(true)
-              }
-            }}
-            {...props}
-          />
-          {!disablePlayPauseControlAtCenter ? (
-            <Button
-              ref={playPauseButtonRef}
-              onPress={togglePlayPause}
-              isIconOnly
-              radius="full"
-              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2  bg-black/30 cursor-pointer"
             >
-              <Icon
-                name={isPlaying ? 'pause' : 'play'}
-                size={28}
-                className="text-white drop-shadow-lg"
+              <ReactPlayer
+                ref={playerRef}
+                url={videoUrl!}
+                controls
+                width={transformPreview?.mediaStyle.width ?? '100%'}
+                height={transformPreview?.mediaStyle.height ?? '100%'}
+                style={transformPreview ? transformPreview.mediaStyle : style}
+                playing={isPlaying}
+                onPlay={() => {
+                  setIsPlaying(true)
+                  onPlay?.()
+                  setTimeout(() => {
+                    autoScrollCursorToCurrentTime(scales)
+                  }, 100)
+                }}
+                onPause={() => {
+                  setIsPlaying(false)
+                  onPause?.()
+                }}
+                onEnded={() => {
+                  onEnded?.()
+                  setIsPlaying(false)
+                }}
+                onProgress={(progress) => {
+                  onProgress?.(progress)
+                  if (timelinePlayerRef.current) {
+                    timelinePlayerRef.current.setTime(progress.playedSeconds)
+                    autoScrollCursorToCurrentTime(scales)
+                  }
+                }}
+                onDuration={(duration) => {
+                  onDuration?.(duration)
+                  setDuration(duration)
+                  if (timelinePlayerRef.current) {
+                    refreshTimeline()
+                  }
+                }}
+                onReady={(player) => {
+                  onReady?.(player)
+                  const video = player.getInternalPlayer() as HTMLVideoElement
+                  if (video?.videoWidth && video?.videoHeight) {
+                    setVideoSize({
+                      width: video.videoWidth,
+                      height: video.videoHeight,
+                    })
+                  }
+                  toggleClosedCaptions(disableClosedCaptions)
+                  if (autoPlay) {
+                    setIsPlaying(true)
+                  }
+                }}
+                {...props}
               />
-            </Button>
+            </div>
+          </div>
+          {!disablePlayPauseControlAtCenter ? (
+            isPlayPauseControlAtBottom ? (
+              <Button
+                ref={playPauseButtonRef}
+                onPress={togglePlayPause}
+                variant="bordered"
+                isIconOnly
+                radius="full"
+                aria-label={isPlaying ? t('player.pause') : t('player.play')}
+                className="absolute bottom-4 left-1/2 -translate-x-1/2 cursor-pointer"
+              >
+                <Icon
+                  name={isPlaying ? 'pause' : 'play'}
+                  size={20}
+                  className="text-zinc-800 dark:text-white dark:drop-shadow-lg"
+                />
+              </Button>
+            ) : (
+              <Button
+                ref={playPauseButtonRef}
+                onPress={togglePlayPause}
+                variant="bordered"
+                isIconOnly
+                radius="full"
+                aria-label={isPlaying ? t('player.pause') : t('player.play')}
+                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 cursor-pointer"
+              >
+                <Icon
+                  name={isPlaying ? 'pause' : 'play'}
+                  size={20}
+                  className="text-zinc-800 dark:text-white dark:drop-shadow-lg"
+                />
+              </Button>
+            )
           ) : null}
         </div>
         {contextMenuOpen && contextMenuPosition && contextMenu ? (
           <div
+            role="menu"
             className="fixed z-50 bg-content1 rounded-xl"
             style={{
               left: contextMenuPosition.x,
@@ -508,7 +609,14 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
             }}
             getActionRender={(action, row) => {
               if (action.effectId === 'videoPlayer') {
-                return <BoundaryRowActionRender action={action} row={row} />
+                return (
+                  <BoundaryRowActionRender
+                    action={action}
+                    row={row}
+                    keptSegments={trimSegments}
+                    waveform={waveform}
+                  />
+                )
               }
             }}
             getScaleRender={(scale) => <ScaleRender scale={scale} />}

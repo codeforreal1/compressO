@@ -1,11 +1,13 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
 import Slider from '@/components/Slider'
 import Switch from '@/components/Switch'
 import { appProxy, normalizeBatchMediaConfig } from '@/routes/(root)/-state'
 import { slideDownTransition } from '@/utils/animation'
+import { useBatchVideoConfigKey } from '../-batchConfig'
 
 type VideoSpeedProps = {
   mediaIndex: number
@@ -15,6 +17,7 @@ const SPEED_OPTIONS = [0.25, 1, 2, 3, 4] as const
 const DEFAULT_SPEED = 1
 
 const VideoSpeed = ({ mediaIndex }: VideoSpeedProps) => {
+  const { t } = useTranslation()
   const {
     state: {
       media,
@@ -24,13 +27,14 @@ const VideoSpeed = ({ mediaIndex }: VideoSpeedProps) => {
       isLoadingMediaFiles,
     },
   } = useSnapshot(appProxy)
+  const batchConfigKey = useBatchVideoConfigKey()
   const video =
     media.length > 0 && mediaIndex >= 0 && media[mediaIndex].type === 'video'
       ? media[mediaIndex]
       : null
   const { config } = video ?? {}
   const { shouldEnableCustomSpeed, customSpeed } =
-    config ?? commonConfigForBatchCompression.videoConfig ?? {}
+    config ?? commonConfigForBatchCompression[batchConfigKey] ?? {}
 
   const handleSwitchToggle = useCallback(() => {
     if (
@@ -51,13 +55,15 @@ const VideoSpeed = ({ mediaIndex }: VideoSpeedProps) => {
       }
     } else {
       if (appProxy.state.media.length > 1) {
-        appProxy.state.commonConfigForBatchCompression.videoConfig.shouldEnableCustomSpeed =
-          !appProxy.state.commonConfigForBatchCompression.videoConfig
+        appProxy.state.commonConfigForBatchCompression[
+          batchConfigKey
+        ].shouldEnableCustomSpeed =
+          !appProxy.state.commonConfigForBatchCompression[batchConfigKey]
             .shouldEnableCustomSpeed
         normalizeBatchMediaConfig()
       }
     }
-  }, [mediaIndex])
+  }, [mediaIndex, batchConfigKey])
 
   const handleValueChange = useCallback(
     (value: number) => {
@@ -70,13 +76,14 @@ const VideoSpeed = ({ mediaIndex }: VideoSpeedProps) => {
         appProxy.state.media[mediaIndex].isConfigDirty = true
       } else {
         if (appProxy.state.media.length > 1) {
-          appProxy.state.commonConfigForBatchCompression.videoConfig.customSpeed =
-            +value
+          appProxy.state.commonConfigForBatchCompression[
+            batchConfigKey
+          ].customSpeed = +value
           normalizeBatchMediaConfig()
         }
       }
     },
-    [mediaIndex],
+    [mediaIndex, batchConfigKey],
   )
 
   const shouldDisableInput =
@@ -95,7 +102,7 @@ const VideoSpeed = ({ mediaIndex }: VideoSpeedProps) => {
         isDisabled={shouldDisableInput}
       >
         <p className="text-gray-600 dark:text-gray-400 text-sm mr-2 w-full">
-          Speed
+          {t('speed.title')}
         </p>
       </Switch>
       <AnimatePresence mode="wait">
@@ -103,7 +110,6 @@ const VideoSpeed = ({ mediaIndex }: VideoSpeedProps) => {
           <motion.div {...slideDownTransition}>
             <Slider
               label=" "
-              size="lg"
               step={0.01}
               minValue={0.25}
               maxValue={4}
@@ -118,7 +124,7 @@ const VideoSpeed = ({ mediaIndex }: VideoSpeedProps) => {
                 }
               }}
               isDisabled={!shouldEnableCustomSpeed || shouldDisableInput}
-              className="w-full"
+              className="w-full mt-3 mb-8"
               classNames={{
                 label: 'text-gray-600 dark:text-gray-400 text-sm',
                 mark: '!text-xs mt-2',
