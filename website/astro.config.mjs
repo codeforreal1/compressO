@@ -13,6 +13,9 @@ export default defineConfig({
   integrations: [mdx(), sitemap(), react()],
   output: 'static',
   outDir: 'dist',
+  server: {
+    allowedHosts: ['.trycloudflare.com'],
+  },
   vite: {
     plugins: [tailwindcss()],
     build: {
