@@ -8,6 +8,7 @@ import Select from '@/components/Select'
 import Switch from '@/components/Switch'
 import { isAudioExtension } from '@/types/compression'
 import { slideDownTransition } from '@/utils/animation'
+import { isAudioOutput } from '@/utils/audio'
 import { appProxy, normalizeBatchMediaConfig } from '../../../../-state'
 import { useBatchVideoConfigKey } from '../-batchConfig'
 
@@ -127,7 +128,13 @@ function AudioBitrate({ mediaIndex }: AudioBitrateProps) {
     isCompressing ||
     isProcessCompleted ||
     isLoadingMediaFiles ||
-    audioConfig?.volume === 0 ||
+    // Muted, an audio output is still written (as silence), so its settings stay available
+    (audioConfig?.volume === 0 &&
+      !isAudioOutput({
+        isAudioFile: video?.isAudioFile,
+        isAudioFileSettings: batchConfigKey === 'audioFileConfig',
+        convertToExtension,
+      })) ||
     convertToExtension === 'gif' ||
     (!!shouldUseTargetSize &&
       (!!video?.isAudioFile ||

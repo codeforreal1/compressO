@@ -9,6 +9,7 @@ import Divider from '@/components/Divider'
 import Select from '@/components/Select'
 import Switch from '@/components/Switch'
 import { slideDownTransition } from '@/utils/animation'
+import { isAudioOutput } from '@/utils/audio'
 import { appProxy, normalizeBatchMediaConfig } from '../../../../-state'
 import { useBatchVideoConfigKey } from '../-batchConfig'
 
@@ -290,7 +291,13 @@ function AudioChannels({ mediaIndex }: AudioChannelsProps) {
     isCompressing ||
     isProcessCompleted ||
     isLoadingMediaFiles ||
-    audioConfig?.volume === 0 ||
+    // Muted, an audio output is still written (as silence), so its settings stay available
+    (audioConfig?.volume === 0 &&
+      !isAudioOutput({
+        isAudioFile: video?.isAudioFile,
+        isAudioFileSettings: batchConfigKey === 'audioFileConfig',
+        convertToExtension,
+      })) ||
     convertToExtension === 'gif'
 
   const hasNoAudio = videoInfoRaw?.audioStreams?.length === 0

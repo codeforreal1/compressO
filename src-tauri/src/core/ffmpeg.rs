@@ -156,13 +156,13 @@ impl FFMPEG {
         };
         let has_audio_stream = !audio_streams.is_empty();
 
-        if is_audio_target && (!has_audio_stream || audio_config.volume == 0) {
-            return Err(String::from(if has_audio_stream {
-                "The audio cannot be extracted while it is muted."
-            } else {
-                "The video has no audio to extract."
-            }));
+        if is_audio_target && !has_audio_stream {
+            return Err(String::from("The video has no audio to extract."));
         }
+        // Muted, an audio output (e.g. an audio file at 0%) keeps its audio & silences it: silence of
+        // the same length, as there is nothing else to write. Muted videos drop their audio instead.
+        let is_silent_audio = is_audio_target && audio_config.volume == 0;
+        let keeps_audio = audio_config.volume > 0 || is_silent_audio;
 
         // Audio formats hold a single audio stream, so only the first selected track is extracted
         let selected_audio_tracks: Option<Vec<usize>> = if is_audio_target {
@@ -486,7 +486,9 @@ impl FFMPEG {
         let mut map_video = false;
         let mut map_audio = false;
 
-        let volume_filter_str = if audio_config.volume > 0 && audio_config.volume != 100 {
+        let volume_filter_str = if is_silent_audio {
+            "volume=0".to_string()
+        } else if audio_config.volume > 0 && audio_config.volume != 100 {
             let volume_value = audio_config.volume as f32 / 100.0;
             format!("volume={}", volume_value)
         } else {
@@ -641,7 +643,7 @@ impl FFMPEG {
             map_video = true;
         }
 
-        if audio_config.volume > 0 && has_audio_stream {
+        if keeps_audio && has_audio_stream {
             if let Some(segments) = trim_segments {
                 if !segments.is_empty() {
                     map_audio = true;
@@ -757,7 +759,7 @@ impl FFMPEG {
 
                 audio_args_owned.push(out_label);
             }
-        } else if audio_config.volume > 0 && has_audio_stream {
+        } else if keeps_audio && has_audio_stream {
             if let Some(ref selected_tracks) = selected_audio_tracks {
                 for &track_index in selected_tracks {
                     audio_args_owned.push("-map".to_string());
@@ -774,7 +776,7 @@ impl FFMPEG {
                 && !map_audio
                 && (!combined_audio_filter.is_empty()
                     || !audio_speed_filter.is_empty()
-                    || (audio_config.volume > 0 && audio_config.volume != 100))
+                    || (keeps_audio && audio_config.volume != 100))
             {
                 let mut args = vec![];
                 let audio_filters_with_speed =
@@ -817,7 +819,7 @@ impl FFMPEG {
                 planned_audio_bitrate.or(audio_config.bitrate),
                 target_size.is_some(),
             ));
-        } else if audio_config.volume > 0 && has_audio_stream {
+        } else if keeps_audio && has_audio_stream {
             if let Some(bitrate) = audio_config.bitrate {
                 audio_args_owned.extend(["-b:a".into(), format!("{}k", bitrate)]);
             }
@@ -828,7 +830,7 @@ impl FFMPEG {
 
         cmd_args.extend(audio_args_owned.iter().map(|s| s.as_str()));
 
-        if audio_config.volume == 0 || is_gif_target {
+        if !keeps_audio || is_gif_target {
             cmd_args.push("-an");
         }
 
@@ -1600,6 +1602,16 @@ impl FFMPEG {
     ) -> Result<VideoThumbnail, String> {
         if !Path::exists(Path::new(video_path)) {
             return Err(String::from("File does not exist in given path."));
+        }
+        // Nothing to take a picture of (e.g. an audio file without cover art): said without running
+        // FFmpeg, whose failure would fill the log
+        // (when it cannot be read, FFmpeg is still tried)
+        let video_streams = {
+            let mut ffprobe = FFPROBE::new(&self.app)?.with_owner_window(&self.owner_window);
+            ffprobe.get_video_streams(video_path).await
+        };
+        if video_streams.is_ok_and(|streams| streams.is_empty()) {
+            return Err(String::from("The media has no picture."));
         }
         let id = nanoid!();
         let file_name = format!("{}.jpg", id);

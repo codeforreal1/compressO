@@ -1282,7 +1282,10 @@ export function describeVideoPresetSettings(settings: VideoPresetSettings) {
   const { volume, audioCodec, audioChannelConfig, bitrate } =
     settings.audioConfig ?? {}
   if (volume === 0) {
-    lines.push(t('presets.summary.audioRemoved'))
+    // Muted, an audio output is silence; a video drops its audio
+    lines.push(
+      isAudioOutput ? t('audio.mute') : t('presets.summary.audioRemoved'),
+    )
   } else {
     if (volume != null && volume !== 100)
       lines.push(t('presets.summary.volume', { value: volume }))
@@ -1372,7 +1375,8 @@ export function describeAudioPresetSettings(settings: AudioPresetSettings) {
   if (settings.shouldEnableCustomSpeed && settings.customSpeed) {
     lines.push(t('presets.summary.speed', { speed: settings.customSpeed }))
   }
-  if (volume != null && volume !== 100)
+  if (volume === 0) lines.push(t('audio.mute'))
+  else if (volume != null && volume !== 100)
     lines.push(t('presets.summary.volume', { value: volume }))
   if (
     settings.shouldEnableCustomAudioCodec &&

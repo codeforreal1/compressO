@@ -8,6 +8,7 @@ import Switch from '@/components/Switch'
 import { t } from '@/i18n'
 import { AudioStream } from '@/types/compression'
 import { slideDownTransition } from '@/utils/animation'
+import { isAudioOutput } from '@/utils/audio'
 import { cn } from '@/utils/tailwind'
 import { appProxy, normalizeBatchMediaConfig } from '../../../../-state'
 import { useBatchVideoConfigKey } from '../-batchConfig'
@@ -172,7 +173,13 @@ function AudioTracks({ mediaIndex }: AudioTracksProps) {
     isProcessCompleted ||
     isLoadingMediaFiles ||
     hasNoAudio ||
-    audioConfig?.volume === 0 ||
+    // Muted, an audio output is still written (as silence), so its settings stay available
+    (audioConfig?.volume === 0 &&
+      !isAudioOutput({
+        isAudioFile: video?.isAudioFile,
+        isAudioFileSettings: batchConfigKey === 'audioFileConfig',
+        convertToExtension,
+      })) ||
     convertToExtension === 'gif'
 
   return (
