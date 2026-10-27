@@ -85,7 +85,7 @@ export type SettingsState = {
   tintOpacity: number
   /**
    * Compress the media dropped on the menu bar (or copied, with `watchClipboard`) right away, one
-   * by one, instead of keeping it for the main window (off by default). Needs a save location.
+   * by one, instead of keeping it for the main window (on by default). Needs a save location.
    */
   autoCompress: boolean
   /** Presets of the media compressed by the drop zone (the Standard presets by default) */
@@ -160,7 +160,7 @@ function readSettings(): SettingsState {
       localStorage.getItem(constants.playCompletionSound) === 'true',
     tintedWindow: localStorage.getItem(constants.tintedWindow) === 'true',
     tintOpacity: readTintOpacity(constants.tintOpacity, DEFAULT_TINT_OPACITY),
-    autoCompress: localStorage.getItem(constants.autoCompress) === 'true',
+    autoCompress: localStorage.getItem(constants.autoCompress) !== 'false',
     dropZoneVideoPresetId:
       localStorage.getItem(constants.dropZoneVideoPresetId) ??
       STANDARD_PRESET_ID,
