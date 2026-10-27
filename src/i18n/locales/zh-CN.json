@@ -131,8 +131,6 @@
       "cannotDeleteStandard": "无法删除标准预设。"
     },
     "dropZone": {
-      "needsTrayIcon_macos": "拖放区位于菜单栏中，因此只有在“通用”中打开“<setting>显示菜单栏图标</setting>”后才能使用。",
-      "needsTrayIcon_windows": "拖放区位于系统托盘中，因此只有在“通用”中打开“<setting>显示系统托盘图标</setting>”后才能使用。",
       "turnOnTrayIcon_macos": "拖放区位于菜单栏中。请先在“通用”中打开“<setting>显示菜单栏图标</setting>”。",
       "turnOnTrayIcon_windows": "拖放区位于系统托盘中。请先在“通用”中打开“<setting>显示系统托盘图标</setting>”。",
       "compression": {

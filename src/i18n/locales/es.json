@@ -131,8 +131,6 @@
       "cannotDeleteStandard": "El ajuste preestablecido Estándar no se puede eliminar."
     },
     "dropZone": {
-      "needsTrayIcon_macos": "La zona de arrastre está en la barra de menús, por lo que solo funciona cuando «<setting>Mostrar icono en la barra de menús</setting>» está activado en General.",
-      "needsTrayIcon_windows": "La zona de arrastre está en la bandeja del sistema, por lo que solo funciona cuando «<setting>Mostrar icono en la bandeja del sistema</setting>» está activado en General.",
       "turnOnTrayIcon_macos": "La zona de arrastre está en la barra de menús. Active primero «<setting>Mostrar icono en la barra de menús</setting>» en General.",
       "turnOnTrayIcon_windows": "La zona de arrastre está en la bandeja del sistema. Active primero «<setting>Mostrar icono en la bandeja del sistema</setting>» en General.",
       "compression": {

@@ -131,8 +131,6 @@
       "cannotDeleteStandard": "Không thể xóa cài đặt sẵn Tiêu chuẩn."
     },
     "dropZone": {
-      "needsTrayIcon_macos": "Vùng thả nằm trên thanh menu, nên chỉ hoạt động khi “<setting>Hiển thị biểu tượng trên thanh menu</setting>” được bật trong Chung.",
-      "needsTrayIcon_windows": "Vùng thả nằm trong khay hệ thống, nên chỉ hoạt động khi “<setting>Hiển thị biểu tượng trong khay hệ thống</setting>” được bật trong Chung.",
       "turnOnTrayIcon_macos": "Vùng thả nằm trên thanh menu. Trước tiên, hãy bật “<setting>Hiển thị biểu tượng trên thanh menu</setting>” trong Chung.",
       "turnOnTrayIcon_windows": "Vùng thả nằm trong khay hệ thống. Trước tiên, hãy bật “<setting>Hiển thị biểu tượng trong khay hệ thống</setting>” trong Chung.",
       "compression": {

@@ -131,8 +131,6 @@
       "cannotDeleteStandard": "無法刪除標準預設。"
     },
     "dropZone": {
-      "needsTrayIcon_macos": "拖放區位於選單列中，因此只有在「一般」中開啟「<setting>顯示選單列圖示</setting>」後才能使用。",
-      "needsTrayIcon_windows": "拖放區位於系統匣中，因此只有在「一般」中開啟「<setting>顯示系統匣圖示</setting>」後才能使用。",
       "turnOnTrayIcon_macos": "拖放區位於選單列中。請先在「一般」中開啟「<setting>顯示選單列圖示</setting>」。",
       "turnOnTrayIcon_windows": "拖放區位於系統匣中。請先在「一般」中開啟「<setting>顯示系統匣圖示</setting>」。",
       "compression": {

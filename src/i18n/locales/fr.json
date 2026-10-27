@@ -131,8 +131,6 @@
       "cannotDeleteStandard": "Le préréglage Standard ne peut pas être supprimé."
     },
     "dropZone": {
-      "needsTrayIcon_macos": "La zone de dépôt se trouve dans la barre des menus ; elle ne fonctionne donc que si « <setting>Afficher l’icône dans la barre des menus</setting> » est activé dans Général.",
-      "needsTrayIcon_windows": "La zone de dépôt se trouve dans la zone de notification ; elle ne fonctionne donc que si « <setting>Afficher l’icône dans la zone de notification</setting> » est activé dans Général.",
       "turnOnTrayIcon_macos": "La zone de dépôt se trouve dans la barre des menus. Activez d’abord « <setting>Afficher l’icône dans la barre des menus</setting> » dans Général.",
       "turnOnTrayIcon_windows": "La zone de dépôt se trouve dans la zone de notification. Activez d’abord « <setting>Afficher l’icône dans la zone de notification</setting> » dans Général.",
       "compression": {

@@ -131,8 +131,6 @@
       "cannotDeleteStandard": "표준 프리셋은 삭제할 수 없습니다."
     },
     "dropZone": {
-      "needsTrayIcon_macos": "드롭 영역은 메뉴 막대에 있으므로 일반에서 '<setting>메뉴 막대 아이콘 표시</setting>'가 켜져 있을 때만 작동합니다.",
-      "needsTrayIcon_windows": "드롭 영역은 시스템 트레이에 있으므로 일반에서 '<setting>시스템 트레이 아이콘 표시</setting>'가 켜져 있을 때만 작동합니다.",
       "turnOnTrayIcon_macos": "드롭 영역은 메뉴 막대에 있습니다. 먼저 일반에서 '<setting>메뉴 막대 아이콘 표시</setting>'를 켜십시오.",
       "turnOnTrayIcon_windows": "드롭 영역은 시스템 트레이에 있습니다. 먼저 일반에서 '<setting>시스템 트레이 아이콘 표시</setting>'를 켜십시오.",
       "compression": {

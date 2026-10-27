@@ -41,18 +41,6 @@ function DropZone() {
 
   return (
     <>
-      {/* Only needed while the drop zone cannot be used */}
-      {!showMenuBarIcon ? (
-        <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-8">
-          <Trans
-            i18nKey="settings.dropZone.needsTrayIcon"
-            context={TRAY_CONTEXT}
-            components={{
-              setting: <SettingLink target={{ settingId: 'showTrayIcon' }} />,
-            }}
-          />
-        </p>
-      ) : null}
       <SettingsSection title={t('settings.dropZone.compression.title')}>
         <SettingsRow
           settingId="autoCompress"

@@ -131,8 +131,6 @@
       "cannotDeleteStandard": "A predefinição Padrão não pode ser excluída."
     },
     "dropZone": {
-      "needsTrayIcon_macos": "A área de soltar fica na barra de menus, por isso só funciona quando “<setting>Mostrar ícone na barra de menus</setting>” está ativado em Geral.",
-      "needsTrayIcon_windows": "A área de soltar fica na bandeja do sistema, por isso só funciona quando “<setting>Mostrar ícone na bandeja do sistema</setting>” está ativado em Geral.",
       "turnOnTrayIcon_macos": "A área de soltar fica na barra de menus. Ative primeiro “<setting>Mostrar ícone na barra de menus</setting>” em Geral.",
       "turnOnTrayIcon_windows": "A área de soltar fica na bandeja do sistema. Ative primeiro “<setting>Mostrar ícone na bandeja do sistema</setting>” em Geral.",
       "compression": {

@@ -131,8 +131,6 @@
       "cannotDeleteStandard": "Die Standard-Voreinstellung kann nicht gelöscht werden."
     },
     "dropZone": {
-      "needsTrayIcon_macos": "Die Ablagezone befindet sich in der Menüleiste und funktioniert daher nur, wenn „<setting>Symbol in der Menüleiste anzeigen</setting>“ unter „Allgemein“ aktiviert ist.",
-      "needsTrayIcon_windows": "Die Ablagezone befindet sich im Infobereich und funktioniert daher nur, wenn „<setting>Symbol im Infobereich anzeigen</setting>“ unter „Allgemein“ aktiviert ist.",
       "turnOnTrayIcon_macos": "Die Ablagezone befindet sich in der Menüleiste. Aktivieren Sie zuerst „<setting>Symbol in der Menüleiste anzeigen</setting>“ unter „Allgemein“.",
       "turnOnTrayIcon_windows": "Die Ablagezone befindet sich im Infobereich. Aktivieren Sie zuerst „<setting>Symbol im Infobereich anzeigen</setting>“ unter „Allgemein“.",
       "compression": {

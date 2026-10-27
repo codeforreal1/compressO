@@ -131,8 +131,6 @@
       "cannotDeleteStandard": "Preset Standar tidak dapat dihapus."
     },
     "dropZone": {
-      "needsTrayIcon_macos": "Zona taruh berada di bar menu, sehingga hanya berfungsi jika “<setting>Tampilkan ikon bar menu</setting>” diaktifkan di Umum.",
-      "needsTrayIcon_windows": "Zona taruh berada di baki sistem, sehingga hanya berfungsi jika “<setting>Tampilkan ikon baki sistem</setting>” diaktifkan di Umum.",
       "turnOnTrayIcon_macos": "Zona taruh berada di bar menu. Aktifkan terlebih dahulu “<setting>Tampilkan ikon bar menu</setting>” di Umum.",
       "turnOnTrayIcon_windows": "Zona taruh berada di baki sistem. Aktifkan terlebih dahulu “<setting>Tampilkan ikon baki sistem</setting>” di Umum.",
       "compression": {

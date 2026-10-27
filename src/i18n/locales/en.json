@@ -131,8 +131,6 @@
       "cannotDeleteStandard": "The Standard preset cannot be deleted."
     },
     "dropZone": {
-      "needsTrayIcon_macos": "The drop zone is in the menu bar, so it only works when <setting>Show menu bar icon</setting> is turned on in General.",
-      "needsTrayIcon_windows": "The drop zone is in the system tray, so it only works when <setting>Show system tray icon</setting> is turned on in General.",
       "turnOnTrayIcon_macos": "The drop zone is in the menu bar. Turn on <setting>Show menu bar icon</setting> in General first.",
       "turnOnTrayIcon_windows": "The drop zone is in the system tray. Turn on <setting>Show system tray icon</setting> in General first.",
       "compression": {

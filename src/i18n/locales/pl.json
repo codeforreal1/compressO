@@ -131,8 +131,6 @@
       "cannotDeleteStandard": "Nie można usunąć ustawienia Standardowego."
     },
     "dropZone": {
-      "needsTrayIcon_macos": "Strefa upuszczania znajduje się na pasku menu, więc działa tylko wtedy, gdy w sekcji Ogólne włączona jest opcja „<setting>Pokazuj ikonę na pasku menu</setting>”.",
-      "needsTrayIcon_windows": "Strefa upuszczania znajduje się w zasobniku systemowym, więc działa tylko wtedy, gdy w sekcji Ogólne włączona jest opcja „<setting>Pokazuj ikonę w zasobniku systemowym</setting>”.",
       "turnOnTrayIcon_macos": "Strefa upuszczania znajduje się na pasku menu. Najpierw włącz opcję „<setting>Pokazuj ikonę na pasku menu</setting>” w sekcji Ogólne.",
       "turnOnTrayIcon_windows": "Strefa upuszczania znajduje się w zasobniku systemowym. Najpierw włącz opcję „<setting>Pokazuj ikonę w zasobniku systemowym</setting>” w sekcji Ogólne.",
       "compression": {

@@ -131,8 +131,6 @@
       "cannotDeleteStandard": "標準プリセットは削除できません。"
     },
     "dropZone": {
-      "needsTrayIcon_macos": "ドロップゾーンはメニューバーにあるため、「一般」で「<setting>メニューバーにアイコンを表示</setting>」がオンの場合にのみ機能します。",
-      "needsTrayIcon_windows": "ドロップゾーンはシステムトレイにあるため、「一般」で「<setting>システムトレイにアイコンを表示</setting>」がオンの場合にのみ機能します。",
       "turnOnTrayIcon_macos": "ドロップゾーンはメニューバーにあります。先に「一般」で「<setting>メニューバーにアイコンを表示</setting>」をオンにしてください。",
       "turnOnTrayIcon_windows": "ドロップゾーンはシステムトレイにあります。先に「一般」で「<setting>システムトレイにアイコンを表示</setting>」をオンにしてください。",
       "compression": {

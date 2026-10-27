@@ -131,8 +131,6 @@
       "cannotDeleteStandard": "Standart ön ayar silinemez."
     },
     "dropZone": {
-      "needsTrayIcon_macos": "Bırakma alanı menü çubuğundadır; bu nedenle yalnızca Genel’de “<setting>Menü çubuğu simgesini göster</setting>” açıkken çalışır.",
-      "needsTrayIcon_windows": "Bırakma alanı sistem tepsisindedir; bu nedenle yalnızca Genel’de “<setting>Sistem tepsisi simgesini göster</setting>” açıkken çalışır.",
       "turnOnTrayIcon_macos": "Bırakma alanı menü çubuğundadır. Önce Genel’de “<setting>Menü çubuğu simgesini göster</setting>” seçeneğini açın.",
       "turnOnTrayIcon_windows": "Bırakma alanı sistem tepsisindedir. Önce Genel’de “<setting>Sistem tepsisi simgesini göster</setting>” seçeneğini açın.",
       "compression": {

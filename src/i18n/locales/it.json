@@ -131,8 +131,6 @@
       "cannotDeleteStandard": "La preimpostazione Standard non può essere eliminata."
     },
     "dropZone": {
-      "needsTrayIcon_macos": "La zona di rilascio si trova nella barra dei menu, quindi funziona solo quando «<setting>Mostra icona nella barra dei menu</setting>» è attivo in Generali.",
-      "needsTrayIcon_windows": "La zona di rilascio si trova nell’area di notifica, quindi funziona solo quando «<setting>Mostra icona nell’area di notifica</setting>» è attivo in Generali.",
       "turnOnTrayIcon_macos": "La zona di rilascio si trova nella barra dei menu. Attivi prima «<setting>Mostra icona nella barra dei menu</setting>» in Generali.",
       "turnOnTrayIcon_windows": "La zona di rilascio si trova nell’area di notifica. Attivi prima «<setting>Mostra icona nell’area di notifica</setting>» in Generali.",
       "compression": {
