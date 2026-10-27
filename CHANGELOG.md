@@ -24,7 +24,7 @@ Features:
 - **Completion Sound**: Play a sound when a compression completes.
 - **Keep Awake**: Prevent the computer from sleeping while compressing.
 - **Redesigned Settings**: Settings are now a dialog with a sidebar and a search field, available from the app menu and with Cmd/Ctrl + comma. Messages that mention a setting link to it.
-- **Keyboard Shortcuts**: Start and cancel a compression with Cmd/Ctrl + Shift + Enter, and reconfigure with Cmd/Ctrl + Shift + R.
+- **Keyboard Shortcuts**: Start and cancel a compression with Cmd/Ctrl + Shift + Enter, and reconfigure with Cmd/Ctrl + Shift + R. Escape exits to the home screen, asking first when the output is not saved. Holding Cmd/Ctrl shows the shortcuts on the buttons.
 - **New Logo**: A new CompressO logo and app icon.
 
 Enhancements:
