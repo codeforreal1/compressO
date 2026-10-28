@@ -3,15 +3,17 @@
 //! `drop_queue`), whether or not the drop zone compresses automatically. The menu bar's window
 //! compresses it (the main window, on Linux, while it is open). The system tells when files change
 //! (FSEvents on macOS, ReadDirectoryChangesW on Windows, inotify on Linux), through `notify`:
+//! - in the folder & its subfolders (hidden ones aside), also media in a folder moved or copied in,
+//!   of which the system may only tell the folder
 //! - only media added after a folder is watched (what is already in it is left alone)
 //! - only once complete: a file is handled once it has not changed for a moment, & temporary files
 //!   (hidden ones, partial downloads) are skipped until they are renamed
 //! - never the app's own outputs, even renamed, moved or copied (see `output_registry`)
 
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
 use std::sync::{Mutex, OnceLock};
-use std::time::Duration;
+use std::time::{Duration, SystemTime};
 
 use notify_debouncer_mini::notify::{RecommendedWatcher, RecursiveMode};
 use notify_debouncer_mini::{new_debouncer, DebounceEventResult, DebouncedEventKind, Debouncer};
@@ -42,12 +44,22 @@ pub struct WatchedFolder {
     pub name: String,
 }
 
-/// A folder being watched: its real path (as the system reports changes), & the files in it that
-/// are already handled (or were there when it started being watched)
+/// A file's size & last change, to tell a file put back or replaced under a known name from the
+/// one already handled
+type FileStamp = (u64, Option<SystemTime>);
+
+fn file_stamp(path: &Path) -> Option<FileStamp> {
+    std::fs::metadata(path)
+        .ok()
+        .map(|metadata| (metadata.len(), metadata.modified().ok()))
+}
+
+/// A folder being watched: its real path (as the system reports changes), & the files in it & its
+/// subfolders that are already handled (or were there when it started being watched), as they were
 struct FolderState {
     folder: WatchedFolder,
     real_path: PathBuf,
-    known: HashSet<PathBuf>,
+    known: HashMap<PathBuf, FileStamp>,
 }
 
 static APP_HANDLE: OnceLock<AppHandle> = OnceLock::new();
@@ -77,17 +89,30 @@ pub async fn missing_watched_folders(paths: Vec<String>) -> Vec<String> {
     missing
 }
 
-/// The files directly in a folder (not in its subfolders)
+/// The files in a folder & its subfolders, but not in hidden folders (e.g. `.git`) nor through
+/// symlinked folders (possible loops)
 fn files_in(path: &Path) -> HashSet<PathBuf> {
-    std::fs::read_dir(path)
-        .map(|entries| {
-            entries
-                .flatten()
-                .map(|entry| entry.path())
-                .filter(|path| path.is_file())
-                .collect()
-        })
-        .unwrap_or_default()
+    let mut files = HashSet::new();
+    let mut folders = vec![path.to_path_buf()];
+    while let Some(folder) = folders.pop() {
+        let Ok(entries) = std::fs::read_dir(&folder) else {
+            continue;
+        };
+        for entry in entries.flatten() {
+            let Ok(file_type) = entry.file_type() else {
+                continue;
+            };
+            let entry_path = entry.path();
+            if file_type.is_dir() {
+                if !is_hidden(&entry_path) {
+                    folders.push(entry_path);
+                }
+            } else if entry_path.is_file() {
+                files.insert(entry_path);
+            }
+        }
+    }
+    files
 }
 
 /// Sets the folders watched (the enabled ones; the settings are kept by the frontend). A folder
@@ -137,14 +162,17 @@ pub fn set_watched_folders(folders: Vec<WatchedFolder>, supported_extensions: Ve
         };
         if let Err(err) = debouncer
             .watcher()
-            .watch(&real_path, RecursiveMode::NonRecursive)
+            .watch(&real_path, RecursiveMode::Recursive)
         {
             log::warn!("[watch-folders] Could not watch {}: {}", folder.path, err);
             continue;
         }
         log::info!("[watch-folders] Watching {}", folder.path);
         states.push(FolderState {
-            known: files_in(&real_path),
+            known: files_in(&real_path)
+                .into_iter()
+                .filter_map(|path| file_stamp(&path).map(|stamp| (path, stamp)))
+                .collect(),
             folder,
             real_path,
         });
@@ -166,12 +194,16 @@ fn is_supported(path: &str) -> bool {
         .unwrap_or(false)
 }
 
+/// A hidden file or folder (or a temporary one, e.g. `~$report.docx`)
+fn is_hidden(path: &Path) -> bool {
+    path.file_name()
+        .and_then(|name| name.to_str())
+        .is_none_or(|name| name.starts_with('.') || name.starts_with('~'))
+}
+
 /// Hidden files & files still being downloaded
 fn is_temporary(path: &Path) -> bool {
-    let is_hidden = path
-        .file_name()
-        .and_then(|name| name.to_str())
-        .is_none_or(|name| name.starts_with('.') || name.starts_with('~'));
+    let is_hidden = is_hidden(path);
     let extension = path
         .extension()
         .and_then(|ext| ext.to_str())
@@ -210,28 +242,49 @@ fn handle_changes(result: DebounceEventResult) {
             let path = event.path;
             let Some(state) = states
                 .iter_mut()
-                .find(|state| path.parent() == Some(state.real_path.as_path()))
+                .find(|state| path.starts_with(&state.real_path) && path != state.real_path)
             else {
                 continue;
             };
-            // Removed (or moved away): a new file of the same name is handled again
-            if !path.is_file() {
-                state.known.remove(&path);
+            // In a hidden folder (e.g. `.git`), or a hidden file
+            let is_in_hidden_folder = path
+                .strip_prefix(&state.real_path)
+                .map(|relative| {
+                    relative
+                        .parent()
+                        .into_iter()
+                        .flat_map(|parent| parent.components())
+                        .any(|component| is_hidden(Path::new(component.as_os_str())))
+                })
+                .unwrap_or(true);
+            if is_in_hidden_folder {
                 continue;
             }
-            if state.known.contains(&path) || is_temporary(&path) {
+            // A folder moved or copied in: the system may only tell the folder, so its media is
+            // looked for in it (files still being written are left to their own changes)
+            if path.is_dir() {
+                if is_hidden(&path) {
+                    continue;
+                }
+                let mut files: Vec<PathBuf> = files_in(&path).into_iter().collect();
+                files.sort();
+                for file in files {
+                    if is_settled(&file) {
+                        if let Some(file) = take_new_file(app_handle, state, file) {
+                            queued.push((state.folder.clone(), file));
+                        }
+                    }
+                }
                 continue;
             }
-            // Empty for now (e.g. just created), handled once written
-            if std::fs::metadata(&path).map(|m| m.len()).unwrap_or(0) == 0 {
+            // Removed (or moved away), also a folder: a new file of the same name is handled again
+            if !path.exists() {
+                state.known.retain(|known, _| !known.starts_with(&path));
                 continue;
             }
-            state.known.insert(path.clone());
-            // The app's own output (e.g. saved into this folder, or renamed or copied there)
-            if crate::sys::output_registry::is_output(app_handle, &path) {
-                continue;
+            if let Some(file) = take_new_file(app_handle, state, path) {
+                queued.push((state.folder.clone(), file));
             }
-            queued.push((state.folder.clone(), path.to_string_lossy().to_string()));
         }
     }
 
@@ -245,6 +298,81 @@ fn handle_changes(result: DebounceEventResult) {
                 folder_id: folder.id,
                 folder_name: folder.name,
             }),
+        );
+    }
+}
+
+/// Whether a file has not changed for `SETTLE_TIME` (or its time cannot be read)
+fn is_settled(path: &Path) -> bool {
+    std::fs::metadata(path)
+        .and_then(|metadata| metadata.modified())
+        .ok()
+        .and_then(|modified| SystemTime::now().duration_since(modified).ok())
+        .is_none_or(|elapsed| elapsed >= SETTLE_TIME)
+}
+
+/// A file of a watched folder to queue, once: new (or put back or replaced under a known name),
+/// complete & not the app's own output
+fn take_new_file(app_handle: &AppHandle, state: &mut FolderState, path: PathBuf) -> Option<String> {
+    if !path.is_file() || is_temporary(&path) {
+        return None;
+    }
+    let stamp = file_stamp(&path)?;
+    if state.known.get(&path) == Some(&stamp) {
+        return None;
+    }
+    // Empty for now (e.g. just created), handled once written
+    if stamp.0 == 0 {
+        return None;
+    }
+    state.known.insert(path.clone(), stamp);
+    // The app's own output (e.g. saved into this folder, or renamed or copied there)
+    if crate::sys::output_registry::is_output(app_handle, &path) {
+        return None;
+    }
+    Some(path.to_string_lossy().to_string())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// What a watched folder starts from: its files at every depth, but not in hidden folders
+    #[test]
+    fn finds_files_at_every_depth() {
+        let root = std::env::temp_dir().join(format!("compresso-watch-{}", std::process::id()));
+        std::fs::create_dir_all(root.join("inside/deep-inside/deeper")).unwrap();
+        std::fs::create_dir_all(root.join(".git")).unwrap();
+        for file in [
+            "a.jpg",
+            "inside/b.jpg",
+            "inside/deep-inside/c.mp4",
+            "inside/deep-inside/deeper/d.mp3",
+            ".git/e.jpg",
+        ] {
+            std::fs::write(root.join(file), b"x").unwrap();
+        }
+
+        let mut files: Vec<String> = files_in(&root)
+            .into_iter()
+            .map(|path| {
+                path.strip_prefix(&root)
+                    .unwrap()
+                    .to_string_lossy()
+                    .to_string()
+            })
+            .collect();
+        files.sort();
+        let _ = std::fs::remove_dir_all(&root);
+
+        assert_eq!(
+            files,
+            [
+                "a.jpg",
+                "inside/b.jpg",
+                "inside/deep-inside/c.mp4",
+                "inside/deep-inside/deeper/d.mp3",
+            ]
         );
     }
 }
