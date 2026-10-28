@@ -9,6 +9,7 @@ Features:
 Bug Fixes:
 
 - Fixed copied outputs that are not saved yet being pasted under a generated name; they are now pasted under the name they would be saved with, including the preset's file name prefix.
+- Fixed watched folders missing media in subfolders, in folders moved into them, and in files put back or replaced under a name that was already compressed.
 
 ### 4.0.0
 
