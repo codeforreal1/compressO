@@ -844,6 +844,7 @@
     "flipHorizontal": "左右反転",
     "resetZoom": "ズームをリセット",
     "expand": "拡大",
+    "straighten": "傾き補正",
     "title": "変形"
   },
   "outputSettings": {

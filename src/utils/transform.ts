@@ -24,7 +24,8 @@ const toPercent = (value: number) => `${value * 100}%`
 
 /**
  * CSS that previews transforms live on a video or animated image. Mirrors the ffmpeg filters built by
- * `build_transform_filters` in the backend: rotations & flips in history order, then the latest crop.
+ * `build_transform_filters` in the backend: rotations & flips in history order, then the latest tilt
+ * (straighten), then the latest crop.
  */
 export function getTransformPreview(
   transformHistory: readonly MediaTransformHistory[],
@@ -37,6 +38,7 @@ export function getTransformPreview(
 
   const operations: string[] = []
   let isQuarterTurned = false
+  let straighten = 0
   let crop: Extract<MediaTransformHistory, { type: 'crop' }>['value'] | null =
     null
 
@@ -61,13 +63,24 @@ export function getTransformPreview(
     } else if (action.type === 'flip') {
       if (action.value.horizontal) operations.push('scaleX(-1)')
       if (action.value.vertical) operations.push('scaleY(-1)')
+    } else if (action.type === 'straighten') {
+      straighten = action.value
     } else {
       crop = action.value
     }
   }
+  // Applied last, in the output's axes
+  if (straighten) operations.push(`rotate(${straighten}deg)`)
 
-  const frameWidth = isQuarterTurned ? mediaHeight : mediaWidth
-  const frameHeight = isQuarterTurned ? mediaWidth : mediaHeight
+  // The frame holds the whole (tilted) media
+  const frame = getRotatedSize(
+    isQuarterTurned
+      ? { width: mediaHeight, height: mediaWidth }
+      : { width: mediaWidth, height: mediaHeight },
+    straighten,
+  )
+  const frameWidth = frame.width
+  const frameHeight = frame.height
 
   const cropArea =
     crop && crop.width > 0 && crop.height > 0
@@ -93,6 +106,50 @@ export function getTransformPreview(
       // CSS applies the right-most transform first, so reverse to keep the history order
       transform: ['translate(-50%, -50%)', ...operations.reverse()].join(' '),
     },
+  }
+}
+
+/**
+ * The size of the box that holds a media of a size turned by an angle (in degrees), as the cropper
+ * & ffmpeg's `rotw`/`roth` compute it
+ */
+export function getRotatedSize(
+  size: { width: number; height: number },
+  angle: number,
+) {
+  if (!angle) return { width: size.width, height: size.height }
+  const radians = (angle * Math.PI) / 180
+  const cos = Math.abs(Math.cos(radians))
+  const sin = Math.abs(Math.sin(radians))
+  return {
+    width: size.width * cos + size.height * sin,
+    height: size.width * sin + size.height * cos,
+  }
+}
+
+/**
+ * The largest centered area, of the same shape as a size, that a tilt by an angle (in degrees)
+ * leaves fully covered, in the box that holds the tilted media (see `getRotatedSize`)
+ */
+export function getStraightenedCrop(
+  size: { width: number; height: number },
+  angle: number,
+) {
+  const box = getRotatedSize(size, angle)
+  const radians = (Math.abs(angle) * Math.PI) / 180
+  const cos = Math.cos(radians)
+  const sin = Math.sin(radians)
+  const shorter = Math.min(size.width, size.height)
+  const longer = Math.max(size.width, size.height)
+  // The shorter side limits how far the area can reach
+  const scale = shorter / (shorter * cos + longer * sin)
+  const width = size.width * scale
+  const height = size.height * scale
+  return {
+    left: (box.width - width) / 2,
+    top: (box.height - height) / 2,
+    width,
+    height,
   }
 }
 
@@ -258,8 +315,8 @@ export function getPortableTransform(
 }
 
 /**
- * Renders the preview of transforms (as the backend applies them: flips, rotation, then the crop)
- * as a blob url, at most `maxSize` on its longer side
+ * Renders the preview of transforms (as the backend applies them: flips, rotation, tilt, then the
+ * crop) as a blob url, at most `maxSize` on its longer side
  */
 export async function renderTransformPreview(
   src: string,
@@ -273,10 +330,13 @@ export async function renderTransformPreview(
   // The browser shows photos upright (EXIF orientation), like the backend makes them
   const width = image.naturalWidth
   const height = image.naturalHeight
-  const rotate = normalizeRotation(transforms.rotate)
-  const isQuarterTurned = rotate % 180 === 90
-  const rotatedWidth = isQuarterTurned ? height : width
-  const rotatedHeight = isQuarterTurned ? width : height
+  // The cropper's flips are in the media's own axes, so the tilt is turned along with the rotation
+  const rotate =
+    normalizeRotation(transforms.rotate) + (transforms.straighten ?? 0)
+  const { width: rotatedWidth, height: rotatedHeight } = getRotatedSize(
+    { width, height },
+    rotate,
+  )
 
   const crop =
     transforms.crop?.width && transforms.crop?.height

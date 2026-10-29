@@ -1,5 +1,16 @@
 # Changelog
 
+### 4.1.0
+
+Features:
+
+- **Straighten**: Tilt photos, videos and animated GIFs slightly, by up to 45 degrees either way, to level a horizon or fix a crooked shot. The Straighten slider is in the transform editor, under the rotate and flip buttons. The crop stays inside the tilted picture, so no empty corners are added, and rotating or flipping keeps the straightened result.
+
+Bug Fixes:
+
+- Fixed copied outputs that are not saved yet being pasted under a generated name; they are now pasted under the name they would be saved with, including the preset's file name prefix.
+- Fixed watched folders missing media in subfolders, in folders moved into them, and in files put back or replaced under a name that was already compressed.
+
 ### 4.0.0
 
 Features:

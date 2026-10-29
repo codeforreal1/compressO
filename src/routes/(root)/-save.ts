@@ -378,6 +378,26 @@ export async function autoSaveCompressedMedia() {
 }
 
 /**
+ * A media's output as it is copied to the clipboard: from where it was saved, or (not saved yet)
+ * pasted under the name it would be saved with (prefix & original name), not its generated cache
+ * name. `null` without an output.
+ */
+export function getOutputClipboardFile(
+  mediaFile: Pick<Media, 'compressedFile' | 'fileName' | 'config'>,
+): { path: string; fileName?: string } | null {
+  const { compressedFile } = mediaFile
+  if (compressedFile?.savedPath) return { path: compressedFile.savedPath }
+  if (!compressedFile?.pathRaw) return null
+  const name = compressedFile.fileNameToDisplay || mediaFile.fileName
+  return {
+    path: compressedFile.pathRaw,
+    fileName: name
+      ? `${getMediaOutput(mediaFile).filePrefix}${name}`
+      : undefined,
+  }
+}
+
+/**
  * Copies the outputs to the clipboard after compression when enabled in Settings
  * (Output -> Copy output to clipboard). Runs after the automatic save, so saved outputs are copied
  * from where they were saved. Unsaved outputs are pasted under the name they would be saved with
@@ -391,20 +411,11 @@ export async function autoCopyCompressedMediaToClipboard() {
   if (!copyOutputToClipboard || !media.length) return
   if (media.length > 1 && !copyBatchOutputToClipboard) return
 
-  const files = media.flatMap(({ compressedFile, fileName, config }) => {
-    if (!compressedFile?.isSuccessful) return []
-    if (compressedFile.savedPath) return [{ path: compressedFile.savedPath }]
-    if (!compressedFile.pathRaw) return []
-    const name = compressedFile.fileNameToDisplay || fileName
-    return [
-      {
-        path: compressedFile.pathRaw,
-        fileName: name
-          ? `${getPresetOutput(config?.presetId).filePrefix}${name}`
-          : undefined,
-      },
-    ]
-  })
+  const files = media.flatMap((mediaFile) =>
+    mediaFile.compressedFile?.isSuccessful
+      ? (getOutputClipboardFile(mediaFile) ?? [])
+      : [],
+  )
   if (!files.length) return
 
   try {

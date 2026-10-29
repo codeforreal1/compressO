@@ -844,6 +844,7 @@
     "flipHorizontal": "水平翻转",
     "resetZoom": "重置缩放",
     "expand": "展开",
+    "straighten": "拉直",
     "title": "变换"
   },
   "outputSettings": {

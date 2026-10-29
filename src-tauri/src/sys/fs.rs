@@ -304,3 +304,54 @@ fn collect_dir_files(
 
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// A dropped folder is collected at every depth, each file with its folder relative to the
+    /// dropped folder's parent (hidden files & folders aside)
+    #[test]
+    fn collects_files_at_every_depth() {
+        let root = std::env::temp_dir().join(format!("compresso-collect-{}", std::process::id()));
+        let dropped = root.join("Vacation");
+        std::fs::create_dir_all(dropped.join("Day1/Morning/Beach")).unwrap();
+        std::fs::create_dir_all(dropped.join(".hidden")).unwrap();
+        for file in [
+            "a.jpg",
+            "Day1/b.jpg",
+            "Day1/Morning/c.jpg",
+            "Day1/Morning/Beach/d.jpg",
+            ".hidden/e.jpg",
+            ".f.jpg",
+        ] {
+            std::fs::write(dropped.join(file), b"x").unwrap();
+        }
+
+        let mut files: Vec<(String, String)> = collect_files(&dropped.to_string_lossy())
+            .unwrap()
+            .into_iter()
+            .map(|file| {
+                let name = Path::new(&file.path)
+                    .file_name()
+                    .unwrap()
+                    .to_string_lossy()
+                    .to_string();
+                (file.relative_dir, name)
+            })
+            .collect();
+        files.sort();
+        let _ = std::fs::remove_dir_all(&root);
+
+        assert_eq!(
+            files,
+            [
+                ("Vacation", "a.jpg"),
+                ("Vacation/Day1", "b.jpg"),
+                ("Vacation/Day1/Morning", "c.jpg"),
+                ("Vacation/Day1/Morning/Beach", "d.jpg"),
+            ]
+            .map(|(dir, name)| (dir.to_string(), name.to_string()))
+        );
+    }
+}

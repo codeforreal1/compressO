@@ -47,6 +47,9 @@ importers:
       '@xzdarcy/timeline-engine':
         specifier: ^1.0.0
         version: 1.0.0
+      advanced-cropper:
+        specifier: ~0.17.1
+        version: 0.17.1
       clsx:
         specifier: ^2.0.0
         version: 2.0.0

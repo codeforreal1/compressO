@@ -6,8 +6,11 @@ import Button from '@/components/Button'
 import Icon from '@/components/Icon'
 import { toast } from '@/components/Toast'
 import Tooltip from '@/components/Tooltip'
-import { copyFileToClipboard, showItemInFileManager } from '@/tauri/commands/fs'
-import { saveCompressedMediaWithPrompt } from '../-save'
+import {
+  copyFilesToClipboard,
+  showItemInFileManager,
+} from '@/tauri/commands/fs'
+import { getOutputClipboardFile, saveCompressedMediaWithPrompt } from '../-save'
 import { appProxy } from '../-state'
 
 type SaveMediaProps = {
@@ -52,12 +55,16 @@ function SaveMedia({ mediaIndex }: SaveMediaProps) {
   }
 
   const copyToClipboard = async () => {
-    const path =
-      getSavedPath() ?? appProxy.state.media[index]?.compressedFile?.pathRaw
-    if (!path) return
+    const savedPath = getSavedPath()
+    const mediaFile = appProxy.state.media[index]
+    // Not saved yet: pasted under the name it would be saved with, not its cache name
+    const file = savedPath
+      ? { path: savedPath }
+      : mediaFile && getOutputClipboardFile(mediaFile)
+    if (!file) return
 
     try {
-      await copyFileToClipboard(path)
+      await copyFilesToClipboard([file])
       toast.success(t('common.copied'))
     } catch {}
   }

@@ -2152,6 +2152,7 @@ pub fn build_transform_filters(
 ) -> Vec<String> {
     let mut filters: Vec<String> = Vec::new();
     let mut latest_crop: Option<&MediaTransformCrop> = None;
+    let mut latest_straighten: Option<f64> = None;
 
     if let Some(actions) = transform_history {
         for action in actions {
@@ -2176,8 +2177,17 @@ pub fn build_transform_filters(
                 MediaTransform::Crop { value } => {
                     latest_crop = Some(value);
                 }
+                MediaTransform::Straighten { value } => {
+                    latest_straighten = Some(*value);
+                }
             }
         }
+    }
+
+    // The tilt is around the center, onto a frame that holds the whole tilted picture, which is
+    // the area the crop is made in
+    if let Some(filter) = latest_straighten.and_then(build_straighten_filter) {
+        filters.push(filter);
     }
 
     // Apply only the last crop
@@ -2197,6 +2207,65 @@ pub fn build_transform_filters(
     }
 
     filters
+}
+
+/// The `rotate` filter of a slight tilt (clockwise, in degrees); `None` without a tilt. The corners
+/// left uncovered are transparent where the format allows it (black otherwise), and are cropped
+/// out by the editor.
+fn build_straighten_filter(angle: f64) -> Option<String> {
+    if !angle.is_finite() || angle.abs() < 0.01 {
+        return None;
+    }
+    let radians = format!("{:.6}", angle.to_radians());
+    Some(format!(
+        "rotate={radians}:ow=rotw({radians}):oh=roth({radians}):fillcolor=black@0"
+    ))
+}
+
+#[cfg(test)]
+mod transform_filters_tests {
+    use super::*;
+    use crate::core::domain::MediaTransformFlip;
+
+    #[test]
+    fn straighten_is_applied_after_rotations_and_before_the_crop() {
+        let history = vec![
+            MediaTransform::Straighten { value: 3.0 },
+            MediaTransform::Rotate { value: 90 },
+            MediaTransform::Flip {
+                value: MediaTransformFlip {
+                    horizontal: true,
+                    vertical: false,
+                },
+            },
+            MediaTransform::Crop {
+                value: MediaTransformCrop {
+                    top: 10.0,
+                    left: 20.0,
+                    width: 300.0,
+                    height: 200.0,
+                },
+            },
+            MediaTransform::Straighten { value: -2.5 },
+        ];
+        let filters = build_transform_filters(Some(&history), None);
+        assert_eq!(
+            filters,
+            vec![
+                "transpose=1".to_string(),
+                "hflip".to_string(),
+                "rotate=-0.043633:ow=rotw(-0.043633):oh=roth(-0.043633):fillcolor=black@0"
+                    .to_string(),
+                "crop=300:200:20:10".to_string(),
+            ]
+        );
+    }
+
+    #[test]
+    fn no_tilt_adds_no_filter() {
+        let history = vec![MediaTransform::Straighten { value: 0.0 }];
+        assert!(build_transform_filters(Some(&history), None).is_empty());
+    }
 }
 
 #[cfg(test)]
