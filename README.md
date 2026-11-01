@@ -4,7 +4,7 @@
   </div>
 	<h1 align="center">CompressO</h1>
 	<p align="center">
-		Compress any video/image into a tiny size.
+		Compress any video/image/audio into a tiny size.
     </p>
     <i align="center">
 		CompressO (🔉 pronounced like "Espresso" ) is a free and open-source video/image compression app.
