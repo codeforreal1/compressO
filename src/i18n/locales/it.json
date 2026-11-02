@@ -1036,6 +1036,7 @@
     "intensity": "Intensità",
     "mixed": "Seleziona una singola immagine per regolarne la gamma dinamica.",
     "unknown": "Impossibile determinare la gamma dinamica dell’immagine.",
-    "formatsOnly": "Il potenziamento HDR è disponibile solo per l’output PNG e JPEG XL."
+    "formatsOnly": "Il potenziamento HDR è disponibile solo per l’output PNG, JPEG XL e JPEG.",
+    "jpegLossy": "JPEG HDR usa la codifica basata sulla qualità. Scegli PNG o JPEG XL per un output senza perdita."
   }
 }

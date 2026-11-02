@@ -757,8 +757,22 @@ impl ImageCompressor {
         config: &ImageCompressionConfig,
         batch_id: Option<&str>,
     ) -> Result<ImageCompressionResult, String> {
-        if let Some(range_config) = &config.dynamic_range {
-            if range_config.mode != super::image_dynamic_range::ImageDynamicRangeMode::Original {
+        let jpeg_output = matches!(config.convert_to_extension.as_str(), "jpg" | "jpeg");
+        let preserve_range = super::image_dynamic_range::ImageDynamicRangeConfig {
+            mode: super::image_dynamic_range::ImageDynamicRangeMode::Original,
+            intensity: 1.0,
+        };
+        let range_config = config.dynamic_range.as_ref().or(if jpeg_output {
+            Some(&preserve_range)
+        } else {
+            None
+        });
+        if let Some(range_config) = range_config {
+            if config.hdr_jpeg_base_path.is_none()
+                && (range_config.mode
+                    != super::image_dynamic_range::ImageDynamicRangeMode::Original
+                    || jpeg_output)
+            {
                 let cancelled = Arc::new(AtomicBool::new(false));
                 let flag = cancelled.clone();
                 let ids = [
@@ -799,29 +813,54 @@ impl ImageCompressor {
                     return Err("CANCELLED".into());
                 }
                 if info.supported
-                    && super::image_dynamic_range::applies(range_config.mode, info.dynamic_range)
+                    && (super::image_dynamic_range::applies(range_config.mode, info.dynamic_range)
+                        || (jpeg_output
+                            && info.dynamic_range == super::image_dynamic_range::DynamicRange::Hdr
+                            && range_config.mode
+                                == super::image_dynamic_range::ImageDynamicRangeMode::Original))
                 {
                     if range_config.mode == super::image_dynamic_range::ImageDynamicRangeMode::Boost
-                        && !matches!(config.convert_to_extension.as_str(), "png" | "jxl")
+                        && !matches!(
+                            config.convert_to_extension.as_str(),
+                            "png" | "jxl" | "jpg" | "jpeg"
+                        )
                     {
-                        return Err("HDR boost requires PNG or JPEG XL output".into());
+                        return Err("HDR boost requires PNG, JPEG XL, or JPEG output".into());
                     }
                     let work = super::image_codecs::Workspace::new(&self.app)?;
                     let mut prepared = config.clone();
                     prepared.image_path =
                         work.0.join("processed.png").to_string_lossy().into_owned();
                     prepared.dynamic_range = None;
+                    if jpeg_output
+                        && range_config.mode
+                            != super::image_dynamic_range::ImageDynamicRangeMode::Sdr
+                    {
+                        prepared.hdr_jpeg_base_path =
+                            Some(work.0.join("sdr.png").to_string_lossy().into_owned());
+                    }
                     let input = config.image_path.clone();
                     let output = prepared.image_path.clone();
                     let options = range_config.clone();
+                    let sdr_output = prepared.hdr_jpeg_base_path.clone();
                     let strip_metadata = config.strip_metadata.unwrap_or(true);
                     tauri::async_runtime::spawn_blocking(move || {
-                        super::image_dynamic_range::process(
-                            &input,
-                            &output,
-                            &options,
-                            strip_metadata,
-                        )
+                        if let Some(base) = sdr_output {
+                            super::image_dynamic_range::process_with_sdr_base(
+                                &input,
+                                &output,
+                                &options,
+                                strip_metadata,
+                                Some(&base),
+                            )
+                        } else {
+                            super::image_dynamic_range::process(
+                                &input,
+                                &output,
+                                &options,
+                                strip_metadata,
+                            )
+                        }
                     })
                     .await
                     .map_err(|e| e.to_string())??;
@@ -839,17 +878,81 @@ impl ImageCompressor {
                 return self.compress_image_to_size(config, batch_id, target).await;
             }
         }
+        self.compress_image_attempt(
+            config,
+            batch_id,
+            config.dimensions,
+            config.is_lossless,
+            config.quality,
+        )
+        .await
+    }
+
+    async fn compress_image_attempt(
+        &mut self,
+        config: &ImageCompressionConfig,
+        batch_id: Option<&str>,
+        dimensions: Option<(f64, f64)>,
+        lossless: Option<bool>,
+        quality: u8,
+    ) -> Result<ImageCompressionResult, String> {
+        if let Some(base) = &config.hdr_jpeg_base_path {
+            if lossless.unwrap_or(false) {
+                return Err(
+                    "HDR JPEG encoding is lossy; choose PNG or JPEG XL for lossless output".into(),
+                );
+            }
+            let work = super::image_codecs::Workspace::new(&self.app)?;
+            let mut inputs = [base.clone(), config.image_path.clone()];
+            if dimensions.is_some() || config.transform_history.is_some() {
+                for (index, input) in inputs.iter_mut().enumerate() {
+                    let transformed = work.0.join(format!("rendition{index}.png"));
+                    self.apply_spatial_transformations(
+                        input,
+                        transformed.to_str().ok_or("Invalid image path")?,
+                        dimensions,
+                        config.transform_history.as_ref(),
+                    )
+                    .await?;
+                    super::image_codecs::preserve_png_color(Path::new(input), &transformed)?;
+                    *input = transformed.to_string_lossy().into_owned();
+                }
+            }
+            let file_name = format!("{}.{}", config.image_id, config.convert_to_extension);
+            let output = self.assets_dir.join(&file_name);
+            let output_path = output.to_string_lossy().into_owned();
+            let destination = output_path.clone();
+            let strip_metadata = config.strip_metadata.unwrap_or(true);
+            tauri::async_runtime::spawn_blocking(move || {
+                super::image_dynamic_range::encode_hdr_jpeg(
+                    &inputs[0],
+                    &inputs[1],
+                    &destination,
+                    quality,
+                    strip_metadata,
+                )
+            })
+            .await
+            .map_err(|e| e.to_string())??;
+            return Ok(ImageCompressionResult {
+                image_id: config.image_id.clone(),
+                file_name,
+                file_metadata: Some(get_file_metadata(&output_path)?),
+                file_path: output_path,
+                is_target_size_reached: None,
+            });
+        }
         self.compress_image(
             &config.image_path,
             config.convert_to_extension.as_str(),
             config.svg_scale_factor,
-            config.is_lossless,
-            config.quality,
+            lossless,
+            quality,
             &config.image_id,
             batch_id,
             config.strip_metadata,
             config.svg_config.clone(),
-            config.dimensions,
+            dimensions,
             config.transform_history.as_ref(),
         )
         .await
@@ -1085,19 +1188,13 @@ impl ImageCompressor {
             config.dimensions
         };
         let result = self
-            .compress_image(
-                &config.image_path,
-                config.convert_to_extension.as_str(),
-                config.svg_scale_factor,
+            .compress_image_attempt(
+                config,
+                batch_id,
+                dimensions,
                 // A lossless output cannot be made smaller by its quality
                 Some(false),
                 quality,
-                &config.image_id,
-                batch_id,
-                config.strip_metadata,
-                config.svg_config.clone(),
-                dimensions,
-                config.transform_history.as_ref(),
             )
             .await?;
         let output = PathBuf::from(&result.file_path);

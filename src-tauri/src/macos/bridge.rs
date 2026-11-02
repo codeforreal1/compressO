@@ -42,6 +42,14 @@ pub mod ffi {
             mode: String,
             intensity: f32,
             stripMetadata: bool,
+            sdrOutputPath: String,
+        ) -> String;
+        fn encodeHdrJpeg(
+            basePath: String,
+            hdrPath: String,
+            outputPath: String,
+            quality: u8,
+            stripMetadata: bool,
         ) -> String;
     }
 }

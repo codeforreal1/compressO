@@ -26,7 +26,21 @@ export function getImageDynamicRangeOperation(
 }
 
 export function supportsHdrBoostOutput(output: string) {
-  return ['png', 'jxl'].includes(output)
+  return ['png', 'jxl', 'jpg', 'jpeg'].includes(output)
+}
+
+export function isHdrJpegOutput(
+  output: string,
+  operation: ImageDynamicRangeConfig | null,
+  info: ImageDynamicRangeInfo | undefined,
+) {
+  return (
+    ['jpg', 'jpeg'].includes(output) &&
+    (operation?.mode === 'boost' ||
+      (info?.supported &&
+        info.dynamicRange === 'hdr' &&
+        operation?.mode !== 'sdr'))
+  )
 }
 
 /** HDR PNG uses lossless optimization; palette quantization would destroy HDR. */

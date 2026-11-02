@@ -23,6 +23,7 @@ import {
 } from '@/utils/audioTargetSize'
 import {
   getImageDynamicRangeOperation,
+  isHdrJpegOutput,
   isHdrPngOutput,
 } from '@/utils/imageDynamicRange'
 import {
@@ -420,7 +421,8 @@ export function getMediaItemConfig(
       : null
   const imageIsLossless =
     v.type === 'image' &&
-    (v.config.isLossless ||
+    ((v.config.isLossless &&
+      !isHdrJpegOutput(imageOutput, imageOperation, v.dynamicRangeInfo)) ||
       isHdrPngOutput(imageOutput, imageOperation, v.dynamicRangeInfo))
   return {
     videoConfig:

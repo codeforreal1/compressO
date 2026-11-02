@@ -1021,6 +1021,7 @@
     "intensity": "Intensity",
     "mixed": "Select an individual image to adjust its dynamic range.",
     "unknown": "The image’s dynamic range could not be determined.",
-    "formatsOnly": "HDR boost is only available for PNG and JPEG XL output."
+    "formatsOnly": "HDR boost is only available for PNG, JPEG XL, and JPEG output.",
+    "jpegLossy": "HDR JPEG uses quality-based encoding. Choose PNG or JPEG XL for lossless output."
   }
 }

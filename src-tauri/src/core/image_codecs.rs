@@ -401,6 +401,120 @@ mod tests {
         }
     }
 
+    #[cfg(target_os = "macos")]
+    #[test]
+    #[ignore = "requires matching prebuilt image codecs"]
+    fn hdr_jpeg_transforms_and_quality_retries_keep_both_renditions() {
+        use super::super::image_dynamic_range::{
+            self, DynamicRange, ImageDynamicRangeConfig, ImageDynamicRangeMode,
+        };
+        let directory =
+            std::env::temp_dir().join(format!("compresso-hdr-jpeg-edit-{}", nanoid::nanoid!()));
+        fs::create_dir(&directory).unwrap();
+        let work = Workspace(directory);
+        let source = work.0.join("source.png");
+        image::RgbaImage::from_fn(48, 32, |x, y| {
+            image::Rgba([
+                (x * 5) as u8,
+                (y * 7) as u8,
+                123,
+                if x < 12 { 128 } else { 255 },
+            ])
+        })
+        .save(&source)
+        .unwrap();
+        if !image_dynamic_range::inspect(source.to_str().unwrap())
+            .unwrap()
+            .supported
+        {
+            return;
+        }
+        let base = work.0.join("base.png");
+        let hdr = work.0.join("hdr.png");
+        image_dynamic_range::process_with_sdr_base(
+            source.to_str().unwrap(),
+            hdr.to_str().unwrap(),
+            &ImageDynamicRangeConfig {
+                mode: ImageDynamicRangeMode::Boost,
+                intensity: 4.0,
+            },
+            true,
+            Some(base.to_str().unwrap()),
+        )
+        .unwrap();
+        for name in ["base", "hdr"] {
+            execute(
+                &work.0,
+                "ffmpeg",
+                &[
+                    "-v",
+                    "error",
+                    "-i",
+                    &format!("{name}.png"),
+                    "-vf",
+                    "format=rgba64le,crop=32:24:8:4,transpose=1,scale=40:56",
+                    "-map_metadata",
+                    "-1",
+                    "-y",
+                    &format!("{name}-edited.png"),
+                ]
+                .map(String::from),
+            );
+            preserve_png_color(
+                &work.0.join(format!("{name}.png")),
+                &work.0.join(format!("{name}-edited.png")),
+            )
+            .unwrap();
+        }
+        let mut sizes = Vec::new();
+        for quality in [95, 40, 1] {
+            let output = work.0.join("output.jpeg");
+            image_dynamic_range::encode_hdr_jpeg(
+                work.0.join("base-edited.png").to_str().unwrap(),
+                work.0.join("hdr-edited.png").to_str().unwrap(),
+                output.to_str().unwrap(),
+                quality,
+                true,
+            )
+            .unwrap();
+            let info = image_dynamic_range::inspect(output.to_str().unwrap()).unwrap();
+            assert_eq!(info.dynamic_range, DynamicRange::Hdr);
+            assert!(info.has_gain_map);
+            assert_eq!(image::image_dimensions(&output).unwrap(), (40, 56));
+            sizes.push(fs::metadata(&output).unwrap().len());
+        }
+        assert!(
+            sizes.windows(2).any(|pair| pair[0] != pair[1]),
+            "JPEG quality did not affect output size"
+        );
+        // Recompress a gain-map JPEG with Remove HDR off: preserve its HDR rendition.
+        let output = work.0.join("output.jpeg");
+        image_dynamic_range::process_with_sdr_base(
+            output.to_str().unwrap(),
+            hdr.to_str().unwrap(),
+            &ImageDynamicRangeConfig {
+                mode: ImageDynamicRangeMode::Original,
+                intensity: 1.0,
+            },
+            false,
+            Some(base.to_str().unwrap()),
+        )
+        .unwrap();
+        image_dynamic_range::encode_hdr_jpeg(
+            base.to_str().unwrap(),
+            hdr.to_str().unwrap(),
+            work.0.join("recompressed.jpg").to_str().unwrap(),
+            80,
+            false,
+        )
+        .unwrap();
+        assert!(
+            image_dynamic_range::inspect(work.0.join("recompressed.jpg").to_str().unwrap())
+                .unwrap()
+                .has_gain_map
+        );
+    }
+
     #[test]
     fn integer_hdr_jxl_is_supported_but_unsupported_representations_are_rejected() {
         for transfer in ["PQ", "HLG", "sRGB"] {

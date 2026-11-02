@@ -1021,6 +1021,7 @@
     "intensity": "Yoğunluk",
     "mixed": "Dinamik aralığını ayarlamak için tek bir görüntü seçin.",
     "unknown": "Görüntünün dinamik aralığı belirlenemedi.",
-    "formatsOnly": "HDR güçlendirme yalnızca PNG ve JPEG XL çıktıları için kullanılabilir."
+    "formatsOnly": "HDR güçlendirme yalnızca PNG, JPEG XL ve JPEG çıktıları için kullanılabilir.",
+    "jpegLossy": "HDR JPEG kalite tabanlı kodlama kullanır. Kayıpsız çıktı için PNG veya JPEG XL seçin."
   }
 }

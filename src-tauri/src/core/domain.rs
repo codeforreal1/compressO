@@ -418,6 +418,9 @@ pub struct ImageTargetSize {
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct ImageCompressionConfig {
+    /// Internal prepared SDR rendition; never accepted from an IPC request.
+    #[serde(skip)]
+    pub hdr_jpeg_base_path: Option<String>,
     #[serde(default)]
     pub dynamic_range: Option<super::image_dynamic_range::ImageDynamicRangeConfig>,
     pub image_id: String,

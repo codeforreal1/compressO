@@ -1006,6 +1006,7 @@
     "intensity": "Intensitas",
     "mixed": "Pilih satu gambar untuk menyesuaikan rentang dinamisnya.",
     "unknown": "Rentang dinamis gambar tidak dapat ditentukan.",
-    "formatsOnly": "Peningkatan HDR hanya tersedia untuk keluaran PNG dan JPEG XL."
+    "formatsOnly": "Peningkatan HDR hanya tersedia untuk keluaran PNG, JPEG XL, dan JPEG.",
+    "jpegLossy": "JPEG HDR menggunakan pengodean berbasis kualitas. Pilih PNG atau JPEG XL untuk keluaran tanpa kehilangan."
   }
 }

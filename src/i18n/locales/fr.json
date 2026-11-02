@@ -1036,6 +1036,7 @@
     "intensity": "Intensité",
     "mixed": "Sélectionnez une image pour régler sa plage dynamique.",
     "unknown": "La plage dynamique de l’image n’a pas pu être déterminée.",
-    "formatsOnly": "L’amplification HDR est disponible uniquement pour les sorties PNG et JPEG XL."
+    "formatsOnly": "L’amplification HDR est disponible uniquement pour les sorties PNG, JPEG XL et JPEG.",
+    "jpegLossy": "Le JPEG HDR utilise un encodage par qualité. Choisissez PNG ou JPEG XL pour une sortie sans perte."
   }
 }

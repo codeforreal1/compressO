@@ -1021,6 +1021,7 @@
     "intensity": "Intensität",
     "mixed": "Wähle ein einzelnes Bild, um seinen Dynamikumfang anzupassen.",
     "unknown": "Der Dynamikumfang des Bildes konnte nicht bestimmt werden.",
-    "formatsOnly": "HDR-Verstärkung ist nur für die Ausgabe als PNG und JPEG XL verfügbar."
+    "formatsOnly": "HDR-Verstärkung ist nur für die Ausgabe als PNG, JPEG XL und JPEG verfügbar.",
+    "jpegLossy": "HDR-JPEG verwendet qualitätsbasierte Kodierung. Wähle PNG oder JPEG XL für verlustfreie Ausgabe."
   }
 }

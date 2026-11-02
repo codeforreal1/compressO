@@ -49,7 +49,7 @@ func imageDynamicRangeInfo(path: RustString) -> RustString {
 
 func processImageDynamicRange(
   inputPath: RustString, outputPath: RustString, mode: RustString, intensity: Float,
-  stripMetadata: Bool
+  stripMetadata: Bool, sdrOutputPath: RustString
 ) -> RustString {
   guard #available(macOS 15.0, *) else {
     return RustString("Image dynamic range processing requires macOS 15 or later")
@@ -59,22 +59,24 @@ func processImageDynamicRange(
       let url = URL(fileURLWithPath: inputPath.toString())
       let info = rangeInfo(url)
       let boost = mode.toString() == "boost"
+      let preserve = mode.toString() == "original"
       guard
         (boost && info.dynamicRange == "sdr")
-          || (!boost && mode.toString() == "sdr" && info.dynamicRange == "hdr")
+          || (!boost && ["sdr", "original"].contains(mode.toString()) && info.dynamicRange == "hdr")
       else {
         return RustString("Image dynamic range operation does not match the source")
       }
       // Gain-map files can have an HDR base too: always decode the intended SDR
       // rendition explicitly for conversion, rather than just deleting the gain map.
       let options: [CIImageOption: Any] = [
-        .expandToHDR: false,
-        .toneMapHDRtoSDR: !boost,
+        .expandToHDR: preserve,
+        .toneMapHDRtoSDR: !boost && !preserve,
         .applyOrientationProperty: true,
       ]
       guard var image = CIImage(contentsOf: url, options: options),
         let working = CGColorSpace(name: CGColorSpace.extendedLinearSRGB),
-        let outputSpace = CGColorSpace(name: boost ? CGColorSpace.itur_2100_PQ : CGColorSpace.sRGB)
+        let outputSpace = CGColorSpace(
+          name: (boost || preserve) ? CGColorSpace.itur_2100_PQ : CGColorSpace.sRGB)
       else { return RustString("Could not decode image for dynamic range processing") }
 
       var properties = stripMetadata ? [:] : image.properties
@@ -82,6 +84,23 @@ func processImageDynamicRange(
       if var tiff = properties[kCGImagePropertyTIFFDictionary as String] as? [String: Any] {
         tiff.removeValue(forKey: kCGImagePropertyTIFFOrientation as String)
         properties[kCGImagePropertyTIFFDictionary as String] = tiff
+      }
+      let context = CIContext(options: [
+        .workingColorSpace: working, .workingFormat: CIFormat.RGBAh,
+      ])
+      if !sdrOutputPath.toString().isEmpty {
+        guard
+          let base = CIImage(
+            contentsOf: url,
+            options: [
+              .expandToHDR: false, .toneMapHDRtoSDR: true, .applyOrientationProperty: true,
+            ]), let srgb = CGColorSpace(name: CGColorSpace.sRGB)
+        else {
+          return RustString("Could not decode the SDR base for HDR JPEG")
+        }
+        try context.writePNGRepresentation(
+          of: base.settingProperties(properties),
+          to: URL(fileURLWithPath: sdrOutputPath.toString()), format: .RGBA16, colorSpace: srgb)
       }
       if boost {
         guard intensity.isFinite && intensity >= 1 && intensity <= 4 else {
@@ -93,15 +112,67 @@ func processImageDynamicRange(
       image = image.settingProperties(properties)
       // The working image remains floating point until the color-managed export.
       // PQ encodes values above SDR white into a standard 16-bit integer PNG.
-      let context = CIContext(options: [
-        .workingColorSpace: working, .workingFormat: CIFormat.RGBAh,
-      ])
       try context.writePNGRepresentation(
         of: image, to: URL(fileURLWithPath: outputPath.toString()), format: .RGBA16,
         colorSpace: outputSpace)
       return RustString("")
     } catch {
       return RustString("Could not process image dynamic range: \(error.localizedDescription)")
+    }
+  }
+}
+
+// This is the final encode. Running jpegoptim or copying arbitrary JPEG metadata
+// afterwards could break the gain-map references or discard the auxiliary image.
+func encodeHdrJpeg(
+  basePath: RustString, hdrPath: RustString, outputPath: RustString,
+  quality: UInt8, stripMetadata: Bool
+) -> RustString {
+  guard #available(macOS 15.0, *) else {
+    return RustString("HDR JPEG export requires macOS 15 or later")
+  }
+  return autoreleasepool {
+    do {
+      guard
+        let base = CIImage(
+          contentsOf: URL(fileURLWithPath: basePath.toString()),
+          options: [.expandToHDR: false]),
+        let hdr = CIImage(
+          contentsOf: URL(fileURLWithPath: hdrPath.toString()),
+          options: [.expandToHDR: true]), base.extent == hdr.extent,
+        let linear = CGColorSpace(name: CGColorSpace.extendedLinearSRGB),
+        let srgb = CGColorSpace(name: CGColorSpace.sRGB)
+      else {
+        return RustString("Could not decode matching SDR and HDR images for JPEG export")
+      }
+      // JPEG has no alpha. Composite both renditions against the same black background.
+      let background = CIImage(color: .black).cropped(to: base.extent)
+      let baseImage = base.composited(over: background)
+        .settingProperties(stripMetadata ? [:] : base.properties)
+      let context = CIContext(options: [.workingColorSpace: linear, .workingFormat: CIFormat.RGBAh])
+      // Compositing loses CIImage's headroom. Restore it on a floating-point render;
+      // even a dark SDR image needs a gain map to retain its boosted rendition.
+      guard
+        let rendered = context.createCGImage(
+          hdr.composited(over: background),
+          from: hdr.extent, format: .RGBAh, colorSpace: linear)
+      else {
+        return RustString("Could not render HDR JPEG pixels")
+      }
+      let hdrImage = CIImage(
+        cgImage: rendered, options: [.contentHeadroom: max(2, hdr.contentHeadroom)])
+      let qualityKey = CIImageRepresentationOption(
+        rawValue: kCGImageDestinationLossyCompressionQuality as String)
+      let output = URL(fileURLWithPath: outputPath.toString())
+      try context.writeJPEGRepresentation(
+        of: baseImage, to: output, colorSpace: srgb,
+        options: [.hdrImage: hdrImage, qualityKey: Double(max(1, quality)) / 100.0])
+      guard rangeInfo(output).hasGainMap else {
+        return RustString("HDR JPEG export did not contain a gain map")
+      }
+      return RustString("")
+    } catch {
+      return RustString("Could not encode HDR JPEG: \(error.localizedDescription)")
     }
   }
 }

@@ -4,10 +4,13 @@
 
 Features:
 
+- **HDR Boost (macOS 15+)**: Give SDR images HDR brightness with an intensity slider from 1× to 4×. Available for PNG, JPEG XL and JPEG output, with an info icon explaining when another format is selected. HDR JPEGs include a gain map and a standard SDR rendition for compatible viewers.
+- **Remove HDR (macOS 15+)**: Convert HDR images to SDR for standard brightness and wider format compatibility. Image settings detect the original's dynamic range and show the matching control. Both HDR settings, including boost intensity, can be saved in image presets and used with Target Size.
 - **Straighten**: Tilt photos, videos and animated GIFs slightly, by up to 45 degrees either way, to level a horizon or fix a crooked shot. The Straighten slider is in the transform editor, under the rotate and flip buttons. The crop stays inside the tilted picture, so no empty corners are added, and rotating or flipping keeps the straightened result.
 
 Bug Fixes:
 
+- Fixed supported PQ and HLG HDR JPEG XL images failing to open or recompress. PNG and JPEG XL output retain their HDR color information.
 - Fixed copied outputs that are not saved yet being pasted under a generated name; they are now pasted under the name they would be saved with, including the preset's file name prefix.
 - Fixed watched folders missing media in subfolders, in folders moved into them, and in files put back or replaced under a name that was already compressed.
 

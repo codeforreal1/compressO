@@ -61,20 +61,58 @@ pub fn process(
     config: &ImageDynamicRangeConfig,
     strip_metadata: bool,
 ) -> Result<(), String> {
+    process_with_sdr_base(input, output, config, strip_metadata, None)
+}
+
+pub fn process_with_sdr_base(
+    input: &str,
+    output: &str,
+    config: &ImageDynamicRangeConfig,
+    strip_metadata: bool,
+    sdr_output: Option<&str>,
+) -> Result<(), String> {
     #[cfg(target_os = "macos")]
     {
         let mode = match config.mode {
             ImageDynamicRangeMode::Boost => "boost",
             ImageDynamicRangeMode::Sdr => "sdr",
-            ImageDynamicRangeMode::Original => {
-                return Err("No dynamic range operation selected".into())
-            }
+            ImageDynamicRangeMode::Original => "original",
         };
         let error = crate::macos::bridge::ffi::processImageDynamicRange(
             input.to_owned(),
             output.to_owned(),
             mode.to_owned(),
             config.intensity,
+            strip_metadata,
+            sdr_output.unwrap_or_default().to_owned(),
+        );
+        if error.is_empty() {
+            Ok(())
+        } else {
+            Err(error)
+        }
+    }
+    #[cfg(not(target_os = "macos"))]
+    {
+        let _ = (input, output, config, strip_metadata, sdr_output);
+        Err("Image dynamic range processing is available on macOS only".into())
+    }
+}
+
+pub fn encode_hdr_jpeg(
+    base: &str,
+    hdr: &str,
+    output: &str,
+    quality: u8,
+    strip_metadata: bool,
+) -> Result<(), String> {
+    #[cfg(target_os = "macos")]
+    {
+        let error = crate::macos::bridge::ffi::encodeHdrJpeg(
+            base.to_owned(),
+            hdr.to_owned(),
+            output.to_owned(),
+            quality.clamp(1, 100),
             strip_metadata,
         );
         if error.is_empty() {
@@ -85,8 +123,8 @@ pub fn process(
     }
     #[cfg(not(target_os = "macos"))]
     {
-        let _ = (input, output, config, strip_metadata);
-        Err("Image dynamic range processing is available on macOS only".into())
+        let _ = (base, hdr, output, quality, strip_metadata);
+        Err("HDR JPEG export is available on macOS only".into())
     }
 }
 
@@ -107,6 +145,95 @@ mod tests {
                 range == DynamicRange::Hdr
             );
         }
+    }
+
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn jpeg_boost_keeps_gain_map_and_sdr_fallback_at_each_quality() {
+        let directory =
+            std::env::temp_dir().join(format!("compresso-jpeg-boost-{}", nanoid::nanoid!()));
+        std::fs::create_dir(&directory).unwrap();
+        let work = super::super::image_codecs::Workspace(directory);
+        let source = work.0.join("source.png");
+        image::RgbImage::from_pixel(32, 24, image::Rgb([180, 100, 50]))
+            .save(&source)
+            .unwrap();
+        if !inspect(source.to_str().unwrap()).unwrap().supported {
+            return;
+        }
+        for intensity in [1.0, 2.0, 4.0] {
+            let base = work.0.join("base.png");
+            let hdr = work.0.join("hdr.png");
+            process_with_sdr_base(
+                source.to_str().unwrap(),
+                hdr.to_str().unwrap(),
+                &ImageDynamicRangeConfig {
+                    mode: ImageDynamicRangeMode::Boost,
+                    intensity,
+                },
+                true,
+                Some(base.to_str().unwrap()),
+            )
+            .unwrap();
+            for quality in [35, 90] {
+                let output = work.0.join(format!("output-{quality}.jpg"));
+                encode_hdr_jpeg(
+                    base.to_str().unwrap(),
+                    hdr.to_str().unwrap(),
+                    output.to_str().unwrap(),
+                    quality,
+                    true,
+                )
+                .unwrap();
+                let info = inspect(output.to_str().unwrap()).unwrap();
+                assert!(info.has_gain_map);
+                assert_eq!(info.dynamic_range, DynamicRange::Hdr);
+                let decoded = work.0.join("decoded-hdr.png");
+                process(
+                    output.to_str().unwrap(),
+                    decoded.to_str().unwrap(),
+                    &ImageDynamicRangeConfig {
+                        mode: ImageDynamicRangeMode::Original,
+                        intensity: 1.0,
+                    },
+                    true,
+                )
+                .unwrap();
+                let expected = image::open(&hdr).unwrap().to_rgb16();
+                let actual = image::open(&decoded).unwrap().to_rgb16();
+                for (actual, expected) in actual
+                    .get_pixel(16, 12)
+                    .0
+                    .iter()
+                    .zip(expected.get_pixel(16, 12).0)
+                {
+                    assert!((*actual as i32 - expected as i32).abs() < 2000, "HDR rendition changed at intensity {intensity}, quality {quality}: {actual} vs {expected}");
+                }
+                // Ordinary JPEG readers see the original SDR rendition, not boosted/clipped pixels.
+                let fallback = image::open(&output).unwrap().to_rgb8();
+                assert_eq!(fallback.dimensions(), (32, 24));
+                for (actual, expected) in fallback.get_pixel(16, 12).0.iter().zip([180i16, 100, 50])
+                {
+                    assert!(
+                        (*actual as i16 - expected).abs() < 15,
+                        "SDR fallback changed: {actual} vs {expected}"
+                    );
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn prepared_renditions_cannot_be_injected_through_ipc() {
+        let config: super::super::domain::ImageCompressionConfig = serde_json::from_value(serde_json::json!({
+            "imageId": "test", "imagePath": "source.png", "convertToExtension": "jpg", "quality": 50,
+            "hdrJpegBasePath": "untrusted.png",
+        })).unwrap();
+        assert!(config.hdr_jpeg_base_path.is_none());
+        assert!(serde_json::to_value(config)
+            .unwrap()
+            .get("hdrJpegBasePath")
+            .is_none());
     }
 
     #[cfg(target_os = "macos")]

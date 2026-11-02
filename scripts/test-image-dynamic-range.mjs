@@ -55,7 +55,7 @@ test('unsupported formats disable boost without affecting SDR conversion', () =>
     'png',
     'jxl',
   ]) {
-    const supported = ['png', 'jxl'].includes(extension)
+    const supported = ['png', 'jxl', 'jpg', 'jpeg'].includes(extension)
     assert.equal(supports(extension), supported)
     assert.deepEqual(
       operation(boost, info('sdr'), extension),
@@ -64,7 +64,7 @@ test('unsupported formats disable boost without affecting SDR conversion', () =>
     assert.deepEqual(operation(sdr, info('hdr'), extension), sdr)
   }
   // A stored boost preference stays inactive until a supported output is selected again.
-  assert.equal(operation(boost, info('sdr'), 'jpg'), null)
+  assert.equal(operation(boost, info('sdr'), 'avif'), null)
   assert.deepEqual(operation(boost, info('sdr'), 'jxl'), boost)
 })
 
@@ -90,4 +90,12 @@ test('stored intensity values remain finite and inside the supported range', () 
       expected,
     )
   }
+})
+
+test('HDR JPEG uses quality encoding and preserves existing HDR by default', () => {
+  assert.equal(exports.isHdrJpegOutput('jpg', boost, info('sdr')), true)
+  assert.equal(exports.isHdrJpegOutput('jpeg', null, info('hdr')), true)
+  assert.equal(exports.isHdrJpegOutput('jpg', sdr, info('hdr')), false)
+  assert.equal(exports.isHdrJpegOutput('jpg', null, info('sdr')), false)
+  assert.equal(exports.isHdrJpegOutput('png', boost, info('sdr')), false)
 })
