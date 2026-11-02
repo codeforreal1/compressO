@@ -46,9 +46,10 @@ Recompression and saving trigger fresh preview resolution, including when an out
 
 This implementation handles still images. Animated JXL and HEIF sequences are rejected; a HEIF
 collection uses its primary image, not the first thumbnail or auxiliary image. Integer PQ/HLG
-JPEG XL inputs support preview and JPEG XL recompression through a 16-bit PNG intermediate,
+JPEG XL inputs support preview and PNG/JPEG XL recompression through a 16-bit PNG intermediate,
 retaining HDR color signaling even when private metadata is stripped. Other output formats
-are rejected for these HDR images until an explicit tone-mapping/export path is implemented.
+require conversion to SDR using the macOS image dynamic range controls; otherwise they are
+rejected for these HDR images. See [image dynamic range](image-dynamic-range.md).
 Floating-point, CMYK and gain-map JXL inputs are still rejected. HEIF depth maps, gain maps
 and auxiliary images are not exported, and HEIF HDR tone mapping/preservation is not promised.
 GIF-to-modern conversion is not offered yet.
