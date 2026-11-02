@@ -13,7 +13,8 @@ export function getImageDynamicRangeOperation(
   output: string,
 ): ImageDynamicRangeConfig | null {
   if (!info?.supported || !config) return null
-  if (config.mode === 'boost' && !supportsHdrBoostOutput(output)) return null
+  if (config.mode === 'boost' && !supportsHdrBoostOutput(output, info))
+    return null
   if (
     (info.dynamicRange === 'sdr' && config.mode === 'boost') ||
     (info.dynamicRange === 'hdr' && config.mode === 'sdr')
@@ -28,8 +29,15 @@ export function getImageDynamicRangeOperation(
   return null
 }
 
-export function supportsHdrBoostOutput(output: string) {
-  return ['png', 'jxl', 'jpg', 'jpeg'].includes(output)
+/** PNG & JPEG XL everywhere; JPEG with a gain map only where it can be written (macOS 15+) */
+export function supportsHdrBoostOutput(
+  output: string,
+  info: ImageDynamicRangeInfo | undefined,
+) {
+  return (
+    ['png', 'jxl'].includes(output) ||
+    (!!info?.supportsHdrJpeg && ['jpg', 'jpeg'].includes(output))
+  )
 }
 
 export function isHdrJpegOutput(
@@ -39,6 +47,7 @@ export function isHdrJpegOutput(
 ) {
   return (
     ['jpg', 'jpeg'].includes(output) &&
+    !!info?.supportsHdrJpeg &&
     (operation?.mode === 'boost' ||
       (info?.supported &&
         info.dynamicRange === 'hdr' &&

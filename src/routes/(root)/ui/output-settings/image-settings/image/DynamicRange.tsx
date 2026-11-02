@@ -5,7 +5,6 @@ import Divider from '@/components/Divider'
 import InfoTooltip from '@/components/InfoTooltip'
 import Slider from '@/components/Slider'
 import Switch from '@/components/Switch'
-import { usePlatform } from '@/hooks/usePlatform'
 import { appProxy, normalizeBatchMediaConfig } from '@/routes/(root)/-state'
 import type { ImageConfig } from '@/types/app'
 import {
@@ -17,7 +16,6 @@ type DynamicRangeProps = { mediaIndex: number }
 
 function DynamicRange({ mediaIndex }: DynamicRangeProps) {
   const { t } = useTranslation()
-  const { isMac } = usePlatform()
   const { state } = useSnapshot(appProxy)
   const selected = state.media[mediaIndex]
   const image = selected?.type === 'image' ? selected : null
@@ -25,7 +23,6 @@ function DynamicRange({ mediaIndex }: DynamicRangeProps) {
     ? [image]
     : state.media.filter((item) => item.type === 'image')
   if (
-    !isMac ||
     !images.length ||
     !images.some((item) => item.dynamicRangeInfo?.supported)
   )
@@ -45,8 +42,13 @@ function DynamicRange({ mediaIndex }: DynamicRangeProps) {
         config.convertToExtension === '-'
           ? (item.extension ?? '')
           : config.convertToExtension,
+        item.dynamicRangeInfo,
       ),
     )
+  // HDR JPEG needs Core Image (macOS 15 and later)
+  const canBoostJpeg = images.every(
+    (item) => item.dynamicRangeInfo?.supportsHdrJpeg,
+  )
   const enabled =
     !unsupportedOutput && mode !== null && config.dynamicRange?.mode === mode
   const storedIntensity = config.dynamicRange?.intensity ?? 2
@@ -94,7 +96,15 @@ function DynamicRange({ mediaIndex }: DynamicRangeProps) {
               </p>
             </Switch>
             <InfoTooltip
-              content={unsupportedOutput ? t('dynamicRange.formatsOnly') : null}
+              content={
+                unsupportedOutput
+                  ? t(
+                      canBoostJpeg
+                        ? 'dynamicRange.formatsOnly'
+                        : 'dynamicRange.formatsOnlyWithoutJpeg',
+                    )
+                  : null
+              }
             />
           </div>
           {enabled && mode === 'boost' ? (

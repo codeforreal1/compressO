@@ -16,10 +16,12 @@ const {
   getImageDynamicRangeOperation: rawOperation,
   supportsHdrBoostOutput: supports,
 } = exports
-const info = (dynamicRange, supported = true) => ({
+// macOS 15+ (Core Image) by default; `supportsHdrJpeg: false` is Windows, Linux & older macOS
+const info = (dynamicRange, supported = true, supportsHdrJpeg = true) => ({
   dynamicRange,
   supported,
   hasGainMap: false,
+  supportsHdrJpeg,
 })
 const operation = (config, source, output = 'png') =>
   rawOperation(config, source, output)
@@ -56,7 +58,12 @@ test('unsupported formats disable boost without affecting SDR conversion', () =>
     'jxl',
   ]) {
     const supported = ['png', 'jxl', 'jpg', 'jpeg'].includes(extension)
-    assert.equal(supports(extension), supported)
+    assert.equal(supports(extension, info('sdr')), supported)
+    // Without Core Image, HDR JPEG cannot be written
+    assert.equal(
+      supports(extension, info('sdr', true, false)),
+      ['png', 'jxl'].includes(extension),
+    )
     assert.deepEqual(
       operation(boost, info('sdr'), extension),
       supported ? boost : null,
@@ -99,4 +106,12 @@ test('HDR JPEG uses quality encoding and preserves existing HDR by default', () 
   assert.equal(exports.isHdrJpegOutput('jpg', sdr, info('hdr')), false)
   assert.equal(exports.isHdrJpegOutput('jpg', null, info('sdr')), false)
   assert.equal(exports.isHdrJpegOutput('png', boost, info('sdr')), false)
+  // Without Core Image, existing HDR is not kept in JPEG, & JPEG quality applies as usual
+  assert.equal(
+    exports.isHdrJpegOutput('jpg', null, info('hdr', true, false)),
+    false,
+  )
+  assert.equal(operation(boost, info('sdr', true, false), 'jpg'), null)
+  assert.deepEqual(operation(boost, info('sdr', true, false), 'png'), boost)
+  assert.deepEqual(operation(sdr, info('hdr', true, false), 'jpg'), sdr)
 })

@@ -1,6 +1,6 @@
-# Image dynamic range on macOS
+# Image dynamic range
 
-On macOS 15 and later, image settings offer one operation based on the **original source**:
+On macOS, Windows and Linux, image settings offer one operation based on the **original source**:
 
 - SDR: **HDR Boost**, off by default, with intensity from 1× to 8× (default 2×).
 - HDR: **Remove HDR**, off by default.
@@ -9,7 +9,9 @@ On macOS 15 and later, image settings offer one operation based on the **origina
 
 Turning on an operation does not change the source classification or replace the control.
 Image presets retain the operation and intensity. An operation applies only to matching sources;
-it has no effect on other images, earlier macOS versions, or other operating systems.
+it has no effect on other images.
+
+## macOS 15 and later (Core Image)
 
 The existing Rust–Swift bridge calls Core Image/ImageIO on a blocking worker. Detection checks
 both Apple and ISO gain maps, HDR transfer functions, and content headroom. A ten-bit image or
@@ -45,6 +47,29 @@ are removed on success, cancellation, or error. Private-metadata settings apply 
 image; necessary color information is retained. Lossless encoding preserves the adjusted
 pixels, not the original pixels before the adjustment.
 
+## Windows, Linux and macOS before 15
+
+Without Core Image, `image_dynamic_range_portable.rs` works on the decoded pixels in Rust, with
+the same transfer functions and tone mapping as videos (see
+[video dynamic range](video-dynamic-range.md)), and writes the same 16-bit PNG intermediate, so
+the existing PNG and JPEG XL encoders keep its PQ signaling. JPEG XL and HEIC sources are decoded
+to PNG first with the bundled `djxl` and `heif-dec`.
+
+- Detection reads the file itself: a PNG's `cICP` transfer (PQ or HLG) or BT.2100 ICC profile,
+  and a JPEG's gain map (Adobe/Google, ISO 21496-1 or Apple markers). Other images that the app
+  decodes are SDR; animated images, and AVIF, are unknown.
+- HDR Boost converts sRGB or Display P3 (from the ICC profile) to linear light with SDR white at
+  203 nits, applies the intensity, and writes BT.2020 PQ. The output is PNG or JPEG XL; HDR JPEG
+  needs Core Image, so the switch is disabled for JPEG with its own info tooltip.
+- Remove HDR tone maps PQ/HLG with `mobius` as the video filters do (1,000 nits reaches SDR white;
+  brighter content rolls off to its own peak), into sRGB. A gain-map JPEG keeps its primary image,
+  which is its SDR rendition, without the gain map. Existing HDR is not kept in JPEG output.
+- Pixels are made upright first; alpha is not changed. EXIF is kept unless private metadata is
+  removed, with its orientation reset.
+
+Compared with Core Image on the same photos, boost and gain-map conversion match within about
+0.1% on average; PQ tone mapping comes out a few percent brighter, as the curves differ.
+
 ## Validation
 
 ```sh
@@ -54,7 +79,8 @@ pnpm tsc:check
 pnpm i18n:check
 ```
 
-Native tests cover range detection, intensity, invalid parameters, alpha, PQ/HLG JPEG XL,
+Native tests (including `core::image_dynamic_range_portable`, which runs on every platform)
+cover range detection, intensity, invalid parameters, alpha, PQ/HLG JPEG XL,
 an ISO gain-map JPEG, generated HDR JPEGs at multiple intensities and qualities, SDR fallback,
 HDR rendering, paired transforms, quality retries, and gain-map recompression. The fixture is synthetic, generated locally with:
 
@@ -62,5 +88,6 @@ HDR rendering, paired transforms, quality retries, and gain-map recompression. T
 swift scripts/generate-image-hdr-fixture.swift src-tauri/tests/fixtures/image-hdr/gain-map.jpg
 ```
 
-Real HDR appearance should also be checked on macOS 15 and later with an HDR display. The
-automated checks verify encoded pixels, alpha, and signaling; they do not measure a display.
+Real HDR appearance should also be checked with an HDR display, on macOS 15 and later and on
+Windows. The automated checks verify encoded pixels, alpha, and signaling; they do not measure a
+display.

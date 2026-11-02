@@ -779,6 +779,8 @@ impl ImageCompressor {
                     config.image_id.clone(),
                     batch_id.unwrap_or(&config.image_id).to_owned(),
                 ];
+                // Also stops the decoder of a JPEG XL/HEIC source (see `inspect_source`)
+                let cancel_ids = ids.to_vec();
                 let event_id = self.app.listen_any(
                     CustomEvents::CancelInProgressCompression.as_ref(),
                     move |event| {
@@ -803,29 +805,36 @@ impl ImageCompressor {
                     },
                 );
                 let _cancel_listener = EventListenerGuard::for_app(self.app.clone(), event_id);
-                let input = config.image_path.clone();
-                let info = tauri::async_runtime::spawn_blocking(move || {
-                    super::image_dynamic_range::inspect(&input)
-                })
-                .await
-                .map_err(|e| e.to_string())??;
+                let (info, readable_source) = super::image_dynamic_range::inspect_source(
+                    &self.app,
+                    &config.image_path,
+                    &self.owner_window,
+                    &cancel_ids,
+                )
+                .await?;
                 if cancelled.load(Ordering::SeqCst) {
                     return Err("CANCELLED".into());
                 }
+                // Existing HDR is kept in JPEG with a gain map, which needs Core Image
+                let preserves_hdr_jpeg = jpeg_output
+                    && info.supports_hdr_jpeg
+                    && info.dynamic_range == super::image_dynamic_range::DynamicRange::Hdr
+                    && range_config.mode
+                        == super::image_dynamic_range::ImageDynamicRangeMode::Original;
                 if info.supported
                     && (super::image_dynamic_range::applies(range_config.mode, info.dynamic_range)
-                        || (jpeg_output
-                            && info.dynamic_range == super::image_dynamic_range::DynamicRange::Hdr
-                            && range_config.mode
-                                == super::image_dynamic_range::ImageDynamicRangeMode::Original))
+                        || preserves_hdr_jpeg)
                 {
                     if range_config.mode == super::image_dynamic_range::ImageDynamicRangeMode::Boost
-                        && !matches!(
-                            config.convert_to_extension.as_str(),
-                            "png" | "jxl" | "jpg" | "jpeg"
-                        )
+                        && !(matches!(config.convert_to_extension.as_str(), "png" | "jxl")
+                            || (jpeg_output && info.supports_hdr_jpeg))
                     {
-                        return Err("HDR Boost requires PNG, JPEG XL, or JPEG output".into());
+                        return Err(if info.supports_hdr_jpeg {
+                            "HDR Boost requires PNG, JPEG XL, or JPEG output"
+                        } else {
+                            "HDR Boost requires PNG or JPEG XL output"
+                        }
+                        .into());
                     }
                     let work = super::image_codecs::Workspace::new(&self.app)?;
                     let mut prepared = config.clone();
@@ -833,6 +842,7 @@ impl ImageCompressor {
                         work.0.join("processed.png").to_string_lossy().into_owned();
                     prepared.dynamic_range = None;
                     if jpeg_output
+                        && info.supports_hdr_jpeg
                         && range_config.mode
                             != super::image_dynamic_range::ImageDynamicRangeMode::Sdr
                     {
@@ -844,8 +854,16 @@ impl ImageCompressor {
                     let options = range_config.clone();
                     let sdr_output = prepared.hdr_jpeg_base_path.clone();
                     let strip_metadata = config.strip_metadata.unwrap_or(true);
+                    let uses_core_image = info.supports_hdr_jpeg;
                     tauri::async_runtime::spawn_blocking(move || {
-                        if let Some(base) = sdr_output {
+                        if !uses_core_image {
+                            super::image_dynamic_range_portable::process(
+                                &readable_source,
+                                &output,
+                                &options,
+                                strip_metadata,
+                            )
+                        } else if let Some(base) = sdr_output {
                             super::image_dynamic_range::process_with_sdr_base(
                                 &input,
                                 &output,

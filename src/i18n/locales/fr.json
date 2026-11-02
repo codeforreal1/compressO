@@ -1037,6 +1037,7 @@
     "mixed": "Sélectionnez une image pour régler sa plage dynamique.",
     "unknown": "La plage dynamique de l’image n’a pas pu être déterminée.",
     "formatsOnly": "L’amplification HDR est disponible uniquement pour les sorties PNG, JPEG XL et JPEG.",
+    "formatsOnlyWithoutJpeg": "L’amplification HDR est disponible uniquement pour les sorties PNG et JPEG XL.",
     "jpegLossy": "Le JPEG HDR utilise un encodage par qualité. Choisissez PNG ou JPEG XL pour une sortie sans perte.",
     "videoMixed": "Sélectionnez une vidéo pour régler sa plage dynamique.",
     "videoUnknown": "La plage dynamique de la vidéo n’a pas pu être déterminée.",

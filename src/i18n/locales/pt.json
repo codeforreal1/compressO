@@ -1037,6 +1037,7 @@
     "mixed": "Selecione uma imagem individual para ajustar sua faixa dinâmica.",
     "unknown": "Não foi possível determinar a faixa dinâmica da imagem.",
     "formatsOnly": "O realce HDR está disponível apenas para saída em PNG, JPEG XL e JPEG.",
+    "formatsOnlyWithoutJpeg": "O realce HDR está disponível apenas para saída em PNG e JPEG XL.",
     "jpegLossy": "JPEG HDR usa codificação por qualidade. Escolha PNG ou JPEG XL para saída sem perdas.",
     "videoMixed": "Selecione um vídeo individual para ajustar sua faixa dinâmica.",
     "videoUnknown": "Não foi possível determinar a faixa dinâmica do vídeo.",

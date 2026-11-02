@@ -1052,6 +1052,7 @@
     "mixed": "Wybierz pojedynczy obraz, aby dostosować jego zakres dynamiczny.",
     "unknown": "Nie udało się określić zakresu dynamicznego obrazu.",
     "formatsOnly": "Wzmocnienie HDR jest dostępne tylko dla plików wyjściowych PNG, JPEG XL i JPEG.",
+    "formatsOnlyWithoutJpeg": "Wzmocnienie HDR jest dostępne tylko dla plików wyjściowych PNG i JPEG XL.",
     "jpegLossy": "JPEG HDR używa kodowania według jakości. Wybierz PNG lub JPEG XL, aby uzyskać bezstratny plik.",
     "videoMixed": "Wybierz pojedynczy film, aby dostosować jego zakres dynamiczny.",
     "videoUnknown": "Nie udało się określić zakresu dynamicznego filmu.",

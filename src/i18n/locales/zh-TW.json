@@ -1007,6 +1007,7 @@
     "mixed": "請選取單張影像來調整其動態範圍。",
     "unknown": "無法判斷影像的動態範圍。",
     "formatsOnly": "HDR 增強僅適用於 PNG、JPEG XL 和 JPEG 輸出。",
+    "formatsOnlyWithoutJpeg": "HDR 增強僅適用於 PNG 和 JPEG XL 輸出。",
     "jpegLossy": "HDR JPEG 使用依品質編碼。若要無損輸出，請選擇 PNG 或 JPEG XL。",
     "videoMixed": "請選取單一影片來調整其動態範圍。",
     "videoUnknown": "無法判斷影片的動態範圍。",

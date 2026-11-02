@@ -12,11 +12,13 @@ use crate::sys::fs::delete_stale_files;
 
 #[tauri::command]
 pub async fn get_image_dynamic_range(
+    app: tauri::AppHandle,
+    window: tauri::WebviewWindow,
     image_path: String,
 ) -> Result<crate::core::image_dynamic_range::ImageDynamicRangeInfo, String> {
-    tauri::async_runtime::spawn_blocking(move || crate::core::image_dynamic_range::inspect(&image_path))
+    crate::core::image_dynamic_range::inspect_source(&app, &image_path, window.label(), &[])
         .await
-        .map_err(|e| e.to_string())?
+        .map(|(info, _)| info)
 }
 
 #[tauri::command]

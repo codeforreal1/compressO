@@ -6,6 +6,9 @@ pub struct ImageDynamicRangeInfo {
     pub supported: bool,
     pub dynamic_range: DynamicRange,
     pub has_gain_map: bool,
+    /// HDR JPEG (gain map) can be written: Core Image, on macOS 15 and later
+    #[serde(default)]
+    pub supports_hdr_jpeg: bool,
 }
 
 #[derive(Clone, Copy, Debug, Default, Deserialize, Serialize, PartialEq)]
@@ -48,6 +51,40 @@ pub fn inspect(path: &str) -> Result<ImageDynamicRangeInfo, String> {
         let _ = path;
         Ok(ImageDynamicRangeInfo::default())
     }
+}
+
+/// The dynamic range of a source: with Core Image on macOS 15 and later, otherwise from the file
+/// itself (see `image_dynamic_range_portable`), JPEG XL & HEIC decoded to PNG first. Also gives the
+/// file the portable processing reads (the decoded PNG for those).
+pub async fn inspect_source(
+    app: &tauri::AppHandle,
+    path: &str,
+    owner: &str,
+    cancel_ids: &[String],
+) -> Result<(ImageDynamicRangeInfo, String), String> {
+    let source = path.to_owned();
+    let mut native = tauri::async_runtime::spawn_blocking(move || inspect(&source))
+        .await
+        .map_err(|e| e.to_string())??;
+    if native.supported {
+        native.supports_hdr_jpeg = true;
+        return Ok((native, path.to_owned()));
+    }
+    let readable = if super::image_codecs::is_modern(&super::image_codecs::extension(path)) {
+        super::image_codecs::decoded_png(app, path, owner, cancel_ids)
+            .await?
+            .to_string_lossy()
+            .into_owned()
+    } else {
+        path.to_owned()
+    };
+    let decoded = readable.clone();
+    let info = tauri::async_runtime::spawn_blocking(move || {
+        super::image_dynamic_range_portable::inspect(&decoded)
+    })
+    .await
+    .map_err(|e| e.to_string())??;
+    Ok((info, readable))
 }
 
 pub fn applies(mode: ImageDynamicRangeMode, range: DynamicRange) -> bool {

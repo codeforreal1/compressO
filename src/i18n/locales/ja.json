@@ -1007,6 +1007,7 @@
     "mixed": "ダイナミックレンジを調整する画像を1つ選択してください。",
     "unknown": "画像のダイナミックレンジを判定できませんでした。",
     "formatsOnly": "HDRブーストはPNG、JPEG XL、JPEGの出力でのみ利用できます。",
+    "formatsOnlyWithoutJpeg": "HDRブーストはPNGとJPEG XLの出力でのみ利用できます。",
     "jpegLossy": "HDR JPEGは画質を指定してエンコードします。可逆出力にはPNGまたはJPEG XLを選択してください。",
     "videoMixed": "ダイナミックレンジを調整する動画を1つ選択してください。",
     "videoUnknown": "動画のダイナミックレンジを判定できませんでした。",

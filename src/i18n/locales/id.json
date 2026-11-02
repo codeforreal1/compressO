@@ -1007,6 +1007,7 @@
     "mixed": "Pilih satu gambar untuk menyesuaikan rentang dinamisnya.",
     "unknown": "Rentang dinamis gambar tidak dapat ditentukan.",
     "formatsOnly": "Peningkatan HDR hanya tersedia untuk keluaran PNG, JPEG XL, dan JPEG.",
+    "formatsOnlyWithoutJpeg": "Peningkatan HDR hanya tersedia untuk keluaran PNG dan JPEG XL.",
     "jpegLossy": "JPEG HDR menggunakan pengodean berbasis kualitas. Pilih PNG atau JPEG XL untuk keluaran tanpa kehilangan.",
     "videoMixed": "Pilih satu video untuk menyesuaikan rentang dinamisnya.",
     "videoUnknown": "Rentang dinamis video tidak dapat ditentukan.",
