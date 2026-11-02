@@ -142,6 +142,8 @@ fn compress_options(arguments: &Value) -> Result<CompressOptions, CliError> {
         inputs,
         presets,
         output: text("output").map(|folder| job::absolute_path(&PathBuf::from(folder))),
+        output_is_folder: text("output")
+            .is_some_and(|output| output.ends_with('/') || output.ends_with('\\')),
         overrides: Overrides {
             skip_larger_outputs: switch("skipLargerOutputs"),
             preserve_folder_structure: switch("preserveFolderStructure"),

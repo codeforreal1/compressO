@@ -29,6 +29,7 @@ Presets (a media type without its option uses its default preset in the app):
 Output:
   --output=<folder>        Save to this folder instead of the presets' save location.
                            Required when a preset asks where to save each time.
+                           End it with / for a new folder with a dot in its name.
   --output=<file>          For a single file: save it under this name. A different extension
                            converts it to that format (e.g. a JPEG to --output=small.png), with
                            the preset's other settings. An existing file is never replaced; a
@@ -170,8 +171,9 @@ pub fn parse(args: Vec<String>) -> Result<Command, CliError> {
             "-q" | "--quiet" => parsed.quiet = true,
             "--dry-run" => parsed.options.dry_run = true,
             "--output" => {
-                let folder = expand_home(&take_value(&name)?);
-                parsed.options.output = Some(absolute_path(&folder));
+                let value = take_value(&name)?;
+                parsed.options.output_is_folder = value.ends_with('/') || value.ends_with('\\');
+                parsed.options.output = Some(absolute_path(&expand_home(&value)));
             }
             "--video-preset" => {
                 parsed.options.presets.insert("video", take_value(&name)?);

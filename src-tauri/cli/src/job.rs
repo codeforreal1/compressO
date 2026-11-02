@@ -30,6 +30,8 @@ pub struct CompressOptions {
     /// Saved here instead of the presets' save locations: a folder, or for a single file the file
     /// to save, whose extension is the format it is converted to
     pub output: Option<PathBuf>,
+    /// `output` ended with `/` (or `\\`): a folder, even with a dot in its name (`v1.2/`)
+    pub output_is_folder: bool,
     pub overrides: Overrides,
     /// Only checks & lists what would be done
     pub dry_run: bool,
@@ -334,7 +336,7 @@ pub async fn run(
     let output_file = options
         .output
         .as_ref()
-        .filter(|path| is_file_output(path, &settings))
+        .filter(|path| !options.output_is_folder && is_file_output(path, &settings))
         .cloned();
     let mut convert_to_extension: Option<String> = None;
     if let Some(path) = &output_file {
@@ -377,6 +379,31 @@ pub async fn run(
                 path.display()
             ),
         ));
+    } else if let Some(path) = options.output.as_ref() {
+        // A new folder named like a file (e.g. a typo, `--output=clip.web`) is not made: it is
+        // most likely a file name in a format CompressO does not save in
+        let extension = extension_of(path);
+        if !options.output_is_folder && !path.is_dir() && extension.is_some() {
+            let extension = extension.unwrap_or_default();
+            let formats = match files.as_slice() {
+                [file] if options.inputs.len() == 1 && options.inputs[0].is_file() => settings
+                    .output_extensions
+                    .get(file["mediaType"].as_str().unwrap_or("video"))
+                    .map(|formats| format!(" It can be saved as {}.", formats.join(", ")))
+                    .unwrap_or_default(),
+                _ => String::new(),
+            };
+            return Err(CliError::new(
+                exit_code::USAGE,
+                "unsupportedFormat",
+                format!(
+                    "--output= ends in \".{extension}\", which is not a format CompressO saves in.{formats} For a folder with a dot in its name, end it with a slash, for example --output=\"{}/\".",
+                    path.file_name()
+                        .map(|name| name.to_string_lossy().to_string())
+                        .unwrap_or_default()
+                ),
+            ));
+        }
     }
 
     // The media types among the inputs, & the presets they are compressed with
