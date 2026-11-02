@@ -22,6 +22,7 @@ import BatchResolution from './video/BatchResolution'
 import CompressionPreset from './video/CompressionPreset'
 import CustomThumbnail from './video/CustomThumbnail'
 import VideoDimensions from './video/Dimensions'
+import DynamicRange from './video/DynamicRange'
 import VideoExtension from './video/Extension'
 import VideoFPS from './video/FPS'
 import VideoSpeed from './video/Speed'
@@ -144,6 +145,7 @@ function VideoSettings({
               <Divider className="my-3" />
               <VideoOnlySection isDisabled={isAudioOutput}>
                 <VideoCodec mediaIndex={mediaIndex} />
+                <DynamicRange mediaIndex={mediaIndex} />
                 <Divider className="my-3" />
               </VideoOnlySection>
 

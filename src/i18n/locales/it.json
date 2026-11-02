@@ -1037,6 +1037,11 @@
     "mixed": "Seleziona una singola immagine per regolarne la gamma dinamica.",
     "unknown": "Impossibile determinare la gamma dinamica dell’immagine.",
     "formatsOnly": "Il potenziamento HDR è disponibile solo per l’output PNG, JPEG XL e JPEG.",
-    "jpegLossy": "JPEG HDR usa la codifica basata sulla qualità. Scegli PNG o JPEG XL per un output senza perdita."
+    "jpegLossy": "JPEG HDR usa la codifica basata sulla qualità. Scegli PNG o JPEG XL per un output senza perdita.",
+    "videoMixed": "Selezioni un singolo video per regolarne la gamma dinamica.",
+    "videoUnknown": "Impossibile determinare la gamma dinamica del video.",
+    "videoBoostFormats": "Il potenziamento HDR è disponibile solo per i video MP4, MOV, MKV, WebM e TS che usano il codec H.265, VP9 o AV1.",
+    "videoBoostLossless": "Il potenziamento HDR non è disponibile con la compressione senza perdita.",
+    "videoSdrOnly": "Questo formato o codec non può memorizzare l’HDR, quindi il video verrà convertito in SDR."
   }
 }

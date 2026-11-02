@@ -39,7 +39,7 @@ use tauri_commands::{
     ffmpeg::{compress_video, compress_videos_batch, extract_subtitle, generate_video_thumbnail},
     ffprobe::{
         get_audio_streams, get_chapters, get_container_info, get_subtitle_streams,
-        get_video_basic_info, get_video_streams,
+        get_video_basic_info, get_video_dynamic_range, get_video_streams,
     },
     file_manager::show_item_in_file_manager,
     fs::{
@@ -501,6 +501,7 @@ async fn run() {
             get_container_info,
             get_subtitle_streams,
             get_video_streams,
+            get_video_dynamic_range,
             set_dock_progress,
             clear_dock_badge,
             check_update,

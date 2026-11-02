@@ -1007,6 +1007,11 @@
     "mixed": "Chọn một ảnh riêng lẻ để điều chỉnh dải tương phản động.",
     "unknown": "Không thể xác định dải tương phản động của ảnh.",
     "formatsOnly": "Tăng cường HDR chỉ khả dụng cho đầu ra PNG, JPEG XL và JPEG.",
-    "jpegLossy": "JPEG HDR sử dụng mã hóa theo chất lượng. Chọn PNG hoặc JPEG XL để xuất không mất dữ liệu."
+    "jpegLossy": "JPEG HDR sử dụng mã hóa theo chất lượng. Chọn PNG hoặc JPEG XL để xuất không mất dữ liệu.",
+    "videoMixed": "Chọn một video riêng lẻ để điều chỉnh dải tương phản động.",
+    "videoUnknown": "Không thể xác định dải tương phản động của video.",
+    "videoBoostFormats": "Tăng cường HDR chỉ khả dụng cho video MP4, MOV, MKV, WebM và TS sử dụng codec H.265, VP9 hoặc AV1.",
+    "videoBoostLossless": "Tăng cường HDR không khả dụng khi nén không mất dữ liệu.",
+    "videoSdrOnly": "Định dạng hoặc codec này không thể lưu trữ HDR, vì vậy video sẽ được chuyển đổi sang SDR."
   }
 }

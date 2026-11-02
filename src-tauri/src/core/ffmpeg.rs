@@ -8,7 +8,9 @@ use crate::core::domain::{
 use crate::core::ffprobe::FFPROBE;
 use crate::core::hardware_encoder;
 use crate::core::image::ImageCompressor;
+use crate::core::image_dynamic_range::{DynamicRange, ImageDynamicRangeConfig};
 use crate::core::media_process::{CancelCallback, MediaProcessExecutorBuilder};
+use crate::core::video_dynamic_range::{self, Operation as DynamicRangeOperation};
 use crate::sys::fs::{ensure_assets_dir, get_file_metadata};
 use crate::utils;
 use crate::utils::event::EventListenerGuard;
@@ -142,6 +144,7 @@ impl FFMPEG {
         subtitles_config: Option<&SubtitlesConfig>,
         speed: Option<f32>,
         target_size: Option<&TargetSize>,
+        dynamic_range: Option<&ImageDynamicRangeConfig>,
     ) -> Result<VideoCompressionResult, String> {
         let is_audio_target = AUDIO_EXTENSIONS.contains(&convert_to_extension);
         let requested_audio_codec = audio_config.audio_codec.as_deref();
@@ -295,6 +298,28 @@ impl FFMPEG {
         let file_metadata = get_file_metadata(video_path).map_err(|err| err.to_string())?;
         let original_extension = &file_metadata.extension;
 
+        // The source's dynamic range decides the codec (HDR needs HEVC instead of H.264), the
+        // pixel format & the conversion (see `video_dynamic_range`)
+        let source_color = if is_audio_target {
+            None
+        } else {
+            let mut ffprobe = FFPROBE::new(&self.app)?.with_owner_window(&self.owner_window);
+            ffprobe
+                .get_video_color(video_path)
+                .await
+                .unwrap_or_else(|error| {
+                    log::warn!("[ffmpeg] could not read the video's colour: {}", error);
+                    None
+                })
+                .map(|color| {
+                    let info = video_dynamic_range::classify(&color);
+                    (color, info)
+                })
+        };
+        let wants_hdr_output = source_color
+            .as_ref()
+            .is_some_and(|(_, info)| video_dynamic_range::wants_hdr_output(info, dynamic_range));
+
         // Codec
         let output_codec: String = {
             fn default_codec(convert_to_extension: &str) -> String {
@@ -351,6 +376,19 @@ impl FFMPEG {
                 }
             }
         };
+        // An HDR output (HDR kept, or HDR boost) is HEVC instead of the usual H.264, which cannot
+        // hold HDR for most players; a codec chosen in the settings is kept
+        let output_codec = if output_codec == "libx264"
+            && video_codec.is_none()
+            && preset_name.is_some()
+            && !is_gif_target
+            && wants_hdr_output
+            && matches!(container, "mp4" | "mov" | "mkv" | "ts")
+        {
+            "libx265".to_string()
+        } else {
+            output_codec
+        };
         // AV1 (chosen, or kept from an AV1 source): SVT-AV1 when this ffmpeg build has it, as it is
         // many times faster than libaom-av1 for a similar quality
         let output_codec = if output_codec.contains("av1") {
@@ -382,6 +420,26 @@ impl FFMPEG {
                 cmd_args.extend_from_slice(&["-tag:v:0", "hvc1"]);
             }
         }
+
+        let dynamic_range_operation = source_color
+            .as_ref()
+            .map(|(_, info)| {
+                video_dynamic_range::operation(
+                    info,
+                    dynamic_range,
+                    !is_gif_target && video_dynamic_range::carries_hdr(&output_codec, container),
+                    preset_name.is_some() || is_gif_target,
+                )
+            })
+            .unwrap_or(DynamicRangeOperation::None);
+        if dynamic_range_operation != DynamicRangeOperation::None {
+            log::info!("[ffmpeg] dynamic range: {:?}", dynamic_range_operation);
+        }
+        let color_args: Vec<String> = source_color
+            .as_ref()
+            .map(|(color, _)| video_dynamic_range::color_args(dynamic_range_operation, color))
+            .unwrap_or_default();
+        cmd_args.extend(color_args.iter().map(|arg| arg.as_str()));
 
         let audio_codec = audio_output_codec(convert_to_extension, requested_audio_codec);
         let source_audio = selected_audio_tracks
@@ -443,7 +501,13 @@ impl FFMPEG {
         // Compression settings (`preset_name` is unset for lossless): constant quality via CRF (or
         // a bitrate, for a target size), and only the options the encoder & container support
         if preset_name.is_some() && !is_gif_target && !is_audio_target {
-            cmd_args.extend_from_slice(&["-pix_fmt:v:0", "yuv420p"]);
+            // HDR is kept in 10 bits; 8 bits would band, & look wrong where it is still tagged HDR
+            let pixel_format = if dynamic_range_operation.is_hdr_output() {
+                "yuv420p10le"
+            } else {
+                "yuv420p"
+            };
+            cmd_args.extend_from_slice(&["-pix_fmt:v:0", pixel_format]);
             if bitrate_target.is_some() {
                 cmd_args.extend(target_bitrate_args.iter().map(|arg| arg.as_str()));
             } else {
@@ -480,7 +544,11 @@ impl FFMPEG {
         }
 
         // Build the post-processing chain for video (transforms + scale + pad)
-        let video_post_process = build_ffmpeg_filters(transform_history, dimensions);
+        let dynamic_range_filter = source_color
+            .as_ref()
+            .and_then(|(color, _)| video_dynamic_range::filter(dynamic_range_operation, color));
+        let video_post_process =
+            build_ffmpeg_filters(transform_history, dimensions, dynamic_range_filter.as_deref());
 
         let mut filter_complex_parts: Vec<String> = Vec::new();
         let mut map_video = false;
@@ -1431,6 +1499,7 @@ impl FFMPEG {
                             None,
                             config.speed,
                             None,
+                            config.dynamic_range.as_ref(),
                         )
                         .await?;
                     let path = PathBuf::from(&result.file_path);
@@ -1559,6 +1628,7 @@ impl FFMPEG {
                     subtitles_config,
                     speed,
                     video_options.target_size.as_ref(),
+                    video_options.dynamic_range.as_ref(),
                 )
                 .await
             {
@@ -1610,9 +1680,25 @@ impl FFMPEG {
             let mut ffprobe = FFPROBE::new(&self.app)?.with_owner_window(&self.owner_window);
             ffprobe.get_video_streams(video_path).await
         };
-        if video_streams.is_ok_and(|streams| streams.is_empty()) {
+        if video_streams
+            .as_ref()
+            .is_ok_and(|streams| streams.is_empty())
+        {
             return Err(String::from("The media has no picture."));
         }
+        // HDR is converted to SDR, as the picture is shown (& cropped on) as an ordinary JPEG
+        let hdr_to_sdr = video_streams
+            .ok()
+            .and_then(|streams| streams.into_iter().next())
+            .map(|stream| video_dynamic_range::VideoColor::from(&stream))
+            .filter(|color| {
+                video_dynamic_range::classify(color).dynamic_range == DynamicRange::Hdr
+            })
+            .and_then(|color| video_dynamic_range::filter(DynamicRangeOperation::ToSdr, &color));
+        let thumbnail_filter = match hdr_to_sdr {
+            Some(filter) => format!("scale=trunc(iw*sar/2)*2:ih,setsar=1,{filter}"),
+            None => "scale=trunc(iw*sar/2)*2:ih,setsar=1".to_string(),
+        };
         let id = nanoid!();
         let file_name = format!("{}.jpg", id);
         let output_path: PathBuf = [self.assets_dir.clone(), PathBuf::from(&file_name)]
@@ -1628,7 +1714,7 @@ impl FFMPEG {
             "-i",
             video_path,
             "-vf",
-            "scale=trunc(iw*sar/2)*2:ih,setsar=1",
+            &thumbnail_filter,
             "-frames:v",
             "1",
             // Without an explicit quality, the jpeg encoder falls back to a 200kb/s bitrate target,
@@ -2136,8 +2222,14 @@ fn next_target_bitrate(
 pub fn build_ffmpeg_filters(
     transform_history: Option<&MediaTransformHistory>,
     dimensions: Option<(f64, f64)>,
+    dynamic_range_filter: Option<&str>,
 ) -> String {
     let mut filters = build_transform_filters(transform_history, dimensions);
+
+    // After the crop & scale, so fewer pixels are converted
+    if let Some(filter) = dynamic_range_filter {
+        filters.push(filter.to_string());
+    }
 
     // Video encoders (e.g. yuv420p) require even dimensions
     filters.push("pad=ceil(iw/2)*2:ceil(ih/2)*2".to_string());

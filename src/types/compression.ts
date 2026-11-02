@@ -441,6 +441,8 @@ export type VideoCompressionConfig = {
     /** Compressed at its quality first (its estimated size fits), at the bitrate only when larger */
     qualityFirst: boolean
   } | null
+  /** Applied by the backend only when it matches the source (see `video_dynamic_range.rs`) */
+  dynamicRange?: import('./videoDynamicRange').VideoDynamicRangeConfig | null
 }
 
 export type ImageCompressionProgress = {

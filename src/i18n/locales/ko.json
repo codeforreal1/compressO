@@ -1007,6 +1007,11 @@
     "mixed": "다이내믹 레인지를 조정할 이미지를 하나 선택하세요.",
     "unknown": "이미지의 다이내믹 레인지를 확인할 수 없습니다.",
     "formatsOnly": "HDR 부스트는 PNG, JPEG XL 및 JPEG 출력에서만 사용할 수 있습니다.",
-    "jpegLossy": "HDR JPEG는 품질 기반 인코딩을 사용합니다. 무손실 출력은 PNG 또는 JPEG XL을 선택하세요."
+    "jpegLossy": "HDR JPEG는 품질 기반 인코딩을 사용합니다. 무손실 출력은 PNG 또는 JPEG XL을 선택하세요.",
+    "videoMixed": "다이내믹 레인지를 조정할 동영상을 하나 선택하세요.",
+    "videoUnknown": "동영상의 다이내믹 레인지를 확인할 수 없습니다.",
+    "videoBoostFormats": "HDR 부스트는 H.265, VP9 또는 AV1 코덱을 사용하는 MP4, MOV, MKV, WebM 및 TS 동영상에서만 사용할 수 있습니다.",
+    "videoBoostLossless": "무손실 압축에서는 HDR 부스트를 사용할 수 없습니다.",
+    "videoSdrOnly": "이 형식 또는 코덱은 HDR을 저장할 수 없으므로 동영상이 SDR로 변환됩니다."
   }
 }

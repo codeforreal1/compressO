@@ -5,7 +5,10 @@ import cloneDeep from 'lodash/cloneDeep'
 import { toast } from '@/components/Toast'
 import { t } from '@/i18n'
 import { generateVideoThumbnail } from '@/tauri/commands/ffmpeg'
-import { getVideoBasicInfo } from '@/tauri/commands/ffprobe'
+import {
+  getVideoBasicInfo,
+  getVideoDynamicRange,
+} from '@/tauri/commands/ffprobe'
 import {
   getFileMetadata,
   getImageDimension,
@@ -205,9 +208,10 @@ export async function addMedia(selection: MediaSelection | MediaSelection[]) {
       }
       return audioState
     } else if (mediaType === 'video') {
-      const [videoInfo, videoThumbnail] = await Promise.all([
+      const [videoInfo, videoThumbnail, dynamicRangeInfo] = await Promise.all([
         getVideoBasicInfo(path),
         generateVideoThumbnail(path),
+        getVideoDynamicRange(path).catch(() => undefined),
       ])
 
       const videoState: Video & { type: 'video' } = {
@@ -222,6 +226,7 @@ export async function addMedia(selection: MediaSelection | MediaSelection[]) {
         size: formatBytes(fileMetadata?.size ?? 0),
         extension: fileMetadata?.extension?.toLowerCase?.(),
         config: cloneDeep(videoConfigInitialState),
+        dynamicRangeInfo,
         // A thumbnail instead where videos cannot be played (Linux, with video previews off)
         previewMode: isVideoPreviewAvailable ? 'video' : 'image',
       }

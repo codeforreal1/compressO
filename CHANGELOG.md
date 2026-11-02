@@ -6,10 +6,12 @@ Features:
 
 - **HDR Boost (macOS 15+)**: Give SDR images HDR brightness with an intensity slider from 1× to 4×. Available for PNG, JPEG XL and JPEG output, with an info icon explaining when another format is selected. HDR JPEGs include a gain map and a standard SDR rendition for compatible viewers.
 - **Remove HDR (macOS 15+)**: Convert HDR images to SDR for standard brightness and wider format compatibility. Image settings detect the original's dynamic range and show the matching control. Both HDR settings, including boost intensity, can be saved in image presets and used with Target Size.
+- **Video HDR**: HDR videos, including iPhone HDR and Dolby Vision videos, now stay HDR when compressed, using H.265 when the codec is automatic. **Remove HDR** converts them to SDR with proper tone mapping, and **HDR Boost** gives SDR videos HDR brightness from 1× to 4×. Both work on macOS, Windows and Linux and can be saved in video presets.
 - **Straighten**: Tilt photos, videos and animated GIFs slightly, by up to 45 degrees either way, to level a horizon or fix a crooked shot. The Straighten slider is in the transform editor, under the rotate and flip buttons. The crop stays inside the tilted picture, so no empty corners are added, and rotating or flipping keeps the straightened result.
 
 Bug Fixes:
 
+- Fixed compressed HDR videos showing banding and wrong brightness, and HDR videos looking washed out in GIFs, thumbnails and H.264 output; they are now converted to SDR where the format cannot store HDR.
 - Fixed supported PQ and HLG HDR JPEG XL images failing to open or recompress. PNG and JPEG XL output retain their HDR color information.
 - Fixed copied outputs that are not saved yet being pasted under a generated name; they are now pasted under the name they would be saved with, including the preset's file name prefix.
 - Fixed watched folders missing media in subfolders, in folders moved into them, and in files put back or replaced under a name that was already compressed.

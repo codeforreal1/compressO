@@ -1007,6 +1007,11 @@
     "mixed": "請選取單張影像來調整其動態範圍。",
     "unknown": "無法判斷影像的動態範圍。",
     "formatsOnly": "HDR 增強僅適用於 PNG、JPEG XL 和 JPEG 輸出。",
-    "jpegLossy": "HDR JPEG 使用依品質編碼。若要無損輸出，請選擇 PNG 或 JPEG XL。"
+    "jpegLossy": "HDR JPEG 使用依品質編碼。若要無損輸出，請選擇 PNG 或 JPEG XL。",
+    "videoMixed": "請選取單一影片來調整其動態範圍。",
+    "videoUnknown": "無法判斷影片的動態範圍。",
+    "videoBoostFormats": "HDR 增強僅適用於使用 H.265、VP9 或 AV1 編解碼器的 MP4、MOV、MKV、WebM 和 TS 影片。",
+    "videoBoostLossless": "無損壓縮不支援 HDR 增強。",
+    "videoSdrOnly": "此格式或編解碼器無法儲存 HDR，因此影片將轉換為 SDR。"
   }
 }

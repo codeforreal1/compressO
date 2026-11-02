@@ -24,6 +24,7 @@ export const videoPresetFields = [
   'shouldEnableCustomChannel',
   'shouldEnableCustomBitrate',
   'audioConfig',
+  'dynamicRange',
 ] as const satisfies readonly (keyof VideoConfig)[]
 
 export type VideoPresetField = (typeof videoPresetFields)[number]

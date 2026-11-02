@@ -69,6 +69,7 @@ export const videoConfigInitialState: VideoConfig = {
     shouldEnableSubtitles: false,
   },
   shouldEnableCustomSpeed: false,
+  dynamicRange: { mode: 'original', intensity: 2 },
   customSpeed: undefined,
 }
 

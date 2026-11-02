@@ -274,6 +274,7 @@ async fn compress_media_item(
                     config.subtitles_config.as_ref(),
                     config.speed,
                     config.target_size.as_ref(),
+                    config.dynamic_range.as_ref(),
                 )
                 .await
         })

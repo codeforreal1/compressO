@@ -190,6 +190,14 @@ pub fn to_hardware_args(cpu_args: &[String], encoder: &HardwareEncoder) -> Vec<S
                 args.extend(quality_args(encoder, crf));
                 index += 2;
             }
+            // 10-bit (HDR) frames are P010 on graphics cards; on macOS, HEVC is then Main 10
+            ("-pix_fmt:v:0", Some("yuv420p10le")) => {
+                args.extend(["-pix_fmt:v:0".to_string(), "p010le".to_string()]);
+                if encoder.api == Api::VideoToolbox && encoder.codec == Codec::Hevc {
+                    args.extend(["-profile:v:0".to_string(), "main10".to_string()]);
+                }
+                index += 2;
+            }
             // Intel's encoder takes NV12 frames
             ("-pix_fmt:v:0", Some(_)) if encoder.api == Api::Qsv => {
                 args.extend(["-pix_fmt:v:0".to_string(), "nv12".to_string()]);
@@ -280,6 +288,25 @@ mod tests {
         let hardware = to_hardware_args(&cpu_args, &encoder);
         assert!(hardware.windows(2).any(|pair| pair == ["-c:v:0", "hevc_videotoolbox"]));
         assert!(hardware.windows(2).any(|pair| pair == ["-tag:v:0", "hvc1"]));
+    }
+
+    #[test]
+    fn hdr_is_encoded_from_p010_frames() {
+        let mut cpu_args = args(&CPU_ARGS);
+        cpu_args[3] = "libx265".to_string();
+        cpu_args[5] = "yuv420p10le".to_string();
+        for encoder in [
+            encoder("hevc_videotoolbox", Codec::Hevc, Api::VideoToolbox),
+            encoder("hevc_nvenc", Codec::Hevc, Api::Nvenc),
+            encoder("hevc_qsv", Codec::Hevc, Api::Qsv),
+        ] {
+            let hardware = to_hardware_args(&cpu_args, &encoder);
+            assert!(hardware.windows(2).any(|pair| pair == ["-pix_fmt:v:0", "p010le"]));
+            assert_eq!(
+                hardware.windows(2).any(|pair| pair == ["-profile:v:0", "main10"]),
+                encoder.api == Api::VideoToolbox
+            );
+        }
     }
 
     #[test]

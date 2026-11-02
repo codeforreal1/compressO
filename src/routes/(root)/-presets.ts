@@ -667,6 +667,12 @@ function getEffectiveVideoSettings(
   if (!settings.shouldEnableCustomVideoCodec) delete effective.customVideoCodec
   if (!settings.shouldEnableCustomFPS) delete effective.customFPS
   if (!settings.shouldEnableCustomSpeed) delete effective.customSpeed
+  // Off (or a preset saved before it) changes nothing; the intensity is only used by HDR boost
+  if (!settings.dynamicRange || settings.dynamicRange.mode === 'original') {
+    delete effective.dynamicRange
+  } else if (settings.dynamicRange.mode === 'sdr') {
+    effective.dynamicRange = { mode: 'sdr' }
+  }
   if (audioConfig) {
     if (
       !settings.shouldEnableCustomAudioCodec ||

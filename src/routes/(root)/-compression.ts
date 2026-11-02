@@ -570,6 +570,10 @@ export function getMediaItemConfig(
                       v.config.subtitlesConfig.preserveExistingSubtitles,
                   }
                 : null,
+            // The backend applies it only when it matches the source & its output
+            dynamicRange: v.isAudioFile
+              ? null
+              : (v.config?.dynamicRange ?? null),
           } satisfies VideoCompressionConfig)
         : undefined,
     imageConfig:

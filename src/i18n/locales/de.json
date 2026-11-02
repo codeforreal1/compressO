@@ -1022,6 +1022,11 @@
     "mixed": "Wähle ein einzelnes Bild, um seinen Dynamikumfang anzupassen.",
     "unknown": "Der Dynamikumfang des Bildes konnte nicht bestimmt werden.",
     "formatsOnly": "HDR-Verstärkung ist nur für die Ausgabe als PNG, JPEG XL und JPEG verfügbar.",
-    "jpegLossy": "HDR-JPEG verwendet qualitätsbasierte Kodierung. Wähle PNG oder JPEG XL für verlustfreie Ausgabe."
+    "jpegLossy": "HDR-JPEG verwendet qualitätsbasierte Kodierung. Wähle PNG oder JPEG XL für verlustfreie Ausgabe.",
+    "videoMixed": "Wählen Sie ein einzelnes Video, um seinen Dynamikumfang anzupassen.",
+    "videoUnknown": "Der Dynamikumfang des Videos konnte nicht bestimmt werden.",
+    "videoBoostFormats": "HDR-Verstärkung ist nur für MP4-, MOV-, MKV-, WebM- und TS-Videos mit dem Codec H.265, VP9 oder AV1 verfügbar.",
+    "videoBoostLossless": "HDR-Verstärkung ist bei verlustfreier Komprimierung nicht verfügbar.",
+    "videoSdrOnly": "Dieses Format oder dieser Codec kann kein HDR speichern, daher wird das Video in SDR umgewandelt."
   }
 }

@@ -13,5 +13,6 @@ pub mod orientation;
 pub mod server;
 
 pub mod tool_bundle;
+pub mod video_dynamic_range;
 
 pub mod waveform;

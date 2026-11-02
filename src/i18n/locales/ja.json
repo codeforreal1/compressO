@@ -1007,6 +1007,11 @@
     "mixed": "ダイナミックレンジを調整する画像を1つ選択してください。",
     "unknown": "画像のダイナミックレンジを判定できませんでした。",
     "formatsOnly": "HDRブーストはPNG、JPEG XL、JPEGの出力でのみ利用できます。",
-    "jpegLossy": "HDR JPEGは画質を指定してエンコードします。可逆出力にはPNGまたはJPEG XLを選択してください。"
+    "jpegLossy": "HDR JPEGは画質を指定してエンコードします。可逆出力にはPNGまたはJPEG XLを選択してください。",
+    "videoMixed": "ダイナミックレンジを調整する動画を1つ選択してください。",
+    "videoUnknown": "動画のダイナミックレンジを判定できませんでした。",
+    "videoBoostFormats": "HDRブーストは、H.265、VP9、AV1コーデックを使用するMP4、MOV、MKV、WebM、TS動画でのみ利用できます。",
+    "videoBoostLossless": "ロスレス圧縮ではHDRブーストを利用できません。",
+    "videoSdrOnly": "この形式またはコーデックはHDRを保存できないため、動画はSDRに変換されます。"
   }
 }

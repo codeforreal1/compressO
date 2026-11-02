@@ -1037,6 +1037,11 @@
     "mixed": "Selecione uma imagem individual para ajustar sua faixa dinâmica.",
     "unknown": "Não foi possível determinar a faixa dinâmica da imagem.",
     "formatsOnly": "O realce HDR está disponível apenas para saída em PNG, JPEG XL e JPEG.",
-    "jpegLossy": "JPEG HDR usa codificação por qualidade. Escolha PNG ou JPEG XL para saída sem perdas."
+    "jpegLossy": "JPEG HDR usa codificação por qualidade. Escolha PNG ou JPEG XL para saída sem perdas.",
+    "videoMixed": "Selecione um vídeo individual para ajustar sua faixa dinâmica.",
+    "videoUnknown": "Não foi possível determinar a faixa dinâmica do vídeo.",
+    "videoBoostFormats": "O realce HDR está disponível apenas para vídeos MP4, MOV, MKV, WebM e TS que usam o codec H.265, VP9 ou AV1.",
+    "videoBoostLossless": "O realce HDR não está disponível com a compressão sem perdas.",
+    "videoSdrOnly": "Este formato ou codec não pode armazenar HDR, portanto o vídeo será convertido para SDR."
   }
 }
