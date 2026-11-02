@@ -191,10 +191,31 @@ fn validate_jxl_info(details: &str) -> Result<(), String> {
     if details.contains("-bit float")
         || details.contains("CMY+Black")
         || details.contains("Gain map (jhgm)")
-        || details.contains("Transfer function: PQ")
-        || details.contains("Transfer function: HLG")
     {
         return Err("Floating-point/HDR and CMYK JPEG XL images are not supported yet".into());
+    }
+    Ok(())
+}
+
+/// Integer PQ/HLG pixels can pass through PNG into cjxl without tone mapping. Other
+/// exporters currently reduce bit depth or discard this signaling, so reject those
+/// conversions rather than silently producing an incorrectly rendered image.
+pub fn validate_png_output(input: &Path, format: &str) -> Result<(), String> {
+    if format == "jxl" {
+        return Ok(());
+    }
+    let bytes = fs::read(input).map_err(|e| e.to_string())?;
+    if !bytes.starts_with(b"\x89PNG\r\n\x1a\n") {
+        return Ok(());
+    }
+    let png = img_parts::png::Png::from_bytes(img_parts::Bytes::from(bytes))
+        .map_err(|e| e.to_string())?;
+    if png
+        .chunks()
+        .iter()
+        .any(|chunk| chunk.kind() == *b"cICP" && matches!(chunk.contents().get(1), Some(16 | 18)))
+    {
+        return Err("HDR image conversion currently supports JPEG XL output only. Choose JPEG XL to preserve HDR color.".into());
     }
     Ok(())
 }
@@ -209,6 +230,7 @@ pub async fn encode(
     owner: &str,
     cancel_ids: &[String],
 ) -> Result<(), String> {
+    validate_png_output(Path::new(input), format)?;
     let pixels = image::open(input).map_err(|e| e.to_string())?;
     if format != "jxl"
         && lossless
@@ -373,6 +395,93 @@ mod tests {
             vec!["output.jxl".into(), "decoded.png".into()]
         } else {
             vec![format!("output.{format}"), "decoded.png".into()]
+        }
+    }
+
+    #[test]
+    fn integer_hdr_jxl_is_supported_but_unsupported_representations_are_rejected() {
+        for transfer in ["PQ", "HLG", "sRGB"] {
+            assert!(validate_jxl_info(&format!(
+                "JPEG XL image, 32x24, (possibly) lossless, 10-bit RGB\nTransfer function: {transfer}"
+            ))
+            .is_ok());
+        }
+        for details in [
+            "JPEG XL animation",
+            "32-bit float",
+            "Color space: CMY+Black",
+            "Gain map (jhgm)",
+        ] {
+            assert!(validate_jxl_info(details).is_err(), "{details}");
+        }
+    }
+
+    #[test]
+    #[ignore = "requires matching prebuilt image codecs"]
+    fn integer_hdr_jxl_survives_normalization_and_recompression() {
+        use img_parts::{
+            png::{Png, PngChunk},
+            Bytes,
+        };
+
+        let directory =
+            std::env::temp_dir().join(format!("compresso-hdr-jxl-{}", nanoid::nanoid!()));
+        fs::create_dir(&directory).unwrap();
+        let work = Workspace(directory);
+        let pixels = image::ImageBuffer::<image::Rgb<u16>, Vec<u16>>::from_fn(32, 24, |x, y| {
+            image::Rgb([
+                (x * 1901) as u16,
+                (y * 2701) as u16,
+                ((x + y) * 1103) as u16,
+            ])
+        });
+        for (transfer, name) in [(16, "PQ"), (18, "HLG")] {
+            pixels.save(work.0.join("input.png")).unwrap();
+            let mut png =
+                Png::from_bytes(Bytes::from(fs::read(work.0.join("input.png")).unwrap())).unwrap();
+            png.chunks_mut().insert(
+                1,
+                PngChunk::new(*b"cICP", Bytes::from(vec![12, transfer, 0, 1])),
+            );
+            fs::write(work.0.join("input.png"), png.encoder().bytes()).unwrap();
+            execute(&work.0, "cjxl", &encoder_arguments("jxl", 80, true));
+            let details = execute(&work.0, "jxlinfo", &["output.jxl".into()]);
+            let details = String::from_utf8(details.stdout).unwrap();
+            validate_jxl_info(&details).unwrap();
+            assert!(
+                details.contains(&format!("Transfer function: {name}")),
+                "{details}"
+            );
+            execute(&work.0, "djxl", &["output.jxl".into(), "source.png".into()]);
+
+            // The app normalizes decoded pixels before applying private-metadata stripping.
+            let source = image::open(work.0.join("source.png")).unwrap();
+            source.save(work.0.join("input.png")).unwrap();
+            preserve_png_color(&work.0.join("source.png"), &work.0.join("input.png")).unwrap();
+            validate_png_output(&work.0.join("input.png"), "jxl").unwrap();
+            for format in ["jpg", "png", "webp", "avif", "heic", "heif"] {
+                assert!(validate_png_output(&work.0.join("input.png"), format).is_err());
+            }
+            for lossless in [true, false] {
+                execute(&work.0, "cjxl", &encoder_arguments("jxl", 60, lossless));
+                let details = execute(&work.0, "jxlinfo", &["output.jxl".into()]);
+                let details = String::from_utf8(details.stdout).unwrap();
+                assert!(details.contains("Primaries: P3"), "{details}");
+                assert!(
+                    details.contains(&format!("Transfer function: {name}")),
+                    "{details}"
+                );
+                execute(
+                    &work.0,
+                    "djxl",
+                    &["output.jxl".into(), "decoded.png".into()],
+                );
+                let restored = image::open(work.0.join("decoded.png")).unwrap();
+                assert_eq!(restored.color(), image::ColorType::Rgb16);
+                if lossless {
+                    assert_eq!(source.to_rgb16(), restored.to_rgb16());
+                }
+            }
         }
     }
 

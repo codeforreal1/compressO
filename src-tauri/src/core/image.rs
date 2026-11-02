@@ -1314,6 +1314,7 @@ impl ImageCompressor {
             PathBuf::from(input)
         };
         let decoded_str = decoded.to_str().ok_or("Invalid image path")?;
+        super::image_codecs::validate_png_output(&decoded, format)?;
         if !super::image_codecs::is_modern(format) {
             return Box::pin(self.compress_image(
                 decoded_str,
