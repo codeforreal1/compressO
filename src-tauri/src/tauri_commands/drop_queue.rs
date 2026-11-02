@@ -115,6 +115,13 @@ pub struct CliJob {
     /// Saved here instead of the preset's save location
     #[serde(default)]
     pub output_folder: Option<String>,
+    /// For a single file: the exact name it is saved under in `output_folder` (no prefix; a
+    /// numbered name when it exists)
+    #[serde(default)]
+    pub output_file_name: Option<String>,
+    /// The format it is converted to instead of the preset's (from `output_file_name`)
+    #[serde(default)]
+    pub convert_to_extension: Option<String>,
     #[serde(default)]
     pub skip_larger_outputs: Option<bool>,
     #[serde(default)]

@@ -48,7 +48,7 @@ fn tools() -> Value {
         {
             "name": "compress",
             "title": "Compress media",
-            "description": "Compresses videos, images and audio files (and the media in folders, read as when dropped on the app) with CompressO's presets, and saves them as the presets do: next to the originals, or in the presets' folders, unless outputFolder is given. Waits until done and returns each file's result (saved path, sizes, or why it was not saved). Settings left out follow the user's CompressO settings, including replacing original files when that setting is on.",
+            "description": "Compresses videos, images and audio files (and the media in folders, read as when dropped on the app) with CompressO's presets, and saves them as the presets do: next to the originals, or in the presets' folders, unless output is given. Waits until done and returns each file's result (saved path, sizes, or why it was not saved). Settings left out follow the user's CompressO settings, including replacing original files when that setting is on.",
             "inputSchema": {
                 "type": "object",
                 "properties": {
@@ -61,12 +61,12 @@ fn tools() -> Value {
                     "videoPreset": { "type": "string", "description": "Preset for videos, by name or id (see list_presets); the default video preset otherwise" },
                     "imagePreset": { "type": "string", "description": "Preset for images; the default image preset otherwise" },
                     "audioPreset": { "type": "string", "description": "Preset for audio files; the default audio preset otherwise" },
-                    "outputFolder": { "type": "string", "description": "Absolute path of a folder to save to, instead of the presets' save locations. Required when a preset asks where to save." },
+                    "output": { "type": "string", "description": "Absolute path of a folder to save to, instead of the presets' save locations (required when a preset asks where to save). For a single file it can be the file to save, whose extension is the format it is converted to, e.g. /Users/me/Desktop/small.png for a JPEG." },
                     "skipLargerOutputs": switch("Do not save outputs larger than their originals"),
                     "preserveFolderStructure": switch("Keep the folders of folder inputs when saving to a folder"),
                     "replaceOriginalFiles": switch("Move an original to the Trash when its output is saved under the same name in the same folder"),
-                    "fileNamePrefix": { "type": "string", "description": "Text added to the start of saved file names (an empty text keeps the original names)" },
-                    "useHardwareAcceleration": switch("Compress videos on the graphics card when possible"),
+                    "filenamePrefix": { "type": "string", "description": "Text added to the start of saved file names (an empty text keeps the original names)" },
+                    "hardwareAcceleration": switch("Compress videos on the graphics card when possible"),
                     "reachTargetSizesWithoutAcceleration": switch("Compress again without hardware acceleration when a video misses its target size"),
                     "dryRun": switch("Only list the files, their presets and where they would be saved"),
                 },
@@ -141,14 +141,13 @@ fn compress_options(arguments: &Value) -> Result<CompressOptions, CliError> {
     Ok(CompressOptions {
         inputs,
         presets,
-        output_folder: text("outputFolder")
-            .map(|folder| job::absolute_path(&PathBuf::from(folder))),
+        output: text("output").map(|folder| job::absolute_path(&PathBuf::from(folder))),
         overrides: Overrides {
             skip_larger_outputs: switch("skipLargerOutputs"),
             preserve_folder_structure: switch("preserveFolderStructure"),
             replace_original_files: switch("replaceOriginalFiles"),
-            file_name_prefix: text("fileNamePrefix"),
-            use_hardware_acceleration: switch("useHardwareAcceleration"),
+            file_name_prefix: text("filenamePrefix"),
+            use_hardware_acceleration: switch("hardwareAcceleration"),
             reach_target_sizes_without_acceleration: switch("reachTargetSizesWithoutAcceleration"),
         },
         dry_run: switch("dryRun").unwrap_or(false),

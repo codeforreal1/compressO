@@ -450,6 +450,8 @@ export type QueueOutput = {
 export type QueueSaveSettings = {
   /** Saved here instead of the preset's save location */
   outputFolder?: string | null
+  /** The exact name it is saved under in `outputFolder`, instead of its own with the prefix */
+  outputFileName?: string | null
   skipLargerOutputs?: boolean | null
   preserveFolderStructure?: boolean | null
   replaceOriginalFiles?: boolean | null
@@ -539,7 +541,10 @@ export async function saveQueueOutput(
         '/',
       )
     }
-    const fileName = `${outputFilePrefix}${output.outputFileName}`
+    const fileName =
+      settings.outputFolder && settings.outputFileName
+        ? settings.outputFileName
+        : `${outputFilePrefix}${output.outputFileName}`
     try {
       const savedPath = await moveFile(
         output.outputPath,

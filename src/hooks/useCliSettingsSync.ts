@@ -15,7 +15,7 @@ import {
   type CliSettings,
   syncCliSettings,
 } from '@/tauri/commands/cli'
-import { inputExtensions } from '@/types/compression'
+import { extensions, inputExtensions } from '@/types/compression'
 import {
   type Preset,
   type PresetMediaType,
@@ -65,6 +65,14 @@ function getCliSettings(): CliSettings {
       video: [...inputExtensions.video],
       image: [...inputExtensions.image],
       audio: [...inputExtensions.audio],
+    },
+    outputExtensions: {
+      video: [
+        ...Object.keys(extensions.video),
+        ...Object.keys(extensions.audio),
+      ],
+      image: Object.keys(extensions.image),
+      audio: Object.keys(extensions.audio),
     },
   }
 }

@@ -136,7 +136,17 @@ function getQueueAcceleration(
 async function loadQueueMedia(item: DropQueueItem): Promise<MediaFile> {
   const media = await readQueueMedia(item)
   const acceleration = getQueueAcceleration(item)
-  return acceleration ? { ...media, acceleration } : media
+  // A format chosen on the command line (by the output's file name) replaces the preset's; the
+  // command line only sends one the media type can be saved in
+  const extension = item.cliJob?.convertToExtension
+  const config = extension
+    ? { ...media.config, convertToExtension: extension }
+    : media.config
+  return {
+    ...media,
+    config,
+    ...(acceleration ? { acceleration } : {}),
+  } as MediaFile
 }
 
 async function readQueueMedia(item: DropQueueItem): Promise<MediaFile> {

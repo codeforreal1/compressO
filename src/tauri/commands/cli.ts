@@ -34,6 +34,8 @@ export type CliSettings = {
   }
   /** The formats each media type is opened in */
   extensions: Record<PresetMediaType, string[]>
+  /** The formats each media type can be saved in (a video also as audio) */
+  outputExtensions: Record<PresetMediaType, string[]>
 }
 
 /**

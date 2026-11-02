@@ -81,6 +81,13 @@ export type CliJob = {
   }
   /** Saved here instead of the preset's save location */
   outputFolder: string | null
+  /**
+   * For a single file: the exact name it is saved under in `outputFolder` (no prefix; a numbered
+   * name when it exists)
+   */
+  outputFileName: string | null
+  /** The format it is converted to instead of the preset's (from `outputFileName`) */
+  convertToExtension: string | null
   skipLargerOutputs: boolean | null
   preserveFolderStructure: boolean | null
   replaceOriginalFiles: boolean | null

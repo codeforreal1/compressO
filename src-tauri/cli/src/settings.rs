@@ -16,6 +16,9 @@ pub struct Settings {
     pub output: OutputSettings,
     #[serde(default)]
     pub extensions: HashMap<String, Vec<String>>,
+    /// The formats each media type can be saved in (a video also as audio)
+    #[serde(default)]
+    pub output_extensions: HashMap<String, Vec<String>>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -58,6 +61,12 @@ pub struct OutputSettings {
     pub skip_larger_outputs: bool,
     pub preserve_folder_structure: bool,
     pub replace_original_files: bool,
+    /// `useHardwareAcceleration` in the app's settings, `hardwareAcceleration` as the command line
+    /// shows it (`--hardware-acceleration`)
+    #[serde(rename(
+        serialize = "hardwareAcceleration",
+        deserialize = "useHardwareAcceleration"
+    ))]
     pub use_hardware_acceleration: bool,
     pub reach_target_sizes_without_acceleration: bool,
 }

@@ -27,8 +27,9 @@ pub struct CompressOptions {
     pub inputs: Vec<PathBuf>,
     /// The preset name (or id) chosen for each media type; the others use their default preset
     pub presets: HashMap<&'static str, String>,
-    /// Saved here instead of the presets' save locations
-    pub output_folder: Option<PathBuf>,
+    /// Saved here instead of the presets' save locations: a folder, or for a single file the file
+    /// to save, whose extension is the format it is converted to
+    pub output: Option<PathBuf>,
     pub overrides: Overrides,
     /// Only checks & lists what would be done
     pub dry_run: bool,
@@ -95,8 +96,11 @@ pub struct FileResult {
 pub struct EffectiveSettings {
     #[serde(flatten)]
     pub output: OutputSettings,
-    /// Set when a prefix was chosen; otherwise each preset's prefix is used
+    /// The file saved, when `--output=` names one (its prefix is not used)
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub output_file: Option<String>,
+    /// Set when a prefix was chosen; otherwise each preset's prefix is used
+    #[serde(rename = "filenamePrefix", skip_serializing_if = "Option::is_none")]
     pub file_name_prefix: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub output_folder: Option<String>,
@@ -179,12 +183,17 @@ impl Report {
 
 /// Inputs given relative to the current folder, made absolute (the app has another one)
 pub fn absolute_path(path: &Path) -> PathBuf {
-    if path.is_absolute() {
-        return path.to_path_buf();
-    }
-    std::env::current_dir()
-        .map(|directory| directory.join(path))
-        .unwrap_or_else(|_| path.to_path_buf())
+    let path = if path.is_absolute() {
+        path.to_path_buf()
+    } else {
+        std::env::current_dir()
+            .map(|directory| directory.join(path))
+            .unwrap_or_else(|_| path.to_path_buf())
+    };
+    // Without `.` parts, so paths read as typed (`./out` -> `/…/out`)
+    path.components()
+        .filter(|component| !matches!(component, std::path::Component::CurDir))
+        .collect()
 }
 
 /// Checks what can be checked before reaching the app
@@ -207,16 +216,26 @@ fn check_inputs(options: &CompressOptions) -> Result<(), CliError> {
             format!("Not found: {}", missing.join(", ")),
         ));
     }
-    if let Some(folder) = &options.output_folder {
-        if folder.exists() && !folder.is_dir() {
-            return Err(CliError::new(
-                exit_code::USAGE,
-                "outputFolder",
-                format!("The output {} is a file, not a folder.", folder.display()),
-            ));
-        }
-    }
     Ok(())
+}
+
+/// The extension of a path, in lower case
+fn extension_of(path: &Path) -> Option<String> {
+    path.extension()
+        .and_then(|extension| extension.to_str())
+        .map(str::to_lowercase)
+}
+
+/// Whether `--output=` names a file to save (with an extension of a format CompressO saves in),
+/// not a folder
+fn is_file_output(path: &Path, settings: &Settings) -> bool {
+    !path.is_dir()
+        && extension_of(path).is_some_and(|extension| {
+            settings
+                .output_extensions
+                .values()
+                .any(|extensions| extensions.contains(&extension))
+        })
 }
 
 /// The folder a media would be saved in (see `saveQueueOutput` in the app)
@@ -227,7 +246,7 @@ fn destination_folder(
     options: &CompressOptions,
     preserve_folder_structure: bool,
 ) -> String {
-    let folder = match &options.output_folder {
+    let folder = match &options.output {
         Some(folder) => Some(folder.display().to_string()),
         None if preset.output.save_location == "fixedFolder" => preset.output.save_folder.clone(),
         None => None,
@@ -310,6 +329,56 @@ pub async fn run(
         return Err(CliError::new(exit_code::USAGE, "noMedia", message));
     }
 
+    // `--output=` names a folder, or for a single file the file to save, in the format of its
+    // extension (e.g. `--output=small.png` for a JPEG)
+    let output_file = options
+        .output
+        .as_ref()
+        .filter(|path| is_file_output(path, &settings))
+        .cloned();
+    let mut convert_to_extension: Option<String> = None;
+    if let Some(path) = &output_file {
+        if options.inputs.len() != 1 || !options.inputs[0].is_file() || files.len() != 1 {
+            return Err(CliError::new(
+                exit_code::USAGE,
+                "fileOutput",
+                "A file name in --output= works with one file only. Use a folder for several files or a folder.",
+            ));
+        }
+        let media_type = files[0]["mediaType"].as_str().unwrap_or("video");
+        let extension = extension_of(path).unwrap_or_default();
+        let allowed = settings
+            .output_extensions
+            .get(media_type)
+            .cloned()
+            .unwrap_or_default();
+        if !allowed.contains(&extension) {
+            let media = match media_type {
+                "image" => "An image",
+                "audio" => "An audio file",
+                _ => "A video",
+            };
+            return Err(CliError::new(
+                exit_code::USAGE,
+                "unsupportedFormat",
+                format!(
+                    "{media} cannot be saved as .{extension}. It can be saved as {}.",
+                    allowed.join(", ")
+                ),
+            ));
+        }
+        convert_to_extension = Some(extension);
+    } else if let Some(path) = options.output.as_ref().filter(|path| path.is_file()) {
+        return Err(CliError::new(
+            exit_code::USAGE,
+            "outputFolder",
+            format!(
+                "The output {} is a file of a format CompressO does not save in, not a folder.",
+                path.display()
+            ),
+        ));
+    }
+
     // The media types among the inputs, & the presets they are compressed with
     let mut used: BTreeMap<String, String> = BTreeMap::new();
     for file in &files {
@@ -319,7 +388,7 @@ pub async fn run(
         }
     }
     // Nothing here can ask where to save
-    if options.output_folder.is_none() {
+    if options.output.is_none() {
         for media_type in used.keys() {
             let preset = presets[media_type.as_str()];
             if !preset.output.saves_automatically() {
@@ -355,10 +424,15 @@ pub async fn run(
                 .unwrap_or(settings.output.reach_target_sizes_without_acceleration),
         },
         file_name_prefix: overrides.file_name_prefix.clone(),
-        output_folder: options
-            .output_folder
-            .as_ref()
-            .map(|folder| folder.display().to_string()),
+        // The file's folder, for a file
+        output_folder: match &output_file {
+            Some(path) => path.parent().map(|folder| folder.display().to_string()),
+            None => options
+                .output
+                .as_ref()
+                .map(|folder| folder.display().to_string()),
+        },
+        output_file: output_file.as_ref().map(|path| path.display().to_string()),
     };
 
     let mut report = Report {
@@ -399,6 +473,11 @@ pub async fn run(
             .iter()
             .map(|file| {
                 let mut result = file_result(file, "planned");
+                if let Some(path) = &report.settings.output_file {
+                    result.output = Some(path.clone());
+                    result.output_folder = report.settings.output_folder.clone();
+                    return result;
+                }
                 let preset = presets[result.media_type.as_str()];
                 result.output_folder = Some(destination_folder(
                     &result.input,
@@ -421,6 +500,11 @@ pub async fn run(
             "audio": options.presets.get("audio").map(|_| &presets["audio"].id),
         },
         "outputFolder": report.settings.output_folder,
+        "outputFileName": output_file
+            .as_ref()
+            .and_then(|path| path.file_name())
+            .map(|name| name.to_string_lossy().to_string()),
+        "convertToExtension": convert_to_extension,
         "fileNamePrefix": overrides.file_name_prefix,
     });
     for (key, value) in [

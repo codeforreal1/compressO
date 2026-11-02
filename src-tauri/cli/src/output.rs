@@ -176,7 +176,10 @@ impl HumanOutput {
                     file.input,
                     file.media_type,
                     file.preset,
-                    file.output_folder.as_deref().unwrap_or_default()
+                    file.output
+                        .as_deref()
+                        .or(file.output_folder.as_deref())
+                        .unwrap_or_default()
                 );
             }
         }

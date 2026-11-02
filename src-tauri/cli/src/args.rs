@@ -29,14 +29,18 @@ Presets (a media type without its option uses its default preset in the app):
 Output:
   --output=<folder>        Save to this folder instead of the presets' save location.
                            Required when a preset asks where to save each time.
+  --output=<file>          For a single file: save it under this name. A different extension
+                           converts it to that format (e.g. a JPEG to --output=small.png), with
+                           the preset's other settings. An existing file is never replaced; a
+                           numbered name is used.
 
 Output settings (Settings > Output in the app; without an option, the app's setting is used,
 and an option changes it for this command only; a bare option means =1):
   --skip-larger-outputs=0|1
   --preserve-folder-structure=0|1
   --replace-original-files=0|1
-  --file-name-prefix=<text>          (--file-name-prefix= keeps the original names)
-  --use-hardware-acceleration=0|1
+  --filename-prefix=<text>           (--filename-prefix= keeps the original names)
+  --hardware-acceleration=0|1
   --reach-target-sizes-without-acceleration=0|1
 
 Other options:
@@ -61,6 +65,9 @@ Examples:
   compresso ~/Movies/clip.mov --video-preset="Standard"
   compresso ~/Pictures/Trip --image-preset="Web"
   compresso ~/Desktop/Screens --output=~/Desktop/Compressed --replace-original-files=0 --json
+  compresso photo.jpg --output=./compressed-photo.png
+  compresso clip.mov --output=./clip.mp4 --video-preset="Web"
+  compresso talk.mp4 --output=./talk.mp3
 "#;
 
 pub enum Command {
@@ -164,7 +171,7 @@ pub fn parse(args: Vec<String>) -> Result<Command, CliError> {
             "--dry-run" => parsed.options.dry_run = true,
             "--output" => {
                 let folder = expand_home(&take_value(&name)?);
-                parsed.options.output_folder = Some(absolute_path(&folder));
+                parsed.options.output = Some(absolute_path(&folder));
             }
             "--video-preset" => {
                 parsed.options.presets.insert("video", take_value(&name)?);
@@ -175,7 +182,7 @@ pub fn parse(args: Vec<String>) -> Result<Command, CliError> {
             "--audio-preset" => {
                 parsed.options.presets.insert("audio", take_value(&name)?);
             }
-            "--file-name-prefix" => overrides.file_name_prefix = Some(take_value(&name)?),
+            "--filename-prefix" => overrides.file_name_prefix = Some(take_value(&name)?),
             "--skip-larger-outputs" => {
                 overrides.skip_larger_outputs = Some(parse_switch(switch_name, value.as_deref())?)
             }
@@ -187,7 +194,7 @@ pub fn parse(args: Vec<String>) -> Result<Command, CliError> {
                 overrides.replace_original_files =
                     Some(parse_switch(switch_name, value.as_deref())?)
             }
-            "--use-hardware-acceleration" => {
+            "--hardware-acceleration" => {
                 overrides.use_hardware_acceleration =
                     Some(parse_switch(switch_name, value.as_deref())?)
             }
