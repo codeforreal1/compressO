@@ -25,6 +25,7 @@ Presets (a media type without its option uses its default preset in the app):
   --video-preset=<name>    Preset for videos, by name or id
   --image-preset=<name>    Preset for images
   --audio-preset=<name>    Preset for audio files
+  --preset=<name>          For a single file: its preset, whatever its media type
 
 Output:
   --output=<folder>        Save to this folder instead of the presets' save location.
@@ -175,6 +176,7 @@ pub fn parse(args: Vec<String>) -> Result<Command, CliError> {
                 parsed.options.output_is_folder = value.ends_with('/') || value.ends_with('\\');
                 parsed.options.output = Some(absolute_path(&expand_home(&value)));
             }
+            "--preset" => parsed.options.preset = Some(take_value(&name)?),
             "--video-preset" => {
                 parsed.options.presets.insert("video", take_value(&name)?);
             }

@@ -374,6 +374,7 @@
           "several": "Mehrere Dateien und Ordner auf einmal komprimieren. Ordner werden wie beim Ablegen auf der App gelesen.",
           "preset": "Eine Voreinstellung für Videos über ihren Namen verwenden. Namen mit Leerzeichen in Anführungszeichen setzen.",
           "presets": "Für jeden Medientyp eine Voreinstellung wählen. Ein Medientyp ohne eigene verwendet seine Standard-Voreinstellung.",
+          "singlePreset": "Für eine einzelne Datei die Voreinstellung mit --preset= wählen, unabhängig vom Medientyp.",
           "outputFolder": "In diesem Ordner statt am Speicherort der Voreinstellung speichern. Erforderlich, wenn eine Voreinstellung jedes Mal nach dem Speicherort fragt.",
           "outputFile": "Eine einzelne Datei unter diesem Namen speichern. Eine andere Dateiendung wandelt sie in dieses Format um.",
           "audioOnly": "Nur den Ton eines Videos als Audiodatei behalten.",

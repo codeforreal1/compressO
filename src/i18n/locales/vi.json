@@ -374,6 +374,7 @@
           "several": "Nén nhiều tệp và thư mục cùng lúc. Thư mục được đọc như khi thả vào ứng dụng.",
           "preset": "Dùng một cài đặt sẵn cho video theo tên. Đặt tên có dấu cách trong dấu ngoặc kép.",
           "presets": "Chọn một cài đặt sẵn cho mỗi loại phương tiện. Loại không được chọn sẽ dùng cài đặt sẵn mặc định.",
+          "singlePreset": "Với một tệp, chọn cài đặt sẵn bằng --preset=, bất kể loại phương tiện.",
           "outputFolder": "Lưu vào thư mục này thay cho vị trí lưu của cài đặt sẵn. Cần thiết khi cài đặt sẵn hỏi nơi lưu.",
           "outputFile": "Lưu một tệp với tên này. Phần mở rộng khác sẽ chuyển tệp sang định dạng đó.",
           "audioOnly": "Chỉ giữ âm thanh của video dưới dạng tệp âm thanh.",

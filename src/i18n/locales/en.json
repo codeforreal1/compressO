@@ -374,6 +374,7 @@
           "several": "Compress several files and folders at once. Folders are read as when they are dropped on the app.",
           "preset": "Use a preset for videos, by its name. Put names with spaces inside quotes.",
           "presets": "Choose a preset for each media type. A media type without one uses its default preset.",
+          "singlePreset": "For a single file, choose its preset with --preset=, whatever its media type.",
           "outputFolder": "Save to this folder instead of the save location of the preset. It is needed when a preset asks where to save.",
           "outputFile": "Save a single file under this name. A different extension converts it to that format.",
           "audioOnly": "Keep only the sound of a video, as an audio file.",

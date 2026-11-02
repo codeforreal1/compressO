@@ -58,6 +58,7 @@ fn tools() -> Value {
                         "minItems": 1,
                         "description": "Absolute paths of files and folders",
                     },
+                    "preset": { "type": "string", "description": "For a single input file: its preset, by name or id, whatever its media type (instead of videoPreset, imagePreset or audioPreset)" },
                     "videoPreset": { "type": "string", "description": "Preset for videos, by name or id (see list_presets); the default video preset otherwise" },
                     "imagePreset": { "type": "string", "description": "Preset for images; the default image preset otherwise" },
                     "audioPreset": { "type": "string", "description": "Preset for audio files; the default audio preset otherwise" },
@@ -141,6 +142,7 @@ fn compress_options(arguments: &Value) -> Result<CompressOptions, CliError> {
     Ok(CompressOptions {
         inputs,
         presets,
+        preset: text("preset").filter(|name| !name.is_empty()),
         output: text("output").map(|folder| job::absolute_path(&PathBuf::from(folder))),
         output_is_folder: text("output")
             .is_some_and(|output| output.ends_with('/') || output.ends_with('\\')),

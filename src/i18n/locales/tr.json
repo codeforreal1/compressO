@@ -374,6 +374,7 @@
           "several": "Birden çok dosya ve klasörü aynı anda sıkıştırın. Klasörler uygulamaya bırakıldığındaki gibi okunur.",
           "preset": "Videolar için bir ön ayarı adıyla kullanın. Boşluk içeren adları tırnak içine alın.",
           "presets": "Her medya türü için bir ön ayar seçin. Ön ayarı seçilmeyen tür varsayılanını kullanır.",
+          "singlePreset": "Tek bir dosya için, medya türü ne olursa olsun ön ayarını --preset= ile seçin.",
           "outputFolder": "Ön ayarın kayıt konumu yerine bu klasöre kaydedin. Bir ön ayar nereye kaydedileceğini sorduğunda gereklidir.",
           "outputFile": "Tek bir dosyayı bu adla kaydedin. Farklı bir uzantı onu o biçime dönüştürür.",
           "audioOnly": "Bir videonun yalnızca sesini ses dosyası olarak saklayın.",

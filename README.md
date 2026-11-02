@@ -82,7 +82,7 @@ compresso presets
 compresso --help
 ```
 
-Options with a value are written with `=`, e.g. `--video-preset="Standard"`. Without `--video-preset=`, `--image-preset=` or `--audio-preset=`, each media type uses its default preset. Output settings follow the app unless given for one command (`--skip-larger-outputs=0|1`, `--preserve-folder-structure=0|1`, `--replace-original-files=0|1`, `--filename-prefix=<text>`, `--hardware-acceleration=0|1`, `--reach-target-sizes-without-acceleration=0|1`). A preset that asks where to save needs `--output=<folder>`. For a single file, `--output=` can also be the file to save: a different extension converts it to that format, with the preset's other settings.
+Options with a value are written with `=`, e.g. `--video-preset="Standard"`. Without `--video-preset=`, `--image-preset=` or `--audio-preset=`, each media type uses its default preset. For a single file, `--preset=` chooses its preset whatever its media type. Output settings follow the app unless given for one command (`--skip-larger-outputs=0|1`, `--preserve-folder-structure=0|1`, `--replace-original-files=0|1`, `--filename-prefix=<text>`, `--hardware-acceleration=0|1`, `--reach-target-sizes-without-acceleration=0|1`). A preset that asks where to save needs `--output=<folder>`. For a single file, `--output=` can also be the file to save: a different extension converts it to that format, with the preset's other settings.
 
 Exit codes: `0` done, `1` some files failed, `2` wrong usage or no media, `3` a preset asks where to save and no `--output=` was given, `4` CompressO is not available, `130` stopped with Ctrl+C.
 

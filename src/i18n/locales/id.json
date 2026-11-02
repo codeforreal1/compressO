@@ -374,6 +374,7 @@
           "several": "Kompresi beberapa file dan folder sekaligus. Folder dibaca seperti saat diletakkan di aplikasi.",
           "preset": "Gunakan preset untuk video berdasarkan namanya. Beri tanda kutip pada nama yang mengandung spasi.",
           "presets": "Pilih preset untuk setiap jenis media. Jenis tanpa preset menggunakan preset default-nya.",
+          "singlePreset": "Untuk satu file, pilih presetnya dengan --preset=, apa pun jenis medianya.",
           "outputFolder": "Simpan ke folder ini, bukan ke lokasi simpan preset. Ini diperlukan saat preset menanyakan lokasi simpan.",
           "outputFile": "Simpan satu file dengan nama ini. Ekstensi yang berbeda mengonversinya ke format tersebut.",
           "audioOnly": "Simpan hanya suara dari video sebagai file audio.",

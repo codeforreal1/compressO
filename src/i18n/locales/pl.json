@@ -374,6 +374,7 @@
           "several": "Kompresuj kilka plików i folderów naraz. Foldery są odczytywane tak jak po upuszczeniu na aplikację.",
           "preset": "Użyj ustawienia wstępnego dla filmów według jego nazwy. Nazwy ze spacjami umieść w cudzysłowie.",
           "presets": "Wybierz ustawienie wstępne dla każdego typu plików. Typ bez wybranego ustawienia używa domyślnego.",
+          "singlePreset": "Dla pojedynczego pliku wybierz ustawienie wstępne za pomocą --preset=, niezależnie od typu pliku.",
           "outputFolder": "Zapisz w tym folderze zamiast w lokalizacji ustawienia wstępnego. Jest to wymagane, gdy ustawienie pyta, gdzie zapisać.",
           "outputFile": "Zapisz pojedynczy plik pod tą nazwą. Inne rozszerzenie konwertuje go do tego formatu.",
           "audioOnly": "Zachowaj tylko dźwięk filmu jako plik audio.",

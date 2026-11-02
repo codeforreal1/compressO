@@ -35,6 +35,7 @@ const EXAMPLES = [
     id: 'presets',
     code: 'compresso photo.jpg clip.mov song.wav --video-preset="Standard" --image-preset="Standard" --audio-preset="Standard"',
   },
+  { id: 'singlePreset', code: 'compresso photo.png --preset="Standard"' },
   { id: 'outputFolder', code: 'compresso Trip --output="Compressed"' },
   { id: 'outputFile', code: 'compresso photo.jpg --output="photo.png"' },
   { id: 'audioOnly', code: 'compresso clip.mov --output="clip.mp3"' },

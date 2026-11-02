@@ -374,6 +374,7 @@
           "several": "Comprimir vários arquivos e pastas de uma vez. As pastas são lidas como quando são soltas no app.",
           "preset": "Usar uma predefinição para vídeos pelo nome. Coloque nomes com espaços entre aspas.",
           "presets": "Escolher uma predefinição para cada tipo de mídia. Um tipo sem predefinição usa a padrão.",
+          "singlePreset": "Para um único arquivo, escolher sua predefinição com --preset=, seja qual for o tipo de mídia.",
           "outputFolder": "Salvar nesta pasta em vez do local da predefinição. É necessário quando uma predefinição pergunta onde salvar.",
           "outputFile": "Salvar um único arquivo com este nome. Uma extensão diferente o converte para esse formato.",
           "audioOnly": "Manter apenas o som de um vídeo, como arquivo de áudio.",

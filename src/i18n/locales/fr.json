@@ -374,6 +374,7 @@
           "several": "Compresser plusieurs fichiers et dossiers à la fois. Les dossiers sont lus comme lorsqu’ils sont déposés sur l’app.",
           "preset": "Utiliser un préréglage pour les vidéos, par son nom. Mettez les noms avec des espaces entre guillemets.",
           "presets": "Choisir un préréglage pour chaque type de média. Un type sans préréglage utilise son préréglage par défaut.",
+          "singlePreset": "Pour un seul fichier, choisir son préréglage avec --preset=, quel que soit son type de média.",
           "outputFolder": "Enregistrer dans ce dossier au lieu de l’emplacement du préréglage. C’est nécessaire lorsqu’un préréglage demande où enregistrer.",
           "outputFile": "Enregistrer un seul fichier sous ce nom. Une autre extension le convertit dans ce format.",
           "audioOnly": "Ne garder que le son d’une vidéo, sous forme de fichier audio.",

@@ -27,6 +27,8 @@ pub struct CompressOptions {
     pub inputs: Vec<PathBuf>,
     /// The preset name (or id) chosen for each media type; the others use their default preset
     pub presets: HashMap<&'static str, String>,
+    /// For a single file: its preset, whatever its media type (`--preset=`)
+    pub preset: Option<String>,
     /// Saved here instead of the presets' save locations: a folder, or for a single file the file
     /// to save, whose extension is the format it is converted to
     pub output: Option<PathBuf>,
@@ -331,6 +333,30 @@ pub async fn run(
         return Err(CliError::new(exit_code::USAGE, "noMedia", message));
     }
 
+    // The media types whose preset was chosen (the others use their default preset)
+    let mut chosen: std::collections::HashSet<&str> = options.presets.keys().copied().collect();
+    // `--preset=`: the preset of a single file, for its media type
+    if let Some(name) = &options.preset {
+        if options.inputs.len() != 1 || !options.inputs[0].is_file() || files.len() != 1 {
+            return Err(CliError::new(
+                exit_code::USAGE,
+                "presetNeedsOneFile",
+                "--preset= works with one file only. For several files or a folder, use --video-preset=, --image-preset= or --audio-preset=.",
+            ));
+        }
+        let media_type = MEDIA_TYPES
+            .into_iter()
+            .find(|media_type| Some(*media_type) == files[0]["mediaType"].as_str())
+            .unwrap_or("video");
+        if options.presets.contains_key(media_type) {
+            return Err(CliError::usage(format!(
+                "Use either --preset= or --{media_type}-preset=, not both."
+            )));
+        }
+        presets.insert(media_type, settings.find_preset(media_type, Some(name))?);
+        chosen.insert(media_type);
+    }
+
     // `--output=` names a folder, or for a single file the file to save, in the format of its
     // extension (e.g. `--output=small.png` for a JPEG)
     let output_file = options
@@ -522,9 +548,9 @@ pub async fn run(
 
     let mut job = json!({
         "presetIds": {
-            "video": options.presets.get("video").map(|_| &presets["video"].id),
-            "image": options.presets.get("image").map(|_| &presets["image"].id),
-            "audio": options.presets.get("audio").map(|_| &presets["audio"].id),
+            "video": chosen.contains("video").then(|| &presets["video"].id),
+            "image": chosen.contains("image").then(|| &presets["image"].id),
+            "audio": chosen.contains("audio").then(|| &presets["audio"].id),
         },
         "outputFolder": report.settings.output_folder,
         "outputFileName": output_file

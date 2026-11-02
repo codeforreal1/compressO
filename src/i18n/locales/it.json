@@ -374,6 +374,7 @@
           "several": "Comprima più file e cartelle insieme. Le cartelle vengono lette come quando vengono rilasciate sull’app.",
           "preset": "Usi un preset per i video tramite il suo nome. Metta tra virgolette i nomi con spazi.",
           "presets": "Scelga un preset per ogni tipo di contenuto. Un tipo senza preset usa il suo preset predefinito.",
+          "singlePreset": "Per un singolo file, scelga il suo preset con --preset=, qualunque sia il tipo di contenuto.",
           "outputFolder": "Salvi in questa cartella invece che nella posizione del preset. È necessario quando un preset chiede dove salvare.",
           "outputFile": "Salvi un singolo file con questo nome. Un’estensione diversa lo converte in quel formato.",
           "audioOnly": "Mantenga solo l’audio di un video, come file audio.",
