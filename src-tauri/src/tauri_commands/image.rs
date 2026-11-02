@@ -11,6 +11,15 @@ use crate::core::{
 use crate::sys::fs::delete_stale_files;
 
 #[tauri::command]
+pub async fn get_image_dynamic_range(
+    image_path: String,
+) -> Result<crate::core::image_dynamic_range::ImageDynamicRangeInfo, String> {
+    tauri::async_runtime::spawn_blocking(move || crate::core::image_dynamic_range::inspect(&image_path))
+        .await
+        .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
 pub async fn compress_images_batch(
     app: tauri::AppHandle,
     batch_id: &str,

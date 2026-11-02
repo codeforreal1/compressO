@@ -1014,5 +1014,13 @@
     "withinTarget": "Within the target",
     "overTarget": "Over the target",
     "replace": "Replace saved file"
+  },
+  "dynamicRange": {
+    "boost": "HDR boost",
+    "convert": "Remove HDR",
+    "intensity": "Intensity",
+    "mixed": "Select an individual image to adjust its dynamic range.",
+    "unknown": "The image’s dynamic range could not be determined.",
+    "formatsOnly": "HDR boost is only available for PNG and JPEG XL output."
   }
 }

@@ -55,6 +55,7 @@ export type VideoPresetKey = keyof VideoPresetSettings
  * `resolution` (see `ImagePresetSettings`).
  */
 export const imagePresetFields = [
+  'dynamicRange',
   'convertToExtension',
   'isLossless',
   'quality',

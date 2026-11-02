@@ -999,5 +999,13 @@
     "withinTarget": "在目标以内",
     "overTarget": "超出目标",
     "replace": "替换已保存的文件"
+  },
+  "dynamicRange": {
+    "boost": "HDR 增强",
+    "convert": "移除 HDR",
+    "intensity": "强度",
+    "mixed": "请选择单张图像来调整其动态范围。",
+    "unknown": "无法确定图像的动态范围。",
+    "formatsOnly": "HDR 增强仅适用于 PNG 和 JPEG XL 输出。"
   }
 }

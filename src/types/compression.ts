@@ -469,6 +469,7 @@ export type SvgConfig = {
 }
 
 export type ImageCompressionConfig = {
+  dynamicRange?: import('./imageDynamicRange').ImageDynamicRangeConfig | null
   imageId: string
   imagePath: string
   convertToExtension: string

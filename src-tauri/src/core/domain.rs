@@ -418,6 +418,8 @@ pub struct ImageTargetSize {
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct ImageCompressionConfig {
+    #[serde(default)]
+    pub dynamic_range: Option<super::image_dynamic_range::ImageDynamicRangeConfig>,
     pub image_id: String,
     pub image_path: String,
     pub convert_to_extension: String,

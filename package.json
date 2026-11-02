@@ -26,6 +26,7 @@
     "i18n:check": "node scripts/check-translations.mjs",
     "test:audio-target-size": "node --test scripts/test-audio-target-size.mjs",
     "test:drop-queue": "node --test scripts/test-drop-queue.mjs",
+    "test:image-dynamic-range": "node --test scripts/test-image-dynamic-range.mjs",
     "tsc:check": "tsc --noEmit --skipLibCheck"
   },
   "dependencies": {

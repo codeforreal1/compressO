@@ -1029,5 +1029,13 @@
     "withinTarget": "Dentro do alvo",
     "overTarget": "Acima do alvo",
     "replace": "Substituir o arquivo salvo"
+  },
+  "dynamicRange": {
+    "boost": "Realce HDR",
+    "convert": "Remover HDR",
+    "intensity": "Intensidade",
+    "mixed": "Selecione uma imagem individual para ajustar sua faixa dinâmica.",
+    "unknown": "Não foi possível determinar a faixa dinâmica da imagem.",
+    "formatsOnly": "O realce HDR está disponível apenas para saída em PNG e JPEG XL."
   }
 }

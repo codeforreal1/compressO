@@ -1014,5 +1014,13 @@
     "withinTarget": "Hedefin içinde",
     "overTarget": "Hedefin üzerinde",
     "replace": "Kaydedilen dosyayı değiştir"
+  },
+  "dynamicRange": {
+    "boost": "HDR güçlendirme",
+    "convert": "HDR’yi kaldır",
+    "intensity": "Yoğunluk",
+    "mixed": "Dinamik aralığını ayarlamak için tek bir görüntü seçin.",
+    "unknown": "Görüntünün dinamik aralığı belirlenemedi.",
+    "formatsOnly": "HDR güçlendirme yalnızca PNG ve JPEG XL çıktıları için kullanılabilir."
   }
 }

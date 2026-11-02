@@ -999,5 +999,13 @@
     "withinTarget": "目標以内",
     "overTarget": "目標超過",
     "replace": "保存したファイルを置き換える"
+  },
+  "dynamicRange": {
+    "boost": "HDRブースト",
+    "convert": "HDRを除去",
+    "intensity": "強度",
+    "mixed": "ダイナミックレンジを調整する画像を1つ選択してください。",
+    "unknown": "画像のダイナミックレンジを判定できませんでした。",
+    "formatsOnly": "HDRブーストはPNGとJPEG XLの出力でのみ利用できます。"
   }
 }

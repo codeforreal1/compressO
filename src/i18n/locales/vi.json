@@ -999,5 +999,13 @@
     "withinTarget": "Trong mục tiêu",
     "overTarget": "Vượt mục tiêu",
     "replace": "Thay thế tệp đã lưu"
+  },
+  "dynamicRange": {
+    "boost": "Tăng cường HDR",
+    "convert": "Loại bỏ HDR",
+    "intensity": "Cường độ",
+    "mixed": "Chọn một ảnh riêng lẻ để điều chỉnh dải tương phản động.",
+    "unknown": "Không thể xác định dải tương phản động của ảnh.",
+    "formatsOnly": "Tăng cường HDR chỉ khả dụng cho đầu ra PNG và JPEG XL."
   }
 }

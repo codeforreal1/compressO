@@ -15,6 +15,7 @@ import {
 } from '@/tauri/commands/fs'
 import {
   convertSvgToPng,
+  getImageDynamicRange,
   getWebImageDimensions,
   needsImagePreview,
   prepareImagePreview,
@@ -288,6 +289,11 @@ export async function addMedia(selection: MediaSelection | MediaSelection[]) {
           : getImageDimension(path))
       }
       const imageState: Image & { type: 'image' } = {
+        dynamicRangeInfo: await getImageDynamicRange(path).catch(() => ({
+          supported: false,
+          dynamicRange: 'unknown' as const,
+          hasGainMap: false,
+        })),
         type: 'image',
         id: createMediaId(),
         pathRaw: path,

@@ -201,23 +201,26 @@ fn validate_jxl_info(details: &str) -> Result<(), String> {
 /// exporters currently reduce bit depth or discard this signaling, so reject those
 /// conversions rather than silently producing an incorrectly rendered image.
 pub fn validate_png_output(input: &Path, format: &str) -> Result<(), String> {
-    if format == "jxl" {
+    if matches!(format, "jxl" | "png") {
         return Ok(());
     }
+    if png_is_hdr(input)? {
+        return Err("HDR image conversion currently supports PNG or JPEG XL output only. Convert to SDR to use another format.".into());
+    }
+    Ok(())
+}
+
+pub fn png_is_hdr(input: &Path) -> Result<bool, String> {
     let bytes = fs::read(input).map_err(|e| e.to_string())?;
     if !bytes.starts_with(b"\x89PNG\r\n\x1a\n") {
-        return Ok(());
+        return Ok(false);
     }
     let png = img_parts::png::Png::from_bytes(img_parts::Bytes::from(bytes))
         .map_err(|e| e.to_string())?;
-    if png
+    Ok(png
         .chunks()
         .iter()
-        .any(|chunk| chunk.kind() == *b"cICP" && matches!(chunk.contents().get(1), Some(16 | 18)))
-    {
-        return Err("HDR image conversion currently supports JPEG XL output only. Choose JPEG XL to preserve HDR color.".into());
-    }
-    Ok(())
+        .any(|chunk| chunk.kind() == *b"cICP" && matches!(chunk.contents().get(1), Some(16 | 18))))
 }
 
 pub async fn encode(
@@ -452,6 +455,38 @@ mod tests {
                 details.contains(&format!("Transfer function: {name}")),
                 "{details}"
             );
+            #[cfg(target_os = "macos")]
+            {
+                use super::super::image_dynamic_range::{
+                    self, DynamicRange, ImageDynamicRangeConfig, ImageDynamicRangeMode,
+                };
+                let source = work.0.join("output.jxl");
+                let info = image_dynamic_range::inspect(source.to_str().unwrap()).unwrap();
+                if info.supported {
+                    assert_eq!(
+                        info.dynamic_range,
+                        DynamicRange::Hdr,
+                        "Native {name} JXL detection"
+                    );
+                    let output = work.0.join("sdr.png");
+                    image_dynamic_range::process(
+                        source.to_str().unwrap(),
+                        output.to_str().unwrap(),
+                        &ImageDynamicRangeConfig {
+                            mode: ImageDynamicRangeMode::Sdr,
+                            intensity: 1.0,
+                        },
+                        true,
+                    )
+                    .unwrap();
+                    assert_eq!(
+                        image_dynamic_range::inspect(output.to_str().unwrap())
+                            .unwrap()
+                            .dynamic_range,
+                        DynamicRange::Sdr
+                    );
+                }
+            }
             execute(&work.0, "djxl", &["output.jxl".into(), "source.png".into()]);
 
             // The app normalizes decoded pixels before applying private-metadata stripping.
@@ -459,7 +494,7 @@ mod tests {
             source.save(work.0.join("input.png")).unwrap();
             preserve_png_color(&work.0.join("source.png"), &work.0.join("input.png")).unwrap();
             validate_png_output(&work.0.join("input.png"), "jxl").unwrap();
-            for format in ["jpg", "png", "webp", "avif", "heic", "heif"] {
+            for format in ["jpg", "webp", "avif", "heic", "heif"] {
                 assert!(validate_png_output(&work.0.join("input.png"), format).is_err());
             }
             for lossless in [true, false] {

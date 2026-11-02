@@ -14,6 +14,10 @@ import {
   normalizeBatchMediaConfig,
 } from '@/routes/(root)/-state'
 import { slideDownTransition } from '@/utils/animation'
+import {
+  getImageDynamicRangeOperation,
+  isHdrPngOutput,
+} from '@/utils/imageDynamicRange'
 import TargetSize from './TargetSize'
 
 type CompressionQualityProps = {
@@ -106,8 +110,28 @@ function QualitySettings({ mediaIndex }: CompressionQualityProps) {
       ? media[mediaIndex]
       : null
   const { config } = image ?? {}
-  const { quality: compressionQuality, isLossless } =
-    config ?? commonConfigForBatchCompression.imageConfig ?? {}
+  const settings = config ?? commonConfigForBatchCompression.imageConfig
+  const { quality: compressionQuality, isLossless: requestedLossless } =
+    settings
+  const images = image ? [image] : media.filter((item) => item.type === 'image')
+  const hdrPng =
+    images.length > 0 &&
+    images.every((item) =>
+      isHdrPngOutput(
+        settings.convertToExtension === '-'
+          ? (item.extension ?? '')
+          : settings.convertToExtension,
+        getImageDynamicRangeOperation(
+          settings.dynamicRange,
+          item.dynamicRangeInfo,
+          settings.convertToExtension === '-'
+            ? (item.extension ?? '')
+            : settings.convertToExtension,
+        ),
+        item.dynamicRangeInfo,
+      ),
+    )
+  const isLossless = requestedLossless || hdrPng
 
   const setQualityGlobal = useCallback(
     (value: number) => {
@@ -166,7 +190,7 @@ function QualitySettings({ mediaIndex }: CompressionQualityProps) {
       <Switch
         isSelected={isLossless}
         onValueChange={handleSwitchToggle}
-        isDisabled={shouldDisableInput}
+        isDisabled={shouldDisableInput || hdrPng}
       >
         <p className="text-gray-600 dark:text-gray-400 text-sm mr-2 w-full">
           {t('quality.lossless')}

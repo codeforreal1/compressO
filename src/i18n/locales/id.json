@@ -999,5 +999,13 @@
     "withinTarget": "Dalam target",
     "overTarget": "Melebihi target",
     "replace": "Ganti berkas yang disimpan"
+  },
+  "dynamicRange": {
+    "boost": "Peningkatan HDR",
+    "convert": "Hapus HDR",
+    "intensity": "Intensitas",
+    "mixed": "Pilih satu gambar untuk menyesuaikan rentang dinamisnya.",
+    "unknown": "Rentang dinamis gambar tidak dapat ditentukan.",
+    "formatsOnly": "Peningkatan HDR hanya tersedia untuk keluaran PNG dan JPEG XL."
   }
 }

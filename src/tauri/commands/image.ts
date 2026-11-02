@@ -6,11 +6,18 @@ import {
   ImageColorInfo,
   ImageDimensions,
 } from '@/types/compression'
+import type { ImageDynamicRangeInfo } from '@/types/imageDynamicRange'
 
 export async function convertSvgToPng(imagePath: string, imageId: string) {
   return await core.invoke<string>('convert_svg_to_png', {
     imagePath,
     imageId,
+  })
+}
+
+export function getImageDynamicRange(imagePath: string) {
+  return core.invoke<ImageDynamicRangeInfo>('get_image_dynamic_range', {
+    imagePath,
   })
 }
 

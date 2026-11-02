@@ -1014,5 +1014,13 @@
     "withinTarget": "Innerhalb des Ziels",
     "overTarget": "Über dem Ziel",
     "replace": "Gespeicherte Datei ersetzen"
+  },
+  "dynamicRange": {
+    "boost": "HDR-Verstärkung",
+    "convert": "HDR entfernen",
+    "intensity": "Intensität",
+    "mixed": "Wähle ein einzelnes Bild, um seinen Dynamikumfang anzupassen.",
+    "unknown": "Der Dynamikumfang des Bildes konnte nicht bestimmt werden.",
+    "formatsOnly": "HDR-Verstärkung ist nur für die Ausgabe als PNG und JPEG XL verfügbar."
   }
 }

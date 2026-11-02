@@ -999,5 +999,13 @@
     "withinTarget": "在目標以內",
     "overTarget": "超出目標",
     "replace": "取代已儲存的檔案"
+  },
+  "dynamicRange": {
+    "boost": "HDR 增強",
+    "convert": "移除 HDR",
+    "intensity": "強度",
+    "mixed": "請選取單張影像來調整其動態範圍。",
+    "unknown": "無法判斷影像的動態範圍。",
+    "formatsOnly": "HDR 增強僅適用於 PNG 和 JPEG XL 輸出。"
   }
 }

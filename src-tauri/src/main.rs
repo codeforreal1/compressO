@@ -510,6 +510,7 @@ async fn run() {
             get_image_dimensions,
             prepare_image_preview,
             get_image_color_info,
+            tauri_commands::image::get_image_dynamic_range,
             get_exif_info,
             set_window_tint,
             get_system_dark_mode,

@@ -1029,5 +1029,13 @@
     "withinTarget": "Dans la cible",
     "overTarget": "Au-dessus de la cible",
     "replace": "Remplacer le fichier enregistré"
+  },
+  "dynamicRange": {
+    "boost": "Amplification HDR",
+    "convert": "Supprimer le HDR",
+    "intensity": "Intensité",
+    "mixed": "Sélectionnez une image pour régler sa plage dynamique.",
+    "unknown": "La plage dynamique de l’image n’a pas pu être déterminée.",
+    "formatsOnly": "L’amplification HDR est disponible uniquement pour les sorties PNG et JPEG XL."
   }
 }

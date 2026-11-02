@@ -45,6 +45,7 @@ import {
   getSvgDimension,
   isPermissionDeniedError,
 } from '@/tauri/commands/fs'
+import { getImageDynamicRange } from '@/tauri/commands/image'
 import { compressMediaBatch } from '@/tauri/commands/media'
 import { playCompletionSound } from '@/tauri/commands/sound'
 import {
@@ -187,6 +188,9 @@ async function loadQueueMedia(item: DropQueueItem): Promise<MediaFile> {
   return {
     ...base,
     type: 'image',
+    dynamicRangeInfo: await getImageDynamicRange(item.path).catch(
+      () => undefined,
+    ),
     dimensions,
     config: applyImagePresetToConfig(
       config,

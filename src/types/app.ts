@@ -20,6 +20,10 @@ import {
   SvgConfig,
   VideoStream,
 } from '@/types/compression'
+import type {
+  ImageDynamicRangeConfig,
+  ImageDynamicRangeInfo,
+} from '@/types/imageDynamicRange'
 
 export type MediaMetadataConfig = {
   title?: string | null
@@ -196,6 +200,7 @@ export type Video = {
 }
 
 export type ImageConfig = {
+  dynamicRange?: ImageDynamicRangeConfig
   convertToExtension: keyof typeof extensions.image | '-'
   isLossless: boolean
   quality: number
@@ -237,6 +242,8 @@ export type ImageConfig = {
 }
 
 export type Image = {
+  /** Inspection of the original source; never overwritten by an output preview. */
+  dynamicRangeInfo?: ImageDynamicRangeInfo
   id: string | null
   pathRaw?: string | null
   path?: string | null

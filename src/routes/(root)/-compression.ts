@@ -22,6 +22,10 @@ import {
   supportsAudioTargetSize,
 } from '@/utils/audioTargetSize'
 import {
+  getImageDynamicRangeOperation,
+  isHdrPngOutput,
+} from '@/utils/imageDynamicRange'
+import {
   BYTES_PER_KB,
   DEFAULT_IMAGE_TARGET_SIZE_IN_KB,
   supportsImageTargetSize,
@@ -400,6 +404,24 @@ export function getMediaItemConfig(
   const audioPlan = getAudioTargetSizePlan(v)
   const audioWarning = getAudioTargetSizeWarning(v)
   if (audioWarning) throw new Error(t(audioWarning))
+  const imageOutput =
+    v.type === 'image'
+      ? (v.config.convertToExtension === '-'
+          ? v.extension
+          : v.config.convertToExtension)!
+      : ''
+  const imageOperation =
+    v.type === 'image'
+      ? getImageDynamicRangeOperation(
+          v.config.dynamicRange,
+          v.dynamicRangeInfo,
+          imageOutput,
+        )
+      : null
+  const imageIsLossless =
+    v.type === 'image' &&
+    (v.config.isLossless ||
+      isHdrPngOutput(imageOutput, imageOperation, v.dynamicRangeInfo))
   return {
     videoConfig:
       v.type === 'video'
@@ -551,13 +573,12 @@ export function getMediaItemConfig(
     imageConfig:
       v.type === 'image'
         ? ({
+            dynamicRange: imageOperation,
             imageId: v.id!,
-            convertToExtension: (v.config.convertToExtension === '-'
-              ? v.extension
-              : v.config.convertToExtension)!,
+            convertToExtension: imageOutput,
             imagePath: v.pathRaw!,
-            isLossless: v.config.isLossless,
-            quality: v.config.isLossless ? 100 : (v.config.quality ?? 100),
+            isLossless: imageIsLossless,
+            quality: imageIsLossless ? 100 : (v.config.quality ?? 100),
             stripMetadata: v.config.shouldStripMetadata,
             svgScaleFactor: v.config.svgScaleFactor ?? null,
             svgConfig: v.config?.shouldEnableAdvancedSvgSetting

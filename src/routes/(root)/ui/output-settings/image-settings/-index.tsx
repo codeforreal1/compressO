@@ -8,6 +8,7 @@ import { appProxy } from '@/routes/(root)/-state'
 import { ImageExtension as ImageExtensionType } from '@/types/compression'
 import CompressionQuality from './image/CompressionQuality'
 import ImageDimensions from './image/Dimensions'
+import DynamicRange from './image/DynamicRange'
 import ImageExtension from './image/Extension'
 import SvgConfig from './image/SvgConfig'
 import SvgScaleFactor from './image/SvgScaleFactor'
@@ -69,6 +70,7 @@ function ImageSettings({ mediaIndex }: ImageSettingsProps) {
             <div>
               <div>
                 <CompressionQuality mediaIndex={mediaIndex} />
+                <DynamicRange mediaIndex={mediaIndex} />
                 <Divider className="my-3" />
               </div>
 
