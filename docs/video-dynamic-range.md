@@ -2,7 +2,7 @@
 
 Video settings offer one operation based on the **original source**, on macOS, Windows and Linux:
 
-- SDR: **HDR boost**, off by default, with intensity from 1× to 4× (default 2×).
+- SDR: **HDR Boost**, off by default, with intensity from 1× to 8× (default 2×).
 - HDR (HDR10, HLG, or Dolby Vision with an HDR10/HLG base such as iPhone video): **Remove HDR**,
   off by default.
 - Unknown (an untagged 10-bit video, Dolby Vision profile 5): neither operation. Mixed batches use
@@ -28,7 +28,7 @@ HDR needs a codec and container that carry it: H.265, VP9 or AV1 in MP4, MOV, MK
 - An HDR source whose output cannot hold HDR (H.264, MPEG-4, AVI, GIF) is converted to SDR; the
   switch shows this with an info tooltip. Lossless compression keeps the source as it is unless
   Remove HDR is on.
-- HDR boost is disabled, with an info tooltip, for outputs that cannot hold HDR and for lossless
+- HDR Boost is disabled, with an info tooltip, for outputs that cannot hold HDR and for lossless
   compression. A stored boost preference is inactive for those outputs; the codec and format are
   never changed automatically.
 
@@ -42,10 +42,12 @@ cannot convert HLG or untagged frames from their own tags. Untagged SDR is treat
 - Remove HDR: linear light with SDR white at 100 nits, BT.709 primaries, `mobius` tone mapping
   (keeps mid-tones; `hable` made reference white noticeably dark), then 8-bit BT.709. Mastering
   display, content light level and Dolby Vision metadata are removed, as they no longer apply.
-- HDR boost: linear light with SDR white at 203 nits (ITU-R BT.2408), an exposure gain of the
+- HDR Boost: linear light with SDR white at 203 nits (ITU-R BT.2408), an exposure gain of the
   intensity, then 10-bit PQ BT.2020 (HDR10). Intensity 1× places SDR white at reference white, 2×
-  at 406 nits and 4× at 812 nits. This increases brightness; it cannot recover missing highlight
-  detail.
+  at 406 nits, 4× at 812 nits and 8× at about 1,620 nits. Most HDR screens show 400 to 1,000 nits
+  (Apple XDR screens up to 1,600 nits in small areas), so higher intensities are tone mapped or
+  clipped by the player rather than shown brighter. This increases brightness; it cannot recover
+  missing highlight detail.
 
 Thumbnails of HDR videos are tone mapped the same way, so they do not look washed out.
 
@@ -60,5 +62,5 @@ pnpm i18n:check
 
 The native test encodes synthetic PQ, HLG and SDR clips with the bundled FFmpeg and checks the
 tone-mapped SDR level, removed HDR metadata, kept 10-bit HDR signaling, and the PQ code values of
-boost at 1×, 2× and 4×. Real HDR appearance should also be checked on an HDR display, with an
+boost at 1×, 2×, 4× and 8×. Real HDR appearance should also be checked on an HDR display, with an
 iPhone (HLG and Dolby Vision) video.

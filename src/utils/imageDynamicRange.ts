@@ -3,6 +3,9 @@ import type {
   ImageDynamicRangeInfo,
 } from '@/types/imageDynamicRange'
 
+/** The strongest HDR Boost, for images & videos (SDR white at 8×; most screens show less) */
+export const MAX_HDR_BOOST_INTENSITY = 8
+
 /** The operation is based on the loaded source, never on the current preview/output. */
 export function getImageDynamicRangeOperation(
   config: ImageDynamicRangeConfig | undefined,
@@ -18,7 +21,7 @@ export function getImageDynamicRangeOperation(
     return {
       mode: config.mode,
       intensity: Number.isFinite(config.intensity)
-        ? Math.min(4, Math.max(1, config.intensity))
+        ? Math.min(MAX_HDR_BOOST_INTENSITY, Math.max(1, config.intensity))
         : 2,
     }
   }

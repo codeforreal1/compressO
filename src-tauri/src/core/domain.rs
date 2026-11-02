@@ -168,7 +168,7 @@ pub struct VideoCompressionConfig {
     pub speed: Option<f32>,
     /// Compresses to (just under) a file size instead of a quality, see `TargetSize`
     pub target_size: Option<TargetSize>,
-    /// HDR boost or Remove HDR, applied when it matches the source (see `video_dynamic_range`)
+    /// HDR Boost or Remove HDR, applied when it matches the source (see `video_dynamic_range`)
     #[serde(default)]
     pub dynamic_range: Option<super::image_dynamic_range::ImageDynamicRangeConfig>,
 }

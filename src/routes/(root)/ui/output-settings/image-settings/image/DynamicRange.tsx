@@ -8,7 +8,10 @@ import Switch from '@/components/Switch'
 import { usePlatform } from '@/hooks/usePlatform'
 import { appProxy, normalizeBatchMediaConfig } from '@/routes/(root)/-state'
 import type { ImageConfig } from '@/types/app'
-import { supportsHdrBoostOutput } from '@/utils/imageDynamicRange'
+import {
+  MAX_HDR_BOOST_INTENSITY,
+  supportsHdrBoostOutput,
+} from '@/utils/imageDynamicRange'
 
 type DynamicRangeProps = { mediaIndex: number }
 
@@ -48,7 +51,7 @@ function DynamicRange({ mediaIndex }: DynamicRangeProps) {
     !unsupportedOutput && mode !== null && config.dynamicRange?.mode === mode
   const storedIntensity = config.dynamicRange?.intensity ?? 2
   const intensity = Number.isFinite(storedIntensity)
-    ? Math.min(4, Math.max(1, storedIntensity))
+    ? Math.min(MAX_HDR_BOOST_INTENSITY, Math.max(1, storedIntensity))
     : 2
   const disabled =
     state.isCompressing || state.isProcessCompleted || state.isLoadingMediaFiles
@@ -99,7 +102,7 @@ function DynamicRange({ mediaIndex }: DynamicRangeProps) {
               label={t('dynamicRange.intensity')}
               aria-label={t('dynamicRange.intensity')}
               minValue={1}
-              maxValue={4}
+              maxValue={MAX_HDR_BOOST_INTENSITY}
               step={0.1}
               value={intensity}
               renderValue={() => (

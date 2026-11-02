@@ -825,7 +825,7 @@ impl ImageCompressor {
                             "png" | "jxl" | "jpg" | "jpeg"
                         )
                     {
-                        return Err("HDR boost requires PNG, JPEG XL, or JPEG output".into());
+                        return Err("HDR Boost requires PNG, JPEG XL, or JPEG output".into());
                     }
                     let work = super::image_codecs::Workspace::new(&self.app)?;
                     let mut prepared = config.clone();

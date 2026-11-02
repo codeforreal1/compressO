@@ -4,9 +4,9 @@
 
 Features:
 
-- **HDR Boost (macOS 15+)**: Give SDR images HDR brightness with an intensity slider from 1× to 4×. Available for PNG, JPEG XL and JPEG output, with an info icon explaining when another format is selected. HDR JPEGs include a gain map and a standard SDR rendition for compatible viewers.
+- **HDR Boost (macOS 15+)**: Give SDR images HDR brightness with an intensity slider from 1× to 8×. Available for PNG, JPEG XL and JPEG output, with an info icon explaining when another format is selected. HDR JPEGs include a gain map and a standard SDR rendition for compatible viewers.
 - **Remove HDR (macOS 15+)**: Convert HDR images to SDR for standard brightness and wider format compatibility. Image settings detect the original's dynamic range and show the matching control. Both HDR settings, including boost intensity, can be saved in image presets and used with Target Size.
-- **Video HDR**: HDR videos, including iPhone HDR and Dolby Vision videos, now stay HDR when compressed, using H.265 when the codec is automatic. **Remove HDR** converts them to SDR with proper tone mapping, and **HDR Boost** gives SDR videos HDR brightness from 1× to 4×. Both work on macOS, Windows and Linux and can be saved in video presets.
+- **Video HDR**: HDR videos, including iPhone HDR and Dolby Vision videos, now stay HDR when compressed, using H.265 when the codec is automatic. **Remove HDR** converts them to SDR with proper tone mapping, and **HDR Boost** gives SDR videos HDR brightness from 1× to 8×. Both work on macOS, Windows and Linux and can be saved in video presets.
 - **Straighten**: Tilt photos, videos and animated GIFs slightly, by up to 45 degrees either way, to level a horizon or fix a crooked shot. The Straighten slider is in the transform editor, under the rotate and flip buttons. The crop stays inside the tilted picture, so no empty corners are added, and rotating or flipping keeps the straightened result.
 
 Bug Fixes:

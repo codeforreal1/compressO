@@ -103,8 +103,8 @@ func processImageDynamicRange(
           to: URL(fileURLWithPath: sdrOutputPath.toString()), format: .RGBA16, colorSpace: srgb)
       }
       if boost {
-        guard intensity.isFinite && intensity >= 1 && intensity <= 4 else {
-          return RustString("HDR boost intensity must be between 1 and 4")
+        guard intensity.isFinite && intensity >= 1 && intensity <= 8 else {
+          return RustString("HDR Boost intensity must be between 1 and 8")
         }
         image = image.applyingFilter(
           "CIExposureAdjust", parameters: [kCIInputEVKey: log2(intensity)])

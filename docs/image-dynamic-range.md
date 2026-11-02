@@ -2,7 +2,7 @@
 
 On macOS 15 and later, image settings offer one operation based on the **original source**:
 
-- SDR: **HDR boost**, off by default, with intensity from 1× to 4× (default 2×).
+- SDR: **HDR Boost**, off by default, with intensity from 1× to 8× (default 2×).
 - HDR: **Remove HDR**, off by default.
 - Unknown or unsupported images: neither operation. Mixed batches use per-image controls;
   a homogeneous batch can use its shared toggle. Animated/multi-image sources are not processed.

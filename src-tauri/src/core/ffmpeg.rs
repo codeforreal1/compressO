@@ -376,7 +376,7 @@ impl FFMPEG {
                 }
             }
         };
-        // An HDR output (HDR kept, or HDR boost) is HEVC instead of the usual H.264, which cannot
+        // An HDR output (HDR kept, or HDR Boost) is HEVC instead of the usual H.264, which cannot
         // hold HDR for most players; a codec chosen in the settings is kept
         let output_codec = if output_codec == "libx264"
             && video_codec.is_none()

@@ -58,7 +58,7 @@ pub async fn get_chapters(app: tauri::AppHandle, video_path: &str) -> Result<Vec
     ffprobe.get_chapters(video_path).await
 }
 
-/// Whether a video is SDR or HDR, for its HDR boost / Remove HDR setting
+/// Whether a video is SDR or HDR, for its HDR Boost / Remove HDR setting
 #[tauri::command]
 pub async fn get_video_dynamic_range(
     app: tauri::AppHandle,

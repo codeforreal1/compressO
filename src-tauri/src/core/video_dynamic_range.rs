@@ -1,6 +1,6 @@
 //! HDR in videos (see `docs/video-dynamic-range.md`), with the bundled ffmpeg on every platform:
 //! HDR sources stay HDR (10-bit) when the output codec can hold it, or are converted to SDR (tone
-//! mapped, not only retagged); SDR sources can be brightened into HDR10 ("HDR boost").
+//! mapped, not only retagged); SDR sources can be brightened into HDR10 ("HDR Boost").
 //!
 //! The operation is decided here from the source itself, so every way of compressing (the main
 //! window, the menu bar's queue, watched folders, estimates) does the same.
@@ -10,7 +10,7 @@ use serde::Serialize;
 use super::domain::VideoStream;
 
 use super::image_dynamic_range::{
-    DynamicRange, ImageDynamicRangeConfig as DynamicRangeConfig,
+    DynamicRange, MAX_BOOST_INTENSITY, ImageDynamicRangeConfig as DynamicRangeConfig,
     ImageDynamicRangeMode as DynamicRangeMode,
 };
 
@@ -66,7 +66,7 @@ pub enum Operation {
     Keep,
     /// Tone mapped to SDR (BT.709)
     ToSdr,
-    /// Brightened into HDR10 (PQ, BT.2020), by this factor (1 to 4)
+    /// Brightened into HDR10 (PQ, BT.2020), by this factor (1 to `MAX_BOOST_INTENSITY`)
     Boost(f32),
 }
 
@@ -76,7 +76,7 @@ impl Operation {
     }
 }
 
-/// The source's reference white is placed at this many nits (ITU-R BT.2408), for HDR boost
+/// The source's reference white is placed at this many nits (ITU-R BT.2408), for HDR Boost
 const REFERENCE_WHITE_NITS: u32 = 203;
 
 /// SDR white is this many nits when tone mapping to SDR
@@ -174,7 +174,7 @@ pub fn operation(
         DynamicRange::Sdr if mode == DynamicRangeMode::Boost && carries_hdr && is_reencoded => {
             let intensity = config.map(|config| config.intensity).unwrap_or(2.0);
             Operation::Boost(if intensity.is_finite() {
-                intensity.clamp(1.0, 4.0)
+                intensity.clamp(1.0, MAX_BOOST_INTENSITY)
             } else {
                 2.0
             })
@@ -345,7 +345,7 @@ mod tests {
         assert_eq!(operation(&unknown, Some(&boost), true, true), Operation::None);
         assert_eq!(
             operation(&sdr, Some(&config(DynamicRangeMode::Boost, 9.0)), true, true),
-            Operation::Boost(4.0)
+            Operation::Boost(8.0)
         );
         assert!(wants_hdr_output(&hdr, None));
         assert!(!wants_hdr_output(&hdr, Some(&remove)));
@@ -490,7 +490,7 @@ mod tests {
             assert!(probed.contains(&format!("color_transfer={transfer}")), "{probed}");
         }
 
-        // HDR boost: SDR white at 203 nits × the intensity, in PQ (10-bit limited range codes)
+        // HDR Boost: SDR white at 203 nits × the intensity, in PQ (10-bit limited range codes)
         let sdr = work.0.join("sdr.mp4");
         run(&[
             "-f", "lavfi", "-i", "color=white:s=64x64:d=0.2", "-c:v", "libx264", "-pix_fmt",
@@ -502,7 +502,7 @@ mod tests {
             ..Default::default()
         };
         assert_eq!(classify(&color).dynamic_range, DynamicRange::Sdr);
-        for (intensity, expected) in [(1.0, 573), (2.0, 637), (4.0, 703)] {
+        for (intensity, expected) in [(1.0, 573), (2.0, 637), (4.0, 703), (8.0, 769)] {
             let filter = filter(Operation::Boost(intensity), &color).unwrap();
             let luma = first_luma(&sdr, &filter, true);
             assert!((luma - expected).abs() <= 4, "boost {intensity}: {luma}");

@@ -6,5 +6,5 @@ export type VideoDynamicRangeInfo = {
   format: 'hdr10' | 'hlg' | 'dolbyVision' | null
 }
 
-/** Same as images: HDR boost for SDR sources, Remove HDR (`sdr`) for HDR sources */
+/** Same as images: HDR Boost for SDR sources, Remove HDR (`sdr`) for HDR sources */
 export type VideoDynamicRangeConfig = ImageDynamicRangeConfig

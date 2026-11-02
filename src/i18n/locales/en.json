@@ -1016,17 +1016,17 @@
     "replace": "Replace saved file"
   },
   "dynamicRange": {
-    "boost": "HDR boost",
+    "boost": "HDR Boost",
     "convert": "Remove HDR",
     "intensity": "Intensity",
     "mixed": "Select an individual image to adjust its dynamic range.",
     "unknown": "The image’s dynamic range could not be determined.",
-    "formatsOnly": "HDR boost is only available for PNG, JPEG XL, and JPEG output.",
+    "formatsOnly": "HDR Boost is only available for PNG, JPEG XL, and JPEG output.",
     "jpegLossy": "HDR JPEG uses quality-based encoding. Choose PNG or JPEG XL for lossless output.",
     "videoMixed": "Select an individual video to adjust its dynamic range.",
     "videoUnknown": "The video’s dynamic range could not be determined.",
-    "videoBoostFormats": "HDR boost is only available for MP4, MOV, MKV, WebM, and TS videos that use the H.265, VP9, or AV1 codec.",
-    "videoBoostLossless": "HDR boost is not available with lossless compression.",
+    "videoBoostFormats": "HDR Boost is only available for MP4, MOV, MKV, WebM, and TS videos that use the H.265, VP9, or AV1 codec.",
+    "videoBoostLossless": "HDR Boost is not available with lossless compression.",
     "videoSdrOnly": "This format or codec cannot store HDR, so the video will be converted to SDR."
   }
 }

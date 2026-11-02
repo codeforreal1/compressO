@@ -79,7 +79,8 @@ test('HDR PNG avoids eight-bit quantization while SDR and JXL retain quality con
 test('stored intensity values remain finite and inside the supported range', () => {
   for (const [intensity, expected] of [
     [0, 1],
-    [8, 4],
+    [8, 8],
+    [9, 8],
     [NaN, 2],
     [Infinity, 2],
     [1, 1],

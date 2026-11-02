@@ -26,6 +26,9 @@ pub enum ImageDynamicRangeMode {
     Sdr,
 }
 
+/// The strongest HDR Boost, for images & videos (SDR white at 8×; most screens show less)
+pub const MAX_BOOST_INTENSITY: f32 = 8.0;
+
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ImageDynamicRangeConfig {
@@ -161,7 +164,7 @@ mod tests {
         if !inspect(source.to_str().unwrap()).unwrap().supported {
             return;
         }
-        for intensity in [1.0, 2.0, 4.0] {
+        for intensity in [1.0, 2.0, 4.0, 8.0] {
             let base = work.0.join("base.png");
             let hdr = work.0.join("hdr.png");
             process_with_sdr_base(
@@ -321,7 +324,7 @@ mod tests {
         let low = image::open(&neutral).unwrap().to_rgba16();
         let high = image::open(&boosted).unwrap().to_rgba16();
         assert!(high.get_pixel(15, 0)[0] > low.get_pixel(15, 0)[0]);
-        for intensity in [f32::NAN, 0.0, 4.1] {
+        for intensity in [f32::NAN, 0.0, 8.1] {
             assert!(process(
                 source.to_str().unwrap(),
                 neutral.to_str().unwrap(),

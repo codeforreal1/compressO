@@ -115,7 +115,7 @@ export type VideoConfig = {
   subtitlesConfig?: SubtitlesConfig | null
   shouldEnableCustomSpeed?: boolean
   customSpeed?: number | null
-  /** HDR boost or Remove HDR, applied only to the videos it matches (see `videoDynamicRange.ts`) */
+  /** HDR Boost or Remove HDR, applied only to the videos it matches (see `videoDynamicRange.ts`) */
   dynamicRange?: VideoDynamicRangeConfig
   /**
    * Transforms of all videos of a batch (set on the batch config only, by a preset); each video's
