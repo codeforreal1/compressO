@@ -272,7 +272,8 @@
       "about": "Über",
       "credits": "Danksagungen",
       "watchedFolders": "Ordnerüberwachung",
-      "history": "Verlauf"
+      "history": "Verlauf",
+      "commandLine": "Befehlszeile"
     },
     "about": {
       "updateAvailable": "Update verfügbar",
@@ -330,6 +331,7 @@
       "source_main": "Hauptfenster",
       "source_dropZone": "Ablagezone",
       "source_watchedFolder": "Überwachter Ordner {{name}}",
+      "source_commandLine": "Befehlszeile",
       "original": "Original",
       "output": "Ausgabe",
       "missing": "Diese Datei wurde verschoben oder gelöscht.",
@@ -343,6 +345,36 @@
         "original": "Originalgröße",
         "output": "Komprimierte Größe",
         "reduction": "Durchschnittliche Verkleinerung"
+      }
+    },
+    "commandLine": {
+      "terminal": {
+        "title": "Terminal",
+        "command": {
+          "title": "Terminal-Befehl",
+          "description_macos": "Medien im Terminal mit dem Befehl compresso komprimieren, mit Ihren Voreinstellungen und Ausgabeeinstellungen. Für die Installation wird Ihr Passwort abgefragt.",
+          "description_windows": "Medien im Terminal mit dem Befehl compresso komprimieren, mit Ihren Voreinstellungen und Ausgabeeinstellungen.",
+          "description_linux": "Medien im Terminal mit dem Befehl compresso komprimieren, mit Ihren Voreinstellungen und Ausgabeeinstellungen.",
+          "status_installed": "Er ist installiert. Öffnen Sie ein neues Terminalfenster, um ihn zu verwenden.",
+          "status_notInstalled": "Er ist nicht installiert.",
+          "status_broken": "Er verweist auf ein CompressO, das verschoben oder entfernt wurde. Installieren Sie ihn erneut.",
+          "status_unavailable": "Er ist in dieser Version von CompressO nicht enthalten.",
+          "install": "Installieren",
+          "remove": "Entfernen",
+          "installFailed": "Der Befehl konnte nicht installiert werden.",
+          "removeFailed": "Der Befehl konnte nicht entfernt werden."
+        },
+        "usage": {
+          "title": "Verwendung",
+          "description": "Geben Sie nach dem Befehl Dateien oder Ordner an. Medien werden mit den Standard-Voreinstellungen komprimiert, sofern keine Voreinstellung gewählt ist. Alle Optionen zeigt compresso --help."
+        }
+      },
+      "agents": {
+        "title": "KI-Agenten",
+        "mcp": {
+          "title": "MCP-Server",
+          "description": "KI-Agenten wie Claude können Medien mit Ihren Voreinstellungen komprimieren. Fügen Sie diesen Server zu den MCP-Einstellungen des Agenten hinzu."
+        }
       }
     }
   },
@@ -359,6 +391,7 @@
     "showInFileManager": "Im Datei-Explorer anzeigen",
     "showNameInFileManager": "{{name}} im Datei-Explorer anzeigen",
     "copied": "In die Zwischenablage kopiert.",
+    "copy": "Kopieren",
     "close": "Schließen",
     "reset": "Zurücksetzen",
     "apply": "Anwenden",
@@ -442,6 +475,8 @@
     "chooseSaveLocation": "Speicherort wählen",
     "saveFailed": "Die komprimierten Medien konnten nicht gespeichert werden.",
     "compressFailed": "Die Medien konnten nicht komprimiert werden.",
+    "fromCommandLine": "Über die Befehlszeile hinzugefügt",
+    "commandLine": "Befehlszeile",
     "summary": {
       "cancelledAndFailed": "{{cancelled}}, {{failed}}",
       "cancelled_one": "{{count}} abgebrochen",

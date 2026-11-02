@@ -297,6 +297,10 @@ pub fn handle_tray_icon_menu_event(app_handle: &AppHandle, event: MenuEvent) {
 /// Shows & focuses the main window, recreating it if it was closed (the app keeps running while
 /// the tray is alive)
 pub fn focus_or_create_main_window(app_handle: &AppHandle) -> Result<(), String> {
+    // Opened by the user: an app started by the command line stays open, with its Dock icon
+    crate::sys::cli_server::keep_app_open();
+    #[cfg(target_os = "macos")]
+    let _ = app_handle.set_dock_visibility(true);
     if !crate::core::tool_bundle::is_ready(app_handle) {
         if let Some(window) = app_handle.get_webview_window("preparation") {
             window.show().map_err(|e| e.to_string())?;

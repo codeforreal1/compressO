@@ -272,7 +272,8 @@
       "about": "À propos",
       "credits": "Remerciements",
       "watchedFolders": "Surveillance de dossiers",
-      "history": "Historique"
+      "history": "Historique",
+      "commandLine": "Ligne de commande"
     },
     "about": {
       "updateAvailable": "Mise à jour disponible",
@@ -330,6 +331,7 @@
       "source_main": "Fenêtre principale",
       "source_dropZone": "Zone de dépôt",
       "source_watchedFolder": "Dossier surveillé {{name}}",
+      "source_commandLine": "Ligne de commande",
       "original": "Original",
       "output": "Résultat",
       "missing": "Ce fichier a été déplacé ou supprimé.",
@@ -343,6 +345,36 @@
         "original": "Taille d’origine",
         "output": "Taille compressée",
         "reduction": "Réduction moyenne"
+      }
+    },
+    "commandLine": {
+      "terminal": {
+        "title": "Terminal",
+        "command": {
+          "title": "Commande de terminal",
+          "description_macos": "Compresser des médias depuis un terminal avec la commande compresso, selon vos préréglages et vos réglages de sortie. L’installation demande votre mot de passe.",
+          "description_windows": "Compresser des médias depuis un terminal avec la commande compresso, selon vos préréglages et vos réglages de sortie.",
+          "description_linux": "Compresser des médias depuis un terminal avec la commande compresso, selon vos préréglages et vos réglages de sortie.",
+          "status_installed": "Elle est installée. Ouvrez une nouvelle fenêtre de terminal pour l’utiliser.",
+          "status_notInstalled": "Elle n’est pas installée.",
+          "status_broken": "Elle renvoie à un CompressO qui a été déplacé ou supprimé. Installez-la de nouveau.",
+          "status_unavailable": "Elle n’est pas incluse dans cette version de CompressO.",
+          "install": "Installer",
+          "remove": "Supprimer",
+          "installFailed": "La commande n’a pas pu être installée.",
+          "removeFailed": "La commande n’a pas pu être supprimée."
+        },
+        "usage": {
+          "title": "Utilisation",
+          "description": "Ajoutez des fichiers ou des dossiers après la commande. Les médias sont compressés avec les préréglages par défaut, sauf si un préréglage est choisi. Pour voir toutes les options, exécutez compresso --help."
+        }
+      },
+      "agents": {
+        "title": "Agents d’IA",
+        "mcp": {
+          "title": "Serveur MCP",
+          "description": "Les agents d’IA, comme Claude, peuvent compresser des médias avec vos préréglages. Ajoutez ce serveur aux réglages MCP de l’agent."
+        }
       }
     }
   },
@@ -359,6 +391,7 @@
     "showInFileManager": "Afficher dans l’Explorateur de fichiers",
     "showNameInFileManager": "Afficher {{name}} dans l’Explorateur de fichiers",
     "copied": "Copié dans le presse-papiers.",
+    "copy": "Copier",
     "close": "Fermer",
     "reset": "Réinitialiser",
     "apply": "Appliquer",
@@ -443,6 +476,8 @@
     "chooseSaveLocation": "Choisir un emplacement d’enregistrement",
     "saveFailed": "Le média compressé n’a pas pu être enregistré.",
     "compressFailed": "Le média n’a pas pu être compressé.",
+    "fromCommandLine": "Ajouté depuis la ligne de commande",
+    "commandLine": "Ligne de commande",
     "summary": {
       "cancelledAndFailed": "{{cancelled}}, {{failed}}",
       "cancelled_one": "{{count}} annulé",

@@ -272,7 +272,8 @@
       "about": "Giới thiệu",
       "credits": "Ghi công",
       "watchedFolders": "Theo dõi thư mục",
-      "history": "Lịch sử"
+      "history": "Lịch sử",
+      "commandLine": "Dòng lệnh"
     },
     "about": {
       "updateAvailable": "Có bản cập nhật",
@@ -330,6 +331,7 @@
       "source_main": "Cửa sổ chính",
       "source_dropZone": "Vùng thả",
       "source_watchedFolder": "Thư mục theo dõi {{name}}",
+      "source_commandLine": "Dòng lệnh",
       "original": "Gốc",
       "output": "Đầu ra",
       "missing": "Tệp này đã bị di chuyển hoặc xóa.",
@@ -343,6 +345,36 @@
         "original": "Kích thước gốc",
         "output": "Kích thước sau nén",
         "reduction": "Mức giảm trung bình"
+      }
+    },
+    "commandLine": {
+      "terminal": {
+        "title": "Terminal",
+        "command": {
+          "title": "Lệnh terminal",
+          "description_macos": "Nén tệp phương tiện từ terminal bằng lệnh compresso, sử dụng các cài đặt sẵn và cài đặt đầu ra của bạn. Khi cài đặt, bạn sẽ được yêu cầu nhập mật khẩu.",
+          "description_windows": "Nén tệp phương tiện từ terminal bằng lệnh compresso, sử dụng các cài đặt sẵn và cài đặt đầu ra của bạn.",
+          "description_linux": "Nén tệp phương tiện từ terminal bằng lệnh compresso, sử dụng các cài đặt sẵn và cài đặt đầu ra của bạn.",
+          "status_installed": "Đã được cài đặt. Hãy mở một cửa sổ terminal mới để sử dụng.",
+          "status_notInstalled": "Chưa được cài đặt.",
+          "status_broken": "Lệnh trỏ đến một bản CompressO đã bị di chuyển hoặc xóa. Hãy cài đặt lại.",
+          "status_unavailable": "Phiên bản CompressO này không bao gồm lệnh này.",
+          "install": "Cài đặt",
+          "remove": "Gỡ bỏ",
+          "installFailed": "Không thể cài đặt lệnh.",
+          "removeFailed": "Không thể gỡ bỏ lệnh."
+        },
+        "usage": {
+          "title": "Cách sử dụng",
+          "description": "Thêm tệp hoặc thư mục sau lệnh. Tệp phương tiện được nén bằng các cài đặt sẵn mặc định, trừ khi chọn một cài đặt sẵn khác. Để xem mọi tùy chọn, hãy chạy compresso --help."
+        }
+      },
+      "agents": {
+        "title": "Tác tử AI",
+        "mcp": {
+          "title": "Máy chủ MCP",
+          "description": "Các tác tử AI, chẳng hạn như Claude, có thể nén tệp phương tiện bằng các cài đặt sẵn của bạn. Hãy thêm máy chủ này vào cài đặt MCP của tác tử."
+        }
       }
     }
   },
@@ -359,6 +391,7 @@
     "showInFileManager": "Hiển thị trong File Explorer",
     "showNameInFileManager": "Hiển thị {{name}} trong File Explorer",
     "copied": "Đã sao chép vào bảng nhớ tạm.",
+    "copy": "Sao chép",
     "close": "Đóng",
     "reset": "Đặt lại",
     "apply": "Áp dụng",
@@ -441,6 +474,8 @@
     "chooseSaveLocation": "Chọn vị trí lưu",
     "saveFailed": "Không thể lưu tệp đã nén.",
     "compressFailed": "Không thể nén tệp phương tiện.",
+    "fromCommandLine": "Đã thêm từ dòng lệnh",
+    "commandLine": "Dòng lệnh",
     "summary": {
       "cancelledAndFailed": "{{cancelled}}, {{failed}}",
       "cancelled_other": "Đã hủy {{count}}",

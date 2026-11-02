@@ -6,6 +6,7 @@ import { useEffect } from 'react'
 import { useDropQueue, useDropQueuePaused } from '@/hooks/useDropQueue'
 import { t } from '@/i18n'
 import {
+  type AccelerationSettings,
   getMediaItemConfig,
   getOutputDuration,
   MediaFile,
@@ -90,10 +91,14 @@ async function waitForMainWindow() {
 }
 
 /**
- * The preset a queued media is compressed with: its watched folder's, or the drop zone's (Settings
- * -> Drop Zone), Default (the preset starred now) unless another is chosen
+ * The preset a queued media is compressed with: the one chosen on the command line, its watched
+ * folder's, or the drop zone's (Settings -> Drop Zone), Default (the preset starred now) unless
+ * another is chosen
  */
 function getQueuePresetId(item: DropQueueItem, mediaType: PresetMediaType) {
+  if (item.cliJob) {
+    return resolvePresetChoice(item.cliJob.presetIds[mediaType], mediaType)
+  }
   const choice = item.watchFolderId
     ? settingsStore.watchedFolders.find(({ id }) => id === item.watchFolderId)
         ?.presetIds?.[mediaType]
@@ -102,10 +107,39 @@ function getQueuePresetId(item: DropQueueItem, mediaType: PresetMediaType) {
 }
 
 /**
+ * The hardware acceleration settings chosen on the command line for a queued media, if any (the
+ * app's are used otherwise)
+ */
+function getQueueAcceleration(
+  item: DropQueueItem,
+): AccelerationSettings | undefined {
+  const job = item.cliJob
+  if (
+    job?.useHardwareAcceleration == null &&
+    job?.reachTargetSizesWithoutAcceleration == null
+  ) {
+    return undefined
+  }
+  return {
+    useHardwareAcceleration:
+      job.useHardwareAcceleration ?? settingsStore.useHardwareAcceleration,
+    retryTargetSizeOnCpu:
+      job.reachTargetSizesWithoutAcceleration ??
+      settingsStore.retryTargetSizeOnCpu,
+  }
+}
+
+/**
  * A queued media with the settings of the drop zone's preset (Settings -> Drop Zone), like media
  * added in the main window gets its default preset
  */
 async function loadQueueMedia(item: DropQueueItem): Promise<MediaFile> {
+  const media = await readQueueMedia(item)
+  const acceleration = getQueueAcceleration(item)
+  return acceleration ? { ...media, acceleration } : media
+}
+
+async function readQueueMedia(item: DropQueueItem): Promise<MediaFile> {
   const metadata = await getFileMetadata(item.path)
   const extension = metadata.extension?.toLowerCase() ?? null
   const base = {
@@ -268,6 +302,7 @@ async function compressQueueItem(item: DropQueueItem) {
           outputMetadata.extension,
         ),
         presetId: media.config?.presetId,
+        settings: item.cliJob,
       },
       { groupKey: item.groupId, topFolders },
     )
@@ -276,6 +311,7 @@ async function compressQueueItem(item: DropQueueItem) {
       groupId: item.groupId,
       relativeDir: item.relativeDir,
       watchFolderName: item.watchFolderName,
+      isFromCommandLine: !!item.cliJob,
       originalPath: item.path,
       originalSize: media.sizeInBytes ?? null,
       outputPath: 'savedPath' in saved ? saved.savedPath : null,
@@ -295,17 +331,21 @@ async function compressQueueItem(item: DropQueueItem) {
         outputSize: outputMetadata.size,
         savedPath: saved.savedPath,
       })
-      if (settingsStore.copyOutputToClipboard) {
+      // Not for the command line, which is not at the app
+      if (settingsStore.copyOutputToClipboard && !item.cliJob) {
         copyFilesToClipboard([{ path: saved.savedPath }]).catch(() => {})
       }
     } else if (saved.reason === 'larger') {
+      // Nothing can save it later from the command line, so it is not kept
+      if (item.cliJob) deleteFile(outputMetadata.path).catch(() => {})
       await update({
         status: 'done',
         progress: 100,
         outputSize: outputMetadata.size,
         // Kept until the item is cleared, which deletes it
-        outputPath: outputMetadata.path,
+        outputPath: item.cliJob ? null : outputMetadata.path,
         message: t('queue.notSavedLarger'),
+        reason: 'larger',
       })
     } else {
       await update({
@@ -316,9 +356,12 @@ async function compressQueueItem(item: DropQueueItem) {
             ? t('queue.noSaveLocation')
             : t('queue.saveFailed'),
         needsSaveLocation: saved.reason === 'no-save-location',
+        reason:
+          saved.reason === 'no-save-location' ? 'noSaveLocation' : 'saveFailed',
       })
     }
-    return true
+    // The completion sound is for media added in the app
+    return !item.cliJob
   } catch (error) {
     logError(`[drop-queue] Could not compress ${item.path}`, error)
     const isAccessDenied = isPermissionDeniedError(error)
@@ -328,6 +371,8 @@ async function compressQueueItem(item: DropQueueItem) {
         ? t('queue.accessDenied')
         : t('queue.compressFailed'),
       isAccessDenied,
+      reason: isAccessDenied ? 'accessDenied' : 'compressFailed',
+      error: error instanceof Error ? error.message : String(error),
     })
     return false
   } finally {

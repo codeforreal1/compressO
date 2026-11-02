@@ -21,6 +21,10 @@ tokio = { version = "1.34.0", features = [
     "rt-multi-thread",
     "macros",
     "process",
+    "net",
+    "io-util",
+    "sync",
+    "time",
 ] }
 nanoid = "0.4.0"
 infer = "0.15.0"
@@ -94,3 +98,7 @@ swift-bridge-build = "0.1"
 # If you use cargo directly instead of tauri's cli you can use this feature flag to switch between tauri's `dev` and `build` modes.
 # DO NOT REMOVE!!z
 custom-protocol = ["tauri/custom-protocol"]
+
+# The command line tool (`compresso`), bundled with the app, see `cli/`
+[workspace]
+members = ["cli"]

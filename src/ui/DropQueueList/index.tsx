@@ -118,15 +118,20 @@ function QueueItem({
           >
             {name}
           </p>
-          {/* From a watched folder (compressed after the media dropped), with its name */}
-          {item.watchFolderName ? (
+          {/* From the command line, or a watched folder (compressed after the media dropped) with
+              its name */}
+          {item.cliJob || item.watchFolderName ? (
             <span
               className="shrink-0 max-w-[45%] truncate rounded px-1 text-[9px] leading-4 text-zinc-600 bg-zinc-500/15 dark:text-zinc-300 dark:bg-white/10"
-              title={t('queue.fromWatchedFolder', {
-                name: item.watchFolderName,
-              })}
+              title={
+                item.cliJob
+                  ? t('queue.fromCommandLine')
+                  : t('queue.fromWatchedFolder', {
+                      name: item.watchFolderName,
+                    })
+              }
             >
-              {item.watchFolderName}
+              {item.cliJob ? t('queue.commandLine') : item.watchFolderName}
             </span>
           ) : null}
         </div>

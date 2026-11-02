@@ -171,6 +171,10 @@ pub struct VideoCompressionConfig {
     /// HDR Boost or Remove HDR, applied when it matches the source (see `video_dynamic_range`)
     #[serde(default)]
     pub dynamic_range: Option<super::image_dynamic_range::ImageDynamicRangeConfig>,
+    /// Encodes on the graphics card or not, whatever the setting is (e.g. chosen on the command
+    /// line); `None` follows the setting
+    #[serde(default)]
+    pub use_hardware_acceleration: Option<bool>,
 }
 
 /// A file size for video or audio-only output. The frontend budgets its bitrate from the output

@@ -28,6 +28,7 @@ import { glassBorder } from '@/utils/glass'
 import { cn } from '@/utils/tailwind'
 import { hasTray } from '@/utils/tray'
 import About from './About'
+import CommandLine from './CommandLine'
 import Credits from './Credits'
 import DropZone from './DropZone'
 import General from './General'
@@ -91,6 +92,12 @@ const SETTINGS_GROUPS: {
         icon: 'clock',
         Component: History,
         fillsHeight: true,
+      },
+      // The `compresso` command & its MCP server, for AI agents
+      {
+        id: 'commandLine',
+        icon: 'terminal',
+        Component: CommandLine,
       },
     ],
   },

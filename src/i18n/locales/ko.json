@@ -272,7 +272,8 @@
       "about": "정보",
       "credits": "크레딧",
       "watchedFolders": "폴더 감시",
-      "history": "기록"
+      "history": "기록",
+      "commandLine": "명령줄"
     },
     "about": {
       "updateAvailable": "업데이트 사용 가능",
@@ -330,6 +331,7 @@
       "source_main": "메인 창",
       "source_dropZone": "드롭 존",
       "source_watchedFolder": "감시 폴더 {{name}}",
+      "source_commandLine": "명령줄",
       "original": "원본",
       "output": "출력",
       "missing": "이 파일은 이동되었거나 삭제되었습니다.",
@@ -343,6 +345,36 @@
         "original": "원본 크기",
         "output": "압축 후 크기",
         "reduction": "평균 감소율"
+      }
+    },
+    "commandLine": {
+      "terminal": {
+        "title": "터미널",
+        "command": {
+          "title": "터미널 명령",
+          "description_macos": "프리셋과 출력 설정을 사용하여 터미널에서 compresso 명령으로 미디어를 압축합니다. 설치할 때 암호를 묻습니다.",
+          "description_windows": "프리셋과 출력 설정을 사용하여 터미널에서 compresso 명령으로 미디어를 압축합니다.",
+          "description_linux": "프리셋과 출력 설정을 사용하여 터미널에서 compresso 명령으로 미디어를 압축합니다.",
+          "status_installed": "설치되어 있습니다. 사용하려면 새 터미널 창을 여십시오.",
+          "status_notInstalled": "설치되어 있지 않습니다.",
+          "status_broken": "이동되었거나 제거된 CompressO를 가리킵니다. 다시 설치하십시오.",
+          "status_unavailable": "이 버전의 CompressO에는 포함되어 있지 않습니다.",
+          "install": "설치",
+          "remove": "제거",
+          "installFailed": "명령을 설치할 수 없습니다.",
+          "removeFailed": "명령을 제거할 수 없습니다."
+        },
+        "usage": {
+          "title": "사용법",
+          "description": "명령 뒤에 파일이나 폴더를 추가합니다. 프리셋을 선택하지 않으면 기본 프리셋으로 미디어를 압축합니다. 모든 옵션을 보려면 compresso --help를 실행하십시오."
+        }
+      },
+      "agents": {
+        "title": "AI 에이전트",
+        "mcp": {
+          "title": "MCP 서버",
+          "description": "Claude와 같은 AI 에이전트가 사용자의 프리셋으로 미디어를 압축할 수 있습니다. 이 서버를 에이전트의 MCP 설정에 추가하십시오."
+        }
       }
     }
   },
@@ -359,6 +391,7 @@
     "showInFileManager": "파일 탐색기에서 보기",
     "showNameInFileManager": "파일 탐색기에서 {{name}} 보기",
     "copied": "클립보드에 복사했습니다.",
+    "copy": "복사",
     "close": "닫기",
     "reset": "재설정",
     "apply": "적용",
@@ -441,6 +474,8 @@
     "chooseSaveLocation": "저장 위치 선택",
     "saveFailed": "압축된 미디어를 저장할 수 없습니다.",
     "compressFailed": "미디어를 압축할 수 없습니다.",
+    "fromCommandLine": "명령줄에서 추가됨",
+    "commandLine": "명령줄",
     "summary": {
       "cancelledAndFailed": "{{cancelled}}, {{failed}}",
       "cancelled_other": "{{count}}개 취소됨",

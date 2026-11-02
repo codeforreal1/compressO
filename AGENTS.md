@@ -19,6 +19,7 @@ biome check .          # Lint and format check
 biome check --write .  # Auto-fix issues
 
 # Rust Backend
+node scripts/build-cli.mjs     # Build the command line tool (src-tauri/cli), bundled with the app
 cd src-tauri && cargo build    # Build Rust code
 cd src-tauri && cargo clippy    # Rust linter
 ```

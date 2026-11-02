@@ -141,9 +141,14 @@ async fn works(app: &AppHandle, candidate: &HardwareEncoder) -> bool {
 }
 
 /// The hardware encoder for a CPU codec (e.g. `libx264`, or a source's `h264`), if the graphics
-/// card is used & one works here
-pub async fn encoder_for(app: &AppHandle, codec: &str) -> Option<HardwareEncoder> {
-    if !is_enabled() {
+/// card is used & one works here. `enabled` overrides the setting for one compression (e.g. from
+/// the command line).
+pub async fn encoder_for(
+    app: &AppHandle,
+    codec: &str,
+    enabled: Option<bool>,
+) -> Option<HardwareEncoder> {
+    if !enabled.unwrap_or_else(is_enabled) {
         return None;
     }
     let codec = if codec.contains("264") {

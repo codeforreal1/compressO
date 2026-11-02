@@ -1,5 +1,8 @@
 #[cfg(any(target_os = "macos", windows))]
 pub mod clipboard_watch;
+pub mod cli_install;
+pub mod cli_server;
+pub mod cli_settings;
 pub mod fs;
 pub mod history;
 pub mod keep_awake;

@@ -272,7 +272,8 @@
       "about": "關於",
       "credits": "致謝",
       "watchedFolders": "監看資料夾",
-      "history": "歷史記錄"
+      "history": "歷史記錄",
+      "commandLine": "命令列"
     },
     "about": {
       "updateAvailable": "有可用的更新",
@@ -330,6 +331,7 @@
       "source_main": "主視窗",
       "source_dropZone": "投放區",
       "source_watchedFolder": "監看的資料夾 {{name}}",
+      "source_commandLine": "命令列",
       "original": "原始檔案",
       "output": "輸出檔案",
       "missing": "此檔案已被移動或刪除。",
@@ -343,6 +345,36 @@
         "original": "原始大小",
         "output": "壓縮後大小",
         "reduction": "平均縮減"
+      }
+    },
+    "commandLine": {
+      "terminal": {
+        "title": "終端機",
+        "command": {
+          "title": "終端機指令",
+          "description_macos": "在終端機中使用 compresso 指令壓縮媒體，並採用您的預設與輸出設定。安裝時需要輸入您的密碼。",
+          "description_windows": "在終端機中使用 compresso 指令壓縮媒體，並採用您的預設與輸出設定。",
+          "description_linux": "在終端機中使用 compresso 指令壓縮媒體，並採用您的預設與輸出設定。",
+          "status_installed": "已安裝。請開啟新的終端機視窗以使用此指令。",
+          "status_notInstalled": "尚未安裝。",
+          "status_broken": "此指令指向已被移動或移除的 CompressO。請重新安裝。",
+          "status_unavailable": "此版本的 CompressO 不包含此指令。",
+          "install": "安裝",
+          "remove": "移除",
+          "installFailed": "無法安裝此指令。",
+          "removeFailed": "無法移除此指令。"
+        },
+        "usage": {
+          "title": "用法",
+          "description": "在指令後加入檔案或資料夾。若未選擇預設，媒體會以設為預設值的預設壓縮。若要查看所有選項，請執行 compresso --help。"
+        }
+      },
+      "agents": {
+        "title": "AI 代理",
+        "mcp": {
+          "title": "MCP 伺服器",
+          "description": "Claude 等 AI 代理可以使用您的預設壓縮媒體。請將此伺服器加入代理的 MCP 設定中。"
+        }
       }
     }
   },
@@ -359,6 +391,7 @@
     "showInFileManager": "在檔案總管中顯示",
     "showNameInFileManager": "在檔案總管中顯示 {{name}}",
     "copied": "已複製到剪貼簿。",
+    "copy": "複製",
     "close": "關閉",
     "reset": "重設",
     "apply": "套用",
@@ -441,6 +474,8 @@
     "chooseSaveLocation": "選擇儲存位置",
     "saveFailed": "無法儲存壓縮後的媒體。",
     "compressFailed": "無法壓縮該媒體。",
+    "fromCommandLine": "從命令列加入",
+    "commandLine": "命令列",
     "summary": {
       "cancelledAndFailed": "{{cancelled}}，{{failed}}",
       "cancelled_other": "{{count}} 個已取消",

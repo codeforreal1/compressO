@@ -272,7 +272,8 @@
       "about": "Informazioni",
       "credits": "Riconoscimenti",
       "watchedFolders": "Monitoraggio cartelle",
-      "history": "Cronologia"
+      "history": "Cronologia",
+      "commandLine": "Riga di comando"
     },
     "about": {
       "updateAvailable": "Aggiornamento disponibile",
@@ -330,6 +331,7 @@
       "source_main": "Finestra principale",
       "source_dropZone": "Zona di rilascio",
       "source_watchedFolder": "Cartella monitorata {{name}}",
+      "source_commandLine": "Riga di comando",
       "original": "Originale",
       "output": "Risultato",
       "missing": "Questo file è stato spostato o eliminato.",
@@ -343,6 +345,36 @@
         "original": "Dimensione originale",
         "output": "Dimensione compressa",
         "reduction": "Riduzione media"
+      }
+    },
+    "commandLine": {
+      "terminal": {
+        "title": "Terminale",
+        "command": {
+          "title": "Comando del terminale",
+          "description_macos": "Comprima contenuti da un terminale con il comando compresso, usando i Suoi preset e le impostazioni di output. L’installazione richiede la Sua password.",
+          "description_windows": "Comprima contenuti da un terminale con il comando compresso, usando i Suoi preset e le impostazioni di output.",
+          "description_linux": "Comprima contenuti da un terminale con il comando compresso, usando i Suoi preset e le impostazioni di output.",
+          "status_installed": "È installato. Apra una nuova finestra del terminale per usarlo.",
+          "status_notInstalled": "Non è installato.",
+          "status_broken": "Rimanda a un CompressO che è stato spostato o rimosso. Lo installi di nuovo.",
+          "status_unavailable": "Non è incluso in questa versione di CompressO.",
+          "install": "Installa",
+          "remove": "Rimuovi",
+          "installFailed": "Non è stato possibile installare il comando.",
+          "removeFailed": "Non è stato possibile rimuovere il comando."
+        },
+        "usage": {
+          "title": "Uso",
+          "description": "Aggiunga file o cartelle dopo il comando. I contenuti vengono compressi con i preset predefiniti, a meno che non ne venga scelto uno. Per vedere tutte le opzioni, esegua compresso --help."
+        }
+      },
+      "agents": {
+        "title": "Agenti IA",
+        "mcp": {
+          "title": "Server MCP",
+          "description": "Gli agenti IA, come Claude, possono comprimere contenuti con i Suoi preset. Aggiunga questo server alle impostazioni MCP dell’agente."
+        }
       }
     }
   },
@@ -359,6 +391,7 @@
     "showInFileManager": "Mostra in Esplora file",
     "showNameInFileManager": "Mostra {{name}} in Esplora file",
     "copied": "Copiato negli appunti.",
+    "copy": "Copia",
     "close": "Chiudi",
     "reset": "Ripristina",
     "apply": "Applica",
@@ -443,6 +476,8 @@
     "chooseSaveLocation": "Scegli una posizione di salvataggio",
     "saveFailed": "Non è stato possibile salvare il contenuto compresso.",
     "compressFailed": "Non è stato possibile comprimere il contenuto.",
+    "fromCommandLine": "Aggiunto dalla riga di comando",
+    "commandLine": "Riga di comando",
     "summary": {
       "cancelledAndFailed": "{{cancelled}}, {{failed}}",
       "cancelled_one": "{{count}} annullato",

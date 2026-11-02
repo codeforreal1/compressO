@@ -272,7 +272,8 @@
       "about": "Tentang",
       "credits": "Kredit",
       "watchedFolders": "Pantau folder",
-      "history": "Riwayat"
+      "history": "Riwayat",
+      "commandLine": "Baris Perintah"
     },
     "about": {
       "updateAvailable": "Pembaruan tersedia",
@@ -330,6 +331,7 @@
       "source_main": "Jendela utama",
       "source_dropZone": "Zona letak",
       "source_watchedFolder": "Folder yang dipantau {{name}}",
+      "source_commandLine": "Baris perintah",
       "original": "Asli",
       "output": "Hasil",
       "missing": "File ini telah dipindahkan atau dihapus.",
@@ -343,6 +345,36 @@
         "original": "Ukuran asli",
         "output": "Ukuran terkompresi",
         "reduction": "Rata-rata pengurangan"
+      }
+    },
+    "commandLine": {
+      "terminal": {
+        "title": "Terminal",
+        "command": {
+          "title": "Perintah terminal",
+          "description_macos": "Kompresi media dari terminal dengan perintah compresso, menggunakan preset dan pengaturan output Anda. Pemasangan akan meminta kata sandi Anda.",
+          "description_windows": "Kompresi media dari terminal dengan perintah compresso, menggunakan preset dan pengaturan output Anda.",
+          "description_linux": "Kompresi media dari terminal dengan perintah compresso, menggunakan preset dan pengaturan output Anda.",
+          "status_installed": "Sudah terpasang. Buka jendela terminal baru untuk menggunakannya.",
+          "status_notInstalled": "Belum terpasang.",
+          "status_broken": "Perintah ini mengarah ke CompressO yang telah dipindahkan atau dihapus. Pasang kembali.",
+          "status_unavailable": "Tidak tersedia dalam versi CompressO ini.",
+          "install": "Pasang",
+          "remove": "Hapus",
+          "installFailed": "Perintah tidak dapat dipasang.",
+          "removeFailed": "Perintah tidak dapat dihapus."
+        },
+        "usage": {
+          "title": "Penggunaan",
+          "description": "Tambahkan file atau folder setelah perintah. Media dikompresi dengan preset default, kecuali preset lain dipilih. Untuk melihat semua opsi, jalankan compresso --help."
+        }
+      },
+      "agents": {
+        "title": "Agen AI",
+        "mcp": {
+          "title": "Server MCP",
+          "description": "Agen AI, seperti Claude, dapat mengompresi media dengan preset Anda. Tambahkan server ini ke pengaturan MCP agen tersebut."
+        }
       }
     }
   },
@@ -359,6 +391,7 @@
     "showInFileManager": "Tampilkan di File Explorer",
     "showNameInFileManager": "Tampilkan {{name}} di File Explorer",
     "copied": "Disalin ke papan klip.",
+    "copy": "Salin",
     "close": "Tutup",
     "reset": "Atur ulang",
     "apply": "Terapkan",
@@ -441,6 +474,8 @@
     "chooseSaveLocation": "Pilih lokasi penyimpanan",
     "saveFailed": "Media yang dikompresi tidak dapat disimpan.",
     "compressFailed": "Media tidak dapat dikompresi.",
+    "fromCommandLine": "Ditambahkan dari baris perintah",
+    "commandLine": "Baris perintah",
     "summary": {
       "cancelledAndFailed": "{{cancelled}}, {{failed}}",
       "cancelled_other": "{{count}} dibatalkan",

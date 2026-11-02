@@ -54,9 +54,30 @@ export async function waitForDropZone(signal: AbortSignal) {
   }
 }
 
+/**
+ * Hardware acceleration settings chosen for one media instead of the app's (Settings -> Output),
+ * e.g. on the command line
+ */
+export type AccelerationSettings = {
+  useHardwareAcceleration: boolean
+  retryTargetSizeOnCpu: boolean
+}
+
 export type MediaFile =
-  | (Video & { type: 'video' })
-  | (Image & { type: 'image' })
+  | (Video & { type: 'video'; acceleration?: AccelerationSettings })
+  | (Image & { type: 'image'; acceleration?: AccelerationSettings })
+
+/** The hardware acceleration settings a media is compressed with: its own, or the app's */
+export function getAccelerationSettings(media: {
+  acceleration?: AccelerationSettings
+}): AccelerationSettings {
+  return (
+    media.acceleration ?? {
+      useHardwareAcceleration: settingsStore.useHardwareAcceleration,
+      retryTargetSizeOnCpu: settingsStore.retryTargetSizeOnCpu,
+    }
+  )
+}
 
 /**
  * Which lane a media is compressed in: one video, one audio & one image at a time (see
@@ -126,7 +147,8 @@ export function getQualityEstimateKey(
   const { videoId: _videoId, ...settings } = videoConfig
   return JSON.stringify({
     ...settings,
-    useHardwareAcceleration: settingsStore.useHardwareAcceleration,
+    useHardwareAcceleration:
+      getAccelerationSettings(media).useHardwareAcceleration,
   })
 }
 
@@ -509,8 +531,8 @@ export function getMediaItemConfig(
                     sizeInBytes: targetPlan.sizeInBytes,
                     videoBitrate: targetPlan.videoBitrate,
                     retryOnCpu:
-                      settingsStore.useHardwareAcceleration &&
-                      settingsStore.retryTargetSizeOnCpu,
+                      getAccelerationSettings(v).useHardwareAcceleration &&
+                      getAccelerationSettings(v).retryTargetSizeOnCpu,
                     qualityFirst: targetPlan.fitsAtQuality,
                   }
                 : null,
@@ -574,6 +596,8 @@ export function getMediaItemConfig(
             dynamicRange: v.isAudioFile
               ? null
               : (v.config?.dynamicRange ?? null),
+            useHardwareAcceleration:
+              v.acceleration?.useHardwareAcceleration ?? null,
           } satisfies VideoCompressionConfig)
         : undefined,
     imageConfig:

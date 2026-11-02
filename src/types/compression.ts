@@ -443,6 +443,11 @@ export type VideoCompressionConfig = {
   } | null
   /** Applied by the backend only when it matches the source (see `video_dynamic_range.rs`) */
   dynamicRange?: import('./videoDynamicRange').VideoDynamicRangeConfig | null
+  /**
+   * Encodes on the graphics card or not, whatever the setting is (chosen on the command line);
+   * `null` follows the setting
+   */
+  useHardwareAcceleration?: boolean | null
 }
 
 export type ImageCompressionProgress = {

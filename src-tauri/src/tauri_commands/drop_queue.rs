@@ -93,6 +93,51 @@ pub struct DropQueueItem {
     pub watch_folder_id: Option<String>,
     /// That folder's name, shown with it
     pub watch_folder_name: Option<String>,
+    /// The command line job it belongs to (see `cli_server`), with that job's preset & output
+    /// settings; `None` for media added in the app
+    pub cli_job: Option<CliJob>,
+    /// Why it failed or was not saved, for the command line (`larger`, `noSaveLocation`,
+    /// `saveFailed`, `accessDenied`, `compressFailed`); `message` is the same, translated
+    pub reason: Option<String>,
+    /// The error it failed with, as the command line shows it
+    pub error: Option<String>,
+}
+
+/// A command line job's choices (see `cli_server`): each setting left out follows the app
+#[derive(Serialize, Deserialize, Clone, Debug, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct CliJob {
+    #[serde(default)]
+    pub job_id: String,
+    /// The preset of each media type, by id; a media type without one uses its default preset
+    #[serde(default)]
+    pub preset_ids: CliPresetIds,
+    /// Saved here instead of the preset's save location
+    #[serde(default)]
+    pub output_folder: Option<String>,
+    #[serde(default)]
+    pub skip_larger_outputs: Option<bool>,
+    #[serde(default)]
+    pub preserve_folder_structure: Option<bool>,
+    #[serde(default)]
+    pub replace_original_files: Option<bool>,
+    #[serde(default)]
+    pub file_name_prefix: Option<String>,
+    #[serde(default)]
+    pub use_hardware_acceleration: Option<bool>,
+    #[serde(default)]
+    pub reach_target_sizes_without_acceleration: Option<bool>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct CliPresetIds {
+    #[serde(default)]
+    pub video: Option<String>,
+    #[serde(default)]
+    pub image: Option<String>,
+    #[serde(default)]
+    pub audio: Option<String>,
 }
 
 /// Where queued media came from, when not dropped: a watched folder
@@ -114,6 +159,8 @@ pub struct DropQueueItemUpdate {
     pub message: Option<String>,
     pub is_access_denied: Option<bool>,
     pub needs_save_location: Option<bool>,
+    pub reason: Option<String>,
+    pub error: Option<String>,
 }
 
 #[derive(Default)]
@@ -139,8 +186,24 @@ fn update_queue(app_handle: &AppHandle, update: impl FnOnce(&mut Vec<DropQueueIt
     // Nothing left to resume (e.g. cleared), so media added next is compressed
     if !items.iter().any(is_active) {
         set_paused(app_handle, false);
+        // An app started by the command line quits once it is done
+        crate::sys::cli_server::schedule_quit_check(app_handle, std::time::Duration::from_secs(2));
     }
+    // To the command line jobs waiting on their media (see `cli_server`)
+    let _ = queue_channel().send(items.clone());
     let _ = app_handle.emit(DROP_QUEUE_EVENT, items);
+}
+
+/// Sends the whole queue each time it changes, to whoever listens (see `subscribe`)
+fn queue_channel() -> &'static tokio::sync::broadcast::Sender<Vec<DropQueueItem>> {
+    static CHANNEL: std::sync::OnceLock<tokio::sync::broadcast::Sender<Vec<DropQueueItem>>> =
+        std::sync::OnceLock::new();
+    CHANNEL.get_or_init(|| tokio::sync::broadcast::channel(256).0)
+}
+
+/// The queue, each time it changes
+pub fn subscribe() -> tokio::sync::broadcast::Receiver<Vec<DropQueueItem>> {
+    queue_channel().subscribe()
 }
 
 fn is_active(item: &DropQueueItem) -> bool {
@@ -212,29 +275,53 @@ pub fn add_to_queue_from(
             return;
         }
     };
+    let files = files
+        .into_iter()
+        .filter(|file| {
+            let is_file_supported = is_supported(&file.path);
+            if !is_file_supported {
+                log::info!("[drop-queue] Skipped unsupported media: {}", file.path);
+            }
+            is_file_supported
+        })
+        .collect();
+    // Media dropped by the user: an app started by the command line now stays open
+    if source.is_none() {
+        crate::sys::cli_server::keep_app_open();
+    }
+    add_files_to_queue(app_handle, files, source, None);
+}
+
+/// Adds media to the end of the queue, in order: from a watched folder (`source`), for a command
+/// line job (`cli_job`), or dropped. Media already waiting or being compressed is not added again,
+/// except for a command line job, which waits for its own media. Returns the items added.
+pub fn add_files_to_queue(
+    app_handle: &AppHandle,
+    files: Vec<crate::core::domain::CollectedFile>,
+    source: Option<QueueSource>,
+    cli_job: Option<CliJob>,
+) -> Vec<DropQueueItem> {
     let group_id = nanoid!();
-    // The tray webview compresses the queue (the main window, on Linux)
+    // The tray webview compresses the queue (the main window, on Linux or without the tray icon)
     #[cfg(any(target_os = "macos", windows))]
     crate::tray_popover::ensure_tray_window(app_handle);
     log::info!("[drop-queue] Adding {} media", files.len());
+    let mut added = Vec::new();
     update_queue(app_handle, |items| {
         let batch_id = active_batch_id(items).unwrap_or_else(|| nanoid!());
         for file in files {
-            if !is_supported(&file.path) {
-                log::info!("[drop-queue] Skipped unsupported media: {}", file.path);
-                continue;
-            }
-            let is_queued = items.iter().any(|item| {
-                item.path == file.path
-                    && matches!(
-                        item.status,
-                        DropQueueItemStatus::Waiting | DropQueueItemStatus::Compressing
-                    )
-            });
+            let is_queued = cli_job.is_none()
+                && items.iter().any(|item| {
+                    item.path == file.path
+                        && matches!(
+                            item.status,
+                            DropQueueItemStatus::Waiting | DropQueueItemStatus::Compressing
+                        )
+                });
             if is_queued {
                 continue;
             }
-            items.push(DropQueueItem {
+            let item = DropQueueItem {
                 id: nanoid!(),
                 path: file.path,
                 relative_dir: file.relative_dir,
@@ -252,9 +339,15 @@ pub fn add_to_queue_from(
                 needs_save_location: false,
                 watch_folder_id: source.as_ref().map(|source| source.folder_id.clone()),
                 watch_folder_name: source.as_ref().map(|source| source.folder_name.clone()),
-            });
+                cli_job: cli_job.clone(),
+                reason: None,
+                error: None,
+            };
+            added.push(item.clone());
+            items.push(item);
         }
     });
+    added
 }
 
 /// Turns compressing automatically on or off (the setting is kept by the frontend)
@@ -308,6 +401,12 @@ pub fn update_drop_queue_item(app_handle: AppHandle, id: String, update: DropQue
         if let Some(needs_save_location) = update.needs_save_location {
             item.needs_save_location = needs_save_location;
         }
+        if update.reason.is_some() {
+            item.reason = update.reason;
+        }
+        if update.error.is_some() {
+            item.error = update.error;
+        }
     });
 }
 
@@ -329,6 +428,8 @@ pub fn retry_drop_queue_item(app_handle: AppHandle, id: String) {
         item.message = None;
         item.is_access_denied = false;
         item.needs_save_location = false;
+        item.reason = None;
+        item.error = None;
         delete_unsaved_output(item);
     });
 }
@@ -395,9 +496,24 @@ pub fn is_queue_active(app_handle: &AppHandle) -> bool {
 pub fn cancel_drop_queue(app_handle: AppHandle) {
     // Stopped, so nothing is left to resume
     set_paused(&app_handle, false);
+    cancel_items(&app_handle, |_| true);
+}
+
+/// Cancels the media of a command line job that is waiting or being compressed
+pub fn cancel_cli_job(app_handle: &AppHandle, job_id: &str) {
+    cancel_items(app_handle, |item| {
+        item.cli_job
+            .as_ref()
+            .is_some_and(|job| job.job_id == job_id)
+    });
+}
+
+/// Stops the matching media being compressed, and marks it & the matching waiting media as
+/// cancelled
+fn cancel_items(app_handle: &AppHandle, matches: impl Fn(&DropQueueItem) -> bool) {
     let mut compressing_ids: Vec<String> = Vec::new();
-    update_queue(&app_handle, |items| {
-        for item in items.iter_mut() {
+    update_queue(app_handle, |items| {
+        for item in items.iter_mut().filter(|item| matches(item)) {
             match item.status {
                 DropQueueItemStatus::Waiting => {}
                 DropQueueItemStatus::Compressing => compressing_ids.push(item.id.clone()),

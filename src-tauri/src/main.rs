@@ -109,6 +109,10 @@ fn show_main_window(app_handle: &tauri::AppHandle) {
             let _ = window.set_focus();
         }
     }
+    // Shown to the user: an app started by the command line stays open, with its Dock icon
+    sys::cli_server::keep_app_open();
+    #[cfg(target_os = "macos")]
+    let _ = app_handle.set_dock_visibility(true);
 }
 
 struct FrontendReady(Arc<Mutex<bool>>);
@@ -249,6 +253,11 @@ fn urls_from_launch_args(args: &[String], cwd: Option<&str>) -> Vec<Url> {
 /// Another launch of the app (only one runs at a time, so they never share or clear each other's
 /// cache): the running app comes forward instead, with the files it was launched with
 fn on_second_instance(app_handle: &tauri::AppHandle, args: Vec<String>, cwd: String) {
+    // Started by the command line while it was starting the app too: nothing to show
+    if args.iter().any(|arg| arg == sys::cli_server::BACKGROUND_ARG) {
+        log::info!("Another background launch of the app, ignored");
+        return;
+    }
     log::info!("Another launch of the app, bringing this one forward");
 
     if !core::tool_bundle::is_ready(app_handle) {
@@ -295,11 +304,55 @@ fn can_open_files_in_main_window(app_handle: &tauri::AppHandle) -> bool {
     !is_compressing(app_handle) && !has_unsaved_output(app_handle)
 }
 
+/// Runs the bundled command line (`compresso-cli`, next to this executable) in place of the app,
+/// with the same terminal & exit code:
+/// - `<app> --cli <arguments>`: an AppImage has a single entry point, so its command line is
+///   reached this way (see `cli_install.rs`), & it works everywhere but Windows
+/// - macOS: `CompressO.app/Contents/MacOS/compressO <arguments>`, as people run the app's executable
+///   from a terminal. The system opens files with events, never arguments, so any argument other than
+///   the app's own (`--autostart`, `--background`) & the system's (`-psn_…`, `-NS…`) is for the
+///   command line. Without arguments, the app opens as usual.
+///
+/// Not on Windows, where the app has no console to print to.
+#[cfg(any(target_os = "macos", target_os = "linux"))]
+fn run_cli_if_asked() {
+    use std::os::unix::process::CommandExt;
+    let args: Vec<std::ffi::OsString> = std::env::args_os().skip(1).collect();
+    let cli_args: &[std::ffi::OsString] = match args.first() {
+        Some(first) if first == "--cli" => &args[1..],
+        #[cfg(target_os = "macos")]
+        Some(_)
+            if args.iter().any(|arg| {
+                let arg = arg.to_string_lossy();
+                arg != OPENED_AT_LOGIN_ARG
+                    && arg != sys::cli_server::BACKGROUND_ARG
+                    && !arg.starts_with("-psn_")
+                    && !arg.starts_with("-NS")
+                    && !arg.starts_with("-Apple")
+            }) =>
+        {
+            &args[..]
+        }
+        _ => return,
+    };
+    let Some(cli) = sys::cli_install::bundled_cli() else {
+        eprintln!("compresso: the command line tool is missing from this CompressO");
+        std::process::exit(4);
+    };
+    let error = std::process::Command::new(cli).args(cli_args).exec();
+    eprintln!("compresso: {error}");
+    std::process::exit(4);
+}
+
 /// Stack of each worker thread. Tokio's 2 MiB is too little to compress an image to a target size,
 /// where compressions are nested & some decoders (e.g. JPEG's, for JPEG XL) need much of it
 const WORKER_STACK_SIZE: usize = 8 * 1024 * 1024;
 
 fn main() {
+    // The command line, when the app's executable is run with its arguments (see `run_cli_if_asked`)
+    #[cfg(any(target_os = "macos", target_os = "linux"))]
+    run_cli_if_asked();
+
     let runtime = tokio::runtime::Builder::new_multi_thread()
         .enable_all()
         .thread_stack_size(WORKER_STACK_SIZE)
@@ -359,6 +412,11 @@ async fn run() {
             if let Err(err) = sys::logging::start_crash_reporting() {
                 log::error!("Failed to start crash reporting: {}", err);
             }
+            // Started by the command line: no Dock icon until a window is shown (see `cli_server`)
+            #[cfg(target_os = "macos")]
+            if sys::cli_server::is_background_launch() {
+                app.set_dock_visibility(false);
+            }
             app.manage(core::tool_bundle::ToolBundleState::default());
             core::tool_bundle::prepare_tools(app.handle().clone());
             app.manage(PendingFiles::new());
@@ -399,6 +457,10 @@ async fn run() {
                 // Fallback in case the frontend never signals readiness (e.g. a load error); not
                 // once it did, as it may have chosen to stay hidden (opened at login)
                 tokio::time::sleep(std::time::Duration::from_secs(3)).await;
+                // Started by the command line, which needs no window
+                if sys::cli_server::is_background_launch() {
+                    return;
+                }
                 let is_frontend_ready = fallback_app_handle
                     .try_state::<FrontendReady>()
                     .is_some_and(|ready_state| ready_state.is_ready());
@@ -458,11 +520,19 @@ async fn run() {
                 }
             }
 
+            // The command line compresses through the app (see `cli_server`)
+            sys::cli_server::start(app.handle());
+
             IS_APP_SET_UP.store(true, std::sync::atomic::Ordering::SeqCst);
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
             core::tool_bundle::get_tool_status,
+            sys::cli_settings::sync_cli_settings,
+            sys::cli_server::take_background_launch,
+            sys::cli_install::get_cli_install_status,
+            sys::cli_install::install_cli,
+            sys::cli_install::uninstall_cli,
             core::tool_bundle::prepare_tools,
             core::tool_bundle::exit_tool_preparation,
             compress_video,

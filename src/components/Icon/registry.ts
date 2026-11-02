@@ -40,6 +40,7 @@ import Search from '@/assets/icons/search.svg?react'
 import Setting from '@/assets/icons/setting.svg?react'
 import Star from '@/assets/icons/star.svg?react'
 import Stop from '@/assets/icons/stop.svg?react'
+import Terminal from '@/assets/icons/terminal.svg?react'
 import ThemeDark from '@/assets/icons/theme-dark.svg?react'
 import ThemeLight from '@/assets/icons/theme-light.svg?react'
 import ThemeSystem from '@/assets/icons/theme-system.svg?react'
@@ -107,6 +108,7 @@ const registry = asRegistry({
   plus: Plus,
   dropzone: Dropzone,
   watchedFolder: WatchedFolder,
+  terminal: Terminal,
   compresso: Compresso,
 })
 

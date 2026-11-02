@@ -29,6 +29,8 @@ pub struct FFMPEG {
     owner_window: String,
     /// Only this part of the input is read (its start & length in seconds), see `with_input_range`
     input_range: Option<(f64, f64)>,
+    /// Overrides the hardware acceleration setting, see `with_hardware_acceleration`
+    hardware_acceleration: Option<bool>,
 }
 
 const EXTENSIONS: [&str; 10] = [
@@ -98,7 +100,15 @@ impl FFMPEG {
             assets_dir,
             owner_window: String::from("main"),
             input_range: None,
+            hardware_acceleration: None,
         })
+    }
+
+    /// Encodes on the graphics card or not, whatever the setting is (`None` follows the setting),
+    /// e.g. for a compression from the command line
+    pub fn with_hardware_acceleration(mut self, enabled: Option<bool>) -> Self {
+        self.hardware_acceleration = enabled;
+        self
     }
 
     /// Window the processes belong to (the main window by default), see `MediaProcessExecutorBuilder`
@@ -1081,7 +1091,7 @@ impl FFMPEG {
         // `hardware_encoder`)
         let cpu_args: Vec<String> = cmd_args.iter().map(|arg| arg.to_string()).collect();
         let hardware_encoder = if preset_name.is_some() && !is_gif_target && !is_audio_target {
-            hardware_encoder::encoder_for(&self.app, &output_codec).await
+            hardware_encoder::encoder_for(&self.app, &output_codec, self.hardware_acceleration).await
         } else {
             None
         };
@@ -1474,6 +1484,7 @@ impl FFMPEG {
                 running.spawn(async move {
                     let result = FFMPEG::new(&app)?
                         .with_owner_window(&owner_window)
+                        .with_hardware_acceleration(config.use_hardware_acceleration)
                         .with_input_range(range)
                         .compress_video(
                             &config.video_path,

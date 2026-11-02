@@ -272,7 +272,8 @@
       "about": "Hakkında",
       "credits": "Teşekkürler",
       "watchedFolders": "Klasör izleme",
-      "history": "Geçmiş"
+      "history": "Geçmiş",
+      "commandLine": "Komut Satırı"
     },
     "about": {
       "updateAvailable": "Güncelleme mevcut",
@@ -330,6 +331,7 @@
       "source_main": "Ana pencere",
       "source_dropZone": "Bırakma alanı",
       "source_watchedFolder": "İzlenen klasör {{name}}",
+      "source_commandLine": "Komut satırı",
       "original": "Orijinal",
       "output": "Çıktı",
       "missing": "Bu dosya taşındı veya silindi.",
@@ -343,6 +345,36 @@
         "original": "Orijinal boyut",
         "output": "Sıkıştırılmış boyut",
         "reduction": "Ortalama küçülme"
+      }
+    },
+    "commandLine": {
+      "terminal": {
+        "title": "Terminal",
+        "command": {
+          "title": "Terminal komutu",
+          "description_macos": "Ön ayarlarınızı ve çıktı ayarlarınızı kullanarak medyayı terminalde compresso komutuyla sıkıştırın. Kurulum sırasında parolanız istenir.",
+          "description_windows": "Ön ayarlarınızı ve çıktı ayarlarınızı kullanarak medyayı terminalde compresso komutuyla sıkıştırın.",
+          "description_linux": "Ön ayarlarınızı ve çıktı ayarlarınızı kullanarak medyayı terminalde compresso komutuyla sıkıştırın.",
+          "status_installed": "Kurulu. Kullanmak için yeni bir terminal penceresi açın.",
+          "status_notInstalled": "Kurulu değil.",
+          "status_broken": "Taşınmış veya kaldırılmış bir CompressO’yu gösteriyor. Yeniden kurun.",
+          "status_unavailable": "CompressO’nun bu sürümünde bulunmuyor.",
+          "install": "Kur",
+          "remove": "Kaldır",
+          "installFailed": "Komut kurulamadı.",
+          "removeFailed": "Komut kaldırılamadı."
+        },
+        "usage": {
+          "title": "Kullanım",
+          "description": "Komuttan sonra dosya veya klasör ekleyin. Bir ön ayar seçilmedikçe medya varsayılan ön ayarlarla sıkıştırılır. Tüm seçenekleri görmek için compresso --help komutunu çalıştırın."
+        }
+      },
+      "agents": {
+        "title": "Yapay Zekâ Ajanları",
+        "mcp": {
+          "title": "MCP sunucusu",
+          "description": "Claude gibi yapay zekâ ajanları, ön ayarlarınızla medya sıkıştırabilir. Bu sunucuyu ajanın MCP ayarlarına ekleyin."
+        }
       }
     }
   },
@@ -359,6 +391,7 @@
     "showInFileManager": "Dosya Gezgini’nde göster",
     "showNameInFileManager": "{{name}} öğesini Dosya Gezgini’nde göster",
     "copied": "Panoya kopyalandı.",
+    "copy": "Kopyala",
     "close": "Kapat",
     "reset": "Sıfırla",
     "apply": "Uygula",
@@ -442,6 +475,8 @@
     "chooseSaveLocation": "Kaydetme konumu seçin",
     "saveFailed": "Sıkıştırılan medya kaydedilemedi.",
     "compressFailed": "Medya sıkıştırılamadı.",
+    "fromCommandLine": "Komut satırından eklendi",
+    "commandLine": "Komut satırı",
     "summary": {
       "cancelledAndFailed": "{{cancelled}}, {{failed}}",
       "cancelled_one": "{{count}} iptal edildi",

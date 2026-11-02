@@ -272,7 +272,8 @@
       "about": "परिचय",
       "credits": "आभार",
       "watchedFolders": "फ़ोल्डर निगरानी",
-      "history": "इतिहास"
+      "history": "इतिहास",
+      "commandLine": "कमांड लाइन"
     },
     "about": {
       "updateAvailable": "अपडेट उपलब्ध है",
@@ -330,6 +331,7 @@
       "source_main": "मुख्य विंडो",
       "source_dropZone": "ड्रॉप ज़ोन",
       "source_watchedFolder": "निगरानी वाला फ़ोल्डर {{name}}",
+      "source_commandLine": "कमांड लाइन",
       "original": "मूल",
       "output": "आउटपुट",
       "missing": "यह फ़ाइल हटाई या कहीं और ले जाई गई है।",
@@ -343,6 +345,36 @@
         "original": "मूल आकार",
         "output": "कंप्रेस किया गया आकार",
         "reduction": "औसत कमी"
+      }
+    },
+    "commandLine": {
+      "terminal": {
+        "title": "टर्मिनल",
+        "command": {
+          "title": "टर्मिनल कमांड",
+          "description_macos": "अपने प्रीसेट और आउटपुट सेटिंग्ज़ के साथ, compresso कमांड से टर्मिनल में मीडिया कंप्रेस करें। इंस्टॉल करते समय आपका पासवर्ड माँगा जाता है।",
+          "description_windows": "अपने प्रीसेट और आउटपुट सेटिंग्ज़ के साथ, compresso कमांड से टर्मिनल में मीडिया कंप्रेस करें।",
+          "description_linux": "अपने प्रीसेट और आउटपुट सेटिंग्ज़ के साथ, compresso कमांड से टर्मिनल में मीडिया कंप्रेस करें।",
+          "status_installed": "यह इंस्टॉल है। इसका उपयोग करने के लिए नई टर्मिनल विंडो खोलें।",
+          "status_notInstalled": "यह इंस्टॉल नहीं है।",
+          "status_broken": "यह ऐसे CompressO की ओर इशारा करता है जिसे हटा दिया गया है या कहीं और ले जाया गया है। इसे फिर से इंस्टॉल करें।",
+          "status_unavailable": "यह CompressO के इस संस्करण में शामिल नहीं है।",
+          "install": "इंस्टॉल करें",
+          "remove": "हटाएँ",
+          "installFailed": "कमांड इंस्टॉल नहीं की जा सकी।",
+          "removeFailed": "कमांड हटाई नहीं जा सकी।"
+        },
+        "usage": {
+          "title": "उपयोग",
+          "description": "कमांड के बाद फ़ाइलें या फ़ोल्डर जोड़ें। कोई प्रीसेट न चुनने पर मीडिया डिफ़ॉल्ट प्रीसेट से कंप्रेस किया जाता है। सभी विकल्प देखने के लिए compresso --help चलाएँ।"
+        }
+      },
+      "agents": {
+        "title": "AI एजेंट",
+        "mcp": {
+          "title": "MCP सर्वर",
+          "description": "Claude जैसे AI एजेंट आपके प्रीसेट से मीडिया कंप्रेस कर सकते हैं। इस सर्वर को एजेंट की MCP सेटिंग्ज़ में जोड़ें।"
+        }
       }
     }
   },
@@ -359,6 +391,7 @@
     "showInFileManager": "फ़ाइल एक्सप्लोरर में दिखाएँ",
     "showNameInFileManager": "{{name}} को फ़ाइल एक्सप्लोरर में दिखाएँ",
     "copied": "क्लिपबोर्ड पर कॉपी किया गया।",
+    "copy": "कॉपी करें",
     "close": "बंद करें",
     "reset": "रीसेट करें",
     "apply": "लागू करें",
@@ -442,6 +475,8 @@
     "chooseSaveLocation": "सहेजने का स्थान चुनें",
     "saveFailed": "कंप्रेस किया गया मीडिया सहेजा नहीं जा सका।",
     "compressFailed": "मीडिया कंप्रेस नहीं किया जा सका।",
+    "fromCommandLine": "कमांड लाइन से जोड़ा गया",
+    "commandLine": "कमांड लाइन",
     "summary": {
       "cancelledAndFailed": "{{cancelled}}, {{failed}}",
       "cancelled_one": "{{count}} रद्द किया गया",

@@ -232,7 +232,9 @@ function describeEntry(entry: HistoryEntry, date: string) {
         })
       : entry.source === 'dropZone'
         ? i18n.t('settings.history.source_dropZone')
-        : i18n.t('settings.history.source_main')
+        : entry.source === 'commandLine'
+          ? i18n.t('settings.history.source_commandLine')
+          : i18n.t('settings.history.source_main')
   return [date, source, entry.presetName ?? i18n.t('presets.standard')].join(
     ' · ',
   )

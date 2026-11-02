@@ -272,7 +272,8 @@
       "about": "情報",
       "credits": "クレジット",
       "watchedFolders": "フォルダ監視",
-      "history": "履歴"
+      "history": "履歴",
+      "commandLine": "コマンドライン"
     },
     "about": {
       "updateAvailable": "アップデートがあります",
@@ -330,6 +331,7 @@
       "source_main": "メインウインドウ",
       "source_dropZone": "ドロップゾーン",
       "source_watchedFolder": "監視フォルダ {{name}}",
+      "source_commandLine": "コマンドライン",
       "original": "元のファイル",
       "output": "出力",
       "missing": "このファイルは移動または削除されました。",
@@ -343,6 +345,36 @@
         "original": "元のサイズ",
         "output": "圧縮後のサイズ",
         "reduction": "平均削減率"
+      }
+    },
+    "commandLine": {
+      "terminal": {
+        "title": "ターミナル",
+        "command": {
+          "title": "ターミナルコマンド",
+          "description_macos": "プリセットと出力設定を使い、ターミナルから compresso コマンドでメディアを圧縮します。インストール時にパスワードの入力を求められます。",
+          "description_windows": "プリセットと出力設定を使い、ターミナルから compresso コマンドでメディアを圧縮します。",
+          "description_linux": "プリセットと出力設定を使い、ターミナルから compresso コマンドでメディアを圧縮します。",
+          "status_installed": "インストール済みです。使用するには新しいターミナルウインドウを開いてください。",
+          "status_notInstalled": "インストールされていません。",
+          "status_broken": "移動または削除された CompressO を参照しています。もう一度インストールしてください。",
+          "status_unavailable": "このバージョンの CompressO には含まれていません。",
+          "install": "インストール",
+          "remove": "削除",
+          "installFailed": "コマンドをインストールできませんでした。",
+          "removeFailed": "コマンドを削除できませんでした。"
+        },
+        "usage": {
+          "title": "使い方",
+          "description": "コマンドの後にファイルまたはフォルダを指定します。プリセットを選ばない場合、メディアはデフォルトのプリセットで圧縮されます。すべてのオプションを見るには compresso --help を実行してください。"
+        }
+      },
+      "agents": {
+        "title": "AI エージェント",
+        "mcp": {
+          "title": "MCP サーバー",
+          "description": "Claude などの AI エージェントが、あなたのプリセットでメディアを圧縮できます。このサーバーをエージェントの MCP 設定に追加してください。"
+        }
       }
     }
   },
@@ -359,6 +391,7 @@
     "showInFileManager": "エクスプローラーで表示",
     "showNameInFileManager": "{{name}} をエクスプローラーで表示",
     "copied": "クリップボードにコピーしました。",
+    "copy": "コピー",
     "close": "閉じる",
     "reset": "リセット",
     "apply": "適用",
@@ -441,6 +474,8 @@
     "chooseSaveLocation": "保存場所を選択",
     "saveFailed": "圧縮したメディアを保存できませんでした。",
     "compressFailed": "メディアを圧縮できませんでした。",
+    "fromCommandLine": "コマンドラインから追加",
+    "commandLine": "コマンドライン",
     "summary": {
       "cancelledAndFailed": "{{cancelled}}、{{failed}}",
       "cancelled_other": "{{count}} 件キャンセル",

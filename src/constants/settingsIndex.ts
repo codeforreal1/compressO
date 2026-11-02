@@ -259,6 +259,33 @@ export const SETTINGS_INDEX = {
           }),
     ],
   },
+  cliCommand: {
+    page: 'commandLine',
+    getText: (t) => [
+      t('settings.commandLine.terminal.command.title'),
+      t('settings.commandLine.terminal.command.description', {
+        context: getPlatform().isMacOS
+          ? 'macos'
+          : getPlatform().isWindows
+            ? 'windows'
+            : 'linux',
+      }),
+    ],
+  },
+  cliUsage: {
+    page: 'commandLine',
+    getText: (t) => [
+      t('settings.commandLine.terminal.usage.title'),
+      t('settings.commandLine.terminal.usage.description'),
+    ],
+  },
+  cliMcp: {
+    page: 'commandLine',
+    getText: (t) => [
+      t('settings.commandLine.agents.mcp.title'),
+      t('settings.commandLine.agents.mcp.description'),
+    ],
+  },
 } satisfies Record<string, IndexedSetting>
 
 export type SettingId = keyof typeof SETTINGS_INDEX

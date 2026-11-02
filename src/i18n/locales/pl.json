@@ -272,7 +272,8 @@
       "about": "Informacje",
       "credits": "Podziękowania",
       "watchedFolders": "Obserwowanie folderów",
-      "history": "Historia"
+      "history": "Historia",
+      "commandLine": "Wiersz poleceń"
     },
     "about": {
       "updateAvailable": "Dostępna aktualizacja",
@@ -330,6 +331,7 @@
       "source_main": "Okno główne",
       "source_dropZone": "Strefa upuszczania",
       "source_watchedFolder": "Obserwowany folder {{name}}",
+      "source_commandLine": "Wiersz poleceń",
       "original": "Oryginał",
       "output": "Wynik",
       "missing": "Ten plik został przeniesiony lub usunięty.",
@@ -343,6 +345,36 @@
         "original": "Rozmiar oryginalny",
         "output": "Rozmiar po kompresji",
         "reduction": "Średnie zmniejszenie"
+      }
+    },
+    "commandLine": {
+      "terminal": {
+        "title": "Terminal",
+        "command": {
+          "title": "Polecenie terminala",
+          "description_macos": "Kompresuj pliki w terminalu poleceniem compresso, z użyciem ustawień wstępnych i ustawień wyjścia. Instalacja wymaga podania hasła.",
+          "description_windows": "Kompresuj pliki w terminalu poleceniem compresso, z użyciem ustawień wstępnych i ustawień wyjścia.",
+          "description_linux": "Kompresuj pliki w terminalu poleceniem compresso, z użyciem ustawień wstępnych i ustawień wyjścia.",
+          "status_installed": "Jest zainstalowane. Otwórz nowe okno terminala, aby go używać.",
+          "status_notInstalled": "Nie jest zainstalowane.",
+          "status_broken": "Wskazuje na CompressO, które zostało przeniesione lub usunięte. Zainstaluj je ponownie.",
+          "status_unavailable": "Nie jest dostępne w tej wersji CompressO.",
+          "install": "Zainstaluj",
+          "remove": "Usuń",
+          "installFailed": "Nie udało się zainstalować polecenia.",
+          "removeFailed": "Nie udało się usunąć polecenia."
+        },
+        "usage": {
+          "title": "Użycie",
+          "description": "Dodaj pliki lub foldery po poleceniu. Pliki są kompresowane z domyślnymi ustawieniami wstępnymi, chyba że wybrano inne. Aby zobaczyć wszystkie opcje, uruchom compresso --help."
+        }
+      },
+      "agents": {
+        "title": "Agenci AI",
+        "mcp": {
+          "title": "Serwer MCP",
+          "description": "Agenci AI, tacy jak Claude, mogą kompresować pliki z użyciem ustawień wstępnych. Dodaj ten serwer do ustawień MCP agenta."
+        }
       }
     }
   },
@@ -359,6 +391,7 @@
     "showInFileManager": "Pokaż w Eksploratorze plików",
     "showNameInFileManager": "Pokaż {{name}} w Eksploratorze plików",
     "copied": "Skopiowano do schowka.",
+    "copy": "Kopiuj",
     "close": "Zamknij",
     "reset": "Resetuj",
     "apply": "Zastosuj",
@@ -444,6 +477,8 @@
     "chooseSaveLocation": "Wybierz miejsce zapisu",
     "saveFailed": "Nie udało się zapisać skompresowanego pliku.",
     "compressFailed": "Nie udało się skompresować pliku.",
+    "fromCommandLine": "Dodano z wiersza poleceń",
+    "commandLine": "Wiersz poleceń",
     "summary": {
       "cancelledAndFailed": "{{cancelled}}, {{failed}}",
       "cancelled_one": "Anulowano: {{count}}",
