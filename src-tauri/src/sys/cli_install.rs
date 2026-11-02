@@ -1,4 +1,4 @@
-//! Makes the `compresso` command available in terminals (Settings -> Command Line): the command
+//! Makes the `compresso` command available in terminals (Settings -> CLI): the command
 //! line tool ships next to the app's executable as `compresso-cli` (`compresso` would clash with
 //! `compressO` on file systems that ignore case), & is exposed as `compresso`:
 //! - macOS: a symbolic link in `/usr/local/bin`, made with the administrator's approval
@@ -283,7 +283,7 @@ mod platform {
 
     fn script(appimage: &Path) -> String {
         let quoted = appimage.display().to_string().replace('\'', "'\\''");
-        format!("#!/bin/sh\n# The command line of CompressO (Settings > Command Line)\nexec '{quoted}' --cli \"$@\"\n")
+        format!("#!/bin/sh\n# The command line of CompressO (Settings > CLI)\nexec '{quoted}' --cli \"$@\"\n")
     }
 
     pub fn status() -> CliInstallStatus {

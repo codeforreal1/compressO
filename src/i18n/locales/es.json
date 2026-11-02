@@ -273,7 +273,7 @@
       "credits": "Créditos",
       "watchedFolders": "Vigilar carpetas",
       "history": "Historial",
-      "commandLine": "Línea de comandos"
+      "commandLine": "CLI"
     },
     "about": {
       "updateAvailable": "Actualización disponible",
@@ -367,6 +367,28 @@
         "usage": {
           "title": "Uso",
           "description": "Añada archivos o carpetas después del comando. Los archivos se comprimen con los ajustes preestablecidos predeterminados, salvo que se elija otro. Para ver todas las opciones, ejecute compresso --help."
+        },
+        "examples": {
+          "title": "Ver ejemplos",
+          "one": "Comprimir un archivo con el ajuste preestablecido predeterminado de su tipo y guardarlo donde guarda ese ajuste.",
+          "several": "Comprimir varios archivos y carpetas a la vez. Las carpetas se leen como al soltarlas en la app.",
+          "preset": "Usar un ajuste preestablecido para vídeos por su nombre. Los nombres con espacios van entre comillas.",
+          "presets": "Elegir un ajuste preestablecido para cada tipo de archivo. Un tipo sin uno usa su ajuste predeterminado.",
+          "outputFolder": "Guardar en esta carpeta en lugar de la ubicación del ajuste preestablecido. Es necesario cuando un ajuste pregunta dónde guardar.",
+          "outputFile": "Guardar un único archivo con este nombre. Una extensión distinta lo convierte a ese formato.",
+          "audioOnly": "Conservar solo el sonido de un vídeo, como archivo de audio.",
+          "flatten": "Guardar cada archivo directamente en la carpeta, sin las carpetas que contiene.",
+          "prefix": "Añadir texto al inicio de los nombres de los archivos guardados, solo para este comando.",
+          "skipLarger": "No guardar los resultados que sean más grandes que sus originales.",
+          "replace": "Reemplazar el original cuando el resultado tiene el mismo nombre y formato. El original se mueve a la Papelera.",
+          "replaceWindows": "Reemplazar el original cuando el resultado tiene el mismo nombre y formato. El original se mueve a la Papelera de reciclaje.",
+          "hardware": "Comprimir vídeos más rápido con aceleración por hardware, solo para este comando.",
+          "targetSize": "Con aceleración por hardware, volver a comprimir un vídeo sin ella cuando no alcanza su tamaño objetivo.",
+          "dryRun": "Listar los archivos, sus ajustes preestablecidos y dónde se guardarían, sin comprimirlos.",
+          "json": "Mostrar los resultados en JSON, para scripts y agentes de IA.",
+          "quiet": "Mostrar solo los errores.",
+          "list": "Listar sus ajustes preestablecidos, con el predeterminado de cada tipo de archivo.",
+          "help": "Mostrar todas las opciones y los códigos de salida."
         }
       },
       "agents": {

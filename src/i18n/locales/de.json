@@ -273,7 +273,7 @@
       "credits": "Danksagungen",
       "watchedFolders": "Ordnerüberwachung",
       "history": "Verlauf",
-      "commandLine": "Befehlszeile"
+      "commandLine": "CLI"
     },
     "about": {
       "updateAvailable": "Update verfügbar",
@@ -367,6 +367,28 @@
         "usage": {
           "title": "Verwendung",
           "description": "Geben Sie nach dem Befehl Dateien oder Ordner an. Medien werden mit den Standard-Voreinstellungen komprimiert, sofern keine Voreinstellung gewählt ist. Alle Optionen zeigt compresso --help."
+        },
+        "examples": {
+          "title": "Beispiele ansehen",
+          "one": "Eine Datei mit der Standard-Voreinstellung ihres Medientyps komprimieren und dort speichern, wo diese Voreinstellung speichert.",
+          "several": "Mehrere Dateien und Ordner auf einmal komprimieren. Ordner werden wie beim Ablegen auf der App gelesen.",
+          "preset": "Eine Voreinstellung für Videos über ihren Namen verwenden. Namen mit Leerzeichen in Anführungszeichen setzen.",
+          "presets": "Für jeden Medientyp eine Voreinstellung wählen. Ein Medientyp ohne eigene verwendet seine Standard-Voreinstellung.",
+          "outputFolder": "In diesem Ordner statt am Speicherort der Voreinstellung speichern. Erforderlich, wenn eine Voreinstellung jedes Mal nach dem Speicherort fragt.",
+          "outputFile": "Eine einzelne Datei unter diesem Namen speichern. Eine andere Dateiendung wandelt sie in dieses Format um.",
+          "audioOnly": "Nur den Ton eines Videos als Audiodatei behalten.",
+          "flatten": "Jede Datei direkt in den Ordner speichern, ohne die Ordner darin.",
+          "prefix": "Text an den Anfang der gespeicherten Dateinamen setzen, nur für diesen Befehl.",
+          "skipLarger": "Ausgaben, die größer als ihre Originale sind, nicht speichern.",
+          "replace": "Das Original ersetzen, wenn die Ausgabe denselben Namen und dasselbe Format hat. Das Original wird in den Papierkorb verschoben.",
+          "replaceWindows": "Das Original ersetzen, wenn die Ausgabe denselben Namen und dasselbe Format hat. Das Original wird in den Papierkorb verschoben.",
+          "hardware": "Videos mit Hardwarebeschleunigung schneller komprimieren, nur für diesen Befehl.",
+          "targetSize": "Mit Hardwarebeschleunigung ein Video ohne sie erneut komprimieren, wenn es seine Zielgröße verfehlt.",
+          "dryRun": "Die Dateien, ihre Voreinstellungen und ihre Speicherorte auflisten, ohne sie zu komprimieren.",
+          "json": "Die Ergebnisse als JSON ausgeben, für Skripte und KI-Agenten.",
+          "quiet": "Nur Fehler ausgeben.",
+          "list": "Ihre Voreinstellungen auflisten, mit der Standard-Voreinstellung jedes Medientyps.",
+          "help": "Alle Optionen und die Exit-Codes anzeigen."
         }
       },
       "agents": {

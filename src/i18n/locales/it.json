@@ -273,7 +273,7 @@
       "credits": "Riconoscimenti",
       "watchedFolders": "Monitoraggio cartelle",
       "history": "Cronologia",
-      "commandLine": "Riga di comando"
+      "commandLine": "CLI"
     },
     "about": {
       "updateAvailable": "Aggiornamento disponibile",
@@ -367,6 +367,28 @@
         "usage": {
           "title": "Uso",
           "description": "Aggiunga file o cartelle dopo il comando. I contenuti vengono compressi con i preset predefiniti, a meno che non ne venga scelto uno. Per vedere tutte le opzioni, esegua compresso --help."
+        },
+        "examples": {
+          "title": "Vedi esempi",
+          "one": "Comprima un file con il preset predefinito del suo tipo e lo salvi dove salva quel preset.",
+          "several": "Comprima più file e cartelle insieme. Le cartelle vengono lette come quando vengono rilasciate sull’app.",
+          "preset": "Usi un preset per i video tramite il suo nome. Metta tra virgolette i nomi con spazi.",
+          "presets": "Scelga un preset per ogni tipo di contenuto. Un tipo senza preset usa il suo preset predefinito.",
+          "outputFolder": "Salvi in questa cartella invece che nella posizione del preset. È necessario quando un preset chiede dove salvare.",
+          "outputFile": "Salvi un singolo file con questo nome. Un’estensione diversa lo converte in quel formato.",
+          "audioOnly": "Mantenga solo l’audio di un video, come file audio.",
+          "flatten": "Salvi ogni file direttamente nella cartella, senza le cartelle al suo interno.",
+          "prefix": "Aggiunga del testo all’inizio dei nomi dei file salvati, solo per questo comando.",
+          "skipLarger": "Non salvi i risultati più grandi dei loro originali.",
+          "replace": "Sostituisca l’originale quando il risultato ha lo stesso nome e formato. L’originale viene spostato nel Cestino.",
+          "replaceWindows": "Sostituisca l’originale quando il risultato ha lo stesso nome e formato. L’originale viene spostato nel Cestino.",
+          "hardware": "Comprima i video più velocemente con l’accelerazione hardware, solo per questo comando.",
+          "targetSize": "Con l’accelerazione hardware, comprima di nuovo un video senza di essa quando non raggiunge la dimensione obiettivo.",
+          "dryRun": "Elenchi i file, i loro preset e dove verrebbero salvati, senza comprimerli.",
+          "json": "Stampi i risultati in JSON, per script e agenti IA.",
+          "quiet": "Stampi solo gli errori.",
+          "list": "Elenchi i Suoi preset, con quello predefinito di ogni tipo di contenuto.",
+          "help": "Mostri tutte le opzioni e i codici di uscita."
         }
       },
       "agents": {

@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use crate::error::CliError;
 use crate::job::{absolute_path, CompressOptions};
 
-pub const HELP: &str = r#"CompressO from the command line: compresses videos, images and audio with the presets of the
+pub const HELP: &str = r#"The CompressO CLI: compresses videos, images and audio with the presets of the
 CompressO app, as if they were dropped on the app.
 
 Usage:

@@ -273,7 +273,7 @@
       "credits": "Teşekkürler",
       "watchedFolders": "Klasör izleme",
       "history": "Geçmiş",
-      "commandLine": "Komut Satırı"
+      "commandLine": "CLI"
     },
     "about": {
       "updateAvailable": "Güncelleme mevcut",
@@ -367,6 +367,28 @@
         "usage": {
           "title": "Kullanım",
           "description": "Komuttan sonra dosya veya klasör ekleyin. Bir ön ayar seçilmedikçe medya varsayılan ön ayarlarla sıkıştırılır. Tüm seçenekleri görmek için compresso --help komutunu çalıştırın."
+        },
+        "examples": {
+          "title": "Örnekleri görüntüle",
+          "one": "Bir dosyayı medya türünün varsayılan ön ayarıyla sıkıştırın ve bu ön ayarın kaydettiği yere kaydedin.",
+          "several": "Birden çok dosya ve klasörü aynı anda sıkıştırın. Klasörler uygulamaya bırakıldığındaki gibi okunur.",
+          "preset": "Videolar için bir ön ayarı adıyla kullanın. Boşluk içeren adları tırnak içine alın.",
+          "presets": "Her medya türü için bir ön ayar seçin. Ön ayarı seçilmeyen tür varsayılanını kullanır.",
+          "outputFolder": "Ön ayarın kayıt konumu yerine bu klasöre kaydedin. Bir ön ayar nereye kaydedileceğini sorduğunda gereklidir.",
+          "outputFile": "Tek bir dosyayı bu adla kaydedin. Farklı bir uzantı onu o biçime dönüştürür.",
+          "audioOnly": "Bir videonun yalnızca sesini ses dosyası olarak saklayın.",
+          "flatten": "Her dosyayı içindeki klasörler olmadan doğrudan klasöre kaydedin.",
+          "prefix": "Yalnızca bu komut için kaydedilen dosya adlarının başına metin ekleyin.",
+          "skipLarger": "Orijinalinden büyük çıktıları kaydetmeyin.",
+          "replace": "Çıktı aynı ada ve biçime sahipse orijinalin yerine koyun. Orijinal Çöp Sepeti’ne taşınır.",
+          "replaceWindows": "Çıktı aynı ada ve biçime sahipse orijinalin yerine koyun. Orijinal Geri Dönüşüm Kutusu’na taşınır.",
+          "hardware": "Yalnızca bu komut için videoları donanım hızlandırmasıyla daha hızlı sıkıştırın.",
+          "targetSize": "Donanım hızlandırmasıyla, hedef boyutu tutturamayan bir videoyu hızlandırma olmadan yeniden sıkıştırın.",
+          "dryRun": "Dosyaları, ön ayarlarını ve kaydedilecekleri yeri sıkıştırmadan listeleyin.",
+          "json": "Sonuçları betikler ve yapay zekâ ajanları için JSON olarak yazdırın.",
+          "quiet": "Yalnızca hataları yazdırın.",
+          "list": "Ön ayarlarınızı, her medya türünün varsayılanıyla birlikte listeleyin.",
+          "help": "Tüm seçenekleri ve çıkış kodlarını gösterin."
         }
       },
       "agents": {

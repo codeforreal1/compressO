@@ -62,14 +62,14 @@ brew install --cask codeforreal1/tap/compresso
 > "CompressO is damaged and can't be opened. You should move it to trash." that Apple show as a gatekeeper.
 
 
-### Command line & AI agents
+### CLI & AI agents
 CompressO can compress media from a terminal with the `compresso` command, and AI agents can use it through its MCP server. The app does the compression with your presets and output settings, as if the media was dropped on it: it is started in the background when it is not running, and quits again when done. The media shows in the queue and the history.
 
 The command is available:
 
-- macOS: Settings > Command Line > Install (or run `/Applications/CompressO.app/Contents/MacOS/compressO` with arguments)
+- macOS: Settings > CLI > Install (or run `/Applications/CompressO.app/Contents/MacOS/compressO` with arguments)
 - Windows: added to the PATH by the installer (open a new terminal after installing)
-- Linux: installed with the `.deb` package; for the AppImage, Settings > Command Line > Install (or run `CompressO.AppImage --cli`)
+- Linux: installed with the `.deb` package; for the AppImage, Settings > CLI > Install (or run `CompressO.AppImage --cli`)
 
 ```
 compresso clip.mov

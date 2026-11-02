@@ -39,7 +39,7 @@ const CodeBlock = React.forwardRef<HTMLDivElement, CodeBlockProps>(
         )}
         {...rest}
       >
-        <pre className="min-w-0 flex-1 overflow-x-auto whitespace-pre py-1 font-mono text-xs leading-relaxed text-foreground select-text">
+        <pre className="min-w-0 flex-1 whitespace-pre-wrap break-words py-1 font-mono text-xs leading-relaxed text-foreground select-text">
           {code}
         </pre>
         {isCopyable ? (

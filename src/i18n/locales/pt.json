@@ -273,7 +273,7 @@
       "credits": "Créditos",
       "watchedFolders": "Monitorar pastas",
       "history": "Histórico",
-      "commandLine": "Linha de comando"
+      "commandLine": "CLI"
     },
     "about": {
       "updateAvailable": "Atualização disponível",
@@ -367,6 +367,28 @@
         "usage": {
           "title": "Uso",
           "description": "Adicione arquivos ou pastas após o comando. As mídias são comprimidas com as predefinições padrão, a menos que uma predefinição seja escolhida. Para ver todas as opções, execute compresso --help."
+        },
+        "examples": {
+          "title": "Ver exemplos",
+          "one": "Comprimir um arquivo com a predefinição padrão do tipo de mídia e salvá-lo onde essa predefinição salva.",
+          "several": "Comprimir vários arquivos e pastas de uma vez. As pastas são lidas como quando são soltas no app.",
+          "preset": "Usar uma predefinição para vídeos pelo nome. Coloque nomes com espaços entre aspas.",
+          "presets": "Escolher uma predefinição para cada tipo de mídia. Um tipo sem predefinição usa a padrão.",
+          "outputFolder": "Salvar nesta pasta em vez do local da predefinição. É necessário quando uma predefinição pergunta onde salvar.",
+          "outputFile": "Salvar um único arquivo com este nome. Uma extensão diferente o converte para esse formato.",
+          "audioOnly": "Manter apenas o som de um vídeo, como arquivo de áudio.",
+          "flatten": "Salvar cada arquivo diretamente na pasta, sem as pastas dentro dela.",
+          "prefix": "Adicionar texto ao início dos nomes dos arquivos salvos, apenas neste comando.",
+          "skipLarger": "Não salvar resultados maiores que os originais.",
+          "replace": "Substituir o original quando o resultado tem o mesmo nome e formato. O original é movido para o Lixo.",
+          "replaceWindows": "Substituir o original quando o resultado tem o mesmo nome e formato. O original é movido para a Lixeira.",
+          "hardware": "Comprimir vídeos mais rápido com aceleração por hardware, apenas neste comando.",
+          "targetSize": "Com aceleração por hardware, comprimir um vídeo novamente sem ela quando não atinge o tamanho desejado.",
+          "dryRun": "Listar os arquivos, suas predefinições e onde seriam salvos, sem comprimi-los.",
+          "json": "Mostrar os resultados em JSON, para scripts e agentes de IA.",
+          "quiet": "Mostrar apenas os erros.",
+          "list": "Listar suas predefinições, com a padrão de cada tipo de mídia.",
+          "help": "Mostrar todas as opções e os códigos de saída."
         }
       },
       "agents": {

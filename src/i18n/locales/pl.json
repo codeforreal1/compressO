@@ -273,7 +273,7 @@
       "credits": "Podziękowania",
       "watchedFolders": "Obserwowanie folderów",
       "history": "Historia",
-      "commandLine": "Wiersz poleceń"
+      "commandLine": "CLI"
     },
     "about": {
       "updateAvailable": "Dostępna aktualizacja",
@@ -367,6 +367,28 @@
         "usage": {
           "title": "Użycie",
           "description": "Dodaj pliki lub foldery po poleceniu. Pliki są kompresowane z domyślnymi ustawieniami wstępnymi, chyba że wybrano inne. Aby zobaczyć wszystkie opcje, uruchom compresso --help."
+        },
+        "examples": {
+          "title": "Zobacz przykłady",
+          "one": "Kompresuj jeden plik z domyślnym ustawieniem wstępnym jego typu i zapisz go tam, gdzie zapisuje to ustawienie.",
+          "several": "Kompresuj kilka plików i folderów naraz. Foldery są odczytywane tak jak po upuszczeniu na aplikację.",
+          "preset": "Użyj ustawienia wstępnego dla filmów według jego nazwy. Nazwy ze spacjami umieść w cudzysłowie.",
+          "presets": "Wybierz ustawienie wstępne dla każdego typu plików. Typ bez wybranego ustawienia używa domyślnego.",
+          "outputFolder": "Zapisz w tym folderze zamiast w lokalizacji ustawienia wstępnego. Jest to wymagane, gdy ustawienie pyta, gdzie zapisać.",
+          "outputFile": "Zapisz pojedynczy plik pod tą nazwą. Inne rozszerzenie konwertuje go do tego formatu.",
+          "audioOnly": "Zachowaj tylko dźwięk filmu jako plik audio.",
+          "flatten": "Zapisz każdy plik bezpośrednio w folderze, bez folderów wewnątrz.",
+          "prefix": "Dodaj tekst na początku nazw zapisanych plików, tylko dla tego polecenia.",
+          "skipLarger": "Nie zapisuj wyników większych od oryginałów.",
+          "replace": "Zastąp oryginał, gdy wynik ma tę samą nazwę i format. Oryginał zostanie przeniesiony do Kosza.",
+          "replaceWindows": "Zastąp oryginał, gdy wynik ma tę samą nazwę i format. Oryginał zostanie przeniesiony do Kosza.",
+          "hardware": "Kompresuj filmy szybciej z akceleracją sprzętową, tylko dla tego polecenia.",
+          "targetSize": "Z akceleracją sprzętową kompresuj film ponownie bez niej, gdy nie osiągnie rozmiaru docelowego.",
+          "dryRun": "Wyświetl pliki, ich ustawienia wstępne i miejsca zapisu bez kompresowania.",
+          "json": "Wyświetl wyniki jako JSON, dla skryptów i agentów AI.",
+          "quiet": "Wyświetlaj tylko błędy.",
+          "list": "Wyświetl ustawienia wstępne, z domyślnym dla każdego typu plików.",
+          "help": "Pokaż wszystkie opcje i kody wyjścia."
         }
       },
       "agents": {

@@ -273,7 +273,7 @@
       "credits": "Kredit",
       "watchedFolders": "Pantau folder",
       "history": "Riwayat",
-      "commandLine": "Baris Perintah"
+      "commandLine": "CLI"
     },
     "about": {
       "updateAvailable": "Pembaruan tersedia",
@@ -367,6 +367,28 @@
         "usage": {
           "title": "Penggunaan",
           "description": "Tambahkan file atau folder setelah perintah. Media dikompresi dengan preset default, kecuali preset lain dipilih. Untuk melihat semua opsi, jalankan compresso --help."
+        },
+        "examples": {
+          "title": "Lihat contoh",
+          "one": "Kompresi satu file dengan preset default jenis medianya, lalu simpan di tempat preset itu menyimpan.",
+          "several": "Kompresi beberapa file dan folder sekaligus. Folder dibaca seperti saat diletakkan di aplikasi.",
+          "preset": "Gunakan preset untuk video berdasarkan namanya. Beri tanda kutip pada nama yang mengandung spasi.",
+          "presets": "Pilih preset untuk setiap jenis media. Jenis tanpa preset menggunakan preset default-nya.",
+          "outputFolder": "Simpan ke folder ini, bukan ke lokasi simpan preset. Ini diperlukan saat preset menanyakan lokasi simpan.",
+          "outputFile": "Simpan satu file dengan nama ini. Ekstensi yang berbeda mengonversinya ke format tersebut.",
+          "audioOnly": "Simpan hanya suara dari video sebagai file audio.",
+          "flatten": "Simpan setiap file langsung ke folder, tanpa folder di dalamnya.",
+          "prefix": "Tambahkan teks di awal nama file yang disimpan, hanya untuk perintah ini.",
+          "skipLarger": "Jangan simpan hasil yang lebih besar dari aslinya.",
+          "replace": "Ganti file asli jika hasilnya memiliki nama dan format yang sama. File asli dipindahkan ke Sampah.",
+          "replaceWindows": "Ganti file asli jika hasilnya memiliki nama dan format yang sama. File asli dipindahkan ke Recycle Bin.",
+          "hardware": "Kompresi video lebih cepat dengan akselerasi perangkat keras, hanya untuk perintah ini.",
+          "targetSize": "Dengan akselerasi perangkat keras, kompresi ulang video tanpanya jika ukuran targetnya tidak tercapai.",
+          "dryRun": "Tampilkan daftar file, presetnya, dan lokasi simpannya tanpa mengompresinya.",
+          "json": "Cetak hasil dalam JSON, untuk skrip dan agen AI.",
+          "quiet": "Cetak kesalahan saja.",
+          "list": "Tampilkan daftar preset Anda, beserta preset default setiap jenis media.",
+          "help": "Tampilkan semua opsi dan kode keluar."
         }
       },
       "agents": {

@@ -273,7 +273,7 @@
       "credits": "Credits",
       "watchedFolders": "Watch Folder",
       "history": "History",
-      "commandLine": "Command Line"
+      "commandLine": "CLI"
     },
     "about": {
       "updateAvailable": "Update available",
@@ -367,6 +367,28 @@
         "usage": {
           "title": "Usage",
           "description": "Add files or folders after the command. Media is compressed with the default presets unless a preset is chosen. To see every option, run compresso --help."
+        },
+        "examples": {
+          "title": "View Examples",
+          "one": "Compress one file with the default preset of its media type, and save it where that preset saves.",
+          "several": "Compress several files and folders at once. Folders are read as when they are dropped on the app.",
+          "preset": "Use a preset for videos, by its name. Put names with spaces inside quotes.",
+          "presets": "Choose a preset for each media type. A media type without one uses its default preset.",
+          "outputFolder": "Save to this folder instead of the save location of the preset. It is needed when a preset asks where to save.",
+          "outputFile": "Save a single file under this name. A different extension converts it to that format.",
+          "audioOnly": "Keep only the sound of a video, as an audio file.",
+          "flatten": "Save every file straight into the folder, without the folders inside it.",
+          "prefix": "Add text to the start of the saved file names, for this command only.",
+          "skipLarger": "Do not save outputs that are larger than their originals.",
+          "replace": "Replace the original when the output has the same name and format. The original is moved to the Trash.",
+          "hardware": "Compress videos faster with hardware acceleration, for this command only.",
+          "targetSize": "With hardware acceleration, compress a video again without it when it misses its target size.",
+          "dryRun": "List the files, their presets and where they would be saved, without compressing them.",
+          "json": "Print the results as JSON, for scripts and AI agents.",
+          "quiet": "Print only errors.",
+          "list": "List your presets, with the default one of each media type.",
+          "help": "Show every option and the exit codes.",
+          "replaceWindows": "Replace the original when the output has the same name and format. The original is moved to the Recycle Bin."
         }
       },
       "agents": {

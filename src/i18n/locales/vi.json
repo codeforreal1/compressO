@@ -273,7 +273,7 @@
       "credits": "Ghi công",
       "watchedFolders": "Theo dõi thư mục",
       "history": "Lịch sử",
-      "commandLine": "Dòng lệnh"
+      "commandLine": "CLI"
     },
     "about": {
       "updateAvailable": "Có bản cập nhật",
@@ -367,6 +367,28 @@
         "usage": {
           "title": "Cách sử dụng",
           "description": "Thêm tệp hoặc thư mục sau lệnh. Tệp phương tiện được nén bằng các cài đặt sẵn mặc định, trừ khi chọn một cài đặt sẵn khác. Để xem mọi tùy chọn, hãy chạy compresso --help."
+        },
+        "examples": {
+          "title": "Xem ví dụ",
+          "one": "Nén một tệp bằng cài đặt sẵn mặc định của loại phương tiện, rồi lưu vào nơi cài đặt sẵn đó lưu.",
+          "several": "Nén nhiều tệp và thư mục cùng lúc. Thư mục được đọc như khi thả vào ứng dụng.",
+          "preset": "Dùng một cài đặt sẵn cho video theo tên. Đặt tên có dấu cách trong dấu ngoặc kép.",
+          "presets": "Chọn một cài đặt sẵn cho mỗi loại phương tiện. Loại không được chọn sẽ dùng cài đặt sẵn mặc định.",
+          "outputFolder": "Lưu vào thư mục này thay cho vị trí lưu của cài đặt sẵn. Cần thiết khi cài đặt sẵn hỏi nơi lưu.",
+          "outputFile": "Lưu một tệp với tên này. Phần mở rộng khác sẽ chuyển tệp sang định dạng đó.",
+          "audioOnly": "Chỉ giữ âm thanh của video dưới dạng tệp âm thanh.",
+          "flatten": "Lưu mọi tệp thẳng vào thư mục, không kèm các thư mục bên trong.",
+          "prefix": "Thêm văn bản vào đầu tên tệp đã lưu, chỉ cho lệnh này.",
+          "skipLarger": "Không lưu các kết quả lớn hơn bản gốc.",
+          "replace": "Thay thế bản gốc khi kết quả có cùng tên và định dạng. Bản gốc được chuyển vào Thùng rác.",
+          "replaceWindows": "Thay thế bản gốc khi kết quả có cùng tên và định dạng. Bản gốc được chuyển vào Thùng rác.",
+          "hardware": "Nén video nhanh hơn bằng tăng tốc phần cứng, chỉ cho lệnh này.",
+          "targetSize": "Khi dùng tăng tốc phần cứng, nén lại video mà không dùng nó nếu không đạt kích thước mục tiêu.",
+          "dryRun": "Liệt kê các tệp, cài đặt sẵn và nơi sẽ lưu mà không nén chúng.",
+          "json": "In kết quả dạng JSON, cho tập lệnh và tác tử AI.",
+          "quiet": "Chỉ in lỗi.",
+          "list": "Liệt kê các cài đặt sẵn của bạn, cùng cài đặt sẵn mặc định của mỗi loại phương tiện.",
+          "help": "Hiện mọi tùy chọn và mã thoát."
         }
       },
       "agents": {
