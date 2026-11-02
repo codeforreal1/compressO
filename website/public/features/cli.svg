@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" width="640" height="360" role="img" aria-label="Compressing a folder with the compresso command, and the MCP server for AI agents" font-family="Poppins, -apple-system, 'Segoe UI', 'Noto Sans', sans-serif">
+<defs>
+  <linearGradient id="win" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1f1e1d"/><stop offset="1" stop-color="#141312"/></linearGradient>
+  <linearGradient id="brand" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffa04a"/><stop offset="1" stop-color="#ff7a00"/></linearGradient>
+  <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#ff8400" stop-opacity="0.4"/><stop offset="1" stop-color="#ff8400" stop-opacity="0"/></radialGradient>
+  <filter id="soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="8"/></filter>
+</defs>
+<rect width="640" height="360" fill="#000"/>
+<ellipse cx="300" cy="170" rx="260" ry="150" fill="url(#glow)" opacity="0.35"/>
+<rect x="60" y="58" width="470" height="210" rx="18" fill="url(#win)" stroke="#fff" stroke-opacity="0.12"/>
+<circle cx="84" cy="80" r="5.5" fill="#fff" fill-opacity="0.18"/>
+<circle cx="102" cy="80" r="5.5" fill="#fff" fill-opacity="0.18"/>
+<circle cx="120" cy="80" r="5.5" fill="#fff" fill-opacity="0.18"/>
+<g font-family="'SF Mono', ui-monospace, Menlo, Consolas, monospace" font-size="16" xml:space="preserve">
+  <text x="84" y="122" fill="#e9e7e4"><tspan fill="#ff8a1f">$</tspan> compresso Trip --output=Compressed</text>
+  <text x="84" y="158" fill="#a9a5a0"><tspan fill="#ff8a1f">✓</tspan> photo.jpg   4.2 MB → <tspan fill="#ff8a1f">480 KB</tspan></text>
+  <text x="84" y="188" fill="#a9a5a0"><tspan fill="#ff8a1f">✓</tspan> clip.mov    248 MB → <tspan fill="#ff8a1f">9.8 MB</tspan></text>
+  <text x="84" y="218" fill="#a9a5a0"><tspan fill="#ff8a1f">✓</tspan> song.wav    36 MB → <tspan fill="#ff8a1f">3.1 MB</tspan></text>
+  <text x="84" y="248" fill="#e9e7e4">3 saved. Saved 275 MB.</text>
+</g>
+<rect x="352" y="258" width="232" height="54" rx="27" fill="#ff8400" opacity="0.35" filter="url(#soft)"/>
+<rect x="352" y="254" width="232" height="54" rx="27" fill="#1a1715" stroke="url(#brand)" stroke-width="2"/>
+<circle cx="381" cy="281" r="13" fill="url(#brand)"/>
+<path d="M375 281.5 l4 4 l8 -9" fill="none" stroke="#111" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="404" y="287" font-family="'SF Mono', ui-monospace, Menlo, Consolas, monospace" font-size="17" font-weight="600" fill="#f2f0ec">compresso mcp</text>
+</svg>

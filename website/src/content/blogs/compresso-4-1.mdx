@@ -1,0 +1,138 @@
+---
+title: "CompressO 4.1: HDR, a CLI and AI agents"
+description: "Give photos and videos real HDR brightness, keep HDR videos HDR, straighten crooked shots, and compress from the terminal or with an AI agent. CompressO 4.1 is here."
+publishedDate: 2026-11-02
+heroImage: "../../assets/blog/compresso-4-1.jpg"
+heroImageLabel: "CompressO 4.1: HDR Boost, the CLI and AI agents"
+---
+
+import Figure from "../../components/blog/Figure.astro";
+import hdrBoost from "../../assets/blog/hdr-boost.jpg";
+import straighten from "../../assets/blog/straighten.jpg";
+import cliSettings from "../../assets/blog/cli-settings.jpg";
+
+CompressO 4.1 is here, only a few weeks after 4.0.
+
+This release is about two things. First, **HDR**: CompressO now understands bright HDR photos and videos, keeps them bright, and can even make standard photos and videos brighter. Second, CompressO now works **without opening the app**: from a terminal with the new `compresso` command, and from AI agents such as Claude.
+
+As always, CompressO is free, open-source and completely offline. Here is what is new.
+
+## HDR Boost
+
+Modern screens, like those of recent iPhones, Macs and many laptops, can show highlights far brighter than a normal picture. Photos and videos made for them are called **HDR**, and they look noticeably more vivid.
+
+With **HDR Boost**, CompressO can give a normal photo or video that extra brightness. Turn it on, choose an intensity from 1× to 8×, and the highlights glow on screens that support HDR. On screens that do not, the file simply looks as it did before.
+
+HDR Boost works for images saved as PNG or JPEG XL on macOS, Windows and Linux, and also for JPEG on macOS 15 and later. Those JPEGs keep a standard version inside, so they look right in any viewer.
+
+<Figure label="HDR Boost, at 4.2×" src={hdrBoost} />
+
+## HDR videos stay HDR
+
+Until now, HDR videos, such as those recorded on an iPhone, could come out washed out or banded after compressing. Not anymore: HDR videos, including **Dolby Vision** videos from the iPhone, now stay HDR when they are compressed, at the same brightness and colors.
+
+**HDR Boost** works for videos too, from 1× to 8×. And when a format cannot store HDR, such as GIF, CompressO converts the video to standard brightness with careful tone mapping, so it never looks washed out.
+
+## Remove HDR
+
+Sometimes HDR is not what you want. A very bright photo can look out of place next to normal ones, and some apps and websites do not show HDR correctly.
+
+**Remove HDR** converts HDR photos and videos to standard brightness, with proper tone mapping, so they look natural everywhere. CompressO detects whether a file is HDR and shows the matching setting: HDR Boost for standard files, Remove HDR for HDR ones.
+
+Both settings, including the boost intensity, can be saved in presets and used together with Target Size.
+
+## Straighten
+
+A slightly tilted horizon can spoil a good photo. The new **Straighten** slider in the transform editor tilts photos, videos and animated GIFs by up to 45 degrees either way.
+
+The crop always stays inside the tilted picture, so no empty corners are ever added, and rotating or flipping afterwards keeps the straightened result.
+
+<Figure label="Straighten, at 7.2°" src={straighten} maxWidth="560px" />
+
+## Compress from the terminal
+
+CompressO now comes with a command line tool, `compresso`. It uses your presets and output settings, as if the files were dropped on the app:
+
+```sh
+compresso ~/Movies/clip.mov
+```
+
+You can give it several files and whole folders at once, choose a preset for each media type, and save to a folder of your choice:
+
+```sh
+compresso photo.jpg clip.mov Trip --video-preset="Web" --output="Compressed"
+```
+
+For a single file, the output can also be a file name. A different extension converts the file to that format, with the preset's other settings:
+
+```sh
+compresso photo.jpg --output="photo.png"
+compresso talk.mp4 --output="talk.mp3"
+```
+
+Output settings, such as skipping larger outputs or replacing the original files, follow the app by default, and can be changed for a single command. `--dry-run` shows what would happen without compressing anything, and `--json` and clear exit codes make `compresso` easy to use in scripts.
+
+CompressO runs quietly in the background while it compresses: there is no window, and it quits again once it is done. Every file still shows in the app's queue and history.
+
+<Figure label="Settings › CLI, with every example" src={cliSettings} />
+
+### Getting the command
+
+- **macOS**: open Settings › CLI and click **Install**. With Homebrew, the command is installed with the app.
+- **Windows**: the installer adds it. Open a new terminal after installing.
+- **Linux**: the `.deb` package adds it. For the AppImage, open Settings › CLI and click **Install**.
+
+Run `compresso --help` to see every option, or open **View Examples** in Settings › CLI.
+
+## Let AI agents compress for you
+
+CompressO also includes an **MCP server**, so AI agents such as Claude can compress files for you. Just ask, in your own words:
+
+> Compress the videos in my Downloads folder to MP4 with my Web preset, and save them on the Desktop.
+
+The agent sees your presets, chooses the right settings and tells you what was saved. Everything still happens on your computer, with your own presets.
+
+To set it up, add this to the MCP settings of your agent:
+
+```json
+{
+  "mcpServers": {
+    "compresso": { "command": "compresso", "args": ["mcp"] }
+  }
+}
+```
+
+In Claude Code, it is a single command:
+
+```sh
+claude mcp add compresso -- compresso mcp
+```
+
+## Bug fixes
+
+This release also fixes a few bugs:
+
+- Compressed HDR videos no longer show banding or wrong brightness, and HDR videos no longer look washed out in GIFs, thumbnails and H.264 output.
+- HDR JPEG XL images open and compress correctly, and PNG and JPEG XL outputs keep their HDR colors.
+- Copied outputs that are not saved yet are pasted under the name they would be saved with.
+- Watched folders no longer miss files in subfolders, in folders moved into them, or in files replaced under a name that was already compressed.
+
+You can find every change in the [changelog](/changelog).
+
+## Get CompressO 4.1
+
+CompressO 4.1 is available now for macOS, Windows and Linux. If you already have CompressO, it will offer the update by itself. Otherwise, [download it here](/#download), or on macOS, install it with Homebrew:
+
+```sh
+brew install codeforreal1/tap/compresso
+```
+
+## Thank you
+
+Thank you to everyone who tried 4.0, reported a bug or suggested a feature. Many of the changes in this release started as your ideas.
+
+If you find a problem or have an idea for the next version, [open an issue on GitHub](https://github.com/codeforreal1/compressO/issues). We would love to hear from you.
+
+- [Read the full changelog](/changelog)
+- [See the release on GitHub](https://github.com/codeforreal1/compressO/releases/latest)
+- [Browse the source code](https://github.com/codeforreal1/compressO)
