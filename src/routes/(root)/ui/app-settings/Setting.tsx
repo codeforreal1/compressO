@@ -87,17 +87,18 @@ const SETTINGS_GROUPS: {
         icon: 'watchedFolder',
         Component: WatchedFolders,
       },
-      {
-        id: 'history',
-        icon: 'clock',
-        Component: History,
-        fillsHeight: true,
-      },
       // The `compresso` command & its MCP server, for AI agents
       {
         id: 'commandLine',
         icon: 'terminal',
         Component: CommandLine,
+      },
+      // Always the last page of the group
+      {
+        id: 'history',
+        icon: 'clock',
+        Component: History,
+        fillsHeight: true,
       },
     ],
   },
