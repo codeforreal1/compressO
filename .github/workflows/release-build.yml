@@ -199,6 +199,10 @@ jobs:
           curl -fsSL -o appimagetool \
             https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage
           chmod +x appimagetool
+          # Extracted with the bundle's restrictive modes, which appimagetool refuses: everyone
+          # running the AppImage must be able to read it
+          chmod -R a+rX squashfs-root
+          chmod a+rx squashfs-root/AppRun
           rm "$appimage" "$appimage.sig"
           ARCH=x86_64 APPIMAGE_EXTRACT_AND_RUN=1 ./appimagetool --no-appstream squashfs-root "$appimage"
           cd "$GITHUB_WORKSPACE"
