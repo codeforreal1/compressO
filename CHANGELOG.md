@@ -16,6 +16,7 @@ Bug Fixes:
 - Fixed supported PQ and HLG HDR JPEG XL images failing to open or recompress. PNG and JPEG XL output retain their HDR color information.
 - Fixed copied outputs that are not saved yet being pasted under a generated name; they are now pasted under the name they would be saved with, including the preset's file name prefix.
 - Fixed watched folders missing media in subfolders, in folders moved into them, and in files put back or replaced under a name that was already compressed.
+- Fixed the Linux AppImage closing at start with "Could not create default EGL display" on recent distributions, such as Ubuntu 26.04 and Fedora 44.
 
 ### 4.0.0
 
