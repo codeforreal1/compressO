@@ -7,7 +7,7 @@
 		Compress any video/image/audio into a tiny size.
     </p>
     <i align="center">
-		CompressO (🔉 pronounced like "Espresso" ) is a free and open-source video/image compression app.
+		CompressO (🔉 pronounced like "Espresso" ) is a free and open-source video/image/audio compression app.
     </i>
     <br />
     <p align="center">
@@ -63,28 +63,12 @@ brew install --cask codeforreal1/tap/compresso
 
 
 ### CLI & AI agents
-CompressO can compress media from a terminal with the `compresso` command, and AI agents can use it through its MCP server. The app does the compression with your presets and output settings, as if the media was dropped on it: it is started in the background when it is not running, and quits again when done. The media shows in the queue and the history.
-
+CompressO can compress media from a terminal with the `compresso` command, and AI agents can use it through its MCP server. The app does the compression with your presets and output settings, as if the media was dropped on it.
 The command is available:
 
 - macOS: Settings > CLI > Install (or run `/Applications/CompressO.app/Contents/MacOS/compressO` with arguments)
 - Windows: added to the PATH by the installer (open a new terminal after installing)
 - Linux: installed with the `.deb` package; for the AppImage, Settings > CLI > Install (or run `CompressO.AppImage --cli`)
-
-```
-compresso clip.mov
-compresso ~/Movies/clip.mov --video-preset="Standard"
-compresso ~/Pictures/Trip --image-preset="Web"
-compresso ~/Desktop/Screens --output=~/Desktop/Compressed --replace-original-files=0 --json
-compresso photo.jpg --output=./compressed-photo.png
-compresso talk.mp4 --output=./talk.mp3
-compresso presets
-compresso --help
-```
-
-Options with a value are written with `=`, e.g. `--video-preset="Standard"`. Without `--video-preset=`, `--image-preset=` or `--audio-preset=`, each media type uses its default preset. For a single file, `--preset=` chooses its preset whatever its media type. Output settings follow the app unless given for one command (`--skip-larger-outputs=0|1`, `--preserve-folder-structure=0|1`, `--replace-original-files=0|1`, `--filename-prefix=<text>`, `--hardware-acceleration=0|1`, `--reach-target-sizes-without-acceleration=0|1`). A preset that asks where to save needs `--output=<folder>`. For a single file, `--output=` can also be the file to save: a different extension converts it to that format, with the preset's other settings.
-
-Exit codes: `0` done, `1` some files failed, `2` wrong usage or no media, `3` a preset asks where to save and no `--output=` was given, `4` CompressO is not available, `130` stopped with Ctrl+C.
 
 MCP server (stdio), for agents such as Claude: `compress`, `list_presets` and `cancel_compression` tools.
 ```json
