@@ -441,6 +441,13 @@ export type VideoCompressionConfig = {
     /** Compressed at its quality first (its estimated size fits), at the bitrate only when larger */
     qualityFirst: boolean
   } | null
+  /** Applied by the backend only when it matches the source (see `video_dynamic_range.rs`) */
+  dynamicRange?: import('./videoDynamicRange').VideoDynamicRangeConfig | null
+  /**
+   * Encodes on the graphics card or not, whatever the setting is (chosen on the command line);
+   * `null` follows the setting
+   */
+  useHardwareAcceleration?: boolean | null
 }
 
 export type ImageCompressionProgress = {
@@ -469,6 +476,7 @@ export type SvgConfig = {
 }
 
 export type ImageCompressionConfig = {
+  dynamicRange?: import('./imageDynamicRange').ImageDynamicRangeConfig | null
   imageId: string
   imagePath: string
   convertToExtension: string

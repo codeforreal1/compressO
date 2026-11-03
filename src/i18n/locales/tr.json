@@ -272,7 +272,8 @@
       "about": "Hakkında",
       "credits": "Teşekkürler",
       "watchedFolders": "Klasör izleme",
-      "history": "Geçmiş"
+      "history": "Geçmiş",
+      "commandLine": "CLI"
     },
     "about": {
       "updateAvailable": "Güncelleme mevcut",
@@ -330,6 +331,7 @@
       "source_main": "Ana pencere",
       "source_dropZone": "Bırakma alanı",
       "source_watchedFolder": "İzlenen klasör {{name}}",
+      "source_commandLine": "CLI",
       "original": "Orijinal",
       "output": "Çıktı",
       "missing": "Bu dosya taşındı veya silindi.",
@@ -343,6 +345,59 @@
         "original": "Orijinal boyut",
         "output": "Sıkıştırılmış boyut",
         "reduction": "Ortalama küçülme"
+      }
+    },
+    "commandLine": {
+      "terminal": {
+        "title": "Terminal",
+        "command": {
+          "title": "Terminal komutu",
+          "description_macos": "Ön ayarlarınızı ve çıktı ayarlarınızı kullanarak medyayı terminalde compresso komutuyla sıkıştırın. Kurulum sırasında parolanız istenir.",
+          "description_windows": "Ön ayarlarınızı ve çıktı ayarlarınızı kullanarak medyayı terminalde compresso komutuyla sıkıştırın.",
+          "description_linux": "Ön ayarlarınızı ve çıktı ayarlarınızı kullanarak medyayı terminalde compresso komutuyla sıkıştırın.",
+          "status_installed": "Kurulu. Kullanmak için yeni bir terminal penceresi açın.",
+          "status_notInstalled": "Kurulu değil.",
+          "status_broken": "Taşınmış veya kaldırılmış bir CompressO’yu gösteriyor. Yeniden kurun.",
+          "status_unavailable": "CompressO’nun bu sürümünde bulunmuyor.",
+          "install": "Kur",
+          "remove": "Kaldır",
+          "installFailed": "Komut kurulamadı.",
+          "removeFailed": "Komut kaldırılamadı."
+        },
+        "usage": {
+          "title": "Kullanım",
+          "description": "Komuttan sonra dosya veya klasör ekleyin. Bir ön ayar seçilmedikçe medya varsayılan ön ayarlarla sıkıştırılır. Tüm seçenekleri görmek için compresso --help komutunu çalıştırın."
+        },
+        "examples": {
+          "title": "Örnekleri görüntüle",
+          "one": "Bir dosyayı medya türünün varsayılan ön ayarıyla sıkıştırın ve bu ön ayarın kaydettiği yere kaydedin.",
+          "several": "Birden çok dosya ve klasörü aynı anda sıkıştırın. Klasörler uygulamaya bırakıldığındaki gibi okunur.",
+          "preset": "Videolar için bir ön ayarı adıyla kullanın. Boşluk içeren adları tırnak içine alın.",
+          "presets": "Her medya türü için bir ön ayar seçin. Ön ayarı seçilmeyen tür varsayılanını kullanır.",
+          "singlePreset": "Tek bir dosya için, medya türü ne olursa olsun ön ayarını --preset= ile seçin.",
+          "outputFolder": "Ön ayarın kayıt konumu yerine bu klasöre kaydedin. Bir ön ayar nereye kaydedileceğini sorduğunda gereklidir.",
+          "outputFile": "Tek bir dosyayı bu adla kaydedin. Farklı bir uzantı onu o biçime dönüştürür.",
+          "audioOnly": "Bir videonun yalnızca sesini ses dosyası olarak saklayın.",
+          "flatten": "Her dosyayı içindeki klasörler olmadan doğrudan klasöre kaydedin.",
+          "prefix": "Yalnızca bu komut için kaydedilen dosya adlarının başına metin ekleyin.",
+          "skipLarger": "Orijinalinden büyük çıktıları kaydetmeyin.",
+          "replace": "Çıktı aynı ada ve biçime sahipse orijinalin yerine koyun. Orijinal Çöp Sepeti’ne taşınır.",
+          "replaceWindows": "Çıktı aynı ada ve biçime sahipse orijinalin yerine koyun. Orijinal Geri Dönüşüm Kutusu’na taşınır.",
+          "hardware": "Yalnızca bu komut için videoları donanım hızlandırmasıyla daha hızlı sıkıştırın.",
+          "targetSize": "Donanım hızlandırmasıyla, hedef boyutu tutturamayan bir videoyu hızlandırma olmadan yeniden sıkıştırın.",
+          "dryRun": "Dosyaları, ön ayarlarını ve kaydedilecekleri yeri sıkıştırmadan listeleyin.",
+          "json": "Sonuçları betikler ve yapay zekâ ajanları için JSON olarak yazdırın.",
+          "quiet": "Yalnızca hataları yazdırın.",
+          "list": "Ön ayarlarınızı, her medya türünün varsayılanıyla birlikte listeleyin.",
+          "help": "Tüm seçenekleri ve çıkış kodlarını gösterin."
+        }
+      },
+      "agents": {
+        "title": "Yapay Zekâ Ajanları",
+        "mcp": {
+          "title": "MCP sunucusu",
+          "description": "Claude gibi yapay zekâ ajanları, ön ayarlarınızla medya sıkıştırabilir. Bu sunucuyu ajanın MCP ayarlarına ekleyin."
+        }
       }
     }
   },
@@ -359,6 +414,7 @@
     "showInFileManager": "Dosya Gezgini’nde göster",
     "showNameInFileManager": "{{name}} öğesini Dosya Gezgini’nde göster",
     "copied": "Panoya kopyalandı.",
+    "copy": "Kopyala",
     "close": "Kapat",
     "reset": "Sıfırla",
     "apply": "Uygula",
@@ -442,6 +498,8 @@
     "chooseSaveLocation": "Kaydetme konumu seçin",
     "saveFailed": "Sıkıştırılan medya kaydedilemedi.",
     "compressFailed": "Medya sıkıştırılamadı.",
+    "fromCommandLine": "CLI’dan eklendi",
+    "commandLine": "CLI",
     "summary": {
       "cancelledAndFailed": "{{cancelled}}, {{failed}}",
       "cancelled_one": "{{count}} iptal edildi",
@@ -1014,5 +1072,20 @@
     "withinTarget": "Hedefin içinde",
     "overTarget": "Hedefin üzerinde",
     "replace": "Kaydedilen dosyayı değiştir"
+  },
+  "dynamicRange": {
+    "boost": "HDR güçlendirme",
+    "convert": "HDR’yi kaldır",
+    "intensity": "Yoğunluk",
+    "mixed": "Dinamik aralığını ayarlamak için tek bir görüntü seçin.",
+    "unknown": "Görüntünün dinamik aralığı belirlenemedi.",
+    "formatsOnly": "HDR güçlendirme yalnızca PNG, JPEG XL ve JPEG çıktıları için kullanılabilir.",
+    "formatsOnlyWithoutJpeg": "HDR güçlendirme yalnızca PNG ve JPEG XL çıktıları için kullanılabilir.",
+    "jpegLossy": "HDR JPEG kalite tabanlı kodlama kullanır. Kayıpsız çıktı için PNG veya JPEG XL seçin.",
+    "videoMixed": "Dinamik aralığını ayarlamak için tek bir video seçin.",
+    "videoUnknown": "Videonun dinamik aralığı belirlenemedi.",
+    "videoBoostFormats": "HDR güçlendirme yalnızca H.265, VP9 veya AV1 codec’ini kullanan MP4, MOV, MKV, WebM ve TS videolarında kullanılabilir.",
+    "videoBoostLossless": "HDR güçlendirme kayıpsız sıkıştırmayla kullanılamaz.",
+    "videoSdrOnly": "Bu biçim veya codec HDR depolayamaz, bu nedenle video SDR’ye dönüştürülecektir."
   }
 }

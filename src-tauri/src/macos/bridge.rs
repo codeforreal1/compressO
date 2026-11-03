@@ -34,6 +34,23 @@ pub mod ffi {
 
         // login item (see `login_item.swift`)
         fn loginItemStatus(plistPath: String) -> i32;
+
+        fn imageDynamicRangeInfo(path: String) -> String;
+        fn processImageDynamicRange(
+            inputPath: String,
+            outputPath: String,
+            mode: String,
+            intensity: f32,
+            stripMetadata: bool,
+            sdrOutputPath: String,
+        ) -> String;
+        fn encodeHdrJpeg(
+            basePath: String,
+            hdrPath: String,
+            outputPath: String,
+            quality: u8,
+            stripMetadata: bool,
+        ) -> String;
     }
 }
 

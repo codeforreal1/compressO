@@ -272,7 +272,8 @@
       "about": "Acerca de",
       "credits": "Créditos",
       "watchedFolders": "Vigilar carpetas",
-      "history": "Historial"
+      "history": "Historial",
+      "commandLine": "CLI"
     },
     "about": {
       "updateAvailable": "Actualización disponible",
@@ -330,6 +331,7 @@
       "source_main": "Ventana principal",
       "source_dropZone": "Zona de soltar",
       "source_watchedFolder": "Carpeta vigilada {{name}}",
+      "source_commandLine": "CLI",
       "original": "Original",
       "output": "Resultado",
       "missing": "Este archivo se movió o eliminó.",
@@ -343,6 +345,59 @@
         "original": "Tamaño original",
         "output": "Tamaño comprimido",
         "reduction": "Reducción media"
+      }
+    },
+    "commandLine": {
+      "terminal": {
+        "title": "Terminal",
+        "command": {
+          "title": "Comando de terminal",
+          "description_macos": "Comprimir archivos desde un terminal con el comando compresso, usando sus ajustes preestablecidos y su configuración de salida. La instalación solicita su contraseña.",
+          "description_windows": "Comprimir archivos desde un terminal con el comando compresso, usando sus ajustes preestablecidos y su configuración de salida.",
+          "description_linux": "Comprimir archivos desde un terminal con el comando compresso, usando sus ajustes preestablecidos y su configuración de salida.",
+          "status_installed": "Está instalado. Abra una nueva ventana de terminal para usarlo.",
+          "status_notInstalled": "No está instalado.",
+          "status_broken": "Apunta a un CompressO que se movió o se eliminó. Vuelva a instalarlo.",
+          "status_unavailable": "No está incluido en esta versión de CompressO.",
+          "install": "Instalar",
+          "remove": "Quitar",
+          "installFailed": "No se pudo instalar el comando.",
+          "removeFailed": "No se pudo quitar el comando."
+        },
+        "usage": {
+          "title": "Uso",
+          "description": "Añada archivos o carpetas después del comando. Los archivos se comprimen con los ajustes preestablecidos predeterminados, salvo que se elija otro. Para ver todas las opciones, ejecute compresso --help."
+        },
+        "examples": {
+          "title": "Ver ejemplos",
+          "one": "Comprimir un archivo con el ajuste preestablecido predeterminado de su tipo y guardarlo donde guarda ese ajuste.",
+          "several": "Comprimir varios archivos y carpetas a la vez. Las carpetas se leen como al soltarlas en la app.",
+          "preset": "Usar un ajuste preestablecido para vídeos por su nombre. Los nombres con espacios van entre comillas.",
+          "presets": "Elegir un ajuste preestablecido para cada tipo de archivo. Un tipo sin uno usa su ajuste predeterminado.",
+          "singlePreset": "Para un único archivo, elegir su ajuste preestablecido con --preset=, sea cual sea su tipo.",
+          "outputFolder": "Guardar en esta carpeta en lugar de la ubicación del ajuste preestablecido. Es necesario cuando un ajuste pregunta dónde guardar.",
+          "outputFile": "Guardar un único archivo con este nombre. Una extensión distinta lo convierte a ese formato.",
+          "audioOnly": "Conservar solo el sonido de un vídeo, como archivo de audio.",
+          "flatten": "Guardar cada archivo directamente en la carpeta, sin las carpetas que contiene.",
+          "prefix": "Añadir texto al inicio de los nombres de los archivos guardados, solo para este comando.",
+          "skipLarger": "No guardar los resultados que sean más grandes que sus originales.",
+          "replace": "Reemplazar el original cuando el resultado tiene el mismo nombre y formato. El original se mueve a la Papelera.",
+          "replaceWindows": "Reemplazar el original cuando el resultado tiene el mismo nombre y formato. El original se mueve a la Papelera de reciclaje.",
+          "hardware": "Comprimir vídeos más rápido con aceleración por hardware, solo para este comando.",
+          "targetSize": "Con aceleración por hardware, volver a comprimir un vídeo sin ella cuando no alcanza su tamaño objetivo.",
+          "dryRun": "Listar los archivos, sus ajustes preestablecidos y dónde se guardarían, sin comprimirlos.",
+          "json": "Mostrar los resultados en JSON, para scripts y agentes de IA.",
+          "quiet": "Mostrar solo los errores.",
+          "list": "Listar sus ajustes preestablecidos, con el predeterminado de cada tipo de archivo.",
+          "help": "Mostrar todas las opciones y los códigos de salida."
+        }
+      },
+      "agents": {
+        "title": "Agentes de IA",
+        "mcp": {
+          "title": "Servidor MCP",
+          "description": "Los agentes de IA, como Claude, pueden comprimir archivos con sus ajustes preestablecidos. Añada este servidor a la configuración MCP del agente."
+        }
       }
     }
   },
@@ -359,6 +414,7 @@
     "showInFileManager": "Mostrar en el Explorador de archivos",
     "showNameInFileManager": "Mostrar {{name}} en el Explorador de archivos",
     "copied": "Copiado al portapapeles.",
+    "copy": "Copiar",
     "close": "Cerrar",
     "reset": "Restablecer",
     "apply": "Aplicar",
@@ -443,6 +499,8 @@
     "chooseSaveLocation": "Elegir una ubicación de guardado",
     "saveFailed": "No se pudo guardar el archivo comprimido.",
     "compressFailed": "No se pudo comprimir el archivo.",
+    "fromCommandLine": "Añadido desde la CLI",
+    "commandLine": "CLI",
     "summary": {
       "cancelledAndFailed": "{{cancelled}}, {{failed}}",
       "cancelled_one": "{{count}} cancelado",
@@ -1029,5 +1087,20 @@
     "withinTarget": "Dentro del objetivo",
     "overTarget": "Supera el objetivo",
     "replace": "Reemplazar el archivo guardado"
+  },
+  "dynamicRange": {
+    "boost": "Realce HDR",
+    "convert": "Eliminar HDR",
+    "intensity": "Intensidad",
+    "mixed": "Selecciona una imagen individual para ajustar su rango dinámico.",
+    "unknown": "No se pudo determinar el rango dinámico de la imagen.",
+    "formatsOnly": "El realce HDR solo está disponible para la salida en PNG, JPEG XL y JPEG.",
+    "formatsOnlyWithoutJpeg": "El realce HDR solo está disponible para la salida en PNG y JPEG XL.",
+    "jpegLossy": "JPEG HDR utiliza codificación basada en calidad. Elige PNG o JPEG XL para una salida sin pérdida.",
+    "videoMixed": "Seleccione un video individual para ajustar su rango dinámico.",
+    "videoUnknown": "No se pudo determinar el rango dinámico del video.",
+    "videoBoostFormats": "El realce HDR solo está disponible para videos MP4, MOV, MKV, WebM y TS que usan el códec H.265, VP9 o AV1.",
+    "videoBoostLossless": "El realce HDR no está disponible con la compresión sin pérdida.",
+    "videoSdrOnly": "Este formato o códec no puede almacenar HDR, por lo que el video se convertirá a SDR."
   }
 }

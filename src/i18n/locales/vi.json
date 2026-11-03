@@ -272,7 +272,8 @@
       "about": "Giới thiệu",
       "credits": "Ghi công",
       "watchedFolders": "Theo dõi thư mục",
-      "history": "Lịch sử"
+      "history": "Lịch sử",
+      "commandLine": "CLI"
     },
     "about": {
       "updateAvailable": "Có bản cập nhật",
@@ -330,6 +331,7 @@
       "source_main": "Cửa sổ chính",
       "source_dropZone": "Vùng thả",
       "source_watchedFolder": "Thư mục theo dõi {{name}}",
+      "source_commandLine": "CLI",
       "original": "Gốc",
       "output": "Đầu ra",
       "missing": "Tệp này đã bị di chuyển hoặc xóa.",
@@ -343,6 +345,59 @@
         "original": "Kích thước gốc",
         "output": "Kích thước sau nén",
         "reduction": "Mức giảm trung bình"
+      }
+    },
+    "commandLine": {
+      "terminal": {
+        "title": "Terminal",
+        "command": {
+          "title": "Lệnh terminal",
+          "description_macos": "Nén tệp phương tiện từ terminal bằng lệnh compresso, sử dụng các cài đặt sẵn và cài đặt đầu ra của bạn. Khi cài đặt, bạn sẽ được yêu cầu nhập mật khẩu.",
+          "description_windows": "Nén tệp phương tiện từ terminal bằng lệnh compresso, sử dụng các cài đặt sẵn và cài đặt đầu ra của bạn.",
+          "description_linux": "Nén tệp phương tiện từ terminal bằng lệnh compresso, sử dụng các cài đặt sẵn và cài đặt đầu ra của bạn.",
+          "status_installed": "Đã được cài đặt. Hãy mở một cửa sổ terminal mới để sử dụng.",
+          "status_notInstalled": "Chưa được cài đặt.",
+          "status_broken": "Lệnh trỏ đến một bản CompressO đã bị di chuyển hoặc xóa. Hãy cài đặt lại.",
+          "status_unavailable": "Phiên bản CompressO này không bao gồm lệnh này.",
+          "install": "Cài đặt",
+          "remove": "Gỡ bỏ",
+          "installFailed": "Không thể cài đặt lệnh.",
+          "removeFailed": "Không thể gỡ bỏ lệnh."
+        },
+        "usage": {
+          "title": "Cách sử dụng",
+          "description": "Thêm tệp hoặc thư mục sau lệnh. Tệp phương tiện được nén bằng các cài đặt sẵn mặc định, trừ khi chọn một cài đặt sẵn khác. Để xem mọi tùy chọn, hãy chạy compresso --help."
+        },
+        "examples": {
+          "title": "Xem ví dụ",
+          "one": "Nén một tệp bằng cài đặt sẵn mặc định của loại phương tiện, rồi lưu vào nơi cài đặt sẵn đó lưu.",
+          "several": "Nén nhiều tệp và thư mục cùng lúc. Thư mục được đọc như khi thả vào ứng dụng.",
+          "preset": "Dùng một cài đặt sẵn cho video theo tên. Đặt tên có dấu cách trong dấu ngoặc kép.",
+          "presets": "Chọn một cài đặt sẵn cho mỗi loại phương tiện. Loại không được chọn sẽ dùng cài đặt sẵn mặc định.",
+          "singlePreset": "Với một tệp, chọn cài đặt sẵn bằng --preset=, bất kể loại phương tiện.",
+          "outputFolder": "Lưu vào thư mục này thay cho vị trí lưu của cài đặt sẵn. Cần thiết khi cài đặt sẵn hỏi nơi lưu.",
+          "outputFile": "Lưu một tệp với tên này. Phần mở rộng khác sẽ chuyển tệp sang định dạng đó.",
+          "audioOnly": "Chỉ giữ âm thanh của video dưới dạng tệp âm thanh.",
+          "flatten": "Lưu mọi tệp thẳng vào thư mục, không kèm các thư mục bên trong.",
+          "prefix": "Thêm văn bản vào đầu tên tệp đã lưu, chỉ cho lệnh này.",
+          "skipLarger": "Không lưu các kết quả lớn hơn bản gốc.",
+          "replace": "Thay thế bản gốc khi kết quả có cùng tên và định dạng. Bản gốc được chuyển vào Thùng rác.",
+          "replaceWindows": "Thay thế bản gốc khi kết quả có cùng tên và định dạng. Bản gốc được chuyển vào Thùng rác.",
+          "hardware": "Nén video nhanh hơn bằng tăng tốc phần cứng, chỉ cho lệnh này.",
+          "targetSize": "Khi dùng tăng tốc phần cứng, nén lại video mà không dùng nó nếu không đạt kích thước mục tiêu.",
+          "dryRun": "Liệt kê các tệp, cài đặt sẵn và nơi sẽ lưu mà không nén chúng.",
+          "json": "In kết quả dạng JSON, cho tập lệnh và tác tử AI.",
+          "quiet": "Chỉ in lỗi.",
+          "list": "Liệt kê các cài đặt sẵn của bạn, cùng cài đặt sẵn mặc định của mỗi loại phương tiện.",
+          "help": "Hiện mọi tùy chọn và mã thoát."
+        }
+      },
+      "agents": {
+        "title": "Tác tử AI",
+        "mcp": {
+          "title": "Máy chủ MCP",
+          "description": "Các tác tử AI, chẳng hạn như Claude, có thể nén tệp phương tiện bằng các cài đặt sẵn của bạn. Hãy thêm máy chủ này vào cài đặt MCP của tác tử."
+        }
       }
     }
   },
@@ -359,6 +414,7 @@
     "showInFileManager": "Hiển thị trong File Explorer",
     "showNameInFileManager": "Hiển thị {{name}} trong File Explorer",
     "copied": "Đã sao chép vào bảng nhớ tạm.",
+    "copy": "Sao chép",
     "close": "Đóng",
     "reset": "Đặt lại",
     "apply": "Áp dụng",
@@ -441,6 +497,8 @@
     "chooseSaveLocation": "Chọn vị trí lưu",
     "saveFailed": "Không thể lưu tệp đã nén.",
     "compressFailed": "Không thể nén tệp phương tiện.",
+    "fromCommandLine": "Đã thêm từ CLI",
+    "commandLine": "CLI",
     "summary": {
       "cancelledAndFailed": "{{cancelled}}, {{failed}}",
       "cancelled_other": "Đã hủy {{count}}",
@@ -999,5 +1057,20 @@
     "withinTarget": "Trong mục tiêu",
     "overTarget": "Vượt mục tiêu",
     "replace": "Thay thế tệp đã lưu"
+  },
+  "dynamicRange": {
+    "boost": "Tăng cường HDR",
+    "convert": "Loại bỏ HDR",
+    "intensity": "Cường độ",
+    "mixed": "Chọn một ảnh riêng lẻ để điều chỉnh dải tương phản động.",
+    "unknown": "Không thể xác định dải tương phản động của ảnh.",
+    "formatsOnly": "Tăng cường HDR chỉ khả dụng cho đầu ra PNG, JPEG XL và JPEG.",
+    "formatsOnlyWithoutJpeg": "Tăng cường HDR chỉ khả dụng cho đầu ra PNG và JPEG XL.",
+    "jpegLossy": "JPEG HDR sử dụng mã hóa theo chất lượng. Chọn PNG hoặc JPEG XL để xuất không mất dữ liệu.",
+    "videoMixed": "Chọn một video riêng lẻ để điều chỉnh dải tương phản động.",
+    "videoUnknown": "Không thể xác định dải tương phản động của video.",
+    "videoBoostFormats": "Tăng cường HDR chỉ khả dụng cho video MP4, MOV, MKV, WebM và TS sử dụng codec H.265, VP9 hoặc AV1.",
+    "videoBoostLossless": "Tăng cường HDR không khả dụng khi nén không mất dữ liệu.",
+    "videoSdrOnly": "Định dạng hoặc codec này không thể lưu trữ HDR, vì vậy video sẽ được chuyển đổi sang SDR."
   }
 }

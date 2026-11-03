@@ -8,6 +8,7 @@ import {
   VideoInfo,
   VideoStream,
 } from '@/types/compression'
+import type { VideoDynamicRangeInfo } from '@/types/videoDynamicRange'
 
 export function getVideoBasicInfo(
   videoPath: string,
@@ -25,6 +26,12 @@ export function getVideoStreams(
   videoPath: string,
 ): Promise<VideoStream[] | null> {
   return core.invoke('get_video_streams', { videoPath })
+}
+
+export function getVideoDynamicRange(videoPath: string) {
+  return core.invoke<VideoDynamicRangeInfo>('get_video_dynamic_range', {
+    videoPath,
+  })
 }
 
 export function getAudioStreams(

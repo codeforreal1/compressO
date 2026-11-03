@@ -174,6 +174,43 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         run: pnpm tauri build --target ${{ matrix.target }}
 
+      # The AppImage bundles Ubuntu 22.04's Wayland client libraries, which do not work with the
+      # newer Mesa of recent distributions (Ubuntu 26.04, Fedora 44): the webview aborts with "Could
+      # not create default EGL display: EGL_BAD_PARAMETER". Every desktop Linux has them, so the
+      # AppImage uses the system's instead. It is then packed again & signed again for the updater
+      - name: Remove the bundled Wayland libraries from the AppImage
+        if: runner.os == 'Linux'
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: |
+          appimage="$PWD/src-tauri/target/$TARGET/release/bundle/appimage/CompressO_${VERSION}_amd64.AppImage"
+          work="$RUNNER_TEMP/appimage"
+          mkdir -p "$work"
+          cd "$work"
+          "$appimage" --appimage-extract > /dev/null
+          ls squashfs-root/usr/lib | grep -i -E 'wayland|egl|libgl' || true
+          rm -fv squashfs-root/usr/lib/libwayland-*.so*
+          if ls squashfs-root/usr/lib/libwayland-*.so* 2> /dev/null; then
+            echo "::error::The AppImage still has bundled Wayland libraries."
+            exit 1
+          fi
+          test -x squashfs-root/usr/bin/compresso-cli
+          curl -fsSL -o appimagetool \
+            https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage
+          chmod +x appimagetool
+          # Extracted with the bundle's restrictive modes, which appimagetool refuses: everyone
+          # running the AppImage must be able to read it
+          chmod -R a+rX squashfs-root
+          chmod a+rx squashfs-root/AppRun
+          rm "$appimage" "$appimage.sig"
+          ARCH=x86_64 APPIMAGE_EXTRACT_AND_RUN=1 ./appimagetool --no-appstream squashfs-root "$appimage"
+          cd "$GITHUB_WORKSPACE"
+          # `tauri signer sign` reads the key from -k & -p, not from the build's variables
+          pnpm tauri signer sign -k "$TAURI_SIGNING_PRIVATE_KEY" \
+            -p "$TAURI_SIGNING_PRIVATE_KEY_PASSWORD" "$appimage"
+          ls -l "$appimage" "$appimage.sig"
+
       - name: Verify Linux tool installation and execution
         if: runner.os == 'Linux'
         run: >-

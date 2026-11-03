@@ -272,7 +272,8 @@
       "about": "Informazioni",
       "credits": "Riconoscimenti",
       "watchedFolders": "Monitoraggio cartelle",
-      "history": "Cronologia"
+      "history": "Cronologia",
+      "commandLine": "CLI"
     },
     "about": {
       "updateAvailable": "Aggiornamento disponibile",
@@ -330,6 +331,7 @@
       "source_main": "Finestra principale",
       "source_dropZone": "Zona di rilascio",
       "source_watchedFolder": "Cartella monitorata {{name}}",
+      "source_commandLine": "CLI",
       "original": "Originale",
       "output": "Risultato",
       "missing": "Questo file è stato spostato o eliminato.",
@@ -343,6 +345,59 @@
         "original": "Dimensione originale",
         "output": "Dimensione compressa",
         "reduction": "Riduzione media"
+      }
+    },
+    "commandLine": {
+      "terminal": {
+        "title": "Terminale",
+        "command": {
+          "title": "Comando del terminale",
+          "description_macos": "Comprima contenuti da un terminale con il comando compresso, usando i Suoi preset e le impostazioni di output. L’installazione richiede la Sua password.",
+          "description_windows": "Comprima contenuti da un terminale con il comando compresso, usando i Suoi preset e le impostazioni di output.",
+          "description_linux": "Comprima contenuti da un terminale con il comando compresso, usando i Suoi preset e le impostazioni di output.",
+          "status_installed": "È installato. Apra una nuova finestra del terminale per usarlo.",
+          "status_notInstalled": "Non è installato.",
+          "status_broken": "Rimanda a un CompressO che è stato spostato o rimosso. Lo installi di nuovo.",
+          "status_unavailable": "Non è incluso in questa versione di CompressO.",
+          "install": "Installa",
+          "remove": "Rimuovi",
+          "installFailed": "Non è stato possibile installare il comando.",
+          "removeFailed": "Non è stato possibile rimuovere il comando."
+        },
+        "usage": {
+          "title": "Uso",
+          "description": "Aggiunga file o cartelle dopo il comando. I contenuti vengono compressi con i preset predefiniti, a meno che non ne venga scelto uno. Per vedere tutte le opzioni, esegua compresso --help."
+        },
+        "examples": {
+          "title": "Vedi esempi",
+          "one": "Comprima un file con il preset predefinito del suo tipo e lo salvi dove salva quel preset.",
+          "several": "Comprima più file e cartelle insieme. Le cartelle vengono lette come quando vengono rilasciate sull’app.",
+          "preset": "Usi un preset per i video tramite il suo nome. Metta tra virgolette i nomi con spazi.",
+          "presets": "Scelga un preset per ogni tipo di contenuto. Un tipo senza preset usa il suo preset predefinito.",
+          "singlePreset": "Per un singolo file, scelga il suo preset con --preset=, qualunque sia il tipo di contenuto.",
+          "outputFolder": "Salvi in questa cartella invece che nella posizione del preset. È necessario quando un preset chiede dove salvare.",
+          "outputFile": "Salvi un singolo file con questo nome. Un’estensione diversa lo converte in quel formato.",
+          "audioOnly": "Mantenga solo l’audio di un video, come file audio.",
+          "flatten": "Salvi ogni file direttamente nella cartella, senza le cartelle al suo interno.",
+          "prefix": "Aggiunga del testo all’inizio dei nomi dei file salvati, solo per questo comando.",
+          "skipLarger": "Non salvi i risultati più grandi dei loro originali.",
+          "replace": "Sostituisca l’originale quando il risultato ha lo stesso nome e formato. L’originale viene spostato nel Cestino.",
+          "replaceWindows": "Sostituisca l’originale quando il risultato ha lo stesso nome e formato. L’originale viene spostato nel Cestino.",
+          "hardware": "Comprima i video più velocemente con l’accelerazione hardware, solo per questo comando.",
+          "targetSize": "Con l’accelerazione hardware, comprima di nuovo un video senza di essa quando non raggiunge la dimensione obiettivo.",
+          "dryRun": "Elenchi i file, i loro preset e dove verrebbero salvati, senza comprimerli.",
+          "json": "Stampi i risultati in JSON, per script e agenti IA.",
+          "quiet": "Stampi solo gli errori.",
+          "list": "Elenchi i Suoi preset, con quello predefinito di ogni tipo di contenuto.",
+          "help": "Mostri tutte le opzioni e i codici di uscita."
+        }
+      },
+      "agents": {
+        "title": "Agenti IA",
+        "mcp": {
+          "title": "Server MCP",
+          "description": "Gli agenti IA, come Claude, possono comprimere contenuti con i Suoi preset. Aggiunga questo server alle impostazioni MCP dell’agente."
+        }
       }
     }
   },
@@ -359,6 +414,7 @@
     "showInFileManager": "Mostra in Esplora file",
     "showNameInFileManager": "Mostra {{name}} in Esplora file",
     "copied": "Copiato negli appunti.",
+    "copy": "Copia",
     "close": "Chiudi",
     "reset": "Ripristina",
     "apply": "Applica",
@@ -443,6 +499,8 @@
     "chooseSaveLocation": "Scegli una posizione di salvataggio",
     "saveFailed": "Non è stato possibile salvare il contenuto compresso.",
     "compressFailed": "Non è stato possibile comprimere il contenuto.",
+    "fromCommandLine": "Aggiunto dalla CLI",
+    "commandLine": "CLI",
     "summary": {
       "cancelledAndFailed": "{{cancelled}}, {{failed}}",
       "cancelled_one": "{{count}} annullato",
@@ -1029,5 +1087,20 @@
     "withinTarget": "Entro l’obiettivo",
     "overTarget": "Oltre l’obiettivo",
     "replace": "Sostituisci il file salvato"
+  },
+  "dynamicRange": {
+    "boost": "Potenziamento HDR",
+    "convert": "Rimuovi HDR",
+    "intensity": "Intensità",
+    "mixed": "Seleziona una singola immagine per regolarne la gamma dinamica.",
+    "unknown": "Impossibile determinare la gamma dinamica dell’immagine.",
+    "formatsOnly": "Il potenziamento HDR è disponibile solo per l’output PNG, JPEG XL e JPEG.",
+    "formatsOnlyWithoutJpeg": "Il potenziamento HDR è disponibile solo per l’output PNG e JPEG XL.",
+    "jpegLossy": "JPEG HDR usa la codifica basata sulla qualità. Scegli PNG o JPEG XL per un output senza perdita.",
+    "videoMixed": "Selezioni un singolo video per regolarne la gamma dinamica.",
+    "videoUnknown": "Impossibile determinare la gamma dinamica del video.",
+    "videoBoostFormats": "Il potenziamento HDR è disponibile solo per i video MP4, MOV, MKV, WebM e TS che usano il codec H.265, VP9 o AV1.",
+    "videoBoostLossless": "Il potenziamento HDR non è disponibile con la compressione senza perdita.",
+    "videoSdrOnly": "Questo formato o codec non può memorizzare l’HDR, quindi il video verrà convertito in SDR."
   }
 }

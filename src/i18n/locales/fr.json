@@ -272,7 +272,8 @@
       "about": "À propos",
       "credits": "Remerciements",
       "watchedFolders": "Surveillance de dossiers",
-      "history": "Historique"
+      "history": "Historique",
+      "commandLine": "CLI"
     },
     "about": {
       "updateAvailable": "Mise à jour disponible",
@@ -330,6 +331,7 @@
       "source_main": "Fenêtre principale",
       "source_dropZone": "Zone de dépôt",
       "source_watchedFolder": "Dossier surveillé {{name}}",
+      "source_commandLine": "CLI",
       "original": "Original",
       "output": "Résultat",
       "missing": "Ce fichier a été déplacé ou supprimé.",
@@ -343,6 +345,59 @@
         "original": "Taille d’origine",
         "output": "Taille compressée",
         "reduction": "Réduction moyenne"
+      }
+    },
+    "commandLine": {
+      "terminal": {
+        "title": "Terminal",
+        "command": {
+          "title": "Commande de terminal",
+          "description_macos": "Compresser des médias depuis un terminal avec la commande compresso, selon vos préréglages et vos réglages de sortie. L’installation demande votre mot de passe.",
+          "description_windows": "Compresser des médias depuis un terminal avec la commande compresso, selon vos préréglages et vos réglages de sortie.",
+          "description_linux": "Compresser des médias depuis un terminal avec la commande compresso, selon vos préréglages et vos réglages de sortie.",
+          "status_installed": "Elle est installée. Ouvrez une nouvelle fenêtre de terminal pour l’utiliser.",
+          "status_notInstalled": "Elle n’est pas installée.",
+          "status_broken": "Elle renvoie à un CompressO qui a été déplacé ou supprimé. Installez-la de nouveau.",
+          "status_unavailable": "Elle n’est pas incluse dans cette version de CompressO.",
+          "install": "Installer",
+          "remove": "Supprimer",
+          "installFailed": "La commande n’a pas pu être installée.",
+          "removeFailed": "La commande n’a pas pu être supprimée."
+        },
+        "usage": {
+          "title": "Utilisation",
+          "description": "Ajoutez des fichiers ou des dossiers après la commande. Les médias sont compressés avec les préréglages par défaut, sauf si un préréglage est choisi. Pour voir toutes les options, exécutez compresso --help."
+        },
+        "examples": {
+          "title": "Voir les exemples",
+          "one": "Compresser un fichier avec le préréglage par défaut de son type de média, et l’enregistrer là où ce préréglage enregistre.",
+          "several": "Compresser plusieurs fichiers et dossiers à la fois. Les dossiers sont lus comme lorsqu’ils sont déposés sur l’app.",
+          "preset": "Utiliser un préréglage pour les vidéos, par son nom. Mettez les noms avec des espaces entre guillemets.",
+          "presets": "Choisir un préréglage pour chaque type de média. Un type sans préréglage utilise son préréglage par défaut.",
+          "singlePreset": "Pour un seul fichier, choisir son préréglage avec --preset=, quel que soit son type de média.",
+          "outputFolder": "Enregistrer dans ce dossier au lieu de l’emplacement du préréglage. C’est nécessaire lorsqu’un préréglage demande où enregistrer.",
+          "outputFile": "Enregistrer un seul fichier sous ce nom. Une autre extension le convertit dans ce format.",
+          "audioOnly": "Ne garder que le son d’une vidéo, sous forme de fichier audio.",
+          "flatten": "Enregistrer chaque fichier directement dans le dossier, sans les dossiers qu’il contient.",
+          "prefix": "Ajouter du texte au début des noms des fichiers enregistrés, pour cette commande uniquement.",
+          "skipLarger": "Ne pas enregistrer les résultats plus volumineux que leurs originaux.",
+          "replace": "Remplacer l’original lorsque le résultat a le même nom et le même format. L’original est placé dans la Corbeille.",
+          "replaceWindows": "Remplacer l’original lorsque le résultat a le même nom et le même format. L’original est placé dans la Corbeille.",
+          "hardware": "Compresser les vidéos plus vite avec l’accélération matérielle, pour cette commande uniquement.",
+          "targetSize": "Avec l’accélération matérielle, compresser de nouveau une vidéo sans elle lorsqu’elle manque sa taille cible.",
+          "dryRun": "Lister les fichiers, leurs préréglages et où ils seraient enregistrés, sans les compresser.",
+          "json": "Afficher les résultats en JSON, pour les scripts et les agents d’IA.",
+          "quiet": "N’afficher que les erreurs.",
+          "list": "Lister vos préréglages, avec celui par défaut de chaque type de média.",
+          "help": "Afficher toutes les options et les codes de sortie."
+        }
+      },
+      "agents": {
+        "title": "Agents d’IA",
+        "mcp": {
+          "title": "Serveur MCP",
+          "description": "Les agents d’IA, comme Claude, peuvent compresser des médias avec vos préréglages. Ajoutez ce serveur aux réglages MCP de l’agent."
+        }
       }
     }
   },
@@ -359,6 +414,7 @@
     "showInFileManager": "Afficher dans l’Explorateur de fichiers",
     "showNameInFileManager": "Afficher {{name}} dans l’Explorateur de fichiers",
     "copied": "Copié dans le presse-papiers.",
+    "copy": "Copier",
     "close": "Fermer",
     "reset": "Réinitialiser",
     "apply": "Appliquer",
@@ -443,6 +499,8 @@
     "chooseSaveLocation": "Choisir un emplacement d’enregistrement",
     "saveFailed": "Le média compressé n’a pas pu être enregistré.",
     "compressFailed": "Le média n’a pas pu être compressé.",
+    "fromCommandLine": "Ajouté depuis la CLI",
+    "commandLine": "CLI",
     "summary": {
       "cancelledAndFailed": "{{cancelled}}, {{failed}}",
       "cancelled_one": "{{count}} annulé",
@@ -1029,5 +1087,20 @@
     "withinTarget": "Dans la cible",
     "overTarget": "Au-dessus de la cible",
     "replace": "Remplacer le fichier enregistré"
+  },
+  "dynamicRange": {
+    "boost": "Amplification HDR",
+    "convert": "Supprimer le HDR",
+    "intensity": "Intensité",
+    "mixed": "Sélectionnez une image pour régler sa plage dynamique.",
+    "unknown": "La plage dynamique de l’image n’a pas pu être déterminée.",
+    "formatsOnly": "L’amplification HDR est disponible uniquement pour les sorties PNG, JPEG XL et JPEG.",
+    "formatsOnlyWithoutJpeg": "L’amplification HDR est disponible uniquement pour les sorties PNG et JPEG XL.",
+    "jpegLossy": "Le JPEG HDR utilise un encodage par qualité. Choisissez PNG ou JPEG XL pour une sortie sans perte.",
+    "videoMixed": "Sélectionnez une vidéo pour régler sa plage dynamique.",
+    "videoUnknown": "La plage dynamique de la vidéo n’a pas pu être déterminée.",
+    "videoBoostFormats": "L’amplification HDR est disponible uniquement pour les vidéos MP4, MOV, MKV, WebM et TS utilisant le codec H.265, VP9 ou AV1.",
+    "videoBoostLossless": "L’amplification HDR n’est pas disponible avec la compression sans perte.",
+    "videoSdrOnly": "Ce format ou ce codec ne peut pas stocker le HDR ; la vidéo sera donc convertie en SDR."
   }
 }

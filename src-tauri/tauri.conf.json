@@ -4,11 +4,11 @@
   "version": "4.1.0",
   "identifier": "com.compresso.app",
   "build": {
-    "beforeBuildCommand": "node scripts/prepare-tools.mjs && pnpm vite:build",
+    "beforeBuildCommand": "node scripts/prepare-tools.mjs && node scripts/build-cli.mjs && pnpm vite:build",
     "frontendDist": "../dist",
     "devUrl": "http://localhost:3001",
     "beforeDevCommand": {
-      "script": "node scripts/image-tools.mjs",
+      "script": "node scripts/image-tools.mjs && node scripts/build-cli.mjs",
       "wait": true
     }
   },
@@ -19,6 +19,7 @@
     "category": "Video",
     "copyright": "Code For Real",
     "targets": ["deb", "appimage", "nsis", "dmg", "app"],
+    "externalBin": ["binaries/compresso-cli"],
     "fileAssociations": [
       {
         "ext": ["mp4"],
@@ -164,7 +165,10 @@
     "windows": {
       "certificateThumbprint": null,
       "digestAlgorithm": "sha256",
-      "timestampUrl": ""
+      "timestampUrl": "",
+      "nsis": {
+        "installerHooks": "windows/hooks.nsh"
+      }
     },
     "macOS": {
       "entitlements": null,
@@ -183,7 +187,9 @@
       },
       "deb": {
         "depends": [],
-        "desktopTemplate": "compressO.desktop.template"
+        "desktopTemplate": "compressO.desktop.template",
+        "postInstallScript": "linux/postinst.sh",
+        "preRemoveScript": "linux/prerm.sh"
       }
     },
     "createUpdaterArtifacts": true

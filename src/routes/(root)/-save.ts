@@ -5,7 +5,7 @@ import { snapshot } from 'valtio'
 
 import { toast } from '@/components/Toast'
 import { t } from '@/i18n'
-import { settingsStore } from '@/stores/settingsStore'
+import { sanitizeFileNamePart, settingsStore } from '@/stores/settingsStore'
 import {
   copyFilesToClipboard,
   getAvailablePath,
@@ -439,6 +439,23 @@ export type QueueOutput = {
   outputFileName: string
   /** The preset it was compressed with, whose save location & prefix are used */
   presetId?: string | null
+  /**
+   * Output settings chosen instead of the app's & the preset's (on the command line, see
+   * `CliJob`); each one left out (`null`) follows them
+   */
+  settings?: QueueSaveSettings | null
+}
+
+/** See `QueueOutput['settings']` */
+export type QueueSaveSettings = {
+  /** Saved here instead of the preset's save location */
+  outputFolder?: string | null
+  /** The exact name it is saved under in `outputFolder`, instead of its own with the prefix */
+  outputFileName?: string | null
+  skipLargerOutputs?: boolean | null
+  preserveFolderStructure?: boolean | null
+  replaceOriginalFiles?: boolean | null
+  fileNamePrefix?: string | null
 }
 
 /**
@@ -457,15 +474,33 @@ export async function saveQueueOutput(
 ): Promise<
   { savedPath: string } | { reason: 'no-save-location' | 'larger' | 'failed' }
 > {
-  const { saveLargerOutputs } = settingsStore
-  const {
-    saveLocation,
-    saveFolder,
-    filePrefix: outputFilePrefix,
-  } = getPresetOutput(output.presetId)
-  if (!savesAutomatically(getPresetOutput(output.presetId))) {
+  const settings = output.settings ?? {}
+  const saveLargerOutputs =
+    settings.skipLargerOutputs != null
+      ? !settings.skipLargerOutputs
+      : settingsStore.saveLargerOutputs
+  const presetOutput = getPresetOutput(output.presetId)
+  const saveLocation = settings.outputFolder
+    ? ('fixedFolder' as const)
+    : presetOutput.saveLocation
+  const saveFolder = settings.outputFolder ?? presetOutput.saveFolder
+  const outputFilePrefix =
+    settings.fileNamePrefix != null
+      ? sanitizeFileNamePart(settings.fileNamePrefix)
+      : presetOutput.filePrefix
+  if (
+    !savesAutomatically({
+      saveLocation,
+      saveFolder,
+      filePrefix: outputFilePrefix,
+    })
+  ) {
     return { reason: 'no-save-location' }
   }
+  const preserveFolderStructure =
+    settings.preserveFolderStructure ?? settingsStore.preserveFolderStructure
+  const replaceOriginalFiles =
+    settings.replaceOriginalFiles ?? settingsStore.replaceOriginalFiles
   if (
     !saveLargerOutputs &&
     output.originalSize > 0 &&
@@ -484,11 +519,7 @@ export async function saveQueueOutput(
 
   try {
     let destinationDirectory = baseDirectory
-    if (
-      isFixedFolder &&
-      settingsStore.preserveFolderStructure &&
-      output.relativeDir
-    ) {
+    if (isFixedFolder && preserveFolderStructure && output.relativeDir) {
       const [topFolder, ...subFolders] = output.relativeDir.split('/')
       // Existing folders are never merged into; a numbered name is used instead (once per drop)
       const topFolderKey = `${groupKey}\n${baseDirectory}\n${topFolder}`
@@ -510,15 +541,16 @@ export async function saveQueueOutput(
         '/',
       )
     }
-    const fileName = `${outputFilePrefix}${output.outputFileName}`
+    const fileName =
+      settings.outputFolder && settings.outputFileName
+        ? settings.outputFileName
+        : `${outputFilePrefix}${output.outputFileName}`
     try {
       const savedPath = await moveFile(
         output.outputPath,
         `${destinationDirectory}/${fileName}`,
         {
-          replaceOriginal: settingsStore.replaceOriginalFiles
-            ? output.sourcePath
-            : null,
+          replaceOriginal: replaceOriginalFiles ? output.sourcePath : null,
         },
       )
       return { savedPath }

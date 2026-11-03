@@ -191,12 +191,36 @@ fn validate_jxl_info(details: &str) -> Result<(), String> {
     if details.contains("-bit float")
         || details.contains("CMY+Black")
         || details.contains("Gain map (jhgm)")
-        || details.contains("Transfer function: PQ")
-        || details.contains("Transfer function: HLG")
     {
         return Err("Floating-point/HDR and CMYK JPEG XL images are not supported yet".into());
     }
     Ok(())
+}
+
+/// Integer PQ/HLG pixels can pass through PNG into cjxl without tone mapping. Other
+/// exporters currently reduce bit depth or discard this signaling, so reject those
+/// conversions rather than silently producing an incorrectly rendered image.
+pub fn validate_png_output(input: &Path, format: &str) -> Result<(), String> {
+    if matches!(format, "jxl" | "png") {
+        return Ok(());
+    }
+    if png_is_hdr(input)? {
+        return Err("HDR image conversion currently supports PNG or JPEG XL output only. Convert to SDR to use another format.".into());
+    }
+    Ok(())
+}
+
+pub fn png_is_hdr(input: &Path) -> Result<bool, String> {
+    let bytes = fs::read(input).map_err(|e| e.to_string())?;
+    if !bytes.starts_with(b"\x89PNG\r\n\x1a\n") {
+        return Ok(false);
+    }
+    let png = img_parts::png::Png::from_bytes(img_parts::Bytes::from(bytes))
+        .map_err(|e| e.to_string())?;
+    Ok(png
+        .chunks()
+        .iter()
+        .any(|chunk| chunk.kind() == *b"cICP" && matches!(chunk.contents().get(1), Some(16 | 18))))
 }
 
 pub async fn encode(
@@ -209,6 +233,7 @@ pub async fn encode(
     owner: &str,
     cancel_ids: &[String],
 ) -> Result<(), String> {
+    validate_png_output(Path::new(input), format)?;
     let pixels = image::open(input).map_err(|e| e.to_string())?;
     if format != "jxl"
         && lossless
@@ -373,6 +398,239 @@ mod tests {
             vec!["output.jxl".into(), "decoded.png".into()]
         } else {
             vec![format!("output.{format}"), "decoded.png".into()]
+        }
+    }
+
+    #[cfg(target_os = "macos")]
+    #[test]
+    #[ignore = "requires matching prebuilt image codecs"]
+    fn hdr_jpeg_transforms_and_quality_retries_keep_both_renditions() {
+        use super::super::image_dynamic_range::{
+            self, DynamicRange, ImageDynamicRangeConfig, ImageDynamicRangeMode,
+        };
+        let directory =
+            std::env::temp_dir().join(format!("compresso-hdr-jpeg-edit-{}", nanoid::nanoid!()));
+        fs::create_dir(&directory).unwrap();
+        let work = Workspace(directory);
+        let source = work.0.join("source.png");
+        image::RgbaImage::from_fn(48, 32, |x, y| {
+            image::Rgba([
+                (x * 5) as u8,
+                (y * 7) as u8,
+                123,
+                if x < 12 { 128 } else { 255 },
+            ])
+        })
+        .save(&source)
+        .unwrap();
+        if !image_dynamic_range::inspect(source.to_str().unwrap())
+            .unwrap()
+            .supported
+        {
+            return;
+        }
+        let base = work.0.join("base.png");
+        let hdr = work.0.join("hdr.png");
+        image_dynamic_range::process_with_sdr_base(
+            source.to_str().unwrap(),
+            hdr.to_str().unwrap(),
+            &ImageDynamicRangeConfig {
+                mode: ImageDynamicRangeMode::Boost,
+                intensity: 4.0,
+            },
+            true,
+            Some(base.to_str().unwrap()),
+        )
+        .unwrap();
+        for name in ["base", "hdr"] {
+            execute(
+                &work.0,
+                "ffmpeg",
+                &[
+                    "-v",
+                    "error",
+                    "-i",
+                    &format!("{name}.png"),
+                    "-vf",
+                    "format=rgba64le,crop=32:24:8:4,transpose=1,scale=40:56",
+                    "-map_metadata",
+                    "-1",
+                    "-y",
+                    &format!("{name}-edited.png"),
+                ]
+                .map(String::from),
+            );
+            preserve_png_color(
+                &work.0.join(format!("{name}.png")),
+                &work.0.join(format!("{name}-edited.png")),
+            )
+            .unwrap();
+        }
+        let mut sizes = Vec::new();
+        for quality in [95, 40, 1] {
+            let output = work.0.join("output.jpeg");
+            image_dynamic_range::encode_hdr_jpeg(
+                work.0.join("base-edited.png").to_str().unwrap(),
+                work.0.join("hdr-edited.png").to_str().unwrap(),
+                output.to_str().unwrap(),
+                quality,
+                true,
+            )
+            .unwrap();
+            let info = image_dynamic_range::inspect(output.to_str().unwrap()).unwrap();
+            assert_eq!(info.dynamic_range, DynamicRange::Hdr);
+            assert!(info.has_gain_map);
+            assert_eq!(image::image_dimensions(&output).unwrap(), (40, 56));
+            sizes.push(fs::metadata(&output).unwrap().len());
+        }
+        assert!(
+            sizes.windows(2).any(|pair| pair[0] != pair[1]),
+            "JPEG quality did not affect output size"
+        );
+        // Recompress a gain-map JPEG with Remove HDR off: preserve its HDR rendition.
+        let output = work.0.join("output.jpeg");
+        image_dynamic_range::process_with_sdr_base(
+            output.to_str().unwrap(),
+            hdr.to_str().unwrap(),
+            &ImageDynamicRangeConfig {
+                mode: ImageDynamicRangeMode::Original,
+                intensity: 1.0,
+            },
+            false,
+            Some(base.to_str().unwrap()),
+        )
+        .unwrap();
+        image_dynamic_range::encode_hdr_jpeg(
+            base.to_str().unwrap(),
+            hdr.to_str().unwrap(),
+            work.0.join("recompressed.jpg").to_str().unwrap(),
+            80,
+            false,
+        )
+        .unwrap();
+        assert!(
+            image_dynamic_range::inspect(work.0.join("recompressed.jpg").to_str().unwrap())
+                .unwrap()
+                .has_gain_map
+        );
+    }
+
+    #[test]
+    fn integer_hdr_jxl_is_supported_but_unsupported_representations_are_rejected() {
+        for transfer in ["PQ", "HLG", "sRGB"] {
+            assert!(validate_jxl_info(&format!(
+                "JPEG XL image, 32x24, (possibly) lossless, 10-bit RGB\nTransfer function: {transfer}"
+            ))
+            .is_ok());
+        }
+        for details in [
+            "JPEG XL animation",
+            "32-bit float",
+            "Color space: CMY+Black",
+            "Gain map (jhgm)",
+        ] {
+            assert!(validate_jxl_info(details).is_err(), "{details}");
+        }
+    }
+
+    #[test]
+    #[ignore = "requires matching prebuilt image codecs"]
+    fn integer_hdr_jxl_survives_normalization_and_recompression() {
+        use img_parts::{
+            png::{Png, PngChunk},
+            Bytes,
+        };
+
+        let directory =
+            std::env::temp_dir().join(format!("compresso-hdr-jxl-{}", nanoid::nanoid!()));
+        fs::create_dir(&directory).unwrap();
+        let work = Workspace(directory);
+        let pixels = image::ImageBuffer::<image::Rgb<u16>, Vec<u16>>::from_fn(32, 24, |x, y| {
+            image::Rgb([
+                (x * 1901) as u16,
+                (y * 2701) as u16,
+                ((x + y) * 1103) as u16,
+            ])
+        });
+        for (transfer, name) in [(16, "PQ"), (18, "HLG")] {
+            pixels.save(work.0.join("input.png")).unwrap();
+            let mut png =
+                Png::from_bytes(Bytes::from(fs::read(work.0.join("input.png")).unwrap())).unwrap();
+            png.chunks_mut().insert(
+                1,
+                PngChunk::new(*b"cICP", Bytes::from(vec![12, transfer, 0, 1])),
+            );
+            fs::write(work.0.join("input.png"), png.encoder().bytes()).unwrap();
+            execute(&work.0, "cjxl", &encoder_arguments("jxl", 80, true));
+            let details = execute(&work.0, "jxlinfo", &["output.jxl".into()]);
+            let details = String::from_utf8(details.stdout).unwrap();
+            validate_jxl_info(&details).unwrap();
+            assert!(
+                details.contains(&format!("Transfer function: {name}")),
+                "{details}"
+            );
+            #[cfg(target_os = "macos")]
+            {
+                use super::super::image_dynamic_range::{
+                    self, DynamicRange, ImageDynamicRangeConfig, ImageDynamicRangeMode,
+                };
+                let source = work.0.join("output.jxl");
+                let info = image_dynamic_range::inspect(source.to_str().unwrap()).unwrap();
+                if info.supported {
+                    assert_eq!(
+                        info.dynamic_range,
+                        DynamicRange::Hdr,
+                        "Native {name} JXL detection"
+                    );
+                    let output = work.0.join("sdr.png");
+                    image_dynamic_range::process(
+                        source.to_str().unwrap(),
+                        output.to_str().unwrap(),
+                        &ImageDynamicRangeConfig {
+                            mode: ImageDynamicRangeMode::Sdr,
+                            intensity: 1.0,
+                        },
+                        true,
+                    )
+                    .unwrap();
+                    assert_eq!(
+                        image_dynamic_range::inspect(output.to_str().unwrap())
+                            .unwrap()
+                            .dynamic_range,
+                        DynamicRange::Sdr
+                    );
+                }
+            }
+            execute(&work.0, "djxl", &["output.jxl".into(), "source.png".into()]);
+
+            // The app normalizes decoded pixels before applying private-metadata stripping.
+            let source = image::open(work.0.join("source.png")).unwrap();
+            source.save(work.0.join("input.png")).unwrap();
+            preserve_png_color(&work.0.join("source.png"), &work.0.join("input.png")).unwrap();
+            validate_png_output(&work.0.join("input.png"), "jxl").unwrap();
+            for format in ["jpg", "webp", "avif", "heic", "heif"] {
+                assert!(validate_png_output(&work.0.join("input.png"), format).is_err());
+            }
+            for lossless in [true, false] {
+                execute(&work.0, "cjxl", &encoder_arguments("jxl", 60, lossless));
+                let details = execute(&work.0, "jxlinfo", &["output.jxl".into()]);
+                let details = String::from_utf8(details.stdout).unwrap();
+                assert!(details.contains("Primaries: P3"), "{details}");
+                assert!(
+                    details.contains(&format!("Transfer function: {name}")),
+                    "{details}"
+                );
+                execute(
+                    &work.0,
+                    "djxl",
+                    &["output.jxl".into(), "decoded.png".into()],
+                );
+                let restored = image::open(work.0.join("decoded.png")).unwrap();
+                assert_eq!(restored.color(), image::ColorType::Rgb16);
+                if lossless {
+                    assert_eq!(source.to_rgb16(), restored.to_rgb16());
+                }
+            }
         }
     }
 

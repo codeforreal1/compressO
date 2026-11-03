@@ -3,6 +3,7 @@ import { TanStackRouterDevtools } from '@tanstack/router-devtools'
 import { event } from '@tauri-apps/api'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { useEffect } from 'react'
+import { useSnapshot } from 'valtio'
 import { subscribeKey } from 'valtio/utils'
 
 import { Toaster } from '@/components/Toast'
@@ -11,6 +12,7 @@ import {
   useWatchedFoldersSync,
 } from '@/hooks/useAutoCompressSync'
 import { useClipboardWatchSync } from '@/hooks/useClipboardWatchSync'
+import { useCliSettingsSync } from '@/hooks/useCliSettingsSync'
 import { useHardwareEncodingSync } from '@/hooks/useHardwareEncoding'
 import { useKeepAwakeSync } from '@/hooks/useKeepAwakeSync'
 import { watchPrimaryColor } from '@/hooks/usePrimaryColor'
@@ -19,6 +21,7 @@ import { useWindowTint } from '@/hooks/useWindowTint'
 import { settingsStore } from '@/stores/settingsStore'
 import { checkForUpdates, setupUpdateListeners } from '@/stores/updateStore'
 import { takeOpenedAtLogin } from '@/tauri/commands/app'
+import { takeBackgroundLaunch } from '@/tauri/commands/cli'
 import {
   setTrayIconEnabled,
   setTrayProgressColor,
@@ -58,21 +61,27 @@ function MainRoot() {
   useWatchedFoldersSync()
   useHardwareEncodingSync()
   useKeepAwakeSync()
+  useCliSettingsSync()
+  const { showMenuBarIcon } = useSnapshot(settingsStore)
 
   useEffect(() => {
     // Also tells the backend to show the window, which starts hidden to avoid a blank flash;
     // opened at login, it stays hidden with "Open in the menu bar only" (macOS, with the menu bar
     // icon), as the app works from the menu bar
-    takeOpenedAtLogin()
-      .catch(() => false)
-      .then((isOpenedAtLogin) => {
-        const isMenuBarOnly =
-          hasTray &&
-          isOpenedAtLogin &&
-          settingsStore.openInMenuBarOnly &&
-          settingsStore.showMenuBarIcon
-        event.emit('frontend-ready', { show: !isMenuBarOnly })
+    // Started by the command line (see `cli_server.rs`), it stays hidden as well
+    Promise.all([
+      takeOpenedAtLogin().catch(() => false),
+      takeBackgroundLaunch().catch(() => false),
+    ]).then(([isOpenedAtLogin, isBackgroundLaunch]) => {
+      const isMenuBarOnly =
+        hasTray &&
+        isOpenedAtLogin &&
+        settingsStore.openInMenuBarOnly &&
+        settingsStore.showMenuBarIcon
+      event.emit('frontend-ready', {
+        show: !isMenuBarOnly && !isBackgroundLaunch,
       })
+    })
     setupUpdateListeners()
     checkForUpdates()
   }, [])
@@ -95,8 +104,9 @@ function MainRoot() {
         {/* The drop zone of the tray, while it has media */}
         {/* The drop zone's queue (on Linux, only that of the watched folders) */}
         <DropZoneIsland />
-        {/* No menu bar window on Linux: the main window compresses the watched folders' queue */}
-        {hasTray ? null : <DropQueueRunner />}
+        {/* Without a menu bar window (Linux, or the menu bar icon turned off), the main window
+            compresses the queue (the watched folders' & the command line's) */}
+        {hasTray && showMenuBarIcon ? null : <DropQueueRunner />}
       </UIProvider>
       <Toaster />
       {isDev ? <TanStackRouterDevtools position="bottom-right" /> : null}
@@ -117,6 +127,7 @@ function TrayRoot() {
   useWatchedFoldersSync()
   useHardwareEncodingSync()
   useKeepAwakeSync()
+  useCliSettingsSync()
   // The menu bar's window compresses the drop zone's queue
   useDropQueueRunner()
   // The Windows tray icon's progress ring fills with the accent color

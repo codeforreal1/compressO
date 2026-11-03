@@ -272,7 +272,8 @@
       "about": "Tentang",
       "credits": "Kredit",
       "watchedFolders": "Pantau folder",
-      "history": "Riwayat"
+      "history": "Riwayat",
+      "commandLine": "CLI"
     },
     "about": {
       "updateAvailable": "Pembaruan tersedia",
@@ -330,6 +331,7 @@
       "source_main": "Jendela utama",
       "source_dropZone": "Zona letak",
       "source_watchedFolder": "Folder yang dipantau {{name}}",
+      "source_commandLine": "CLI",
       "original": "Asli",
       "output": "Hasil",
       "missing": "File ini telah dipindahkan atau dihapus.",
@@ -343,6 +345,59 @@
         "original": "Ukuran asli",
         "output": "Ukuran terkompresi",
         "reduction": "Rata-rata pengurangan"
+      }
+    },
+    "commandLine": {
+      "terminal": {
+        "title": "Terminal",
+        "command": {
+          "title": "Perintah terminal",
+          "description_macos": "Kompresi media dari terminal dengan perintah compresso, menggunakan preset dan pengaturan output Anda. Pemasangan akan meminta kata sandi Anda.",
+          "description_windows": "Kompresi media dari terminal dengan perintah compresso, menggunakan preset dan pengaturan output Anda.",
+          "description_linux": "Kompresi media dari terminal dengan perintah compresso, menggunakan preset dan pengaturan output Anda.",
+          "status_installed": "Sudah terpasang. Buka jendela terminal baru untuk menggunakannya.",
+          "status_notInstalled": "Belum terpasang.",
+          "status_broken": "Perintah ini mengarah ke CompressO yang telah dipindahkan atau dihapus. Pasang kembali.",
+          "status_unavailable": "Tidak tersedia dalam versi CompressO ini.",
+          "install": "Pasang",
+          "remove": "Hapus",
+          "installFailed": "Perintah tidak dapat dipasang.",
+          "removeFailed": "Perintah tidak dapat dihapus."
+        },
+        "usage": {
+          "title": "Penggunaan",
+          "description": "Tambahkan file atau folder setelah perintah. Media dikompresi dengan preset default, kecuali preset lain dipilih. Untuk melihat semua opsi, jalankan compresso --help."
+        },
+        "examples": {
+          "title": "Lihat contoh",
+          "one": "Kompresi satu file dengan preset default jenis medianya, lalu simpan di tempat preset itu menyimpan.",
+          "several": "Kompresi beberapa file dan folder sekaligus. Folder dibaca seperti saat diletakkan di aplikasi.",
+          "preset": "Gunakan preset untuk video berdasarkan namanya. Beri tanda kutip pada nama yang mengandung spasi.",
+          "presets": "Pilih preset untuk setiap jenis media. Jenis tanpa preset menggunakan preset default-nya.",
+          "singlePreset": "Untuk satu file, pilih presetnya dengan --preset=, apa pun jenis medianya.",
+          "outputFolder": "Simpan ke folder ini, bukan ke lokasi simpan preset. Ini diperlukan saat preset menanyakan lokasi simpan.",
+          "outputFile": "Simpan satu file dengan nama ini. Ekstensi yang berbeda mengonversinya ke format tersebut.",
+          "audioOnly": "Simpan hanya suara dari video sebagai file audio.",
+          "flatten": "Simpan setiap file langsung ke folder, tanpa folder di dalamnya.",
+          "prefix": "Tambahkan teks di awal nama file yang disimpan, hanya untuk perintah ini.",
+          "skipLarger": "Jangan simpan hasil yang lebih besar dari aslinya.",
+          "replace": "Ganti file asli jika hasilnya memiliki nama dan format yang sama. File asli dipindahkan ke Sampah.",
+          "replaceWindows": "Ganti file asli jika hasilnya memiliki nama dan format yang sama. File asli dipindahkan ke Recycle Bin.",
+          "hardware": "Kompresi video lebih cepat dengan akselerasi perangkat keras, hanya untuk perintah ini.",
+          "targetSize": "Dengan akselerasi perangkat keras, kompresi ulang video tanpanya jika ukuran targetnya tidak tercapai.",
+          "dryRun": "Tampilkan daftar file, presetnya, dan lokasi simpannya tanpa mengompresinya.",
+          "json": "Cetak hasil dalam JSON, untuk skrip dan agen AI.",
+          "quiet": "Cetak kesalahan saja.",
+          "list": "Tampilkan daftar preset Anda, beserta preset default setiap jenis media.",
+          "help": "Tampilkan semua opsi dan kode keluar."
+        }
+      },
+      "agents": {
+        "title": "Agen AI",
+        "mcp": {
+          "title": "Server MCP",
+          "description": "Agen AI, seperti Claude, dapat mengompresi media dengan preset Anda. Tambahkan server ini ke pengaturan MCP agen tersebut."
+        }
       }
     }
   },
@@ -359,6 +414,7 @@
     "showInFileManager": "Tampilkan di File Explorer",
     "showNameInFileManager": "Tampilkan {{name}} di File Explorer",
     "copied": "Disalin ke papan klip.",
+    "copy": "Salin",
     "close": "Tutup",
     "reset": "Atur ulang",
     "apply": "Terapkan",
@@ -441,6 +497,8 @@
     "chooseSaveLocation": "Pilih lokasi penyimpanan",
     "saveFailed": "Media yang dikompresi tidak dapat disimpan.",
     "compressFailed": "Media tidak dapat dikompresi.",
+    "fromCommandLine": "Ditambahkan dari CLI",
+    "commandLine": "CLI",
     "summary": {
       "cancelledAndFailed": "{{cancelled}}, {{failed}}",
       "cancelled_other": "{{count}} dibatalkan",
@@ -999,5 +1057,20 @@
     "withinTarget": "Dalam target",
     "overTarget": "Melebihi target",
     "replace": "Ganti berkas yang disimpan"
+  },
+  "dynamicRange": {
+    "boost": "Peningkatan HDR",
+    "convert": "Hapus HDR",
+    "intensity": "Intensitas",
+    "mixed": "Pilih satu gambar untuk menyesuaikan rentang dinamisnya.",
+    "unknown": "Rentang dinamis gambar tidak dapat ditentukan.",
+    "formatsOnly": "Peningkatan HDR hanya tersedia untuk keluaran PNG, JPEG XL, dan JPEG.",
+    "formatsOnlyWithoutJpeg": "Peningkatan HDR hanya tersedia untuk keluaran PNG dan JPEG XL.",
+    "jpegLossy": "JPEG HDR menggunakan pengodean berbasis kualitas. Pilih PNG atau JPEG XL untuk keluaran tanpa kehilangan.",
+    "videoMixed": "Pilih satu video untuk menyesuaikan rentang dinamisnya.",
+    "videoUnknown": "Rentang dinamis video tidak dapat ditentukan.",
+    "videoBoostFormats": "Peningkatan HDR hanya tersedia untuk video MP4, MOV, MKV, WebM, dan TS yang menggunakan codec H.265, VP9, atau AV1.",
+    "videoBoostLossless": "Peningkatan HDR tidak tersedia dengan kompresi lossless.",
+    "videoSdrOnly": "Format atau codec ini tidak dapat menyimpan HDR, sehingga video akan dikonversi ke SDR."
   }
 }

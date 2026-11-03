@@ -23,7 +23,6 @@ import OGImage from "../assets/og.jpg";
 import heroImage from "../assets/hero-app.jpg";
 import targetSizeImage from "../assets/target-size.jpg";
 import dropZoneImage from "../assets/drop-zone.webp";
-import editImage from "../assets/edit-tools.png";
 
 const latestRelease = await getLatestRelease();
 const downloads = getDownloadAssets(latestRelease?.tag_name);
@@ -66,6 +65,15 @@ const highlights: {
     span: "lg:col-span-5",
   },
   {
+    icon: "terminal",
+    title: "CLI and AI agents",
+    description:
+      "Compress from the terminal with the compresso command, using your presets, or let AI agents such as Claude do it for you through MCP. CompressO works in the background, without opening a window.",
+    image: "The compresso command and its MCP server",
+    src: "/features/cli.svg",
+    span: "lg:col-span-4",
+  },
+  {
     icon: "folderWatch",
     title: "Watch folders",
     description:
@@ -93,15 +101,6 @@ const highlights: {
     span: "lg:col-span-4",
   },
   {
-    icon: "crop",
-    title: "Edit before you compress",
-    description:
-      "Trim, crop, rotate and flip videos and images, with a live preview.",
-    image: "Crop ratios, rotate, flip and zoom controls",
-    src: editImage,
-    span: "lg:col-span-4",
-  },
-  {
     icon: "bolt",
     title: "Hardware acceleration",
     description:
@@ -123,6 +122,8 @@ const highlights: {
 
 /** Everything else, as a compact list */
 const moreFeatures = [
+  { title: "HDR", description: "Keep HDR photos and videos bright, boost standard ones up to 8×, or remove HDR." },
+  { title: "Edit before you compress", description: "Trim, crop, straighten, rotate and flip, with a live preview." },
   { title: "See the difference", description: "Compare the original and the compressed file before saving it." },
   { title: "Compression history", description: "Every compression, and the space saved in total." },
   { title: "Format conversion", description: "Convert between video, image and audio formats." },

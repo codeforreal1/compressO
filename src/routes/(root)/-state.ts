@@ -69,6 +69,7 @@ export const videoConfigInitialState: VideoConfig = {
     shouldEnableSubtitles: false,
   },
   shouldEnableCustomSpeed: false,
+  dynamicRange: { mode: 'original', intensity: 2 },
   customSpeed: undefined,
 }
 
@@ -89,6 +90,7 @@ export const svgSettingInitialState = {
 }
 
 export const imageConfigInitialState: ImageConfig = {
+  dynamicRange: { mode: 'original', intensity: 2 },
   convertToExtension: '-',
   isLossless: false,
   quality: 50,

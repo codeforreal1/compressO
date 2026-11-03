@@ -272,7 +272,8 @@
       "about": "關於",
       "credits": "致謝",
       "watchedFolders": "監看資料夾",
-      "history": "歷史記錄"
+      "history": "歷史記錄",
+      "commandLine": "CLI"
     },
     "about": {
       "updateAvailable": "有可用的更新",
@@ -330,6 +331,7 @@
       "source_main": "主視窗",
       "source_dropZone": "投放區",
       "source_watchedFolder": "監看的資料夾 {{name}}",
+      "source_commandLine": "CLI",
       "original": "原始檔案",
       "output": "輸出檔案",
       "missing": "此檔案已被移動或刪除。",
@@ -343,6 +345,59 @@
         "original": "原始大小",
         "output": "壓縮後大小",
         "reduction": "平均縮減"
+      }
+    },
+    "commandLine": {
+      "terminal": {
+        "title": "終端機",
+        "command": {
+          "title": "終端機指令",
+          "description_macos": "在終端機中使用 compresso 指令壓縮媒體，並採用您的預設與輸出設定。安裝時需要輸入您的密碼。",
+          "description_windows": "在終端機中使用 compresso 指令壓縮媒體，並採用您的預設與輸出設定。",
+          "description_linux": "在終端機中使用 compresso 指令壓縮媒體，並採用您的預設與輸出設定。",
+          "status_installed": "已安裝。請開啟新的終端機視窗以使用此指令。",
+          "status_notInstalled": "尚未安裝。",
+          "status_broken": "此指令指向已被移動或移除的 CompressO。請重新安裝。",
+          "status_unavailable": "此版本的 CompressO 不包含此指令。",
+          "install": "安裝",
+          "remove": "移除",
+          "installFailed": "無法安裝此指令。",
+          "removeFailed": "無法移除此指令。"
+        },
+        "usage": {
+          "title": "用法",
+          "description": "在指令後加入檔案或資料夾。若未選擇預設，媒體會以設為預設值的預設壓縮。若要查看所有選項，請執行 compresso --help。"
+        },
+        "examples": {
+          "title": "查看範例",
+          "one": "以該媒體類型的預設值預設壓縮一個檔案，並儲存到該預設的儲存位置。",
+          "several": "一次壓縮多個檔案與資料夾。資料夾的讀取方式與拖放到 App 上時相同。",
+          "preset": "依名稱為影片使用預設。包含空格的名稱請放在引號中。",
+          "presets": "為每種媒體類型選擇一個預設。未選擇的類型會使用其預設值預設。",
+          "singlePreset": "對於單一檔案，無論其媒體類型為何，都可以用 --preset= 選擇預設。",
+          "outputFolder": "儲存到此資料夾，而不是預設的儲存位置。預設每次詢問儲存位置時必須使用。",
+          "outputFile": "以此名稱儲存單一檔案。使用不同的副檔名會將其轉換為該格式。",
+          "audioOnly": "僅保留影片的聲音，儲存為音訊檔案。",
+          "flatten": "將所有檔案直接儲存到該資料夾，不保留其中的子資料夾。",
+          "prefix": "僅對此指令，在儲存的檔案名稱開頭加入文字。",
+          "skipLarger": "不儲存比原始檔案更大的輸出。",
+          "replace": "輸出與原始檔案名稱和格式相同時取代原始檔案。原始檔案會移到垃圾桶。",
+          "replaceWindows": "輸出與原始檔案名稱和格式相同時取代原始檔案。原始檔案會移到資源回收筒。",
+          "hardware": "僅對此指令，使用硬體加速更快地壓縮影片。",
+          "targetSize": "使用硬體加速時，若影片未達目標大小，則不使用加速重新壓縮。",
+          "dryRun": "列出檔案、其預設及儲存位置，但不進行壓縮。",
+          "json": "以 JSON 輸出結果，供指令碼與 AI 代理使用。",
+          "quiet": "僅輸出錯誤。",
+          "list": "列出您的預設，以及每種媒體類型的預設值預設。",
+          "help": "顯示所有選項與結束代碼。"
+        }
+      },
+      "agents": {
+        "title": "AI 代理",
+        "mcp": {
+          "title": "MCP 伺服器",
+          "description": "Claude 等 AI 代理可以使用您的預設壓縮媒體。請將此伺服器加入代理的 MCP 設定中。"
+        }
       }
     }
   },
@@ -359,6 +414,7 @@
     "showInFileManager": "在檔案總管中顯示",
     "showNameInFileManager": "在檔案總管中顯示 {{name}}",
     "copied": "已複製到剪貼簿。",
+    "copy": "複製",
     "close": "關閉",
     "reset": "重設",
     "apply": "套用",
@@ -441,6 +497,8 @@
     "chooseSaveLocation": "選擇儲存位置",
     "saveFailed": "無法儲存壓縮後的媒體。",
     "compressFailed": "無法壓縮該媒體。",
+    "fromCommandLine": "從 CLI 加入",
+    "commandLine": "CLI",
     "summary": {
       "cancelledAndFailed": "{{cancelled}}，{{failed}}",
       "cancelled_other": "{{count}} 個已取消",
@@ -999,5 +1057,20 @@
     "withinTarget": "在目標以內",
     "overTarget": "超出目標",
     "replace": "取代已儲存的檔案"
+  },
+  "dynamicRange": {
+    "boost": "HDR 增強",
+    "convert": "移除 HDR",
+    "intensity": "強度",
+    "mixed": "請選取單張影像來調整其動態範圍。",
+    "unknown": "無法判斷影像的動態範圍。",
+    "formatsOnly": "HDR 增強僅適用於 PNG、JPEG XL 和 JPEG 輸出。",
+    "formatsOnlyWithoutJpeg": "HDR 增強僅適用於 PNG 和 JPEG XL 輸出。",
+    "jpegLossy": "HDR JPEG 使用依品質編碼。若要無損輸出，請選擇 PNG 或 JPEG XL。",
+    "videoMixed": "請選取單一影片來調整其動態範圍。",
+    "videoUnknown": "無法判斷影片的動態範圍。",
+    "videoBoostFormats": "HDR 增強僅適用於使用 H.265、VP9 或 AV1 編解碼器的 MP4、MOV、MKV、WebM 和 TS 影片。",
+    "videoBoostLossless": "無損壓縮不支援 HDR 增強。",
+    "videoSdrOnly": "此格式或編解碼器無法儲存 HDR，因此影片將轉換為 SDR。"
   }
 }

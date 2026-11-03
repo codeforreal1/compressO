@@ -20,6 +20,14 @@ import {
   SvgConfig,
   VideoStream,
 } from '@/types/compression'
+import type {
+  ImageDynamicRangeConfig,
+  ImageDynamicRangeInfo,
+} from '@/types/imageDynamicRange'
+import type {
+  VideoDynamicRangeConfig,
+  VideoDynamicRangeInfo,
+} from '@/types/videoDynamicRange'
 
 export type MediaMetadataConfig = {
   title?: string | null
@@ -107,6 +115,8 @@ export type VideoConfig = {
   subtitlesConfig?: SubtitlesConfig | null
   shouldEnableCustomSpeed?: boolean
   customSpeed?: number | null
+  /** HDR Boost or Remove HDR, applied only to the videos it matches (see `videoDynamicRange.ts`) */
+  dynamicRange?: VideoDynamicRangeConfig
   /**
    * Transforms of all videos of a batch (set on the batch config only, by a preset); each video's
    * own crop is computed from its size
@@ -136,6 +146,8 @@ export type Video = {
   extension?: null | string
   thumbnailPathRaw?: string | null
   thumbnailPath?: string | null
+  /** Inspection of the original source, for its dynamic range setting */
+  dynamicRangeInfo?: VideoDynamicRangeInfo
   videoDuration?: number | null
   /**
    * While compressing to a target size: the size it comes out at, about its estimate at the quality
@@ -196,6 +208,7 @@ export type Video = {
 }
 
 export type ImageConfig = {
+  dynamicRange?: ImageDynamicRangeConfig
   convertToExtension: keyof typeof extensions.image | '-'
   isLossless: boolean
   quality: number
@@ -237,6 +250,8 @@ export type ImageConfig = {
 }
 
 export type Image = {
+  /** Inspection of the original source; never overwritten by an output preview. */
+  dynamicRangeInfo?: ImageDynamicRangeInfo
   id: string | null
   pathRaw?: string | null
   path?: string | null

@@ -4,12 +4,20 @@
 
 Features:
 
+- **HDR Boost**: Give SDR images HDR brightness with an intensity slider from 1× to 8×, on macOS, Windows and Linux. Available for PNG and JPEG XL output, and on macOS 15 and later also for JPEG, with an info icon explaining when another format is selected. HDR JPEGs include a gain map and a standard SDR rendition for compatible viewers.
+- **Remove HDR**: Convert HDR images, including HDR photos with a gain map, to SDR for standard brightness and wider format compatibility, on macOS, Windows and Linux. On macOS 15 and later, HDR photos saved as JPEG keep their HDR when Remove HDR is off. Image settings detect the original's dynamic range and show the matching control. Both HDR settings, including boost intensity, can be saved in image presets and used with Target Size.
+- **Video HDR**: HDR videos, including iPhone HDR and Dolby Vision videos, now stay HDR when compressed, using H.265 when the codec is automatic. **Remove HDR** converts them to SDR with proper tone mapping, and **HDR Boost** gives SDR videos HDR brightness from 1× to 8×. Both work on macOS, Windows and Linux and can be saved in video presets.
+- **CLI & AI agents**: Compress media from a terminal with the `compresso` command, using your presets and output settings, as if the media was dropped on the app: videos, images, audio files and folders, with a preset per media type, an output folder (or, for one file, an output file whose extension converts it to that format), and output settings for one command. `--json` and exit codes make it scriptable, and `compresso mcp` lets AI agents such as Claude compress media through MCP. CompressO runs in the background while it compresses, and the media shows in the queue and history. Install the command in Settings > CLI on macOS and with the AppImage; the Windows installer and the Linux package add it.
 - **Straighten**: Tilt photos, videos and animated GIFs slightly, by up to 45 degrees either way, to level a horizon or fix a crooked shot. The Straighten slider is in the transform editor, under the rotate and flip buttons. The crop stays inside the tilted picture, so no empty corners are added, and rotating or flipping keeps the straightened result.
 
 Bug Fixes:
 
+- Fixed compressed HDR videos showing banding and wrong brightness, and HDR videos looking washed out in GIFs, thumbnails and H.264 output; they are now converted to SDR where the format cannot store HDR.
+- Fixed supported PQ and HLG HDR JPEG XL images failing to open or recompress. PNG and JPEG XL output retain their HDR color information.
 - Fixed copied outputs that are not saved yet being pasted under a generated name; they are now pasted under the name they would be saved with, including the preset's file name prefix.
 - Fixed watched folders missing media in subfolders, in folders moved into them, and in files put back or replaced under a name that was already compressed.
+- Fixed the Linux AppImage closing at start with "Could not create default EGL display" on recent distributions, such as Ubuntu 26.04 and Fedora 44.
+- Fixed videos compressed with hardware acceleration on macOS coming out larger than their originals. Outputs now stay smaller than the original, H.264 files come out about as small as without hardware acceleration, and H.265 Target Size no longer goes over the chosen size.
 
 ### 4.0.0
 

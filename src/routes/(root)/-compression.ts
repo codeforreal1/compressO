@@ -22,6 +22,11 @@ import {
   supportsAudioTargetSize,
 } from '@/utils/audioTargetSize'
 import {
+  getImageDynamicRangeOperation,
+  isHdrJpegOutput,
+  isHdrPngOutput,
+} from '@/utils/imageDynamicRange'
+import {
   BYTES_PER_KB,
   DEFAULT_IMAGE_TARGET_SIZE_IN_KB,
   supportsImageTargetSize,
@@ -49,9 +54,30 @@ export async function waitForDropZone(signal: AbortSignal) {
   }
 }
 
+/**
+ * Hardware acceleration settings chosen for one media instead of the app's (Settings -> Output),
+ * e.g. on the command line
+ */
+export type AccelerationSettings = {
+  useHardwareAcceleration: boolean
+  retryTargetSizeOnCpu: boolean
+}
+
 export type MediaFile =
-  | (Video & { type: 'video' })
-  | (Image & { type: 'image' })
+  | (Video & { type: 'video'; acceleration?: AccelerationSettings })
+  | (Image & { type: 'image'; acceleration?: AccelerationSettings })
+
+/** The hardware acceleration settings a media is compressed with: its own, or the app's */
+export function getAccelerationSettings(media: {
+  acceleration?: AccelerationSettings
+}): AccelerationSettings {
+  return (
+    media.acceleration ?? {
+      useHardwareAcceleration: settingsStore.useHardwareAcceleration,
+      retryTargetSizeOnCpu: settingsStore.retryTargetSizeOnCpu,
+    }
+  )
+}
 
 /**
  * Which lane a media is compressed in: one video, one audio & one image at a time (see
@@ -121,7 +147,8 @@ export function getQualityEstimateKey(
   const { videoId: _videoId, ...settings } = videoConfig
   return JSON.stringify({
     ...settings,
-    useHardwareAcceleration: settingsStore.useHardwareAcceleration,
+    useHardwareAcceleration:
+      getAccelerationSettings(media).useHardwareAcceleration,
   })
 }
 
@@ -400,6 +427,25 @@ export function getMediaItemConfig(
   const audioPlan = getAudioTargetSizePlan(v)
   const audioWarning = getAudioTargetSizeWarning(v)
   if (audioWarning) throw new Error(t(audioWarning))
+  const imageOutput =
+    v.type === 'image'
+      ? (v.config.convertToExtension === '-'
+          ? v.extension
+          : v.config.convertToExtension)!
+      : ''
+  const imageOperation =
+    v.type === 'image'
+      ? getImageDynamicRangeOperation(
+          v.config.dynamicRange,
+          v.dynamicRangeInfo,
+          imageOutput,
+        )
+      : null
+  const imageIsLossless =
+    v.type === 'image' &&
+    ((v.config.isLossless &&
+      !isHdrJpegOutput(imageOutput, imageOperation, v.dynamicRangeInfo)) ||
+      isHdrPngOutput(imageOutput, imageOperation, v.dynamicRangeInfo))
   return {
     videoConfig:
       v.type === 'video'
@@ -485,8 +531,8 @@ export function getMediaItemConfig(
                     sizeInBytes: targetPlan.sizeInBytes,
                     videoBitrate: targetPlan.videoBitrate,
                     retryOnCpu:
-                      settingsStore.useHardwareAcceleration &&
-                      settingsStore.retryTargetSizeOnCpu,
+                      getAccelerationSettings(v).useHardwareAcceleration &&
+                      getAccelerationSettings(v).retryTargetSizeOnCpu,
                     qualityFirst: targetPlan.fitsAtQuality,
                   }
                 : null,
@@ -546,18 +592,23 @@ export function getMediaItemConfig(
                       v.config.subtitlesConfig.preserveExistingSubtitles,
                   }
                 : null,
+            // The backend applies it only when it matches the source & its output
+            dynamicRange: v.isAudioFile
+              ? null
+              : (v.config?.dynamicRange ?? null),
+            useHardwareAcceleration:
+              v.acceleration?.useHardwareAcceleration ?? null,
           } satisfies VideoCompressionConfig)
         : undefined,
     imageConfig:
       v.type === 'image'
         ? ({
+            dynamicRange: imageOperation,
             imageId: v.id!,
-            convertToExtension: (v.config.convertToExtension === '-'
-              ? v.extension
-              : v.config.convertToExtension)!,
+            convertToExtension: imageOutput,
             imagePath: v.pathRaw!,
-            isLossless: v.config.isLossless,
-            quality: v.config.isLossless ? 100 : (v.config.quality ?? 100),
+            isLossless: imageIsLossless,
+            quality: imageIsLossless ? 100 : (v.config.quality ?? 100),
             stripMetadata: v.config.shouldStripMetadata,
             svgScaleFactor: v.config.svgScaleFactor ?? null,
             svgConfig: v.config?.shouldEnableAdvancedSvgSetting

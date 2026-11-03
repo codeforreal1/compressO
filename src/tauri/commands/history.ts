@@ -4,7 +4,12 @@ import { core } from '@tauri-apps/api'
 export const HISTORY_EVENT = 'history-changed'
 
 /** Where a compression was started */
-export type HistorySource = 'main' | 'dropZone' | 'watchedFolder'
+export type HistorySource =
+  | 'main'
+  | 'dropZone'
+  | 'watchedFolder'
+  /** Compressed for the command line (see `cli_server.rs`) */
+  | 'commandLine'
 
 /** A compression, as recorded when it was done (see `history.rs`) */
 export type HistoryEntry = {

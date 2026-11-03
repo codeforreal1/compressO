@@ -272,7 +272,8 @@
       "about": "About",
       "credits": "Credits",
       "watchedFolders": "Watch Folder",
-      "history": "History"
+      "history": "History",
+      "commandLine": "CLI"
     },
     "about": {
       "updateAvailable": "Update available",
@@ -330,6 +331,7 @@
       "source_main": "Main window",
       "source_dropZone": "Drop zone",
       "source_watchedFolder": "Watched folder {{name}}",
+      "source_commandLine": "CLI",
       "original": "Original",
       "output": "Output",
       "missing": "This file was moved or deleted.",
@@ -343,6 +345,59 @@
         "original": "Original size",
         "output": "Compressed size",
         "reduction": "Average reduction"
+      }
+    },
+    "commandLine": {
+      "terminal": {
+        "title": "Terminal",
+        "command": {
+          "title": "Terminal command",
+          "description_macos": "Compress media from a terminal with the compresso command, using your presets and output settings. Installing it asks for your password.",
+          "description_windows": "Compress media from a terminal with the compresso command, using your presets and output settings.",
+          "description_linux": "Compress media from a terminal with the compresso command, using your presets and output settings.",
+          "status_installed": "It is installed. Open a new terminal window to use it.",
+          "status_notInstalled": "It is not installed.",
+          "status_broken": "It refers to a copy of CompressO that was moved or removed. Install it again.",
+          "status_unavailable": "It is not included in this version of CompressO.",
+          "install": "Install",
+          "remove": "Remove",
+          "installFailed": "The command could not be installed.",
+          "removeFailed": "The command could not be removed."
+        },
+        "usage": {
+          "title": "Usage",
+          "description": "Add files or folders after the command. Media is compressed with the default presets unless a preset is chosen. To see every option, run compresso --help."
+        },
+        "examples": {
+          "title": "View Examples",
+          "one": "Compress one file with the default preset of its media type, and save it where that preset saves.",
+          "several": "Compress several files and folders at once. Folders are read as when they are dropped on the app.",
+          "preset": "Use a preset for videos, by its name. Put names with spaces inside quotes.",
+          "presets": "Choose a preset for each media type. A media type without one uses its default preset.",
+          "singlePreset": "For a single file, choose its preset with --preset=, whatever its media type.",
+          "outputFolder": "Save to this folder instead of the save location of the preset. It is needed when a preset asks where to save.",
+          "outputFile": "Save a single file under this name. A different extension converts it to that format.",
+          "audioOnly": "Keep only the sound of a video, as an audio file.",
+          "flatten": "Save every file straight into the folder, without the folders inside it.",
+          "prefix": "Add text to the start of the saved file names, for this command only.",
+          "skipLarger": "Do not save outputs that are larger than their originals.",
+          "replace": "Replace the original when the output has the same name and format. The original is moved to the Trash.",
+          "hardware": "Compress videos faster with hardware acceleration, for this command only.",
+          "targetSize": "With hardware acceleration, compress a video again without it when it misses its target size.",
+          "dryRun": "List the files, their presets and where they would be saved, without compressing them.",
+          "json": "Print the results as JSON, for scripts and AI agents.",
+          "quiet": "Print only errors.",
+          "list": "List your presets, with the default one of each media type.",
+          "help": "Show every option and the exit codes.",
+          "replaceWindows": "Replace the original when the output has the same name and format. The original is moved to the Recycle Bin."
+        }
+      },
+      "agents": {
+        "title": "AI Agents",
+        "mcp": {
+          "title": "MCP server",
+          "description": "AI agents, such as Claude, can compress media with your presets. Add this server to the MCP settings of the agent."
+        }
       }
     }
   },
@@ -359,6 +414,7 @@
     "showInFileManager": "Show in File Explorer",
     "showNameInFileManager": "Show {{name}} in File Explorer",
     "copied": "Copied to clipboard.",
+    "copy": "Copy",
     "close": "Close",
     "reset": "Reset",
     "apply": "Apply",
@@ -442,6 +498,8 @@
     "chooseSaveLocation": "Choose a save location",
     "saveFailed": "The compressed media could not be saved.",
     "compressFailed": "The media could not be compressed.",
+    "fromCommandLine": "Added from the CLI",
+    "commandLine": "CLI",
     "summary": {
       "cancelledAndFailed": "{{cancelled}}, {{failed}}",
       "cancelled_one": "{{count}} cancelled",
@@ -1014,5 +1072,20 @@
     "withinTarget": "Within the target",
     "overTarget": "Over the target",
     "replace": "Replace saved file"
+  },
+  "dynamicRange": {
+    "boost": "HDR Boost",
+    "convert": "Remove HDR",
+    "intensity": "Intensity",
+    "mixed": "Select an individual image to adjust its dynamic range.",
+    "unknown": "The image’s dynamic range could not be determined.",
+    "formatsOnly": "HDR Boost is only available for PNG, JPEG XL, and JPEG output.",
+    "formatsOnlyWithoutJpeg": "HDR Boost is only available for PNG and JPEG XL output.",
+    "jpegLossy": "HDR JPEG uses quality-based encoding. Choose PNG or JPEG XL for lossless output.",
+    "videoMixed": "Select an individual video to adjust its dynamic range.",
+    "videoUnknown": "The video’s dynamic range could not be determined.",
+    "videoBoostFormats": "HDR Boost is only available for MP4, MOV, MKV, WebM, and TS videos that use the H.265, VP9, or AV1 codec.",
+    "videoBoostLossless": "HDR Boost is not available with lossless compression.",
+    "videoSdrOnly": "This format or codec cannot store HDR, so the video will be converted to SDR."
   }
 }

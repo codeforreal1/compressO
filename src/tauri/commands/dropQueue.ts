@@ -52,6 +52,48 @@ export type DropQueueItem = {
   watchFolderId: string | null
   /** That folder's name, shown with it */
   watchFolderName: string | null
+  /**
+   * The command line job it belongs to (see `cli_server.rs`), with its presets & output settings;
+   * `null` for media added in the app
+   */
+  cliJob: CliJob | null
+  /** Why it failed or was not saved, for the command line (`message` is the same, translated) */
+  reason: DropQueueItemReason | null
+  /** The error it failed with, as the command line shows it */
+  error: string | null
+}
+
+export type DropQueueItemReason =
+  | 'larger'
+  | 'noSaveLocation'
+  | 'saveFailed'
+  | 'accessDenied'
+  | 'compressFailed'
+
+/** A command line job's choices: each setting left out (`null`) follows the app */
+export type CliJob = {
+  jobId: string
+  /** The preset of each media type, by id; a media type without one uses its default preset */
+  presetIds: {
+    video: string | null
+    image: string | null
+    audio: string | null
+  }
+  /** Saved here instead of the preset's save location */
+  outputFolder: string | null
+  /**
+   * For a single file: the exact name it is saved under in `outputFolder` (no prefix; a numbered
+   * name when it exists)
+   */
+  outputFileName: string | null
+  /** The format it is converted to instead of the preset's (from `outputFileName`) */
+  convertToExtension: string | null
+  skipLargerOutputs: boolean | null
+  preserveFolderStructure: boolean | null
+  replaceOriginalFiles: boolean | null
+  fileNamePrefix: string | null
+  useHardwareAcceleration: boolean | null
+  reachTargetSizesWithoutAcceleration: boolean | null
 }
 
 export type DropQueueItemUpdate = Partial<
@@ -66,6 +108,8 @@ export type DropQueueItemUpdate = Partial<
     | 'message'
     | 'isAccessDenied'
     | 'needsSaveLocation'
+    | 'reason'
+    | 'error'
   >
 >
 

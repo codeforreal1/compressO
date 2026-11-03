@@ -46,3 +46,6 @@ target
 /src-tauri/tool-bundle/*
 !/src-tauri/tool-bundle/.gitkeep
 /src-tauri/.toolchain-cache/
+
+# The command line tool, built for the app's target (scripts/build-cli.mjs)
+/src-tauri/binaries/

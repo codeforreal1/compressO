@@ -2,6 +2,7 @@ use crate::core::domain::{
     AudioStream, Chapter, ContainerInfo, Disposition, SubtitleStream, VideoInfo, VideoStream,
 };
 use crate::core::media_process::MediaProcessExecutorBuilder;
+use crate::core::video_dynamic_range::VideoColor;
 use serde_json::Value;
 use std::path::Path;
 use std::process::Command;
@@ -338,6 +339,39 @@ impl FFPROBE {
         };
 
         Ok(streams)
+    }
+
+    /// The colour of the first video stream (the one compressed), with its Dolby Vision profile;
+    /// `None` without a video stream (see `video_dynamic_range`)
+    pub async fn get_video_color(&mut self, path: &str) -> Result<Option<VideoColor>, String> {
+        let mut ffprobe_cmd = self.get_ffprobe_command()?;
+        ffprobe_cmd.args([
+            "-v",
+            "error",
+            "-select_streams",
+            "v:0",
+            "-show_entries",
+            "stream=pix_fmt,height,color_transfer,color_primaries,color_space,color_range:stream_side_data=dv_profile",
+            "-of",
+            "json",
+            path,
+        ]);
+
+        let executor = MediaProcessExecutorBuilder::new(self.app.clone())
+            .owner_window(&self.owner_window)
+            .command(ffprobe_cmd)
+            .build()?;
+        let output = executor.spawn_and_wait_with_output().await?;
+        if !output.success() {
+            return Err("Failed to get the video's colour".to_string());
+        }
+        let json: Value = serde_json::from_str(&output.stdout)
+            .map_err(|e| format!("Failed to parse ffprobe output: {}", e))?;
+        Ok(json
+            .get("streams")
+            .and_then(|streams| streams.as_array())
+            .and_then(|streams| streams.first())
+            .map(video_color))
     }
 
     /// Get container-level format information
@@ -808,4 +842,30 @@ fn get_stream_rotation(stream: &Value) -> Option<f64> {
 /// Whether a rotation swaps the width & height (90° or 270°)
 fn is_quarter_turn(rotation: Option<f64>) -> bool {
     rotation.is_some_and(|r| (r.round() as i64).rem_euclid(180) == 90)
+}
+
+/// A video stream's colour from ffprobe's JSON (see `get_video_color`)
+fn video_color(stream: &Value) -> VideoColor {
+    let text = |key: &str| {
+        stream
+            .get(key)
+            .and_then(|value| value.as_str())
+            .map(str::to_string)
+    };
+    VideoColor {
+        pix_fmt: text("pix_fmt").unwrap_or_default(),
+        transfer: text("color_transfer"),
+        primaries: text("color_primaries"),
+        matrix: text("color_space"),
+        range: text("color_range"),
+        height: stream.get("height").and_then(|h| h.as_u64()).unwrap_or(0) as u32,
+        dolby_vision_profile: stream
+            .get("side_data_list")
+            .and_then(|list| list.as_array())
+            .and_then(|list| {
+                list.iter()
+                    .find_map(|side_data| side_data.get("dv_profile").and_then(|p| p.as_u64()))
+            })
+            .map(|profile| profile as u32),
+    }
 }

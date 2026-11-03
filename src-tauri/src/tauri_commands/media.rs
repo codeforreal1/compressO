@@ -253,7 +253,8 @@ async fn compress_media_item(
             // Failing to prepare ffmpeg also only fails this video
             let mut ffmpeg_instance = FFMPEG::new(&task_app)
                 .map_err(|e| format!("Failed to create ffmpeg instance: {}", e))?
-                .with_owner_window(&owner_window);
+                .with_owner_window(&owner_window)
+                .with_hardware_acceleration(config.use_hardware_acceleration);
             ffmpeg_instance
                 .compress_video(
                     &config.video_path,
@@ -274,6 +275,7 @@ async fn compress_media_item(
                     config.subtitles_config.as_ref(),
                     config.speed,
                     config.target_size.as_ref(),
+                    config.dynamic_range.as_ref(),
                 )
                 .await
         })

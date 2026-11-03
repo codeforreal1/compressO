@@ -93,6 +93,7 @@ export function recordQueueHistory({
   groupId,
   relativeDir,
   watchFolderName,
+  isFromCommandLine,
   originalPath,
   originalSize,
   outputPath,
@@ -105,6 +106,8 @@ export function recordQueueHistory({
   groupId: string
   relativeDir: string
   watchFolderName: string | null
+  /** Compressed for the command line (see `cli_server.rs`) */
+  isFromCommandLine: boolean
   originalPath: string
   originalSize: number | null
   outputPath: string | null
@@ -112,7 +115,11 @@ export function recordQueueHistory({
   mediaType: HistoryEntry['mediaType']
   presetId: string | null | undefined
 }) {
-  const source: HistorySource = watchFolderName ? 'watchedFolder' : 'dropZone'
+  const source: HistorySource = isFromCommandLine
+    ? 'commandLine'
+    : watchFolderName
+      ? 'watchedFolder'
+      : 'dropZone'
   addHistoryEntries([
     {
       id: `${id}:${Date.now()}`,

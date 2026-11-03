@@ -3,6 +3,7 @@ use std::{path::PathBuf, process::Command};
 
 fn main() {
     prepare_tool_manifest();
+    ensure_cli_binary();
     #[cfg(target_os = "macos")]
     build_swift_library();
 
@@ -28,6 +29,28 @@ fn prepare_tool_manifest() {
     let output = std::path::PathBuf::from(std::env::var("OUT_DIR").unwrap())
         .join("tool-manifest.json");
     std::fs::write(output, manifest).expect("write embedded tool manifest");
+}
+
+// The command line tool is bundled from `binaries/` (`bundle.externalBin`), built there by
+// `scripts/build-cli.mjs` before Tauri builds the app. Tauri requires the file to exist, so plain
+// `cargo check`/`cargo build` of a development build get an empty stand-in; release builds need it.
+fn ensure_cli_binary() {
+    let target = std::env::var("TARGET").unwrap();
+    let extension = if target.contains("windows") { ".exe" } else { "" };
+    let path = std::path::PathBuf::from(format!("binaries/compresso-cli-{target}{extension}"));
+    println!("cargo:rerun-if-changed={}", path.display());
+    if path.exists() {
+        return;
+    }
+    if std::env::var("PROFILE").unwrap() == "release" {
+        panic!("Missing {}. Run scripts/build-cli.mjs first.", path.display());
+    }
+    println!(
+        "cargo:warning=Missing {}, so an empty one was made. Run scripts/build-cli.mjs for a working command line.",
+        path.display()
+    );
+    std::fs::create_dir_all("binaries").expect("create binaries");
+    std::fs::write(&path, b"").expect("write the command line stand-in");
 }
 
 // Compiles the Swift package (native macOS UI) into a static library and links it in. Rust talks to

@@ -58,6 +58,7 @@ pub async fn compress_video(
             subtitles_config.as_ref(),
             speed,
             None,
+            None,
         )
         .await
     {

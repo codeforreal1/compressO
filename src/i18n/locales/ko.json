@@ -272,7 +272,8 @@
       "about": "정보",
       "credits": "크레딧",
       "watchedFolders": "폴더 감시",
-      "history": "기록"
+      "history": "기록",
+      "commandLine": "CLI"
     },
     "about": {
       "updateAvailable": "업데이트 사용 가능",
@@ -330,6 +331,7 @@
       "source_main": "메인 창",
       "source_dropZone": "드롭 존",
       "source_watchedFolder": "감시 폴더 {{name}}",
+      "source_commandLine": "CLI",
       "original": "원본",
       "output": "출력",
       "missing": "이 파일은 이동되었거나 삭제되었습니다.",
@@ -343,6 +345,59 @@
         "original": "원본 크기",
         "output": "압축 후 크기",
         "reduction": "평균 감소율"
+      }
+    },
+    "commandLine": {
+      "terminal": {
+        "title": "터미널",
+        "command": {
+          "title": "터미널 명령",
+          "description_macos": "프리셋과 출력 설정을 사용하여 터미널에서 compresso 명령으로 미디어를 압축합니다. 설치할 때 암호를 묻습니다.",
+          "description_windows": "프리셋과 출력 설정을 사용하여 터미널에서 compresso 명령으로 미디어를 압축합니다.",
+          "description_linux": "프리셋과 출력 설정을 사용하여 터미널에서 compresso 명령으로 미디어를 압축합니다.",
+          "status_installed": "설치되어 있습니다. 사용하려면 새 터미널 창을 여십시오.",
+          "status_notInstalled": "설치되어 있지 않습니다.",
+          "status_broken": "이동되었거나 제거된 CompressO를 가리킵니다. 다시 설치하십시오.",
+          "status_unavailable": "이 버전의 CompressO에는 포함되어 있지 않습니다.",
+          "install": "설치",
+          "remove": "제거",
+          "installFailed": "명령을 설치할 수 없습니다.",
+          "removeFailed": "명령을 제거할 수 없습니다."
+        },
+        "usage": {
+          "title": "사용법",
+          "description": "명령 뒤에 파일이나 폴더를 추가합니다. 프리셋을 선택하지 않으면 기본 프리셋으로 미디어를 압축합니다. 모든 옵션을 보려면 compresso --help를 실행하십시오."
+        },
+        "examples": {
+          "title": "예시 보기",
+          "one": "파일 하나를 해당 미디어 유형의 기본 프리셋으로 압축하고 그 프리셋의 저장 위치에 저장합니다.",
+          "several": "여러 파일과 폴더를 한 번에 압축합니다. 폴더는 앱에 놓았을 때와 같이 읽습니다.",
+          "preset": "비디오용 프리셋을 이름으로 사용합니다. 공백이 있는 이름은 따옴표로 묶으십시오.",
+          "presets": "미디어 유형마다 프리셋을 선택합니다. 선택하지 않은 유형은 기본 프리셋을 사용합니다.",
+          "singlePreset": "파일 하나에는 미디어 유형과 관계없이 --preset=으로 프리셋을 선택합니다.",
+          "outputFolder": "프리셋의 저장 위치 대신 이 폴더에 저장합니다. 매번 저장 위치를 묻는 프리셋에서는 필수입니다.",
+          "outputFile": "파일 하나를 이 이름으로 저장합니다. 확장자가 다르면 그 형식으로 변환합니다.",
+          "audioOnly": "비디오의 소리만 오디오 파일로 남깁니다.",
+          "flatten": "안의 폴더 없이 모든 파일을 폴더에 바로 저장합니다.",
+          "prefix": "이 명령에서만 저장되는 파일 이름 앞에 텍스트를 붙입니다.",
+          "skipLarger": "원본보다 큰 출력은 저장하지 않습니다.",
+          "replace": "출력의 이름과 형식이 같으면 원본을 대체합니다. 원본은 휴지통으로 이동합니다.",
+          "replaceWindows": "출력의 이름과 형식이 같으면 원본을 대체합니다. 원본은 휴지통으로 이동합니다.",
+          "hardware": "이 명령에서만 하드웨어 가속으로 비디오를 더 빠르게 압축합니다.",
+          "targetSize": "하드웨어 가속을 사용할 때 목표 크기에 맞지 않은 비디오를 가속 없이 다시 압축합니다.",
+          "dryRun": "압축하지 않고 파일, 해당 프리셋, 저장 위치를 나열합니다.",
+          "json": "스크립트와 AI 에이전트를 위해 결과를 JSON으로 출력합니다.",
+          "quiet": "오류만 출력합니다.",
+          "list": "미디어 유형별 기본 프리셋과 함께 프리셋을 나열합니다.",
+          "help": "모든 옵션과 종료 코드를 표시합니다."
+        }
+      },
+      "agents": {
+        "title": "AI 에이전트",
+        "mcp": {
+          "title": "MCP 서버",
+          "description": "Claude와 같은 AI 에이전트가 사용자의 프리셋으로 미디어를 압축할 수 있습니다. 이 서버를 에이전트의 MCP 설정에 추가하십시오."
+        }
       }
     }
   },
@@ -359,6 +414,7 @@
     "showInFileManager": "파일 탐색기에서 보기",
     "showNameInFileManager": "파일 탐색기에서 {{name}} 보기",
     "copied": "클립보드에 복사했습니다.",
+    "copy": "복사",
     "close": "닫기",
     "reset": "재설정",
     "apply": "적용",
@@ -441,6 +497,8 @@
     "chooseSaveLocation": "저장 위치 선택",
     "saveFailed": "압축된 미디어를 저장할 수 없습니다.",
     "compressFailed": "미디어를 압축할 수 없습니다.",
+    "fromCommandLine": "CLI에서 추가됨",
+    "commandLine": "CLI",
     "summary": {
       "cancelledAndFailed": "{{cancelled}}, {{failed}}",
       "cancelled_other": "{{count}}개 취소됨",
@@ -999,5 +1057,20 @@
     "withinTarget": "목표 이내",
     "overTarget": "목표 초과",
     "replace": "저장된 파일 바꾸기"
+  },
+  "dynamicRange": {
+    "boost": "HDR 부스트",
+    "convert": "HDR 제거",
+    "intensity": "강도",
+    "mixed": "다이내믹 레인지를 조정할 이미지를 하나 선택하세요.",
+    "unknown": "이미지의 다이내믹 레인지를 확인할 수 없습니다.",
+    "formatsOnly": "HDR 부스트는 PNG, JPEG XL 및 JPEG 출력에서만 사용할 수 있습니다.",
+    "formatsOnlyWithoutJpeg": "HDR 부스트는 PNG 및 JPEG XL 출력에서만 사용할 수 있습니다.",
+    "jpegLossy": "HDR JPEG는 품질 기반 인코딩을 사용합니다. 무손실 출력은 PNG 또는 JPEG XL을 선택하세요.",
+    "videoMixed": "다이내믹 레인지를 조정할 동영상을 하나 선택하세요.",
+    "videoUnknown": "동영상의 다이내믹 레인지를 확인할 수 없습니다.",
+    "videoBoostFormats": "HDR 부스트는 H.265, VP9 또는 AV1 코덱을 사용하는 MP4, MOV, MKV, WebM 및 TS 동영상에서만 사용할 수 있습니다.",
+    "videoBoostLossless": "무손실 압축에서는 HDR 부스트를 사용할 수 없습니다.",
+    "videoSdrOnly": "이 형식 또는 코덱은 HDR을 저장할 수 없으므로 동영상이 SDR로 변환됩니다."
   }
 }

@@ -216,15 +216,25 @@ function IslandTile({
         </div>
       )}
 
-      {/* From a watched folder (dropped media has no tag), with its name; hidden on hover, when
-          the actions show at the top */}
-      {item.watchFolderName ? (
+      {/* From the command line, or a watched folder with its name (dropped media has no tag);
+          hidden on hover, when the actions show at the top */}
+      {item.cliJob || item.watchFolderName ? (
         <div
           className="absolute top-1 left-1 max-w-[calc(100%-3.5rem)] flex items-center gap-0.5 rounded-full bg-black/60 px-1.5 py-0.5 text-[10px] text-white transition-opacity group-hover:opacity-0"
-          title={t('queue.fromWatchedFolder', { name: item.watchFolderName })}
+          title={
+            item.cliJob
+              ? t('queue.fromCommandLine')
+              : t('queue.fromWatchedFolder', { name: item.watchFolderName })
+          }
         >
-          <Icon name="fileExplorer" size={10} className="shrink-0 opacity-80" />
-          <span className="truncate">{item.watchFolderName}</span>
+          <Icon
+            name={item.cliJob ? 'terminal' : 'fileExplorer'}
+            size={10}
+            className="shrink-0 opacity-80"
+          />
+          <span className="truncate">
+            {item.cliJob ? t('queue.commandLine') : item.watchFolderName}
+          </span>
         </div>
       ) : null}
 
