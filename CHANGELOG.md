@@ -17,6 +17,7 @@ Bug Fixes:
 - Fixed copied outputs that are not saved yet being pasted under a generated name; they are now pasted under the name they would be saved with, including the preset's file name prefix.
 - Fixed watched folders missing media in subfolders, in folders moved into them, and in files put back or replaced under a name that was already compressed.
 - Fixed the Linux AppImage closing at start with "Could not create default EGL display" on recent distributions, such as Ubuntu 26.04 and Fedora 44.
+- Fixed videos compressed with hardware acceleration on macOS coming out larger than their originals. Outputs now stay smaller than the original, H.264 files come out about as small as without hardware acceleration, and H.265 Target Size no longer goes over the chosen size.
 
 ### 4.0.0
 
