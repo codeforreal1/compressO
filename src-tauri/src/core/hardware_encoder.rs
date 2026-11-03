@@ -168,9 +168,26 @@ pub async fn encoder_for(
 /// The arguments of a CPU encode (`libx264`/`libx265` with `-crf`), changed to encode on the
 /// graphics card: its encoder & its quality options for the same CRF, without x264's `-preset`.
 /// The rest is kept (e.g. HEVC's `hvc1` tag for Apple players).
-pub fn to_hardware_args(cpu_args: &[String], encoder: &HardwareEncoder) -> Vec<String> {
+///
+/// On macOS (VideoToolbox), which needs far more bytes than x264 for the same quality (about twice
+/// with H.264, see `quality_args`):
+/// - by quality (`-crf`), the bitrate is kept under `quality_cap_kbps` (e.g. a part of the
+///   source's), so the output does not come out larger than its original
+/// - at a bitrate (a target size), HEVC's peaks are kept at the bitrate itself, as it keeps well
+///   over an average bitrate otherwise (H.264 keeps to it, & would keep well under it so)
+pub fn to_hardware_args(
+    cpu_args: &[String],
+    encoder: &HardwareEncoder,
+    quality_cap_kbps: Option<u32>,
+) -> Vec<String> {
     let mut args = Vec::with_capacity(cpu_args.len() + 8);
     let mut has_hwaccel = false;
+    let is_videotoolbox = encoder.api == Api::VideoToolbox;
+    // The average bitrate of a target size (not `0`, which encodes by quality)
+    let target_bitrate = cpu_args
+        .windows(2)
+        .find(|pair| pair[0] == "-b:v:0" && pair[1] != "0")
+        .map(|pair| pair[1].clone());
     let mut index = 0;
     while index < cpu_args.len() {
         let arg = cpu_args[index].as_str();
@@ -193,6 +210,23 @@ pub fn to_hardware_args(cpu_args: &[String], encoder: &HardwareEncoder) -> Vec<S
             ("-crf", Some(crf)) => {
                 let crf = crf.parse::<f32>().unwrap_or(28.0);
                 args.extend(quality_args(encoder, crf));
+                if let Some(cap) = quality_cap_kbps.filter(|_| is_videotoolbox) {
+                    args.extend([
+                        "-maxrate:v:0".to_string(),
+                        format!("{}k", cap),
+                        "-bufsize:v:0".to_string(),
+                        format!("{}k", cap.saturating_mul(2)),
+                    ]);
+                }
+                index += 2;
+            }
+            ("-maxrate:v:0", Some(_))
+                if is_videotoolbox && encoder.codec == Codec::Hevc && target_bitrate.is_some() =>
+            {
+                args.extend([
+                    "-maxrate:v:0".to_string(),
+                    target_bitrate.clone().unwrap_or_default(),
+                ]);
                 index += 2;
             }
             // 10-bit (HDR) frames are P010 on graphics cards; on macOS, HEVC is then Main 10
@@ -221,10 +255,13 @@ pub fn to_hardware_args(cpu_args: &[String], encoder: &HardwareEncoder) -> Vec<S
 fn quality_args(encoder: &HardwareEncoder, crf: f32) -> Vec<String> {
     let crf_value = crf.round() as u32;
     let args: Vec<String> = match encoder.api {
-        // A quality of 1 to 100 (higher is better), measured against x264: CRF 28 is about 57, & each
-        // CRF step about 1.75
+        // A quality of 1 to 100 (higher is better), each CRF step about 1.75. Measured against
+        // x264 at CRF 28: HEVC matches its quality at about 57 (about 1.2 times its size), while
+        // H.264 needs about twice its size to match it, so it is set to about x264's size instead
+        // (45, a little lower quality)
         Api::VideoToolbox => {
-            let quality = (57.0 - (crf - 28.0) * 1.75).round().clamp(1.0, 100.0) as u32;
+            let base = if encoder.codec == Codec::Hevc { 57.0 } else { 45.0 };
+            let quality = (base - (crf - 28.0) * 1.75).round().clamp(1.0, 100.0) as u32;
             vec!["-q:v:0".into(), quality.to_string()]
         }
         // Constant quality, on a scale like CRF
@@ -276,10 +313,22 @@ mod tests {
     fn videotoolbox_replaces_the_encoder_preset_and_crf() {
         let encoder = encoder("h264_videotoolbox", Codec::H264, Api::VideoToolbox);
         assert_eq!(
-            to_hardware_args(&args(&CPU_ARGS), &encoder),
+            to_hardware_args(&args(&CPU_ARGS), &encoder, None),
             args(&[
-                "-i", "in.mp4", "-c:v:0", "h264_videotoolbox", "-pix_fmt:v:0", "yuv420p", "-b:v:0",
-                "0", "-q:v:0", "57", "-y", "out.mp4",
+                "-hwaccel",
+                "videotoolbox",
+                "-i",
+                "in.mp4",
+                "-c:v:0",
+                "h264_videotoolbox",
+                "-pix_fmt:v:0",
+                "yuv420p",
+                "-b:v:0",
+                "0",
+                "-q:v:0",
+                "45",
+                "-y",
+                "out.mp4",
             ])
         );
     }
@@ -290,7 +339,7 @@ mod tests {
         let mut cpu_args = args(&CPU_ARGS);
         cpu_args[3] = "libx265".to_string();
         cpu_args.splice(4..4, args(&["-tag:v:0", "hvc1"]));
-        let hardware = to_hardware_args(&cpu_args, &encoder);
+        let hardware = to_hardware_args(&cpu_args, &encoder, None);
         assert!(hardware.windows(2).any(|pair| pair == ["-c:v:0", "hevc_videotoolbox"]));
         assert!(hardware.windows(2).any(|pair| pair == ["-tag:v:0", "hvc1"]));
     }
@@ -305,7 +354,7 @@ mod tests {
             encoder("hevc_nvenc", Codec::Hevc, Api::Nvenc),
             encoder("hevc_qsv", Codec::Hevc, Api::Qsv),
         ] {
-            let hardware = to_hardware_args(&cpu_args, &encoder);
+            let hardware = to_hardware_args(&cpu_args, &encoder, None);
             assert!(hardware.windows(2).any(|pair| pair == ["-pix_fmt:v:0", "p010le"]));
             assert_eq!(
                 hardware.windows(2).any(|pair| pair == ["-profile:v:0", "main10"]),
@@ -316,15 +365,54 @@ mod tests {
 
     #[test]
     fn videotoolbox_quality_follows_the_crf() {
-        let encoder = encoder("h264_videotoolbox", Codec::H264, Api::VideoToolbox);
-        assert_eq!(quality_args(&encoder, 24.0), args(&["-q:v:0", "64"]));
-        assert_eq!(quality_args(&encoder, 36.0), args(&["-q:v:0", "43"]));
+        let h264 = encoder("h264_videotoolbox", Codec::H264, Api::VideoToolbox);
+        assert_eq!(quality_args(&h264, 24.0), args(&["-q:v:0", "52"]));
+        assert_eq!(quality_args(&h264, 36.0), args(&["-q:v:0", "31"]));
+        let hevc = encoder("hevc_videotoolbox", Codec::Hevc, Api::VideoToolbox);
+        assert_eq!(quality_args(&hevc, 24.0), args(&["-q:v:0", "64"]));
+        assert_eq!(quality_args(&hevc, 36.0), args(&["-q:v:0", "43"]));
+    }
+
+    #[test]
+    fn videotoolbox_quality_is_kept_under_its_cap() {
+        let videotoolbox = encoder("h264_videotoolbox", Codec::H264, Api::VideoToolbox);
+        let hardware = to_hardware_args(&args(&CPU_ARGS), &videotoolbox, Some(8000));
+        assert!(hardware.windows(2).any(|pair| pair == ["-maxrate:v:0", "8000k"]));
+        assert!(hardware.windows(2).any(|pair| pair == ["-bufsize:v:0", "16000k"]));
+        // Only on macOS, where it was measured
+        let nvenc = encoder("h264_nvenc", Codec::H264, Api::Nvenc);
+        let hardware = to_hardware_args(&args(&CPU_ARGS), &nvenc, Some(8000));
+        assert!(!hardware.iter().any(|arg| arg == "-maxrate:v:0"));
+    }
+
+    #[test]
+    fn videotoolbox_target_size_peaks_at_its_bitrate() {
+        let cpu_args = args(&[
+            "-i", "in.mp4", "-c:v:0", "libx265", "-b:v:0", "7000k", "-maxrate:v:0", "10500k",
+            "-bufsize:v:0", "14000k", "-y", "out.mp4",
+        ]);
+        let videotoolbox = encoder("hevc_videotoolbox", Codec::Hevc, Api::VideoToolbox);
+        let hardware = to_hardware_args(&cpu_args, &videotoolbox, Some(8000));
+        assert!(hardware.windows(2).any(|pair| pair == ["-maxrate:v:0", "7000k"]));
+        // Not by quality, so no cap of its own
+        assert_eq!(
+            hardware.iter().filter(|arg| *arg == "-maxrate:v:0").count(),
+            1
+        );
+        // H.264 keeps to its bitrate, as do other graphics cards
+        for other in [
+            encoder("h264_videotoolbox", Codec::H264, Api::VideoToolbox),
+            encoder("hevc_nvenc", Codec::Hevc, Api::Nvenc),
+        ] {
+            let hardware = to_hardware_args(&cpu_args, &other, None);
+            assert!(hardware.windows(2).any(|pair| pair == ["-maxrate:v:0", "10500k"]));
+        }
     }
 
     #[test]
     fn qsv_uses_nv12_and_global_quality() {
         let encoder = encoder("h264_qsv", Codec::H264, Api::Qsv);
-        let hardware = to_hardware_args(&args(&CPU_ARGS), &encoder);
+        let hardware = to_hardware_args(&args(&CPU_ARGS), &encoder, None);
         assert!(hardware.windows(2).any(|pair| pair == ["-pix_fmt:v:0", "nv12"]));
         assert!(hardware.windows(2).any(|pair| pair == ["-global_quality:v:0", "28"]));
         // x264's `-preset slow` is gone; Intel's own `-preset:v:0` is set instead
@@ -334,7 +422,7 @@ mod tests {
     #[test]
     fn nvenc_uses_constant_quality() {
         let encoder = encoder("hevc_nvenc", Codec::Hevc, Api::Nvenc);
-        let hardware = to_hardware_args(&args(&CPU_ARGS), &encoder);
+        let hardware = to_hardware_args(&args(&CPU_ARGS), &encoder, None);
         assert!(hardware.windows(2).any(|pair| pair == ["-c:v:0", "hevc_nvenc"]));
         assert!(hardware.windows(2).any(|pair| pair == ["-cq:v:0", "28"]));
         assert!(!hardware.iter().any(|arg| arg == "-crf" || arg == "-preset"));

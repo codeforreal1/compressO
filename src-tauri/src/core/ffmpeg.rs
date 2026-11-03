@@ -134,6 +134,31 @@ impl FFMPEG {
     }
 
     /// Compresses a video from a path
+    /// The bitrate of a video's picture, in bits per second (or the whole file's, when its
+    /// picture's is not known), `None` when neither is
+    async fn source_video_bitrate(&self, video_path: &str) -> Option<u64> {
+        let mut ffprobe = FFPROBE::new(&self.app)
+            .ok()?
+            .with_owner_window(&self.owner_window);
+        let stream_bitrate = ffprobe
+            .get_video_streams(video_path)
+            .await
+            .ok()
+            .and_then(|streams| streams.into_iter().next())
+            .and_then(|stream| stream.bit_rate)
+            .and_then(|bitrate| bitrate.trim().parse::<u64>().ok())
+            .filter(|bitrate| *bitrate > 0);
+        if stream_bitrate.is_some() {
+            return stream_bitrate;
+        }
+        ffprobe
+            .get_container_info(video_path)
+            .await
+            .ok()
+            .and_then(|info| info.bit_rate)
+            .filter(|bitrate| *bitrate > 0)
+    }
+
     pub async fn compress_video(
         &mut self,
         video_path: &str,
@@ -1095,12 +1120,27 @@ impl FFMPEG {
         } else {
             None
         };
+        // On macOS, the graphics card needs far more bytes than the CPU for the same quality, so
+        // by quality its bitrate is kept under a part of the source's (faster playback packs more
+        // of it in each second): the output never comes out larger than its original
+        let quality_cap_kbps = match &hardware_encoder {
+            Some(encoder) if encoder.api == hardware_encoder::Api::VideoToolbox => self
+                .source_video_bitrate(video_path)
+                .await
+                .map(|bits_per_second| {
+                    let speed = f64::from(clamped_speed.unwrap_or(1.0).max(1.0));
+                    (bits_per_second as f64 * HARDWARE_QUALITY_CAP_SHARE * speed / 1000.0)
+                        .round()
+                        .max(1.0) as u32
+                }),
+            _ => None,
+        };
         if let Some(encoder) = &hardware_encoder {
             log::log!(
                 log_level,
                 "[ffmpeg] on the graphics card ({}): {:?}",
                 encoder.name,
-                hardware_encoder::to_hardware_args(&cpu_args, encoder)
+                hardware_encoder::to_hardware_args(&cpu_args, encoder, quality_cap_kbps)
             );
         }
 
@@ -1178,7 +1218,11 @@ impl FFMPEG {
             if let Some(encoder) = hardware_encoder.as_ref().filter(|_| !retry_on_cpu) {
                 round_attempts.push((
                     Some(encoder.name),
-                    hardware_encoder::to_hardware_args(&round_cpu_args, encoder),
+                    hardware_encoder::to_hardware_args(
+                        &round_cpu_args,
+                        encoder,
+                        quality_cap_kbps,
+                    ),
                 ));
             }
             round_attempts.push((None, round_cpu_args));
@@ -1997,6 +2041,10 @@ const ESTIMATE_SECONDS_PER_SAMPLE: f64 = 15.0;
 const ESTIMATE_MIN_SAMPLES: usize = 8;
 const ESTIMATE_MAX_SAMPLES: usize = 30;
 const ESTIMATE_PARALLEL_SAMPLES: usize = 3;
+
+/// By quality on macOS, a graphics card's bitrate is kept under this part of the source's (see
+/// `hardware_encoder::to_hardware_args`), so its output comes out smaller than the original
+const HARDWARE_QUALITY_CAP_SHARE: f64 = 0.7;
 
 /// How many times a video is encoded again when it missed its target size
 const MAX_TARGET_SIZE_RETRIES: u32 = 3;
