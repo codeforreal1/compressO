@@ -375,6 +375,8 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
     }, [isPlaying, isPlayPauseControlAtBottom])
 
     useEffect(() => {
+      // A new output must not inherit playback from the input preview.
+      setIsPlaying(false)
       // On platforms like Linux, native Webview does not support accessing local asset like video. We have to serve the video asset via a local server from the backend.
       ;(async () => {
         if (!url || typeof url !== 'string' || !url?.startsWith('asset://')) {

@@ -83,9 +83,11 @@ async function getSvgDimensionSilently(
   }
 }
 
-/** Whether media can be added now: before compression starts (not during or after it) */
+/** Whether media can be added before or during compression. */
 export function canAddMedia() {
-  return !appProxy.state.isCompressing && !appProxy.state.isProcessCompleted
+  return (
+    !appProxy.state.isProcessCompleted && !appProxy.state.isLoadingMediaFiles
+  )
 }
 
 /**
@@ -93,13 +95,30 @@ export function canAddMedia() {
  * already selected are skipped, so the same file is only added once.
  */
 export async function addMedia(selection: MediaSelection | MediaSelection[]) {
-  if (appProxy.state.isCompressing) return
+  if (appProxy.state.isLoadingMediaFiles) return
   if (appProxy.state.isProcessCompleted) {
     toast.info(t('media.addAfterCompression'))
     return
   }
 
   const existingMediaCount = appProxy.state.media.length
+  const selectionState = appProxy.state
+  const isAddingWhileCompressing = selectionState.isCompressing
+  if (isAddingWhileCompressing && existingMediaCount === 1) {
+    const first = selectionState.media[0]
+    if (first.type === 'image') {
+      selectionState.commonConfigForBatchCompression.imageConfig = cloneDeep(
+        first.config,
+      )
+    } else if (first.isAudioFile) {
+      selectionState.commonConfigForBatchCompression.audioFileConfig =
+        cloneDeep(first.config)
+    } else {
+      selectionState.commonConfigForBatchCompression.videoConfig = cloneDeep(
+        first.config,
+      )
+    }
+  }
   const selectedPaths = new Set(
     appProxy.state.media.map((mediaFile) => mediaFile.pathRaw),
   )
@@ -372,6 +391,8 @@ export async function addMedia(selection: MediaSelection | MediaSelection[]) {
           loadMediaFile(path, relativeDir),
           FILE_LOAD_TIMEOUT,
         )
+        // Cancel/reset can restore another selection while metadata is still loading.
+        if (appProxy.state !== selectionState) return
         if (mediaFile) {
           appProxy.state.media.push(mediaFile)
         } else {
@@ -386,14 +407,26 @@ export async function addMedia(selection: MediaSelection | MediaSelection[]) {
       }
     }
   } finally {
+    if (appProxy.state === selectionState && existingMediaCount > 0) {
+      // Active and completed items keep their config while the queue grows.
+      normalizeBatchMediaConfig(isAddingWhileCompressing ? existingMediaCount : 0)
+      if (isAddingWhileCompressing) {
+        for (const mediaFile of selectionState.media.slice(
+          existingMediaCount,
+        )) {
+          for (const saved of Object.values(appProxy.snapshots)) {
+            if (!saved.media.some((item) => item.id === mediaFile.id)) {
+              saved.media.push(cloneDeep(mediaFile))
+            }
+          }
+        }
+      }
+    }
     // Loading always ends, whatever happened to the files
-    appProxy.state.isLoadingMediaFiles = false
-    appProxy.state.isAppendingMedia = false
-  }
-
-  // Added media follows the batch settings (media with customized settings keeps them)
-  if (existingMediaCount > 0) {
-    normalizeBatchMediaConfig()
+    if (appProxy.state === selectionState) {
+      appProxy.state.isLoadingMediaFiles = false
+      appProxy.state.isAppendingMedia = false
+    }
   }
 
   if (deniedFilesCount > 0) {
@@ -415,6 +448,10 @@ export async function addMedia(selection: MediaSelection | MediaSelection[]) {
 
 /** Opens the file picker and adds the chosen media */
 export async function pickMediaToAdd() {
+  if (!canAddMedia()) return
+  const selectionState = appProxy.state
+  selectionState.isLoadingMediaFiles = true
+  selectionState.isAppendingMedia = selectionState.media.length > 0
   try {
     const filePath = await open({
       directory: false,
@@ -429,9 +466,16 @@ export async function pickMediaToAdd() {
     if (filePath == null) {
       return
     }
+    if (appProxy.state !== selectionState) return
+    selectionState.isLoadingMediaFiles = false
     await addMedia(filePath)
   } catch (error: any) {
     toast.error(error?.message ?? t('media.selectFailed'))
+  } finally {
+    if (appProxy.state === selectionState) {
+      selectionState.isLoadingMediaFiles = false
+      selectionState.isAppendingMedia = false
+    }
   }
 }
 

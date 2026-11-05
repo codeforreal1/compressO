@@ -128,13 +128,10 @@ function MediaOutputCompareSlider({
         >
           <VideoPlayer
             url={src}
-            autoPlay
             loop
-            controls={false}
+            controls
             playPauseOnSpaceKeydown={false}
             disableClosedCaptions
-            disablePlayPauseControlAtCenter
-            disablePlayPauseViaContainerClick
             containerClassName="w-full h-full"
             style={{
               width: '100%',

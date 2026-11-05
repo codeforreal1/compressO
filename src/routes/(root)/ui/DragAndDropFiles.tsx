@@ -14,6 +14,8 @@ import {
 } from '@/tauri/commands/fs'
 import { CollectedFile } from '@/types/fs'
 import { zoomInTransition } from '@/utils/animation'
+import { canAddMedia } from '../-media'
+import { appProxy } from '../-state'
 import { showAccessDeniedToast } from '../-toasts'
 
 // Only this window's drops (a global listener also receives drops on the menu bar popover)
@@ -62,7 +64,7 @@ function DragAndDropFiles({
           paths: string[]
         }>(event.TauriEvent.DRAG_DROP, async (evt) => {
           setDragAndDropState('dropped')
-          if (!dragAndDropListenerIsDroppedRef.current) {
+          if (!dragAndDropListenerIsDroppedRef.current && canAddMedia()) {
             dragAndDropListenerIsDroppedRef.current = true
             setTimeout(() => {
               dragAndDropListenerIsDroppedRef.current = false
@@ -70,10 +72,15 @@ function DragAndDropFiles({
             toast.dismiss()
             const pathsPayload = evt?.payload?.paths
             const paths = multiple ? pathsPayload : pathsPayload.slice(0, 1)
+            const selectionState = appProxy.state
+            selectionState.isLoadingMediaFiles = true
+            selectionState.isAppendingMedia = selectionState.media.length > 0
             try {
               const files = await readFilesFromPaths(paths)
+              if (appProxy.state !== selectionState) return
+              selectionState.isLoadingMediaFiles = false
               if (Array.isArray(files)) {
-                onFile?.(files)
+                await onFile?.(files)
               } else {
                 toast.error(t('media.invalidFiles'))
               }
@@ -82,6 +89,11 @@ function DragAndDropFiles({
                 showAccessDeniedToast(paths.length)
               } else {
                 toast.error(t('media.invalidFiles'))
+              }
+            } finally {
+              if (appProxy.state === selectionState) {
+                selectionState.isLoadingMediaFiles = false
+                selectionState.isAppendingMedia = false
               }
             }
           }

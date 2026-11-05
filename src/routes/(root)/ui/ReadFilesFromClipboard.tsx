@@ -16,8 +16,7 @@ type ReadFilesFromClipboardProps = {
 function ReadFilesFromClipboard({ onFiles }: ReadFilesFromClipboardProps) {
   useEffect(() => {
     async function handleReadFilesFromClipboard(event: ClipboardEvent) {
-      // Pasting into a text field is just text, and media can't be added while compressing or
-      // after compression
+      // Pasting into a text field is just text; completed queues keep their outputs.
       const target = event.target as HTMLElement | null
       if (
         target instanceof HTMLInputElement ||
@@ -28,25 +27,26 @@ function ReadFilesFromClipboard({ onFiles }: ReadFilesFromClipboardProps) {
         return
       }
 
-      // Large blob files from clipboard can take some time, so we need a blocking UI (only when
-      // nothing is selected yet; otherwise the current media stays visible while adding)
-      const isFirstSelection = appProxy.state.media.length === 0
-      if (isFirstSelection) {
-        appProxy.state.isLoadingMediaFiles = true
-      }
+      // Keep a running queue open while clipboard files are being written to disk.
+      const selectionState = appProxy.state
+      selectionState.isLoadingMediaFiles = true
+      selectionState.isAppendingMedia = selectionState.media.length > 0
       try {
         const files = await withTimeout(
           readFilesFromClipboard(),
           CLIPBOARD_READ_TIMEOUT,
         )
+        if (appProxy.state !== selectionState) return
+        selectionState.isLoadingMediaFiles = false
         if (Array.isArray(files)) {
           await onFiles?.(files)
         }
       } catch {
         // ignore
       } finally {
-        if (isFirstSelection) {
-          appProxy.state.isLoadingMediaFiles = false
+        if (appProxy.state === selectionState) {
+          selectionState.isLoadingMediaFiles = false
+          selectionState.isAppendingMedia = false
         }
       }
     }

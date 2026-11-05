@@ -19,6 +19,7 @@ import {
   getBatchResolutionLongerSide,
   MediaBatchCompressionResult,
 } from '@/types/compression'
+import { drainCompressionQueue } from '@/utils/compressionQueue'
 import { formatBytes, getOutputFileName } from '@/utils/fs'
 import CancelCompression from './CancelCompression'
 import PauseCompression from './PauseCompression'
@@ -120,6 +121,7 @@ function StartCompression() {
 
     appProxy.takeSnapshot('beforeCompressionStarted')
 
+    let stopCancelListening: (() => void) | undefined
     try {
       appProxy.state.isCompressing = true
       appProxy.state.isBatchPaused = false
@@ -161,6 +163,7 @@ function StartCompression() {
           abortController.abort()
         },
       )
+      stopCancelListening = unlisten
 
       // A batch resolution applies to every video of a batch without its own custom dimensions
       const batchVideoLongerSide =
@@ -202,120 +205,141 @@ function StartCompression() {
         }
       }
 
-      // Videos compressed to a size are compressed at their quality settings when those fit, so
-      // their size at them is estimated first (when not already)
-      const mediaToEstimate = appSnapshot.state.media.filter((v) =>
-        needsQualityEstimate(v as MediaFile, batchVideoLongerSide),
-      ) as MediaFile[]
-      if (mediaToEstimate.length > 0) {
-        appProxy.state.isEstimatingSize = true
-        try {
-          await Promise.race([
-            estimateTargetSizeVideos(
-              mediaToEstimate,
-              batchVideoLongerSide,
-              abortController.signal,
-            ),
-            cancellation,
-          ])
-        } finally {
-          appProxy.state.isEstimatingSize = false
-        }
-      }
-      // The size each video compressed to a target size comes out at, shown while compressing
-      for (const index in appProxy.state.media) {
-        const item = appProxy.state.media[index]
-        if (item.type !== 'video') continue
-        const plan = getTargetSizePlan(
-          snapshot(item) as MediaFile,
-          batchVideoLongerSide,
-        )
-        const qualitySize = plan
-          ? getQualitySizeEstimate(
+      await drainCompressionQueue<MediaFile>({
+        getItems: () => snapshot(appProxy).state.media as MediaFile[],
+        isLoading: () => appProxy.state.isLoadingMediaFiles,
+        isPaused: () => !!appProxy.state.isBatchPaused,
+        signal: abortController.signal,
+        process: async (pendingMedia) => {
+          // Videos compressed to a size are compressed at their quality settings when those fit, so
+          // their size at them is estimated first (when not already)
+          const mediaToEstimate = pendingMedia.filter((v) =>
+            needsQualityEstimate(v as MediaFile, batchVideoLongerSide),
+          ) as MediaFile[]
+          if (mediaToEstimate.length > 0) {
+            appProxy.state.isEstimatingSize = true
+            try {
+              await Promise.race([
+                estimateTargetSizeVideos(
+                  mediaToEstimate,
+                  batchVideoLongerSide,
+                  abortController.signal,
+                ),
+                cancellation,
+              ])
+            } finally {
+              appProxy.state.isEstimatingSize = false
+            }
+          }
+          // The size each video compressed to a target size comes out at, shown while compressing
+          for (const index in appProxy.state.media) {
+            const item = appProxy.state.media[index]
+            if (!pendingMedia.some((pending) => pending.id === item.id))
+              continue
+            if (item.type !== 'video') continue
+            const plan = getTargetSizePlan(
               snapshot(item) as MediaFile,
               batchVideoLongerSide,
             )
-          : null
-        const audioPlan = getAudioTargetSizePlan(snapshot(item) as MediaFile)
-        item.estimatedOutputSize = audioPlan
-          ? { sizeInBytes: audioPlan.sizeInBytes, isUpTo: true }
-          : !plan
-            ? null
-            : plan.fitsAtQuality && qualitySize != null
-              ? {
-                  sizeInBytes: Math.min(qualitySize, plan.sizeInBytes),
-                  isUpTo: false,
-                }
-              : { sizeInBytes: plan.sizeInBytes, isUpTo: true }
-      }
+            const qualitySize = plan
+              ? getQualitySizeEstimate(
+                  snapshot(item) as MediaFile,
+                  batchVideoLongerSide,
+                )
+              : null
+            const audioPlan = getAudioTargetSizePlan(
+              snapshot(item) as MediaFile,
+            )
+            item.estimatedOutputSize = audioPlan
+              ? { sizeInBytes: audioPlan.sizeInBytes, isUpTo: true }
+              : !plan
+                ? null
+                : plan.fitsAtQuality && qualitySize != null
+                  ? {
+                      sizeInBytes: Math.min(qualitySize, plan.sizeInBytes),
+                      isUpTo: false,
+                    }
+                  : { sizeInBytes: plan.sizeInBytes, isUpTo: true }
+          }
 
-      const { results } = (await Promise.race([
-        compressMediaBatch(
-          batchId,
-          appSnapshot.state.media.map((v) =>
-            getMediaItemConfig(v as MediaFile, {
-              batchVideoLongerSide,
-              batchImageLongerSide,
-            }),
-          ),
-        ),
-        cancellation,
-      ])) as MediaBatchCompressionResult
+          const { results } = (await Promise.race([
+            compressMediaBatch(
+              batchId,
+              pendingMedia
+                .filter((v) => getTargetSizeWarning(v) == null)
+                .map((v) =>
+                  getMediaItemConfig(v as MediaFile, {
+                    batchVideoLongerSide,
+                    batchImageLongerSide,
+                  }),
+                ),
+            ),
+            cancellation,
+          ])) as MediaBatchCompressionResult
+
+          for (const index in appProxy.state.media) {
+            if (
+              !pendingMedia.some(
+                (pending) => pending.id === appProxy.state.media[index].id,
+              )
+            )
+              continue
+            appProxy.state.media[index].isCompressing = false
+            if (appProxy.state.media[index].type === 'video') {
+              const video = appProxy.state.media[index]
+              const videoResult = results[video.id!] || null
+
+              appProxy.state.media[index].isProcessCompleted = true
+              appProxy.state.media[index].compressedFile = {
+                isSuccessful: !(videoResult == null),
+                fileName: videoResult?.fileMetadata?.fileName ?? video.fileName,
+                fileNameToDisplay: getOutputFileName(
+                  video.fileName,
+                  video.extension,
+                  videoResult?.fileMetadata?.extension,
+                ),
+                pathRaw: videoResult?.fileMetadata?.path,
+                path: core.convertFileSrc(
+                  videoResult?.fileMetadata?.path ?? '',
+                ),
+                mimeType: videoResult?.fileMetadata?.mimeType,
+                sizeInBytes: videoResult?.fileMetadata?.size,
+                size: formatBytes(videoResult?.fileMetadata?.size ?? 0),
+                extension: videoResult?.fileMetadata?.extension,
+                ...getOutputOptions(videoResult, video.config?.targetSizeInMB),
+              }
+            } else if (appProxy.state.media[index].type === 'image') {
+              const image = appProxy.state.media[index]
+              const imageResult = results[image.id!] || null
+
+              appProxy.state.media[index].isProcessCompleted = true
+              appProxy.state.media[index].compressedFile = {
+                isSuccessful: !(imageResult == null),
+                fileName: imageResult?.fileName ?? image.fileName,
+                fileNameToDisplay: getOutputFileName(
+                  image.fileName,
+                  image.extension,
+                  imageResult?.fileMetadata?.extension,
+                ),
+                pathRaw: imageResult?.fileMetadata?.path,
+                path: core.convertFileSrc(
+                  imageResult?.fileMetadata?.path ?? '',
+                ),
+                mimeType: imageResult?.fileMetadata?.mimeType,
+                sizeInBytes: imageResult?.fileMetadata?.size,
+                size: formatBytes(imageResult?.fileMetadata?.size ?? 0),
+                extension: imageResult?.fileMetadata?.extension,
+              }
+            }
+          }
+          appProxy.takeSnapshot('batchCompressionStep')
+        },
+      })
 
       unlisten()
-
-      if (Object.keys(results).length === 0) {
-        throw new Error()
-      }
-
       appProxy.state.isCompressing = false
       appProxy.state.isBatchPaused = false
       appProxy.state.isProcessCompleted = true
-
-      for (const index in appProxy.state.media) {
-        if (appProxy.state.media[index].type === 'video') {
-          const video = appProxy.state.media[index]
-          const videoResult = results[video.id!] || null
-
-          appProxy.state.media[index].isProcessCompleted = true
-          appProxy.state.media[index].compressedFile = {
-            isSuccessful: !(videoResult == null),
-            fileName: videoResult?.fileMetadata?.fileName ?? video.fileName,
-            fileNameToDisplay: getOutputFileName(
-              video.fileName,
-              video.extension,
-              videoResult?.fileMetadata?.extension,
-            ),
-            pathRaw: videoResult?.fileMetadata?.path,
-            path: core.convertFileSrc(videoResult?.fileMetadata?.path ?? ''),
-            mimeType: videoResult?.fileMetadata?.mimeType,
-            sizeInBytes: videoResult?.fileMetadata?.size,
-            size: formatBytes(videoResult?.fileMetadata?.size ?? 0),
-            extension: videoResult?.fileMetadata?.extension,
-            ...getOutputOptions(videoResult, video.config?.targetSizeInMB),
-          }
-        } else if (appProxy.state.media[index].type === 'image') {
-          const image = appProxy.state.media[index]
-          const imageResult = results[image.id!] || null
-
-          appProxy.state.media[index].isProcessCompleted = true
-          appProxy.state.media[index].compressedFile = {
-            isSuccessful: !(imageResult == null),
-            fileName: imageResult?.fileName ?? image.fileName,
-            fileNameToDisplay: getOutputFileName(
-              image.fileName,
-              image.extension,
-              imageResult?.fileMetadata?.extension,
-            ),
-            pathRaw: imageResult?.fileMetadata?.path,
-            path: core.convertFileSrc(imageResult?.fileMetadata?.path ?? ''),
-            mimeType: imageResult?.fileMetadata?.mimeType,
-            sizeInBytes: imageResult?.fileMetadata?.size,
-            size: formatBytes(imageResult?.fileMetadata?.size ?? 0),
-            extension: imageResult?.fileMetadata?.extension,
-          }
-        }
-      }
 
       // Once for the whole compression (a batch too), when anything was compressed
       if (
@@ -337,6 +361,8 @@ function StartCompression() {
         toast.error(t('compression.failed'))
         appProxy.timeTravel('beforeCompressionStarted')
       }
+    } finally {
+      stopCancelListening?.()
     }
   }, [t])
 

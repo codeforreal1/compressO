@@ -541,6 +541,7 @@ function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
             >
               {audioFileBackdrop}
               <VideoPlayer
+                key={isProcessCompleted ? 'output' : 'input'}
                 ref={playerRef}
                 waveform={waveform}
                 onReady={(player: ReactPlayer) =>

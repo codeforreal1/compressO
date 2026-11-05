@@ -82,6 +82,23 @@ This app is created using [Tauri](https://tauri.app/), a Rust🦀 framework for 
 The app works completely offline and no any network requests is made to/from the app(except for built-in app updates).
 
 ### Building
+
+#### Queue and preview changes in this checkout
+
+Select several videos and press **Process** to compress them in order. During
+compression, use **Add more**, drop more files onto the window, or paste files to
+append them to the queue. Added files use the current batch settings (the current
+video's settings when starting with one video). Pause finishes the current file
+before waiting; Cancel stops the run, including pending files. A failed item does
+not prevent later queued items from running.
+
+Completed videos and comparison previews stay paused until you press Play.
+The queue is kept for the current session; it is not restored after closing the app.
+
+Run `pnpm test:compression-queue`, `pnpm tsc:check`, `pnpm i18n:check`, and
+`pnpm vite:build` to check these changes. A native app build also requires the
+Tauri/Rust prerequisites described below.
+
 Make sure [Rust](https://rust-lang.org/) & [Node.js](https://nodejs.org/) toolchains are installed.
 
 Local Development:

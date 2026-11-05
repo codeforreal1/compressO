@@ -4,6 +4,8 @@ import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
+import Button from '@/components/Button'
+import Icon from '@/components/Icon'
 import Layout from '@/components/Layout'
 import Tabs from '@/components/Tabs'
 import Title from '@/components/Title'
@@ -19,6 +21,7 @@ import PreviewBatchMedia from './PreviewBatchMedia'
 import PreviewSingleVideo from './PreviewSingleMedia'
 import StartCompression from './StartCompression'
 import styles from './styles.module.css'
+import { pickMediaToAdd } from '../-media'
 import { appProxy } from '../-state'
 
 function MediaConfig() {
@@ -115,7 +118,19 @@ function MediaConfig() {
               }
               className="text-xl font-bold"
             />
-            {!isCompressing ? <CompressionActions /> : null}
+            {isCompressing ? (
+              <Button
+                size="sm"
+                variant="flat"
+                onPress={pickMediaToAdd}
+                isDisabled={isLoadingMediaFiles}
+              >
+                <Icon name="addMedia" size={14} />
+                {t('batch.addMore')}
+              </Button>
+            ) : (
+              <CompressionActions />
+            )}
           </div>
           <ScrollShadow className="h-[78vh] hxl:h-[82vh] pb-10" hideScrollBar>
             <OutputSettings

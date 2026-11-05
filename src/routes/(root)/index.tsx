@@ -30,7 +30,6 @@ function Root() {
     media,
     isLoadingMediaFiles,
     totalSelectedMediaCount,
-    isCompressing,
     isProcessCompleted,
     isAppendingMedia,
   } = state
@@ -99,7 +98,7 @@ function Root() {
       {/* Available on every screen, so media can also be added to an existing selection */}
       <DragAndDropFiles
         multiple
-        disable={isCompressing || isProcessCompleted}
+        disable={isProcessCompleted || isLoadingMediaFiles}
         onFile={addMedia}
       />
       <OpenWithApp onFiles={openExternalMedia} />

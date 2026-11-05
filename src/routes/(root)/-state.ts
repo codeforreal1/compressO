@@ -177,7 +177,7 @@ export const appProxy: AppProxy = proxy({
  * transform (rotation, flips, crop shape) & resolution are set as each media's own (computed from
  * its size), so the settings of a single media show what it is compressed to.
  */
-export function normalizeBatchMediaConfig() {
+export function normalizeBatchMediaConfig(startIndex = 0) {
   if (appProxy.state.media.length > 1) {
     const { videoConfig, imageConfig, audioFileConfig } =
       appProxy.state.commonConfigForBatchCompression
@@ -187,7 +187,7 @@ export function normalizeBatchMediaConfig() {
     const imageLongerSide = imageConfig.batchLongerSide ?? null
     for (const index in appProxy.state.media) {
       const mediaFile = appProxy.state.media[index]
-      if (mediaFile?.isConfigDirty) continue
+      if (Number(index) < startIndex || mediaFile?.isConfigDirty) continue
       if (mediaFile.type === 'video' && mediaFile.isAudioFile) {
         mediaFile.config = getAudioFileBatchConfig(
           audioFileConfig,
