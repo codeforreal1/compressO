@@ -1,16 +1,17 @@
 import { core } from '@tauri-apps/api'
 import merge from 'lodash/merge'
-import { memo, useCallback, useId } from 'react'
+import { memo, useCallback, useId, useRef } from 'react'
 import { ReactCompareSliderHandle } from 'react-compare-slider'
 import { useTranslation } from 'react-i18next'
 import { PhotoView } from 'react-photo-view'
+import type ReactPlayer from 'react-player'
 import { useSnapshot } from 'valtio'
 
 import CompareSlider from '@/components/CompareSlider'
 import Icon from '@/components/Icon'
 import ImageViewer from '@/components/ImageViewer'
 import Tooltip from '@/components/Tooltip'
-import VideoPlayer from '@/components/VideoPlayer'
+import VideoPlayer, { type VideoPlayerRef } from '@/components/VideoPlayer'
 import { useImagePreview } from '@/hooks/useImagePreview'
 import { needsImagePreview } from '@/tauri/commands/image'
 import { getPlatform } from '@/utils/fs'
@@ -63,6 +64,25 @@ function MediaOutputCompareSlider({
     mediaFile?.thumbnailPath,
   )
   const id = useId()
+  const inputPlayer = useRef<VideoPlayerRef>(null)
+  const outputPlayer = useRef<VideoPlayerRef>(null)
+
+  const setPlayback = useCallback((playing: boolean) => {
+    for (const ref of [inputPlayer, outputPlayer]) {
+      if (playing) ref.current?.playVideo()
+      else ref.current?.pauseVideo()
+    }
+  }, [])
+
+  const seekBoth = useCallback((seconds: number) => {
+    for (const ref of [inputPlayer, outputPlayer]) {
+      const player = ref.current?.playerRef
+      // Seeking the other player also emits onSeek; don't send that seek back again.
+      if (player && Math.abs(player.getCurrentTime() - seconds) > 0.1) {
+        player.seekTo(seconds, 'seconds')
+      }
+    }
+  }, [])
 
   const renderImage = useCallback(
     (src: string, options?: renderImageDefaultType) => {
@@ -119,6 +139,8 @@ function MediaOutputCompareSlider({
   const renderVideo = useCallback(
     (src: string, options?: renderVideoDefaultType) => {
       options = merge({}, renderVideoDefaultOptions, options ?? {})
+      const playerRef = options?.isOriginal ? inputPlayer : outputPlayer
+      const otherRef = options?.isOriginal ? outputPlayer : inputPlayer
 
       return (
         <div
@@ -127,9 +149,23 @@ function MediaOutputCompareSlider({
           key={`video-comparison-${options?.isOriginal ? 0 : 1}`}
         >
           <VideoPlayer
+            key={src}
+            ref={playerRef}
             url={src}
             loop
             controls
+            onPlay={() => setPlayback(true)}
+            onPause={() => setPlayback(false)}
+            onSeek={seekBoth}
+            onReady={(player: ReactPlayer) => {
+              const other = otherRef.current
+              const time = other?.playerRef?.getCurrentTime() ?? 0
+              if (time > 0.1) player.seekTo(time, 'seconds')
+              // Catch up if Play was pressed before this side finished loading.
+              if (other?.getPlaybackState() === 'playing') {
+                playerRef.current?.playVideo()
+              }
+            }}
             playPauseOnSpaceKeydown={false}
             disableClosedCaptions
             containerClassName="w-full h-full"
@@ -146,7 +182,12 @@ function MediaOutputCompareSlider({
         </div>
       )
     },
-    [mediaFile?.dimensions?.width, mediaFile?.dimensions?.height],
+    [
+      mediaFile?.dimensions?.width,
+      mediaFile?.dimensions?.height,
+      setPlayback,
+      seekBoth,
+    ],
   )
 
   // Saving moves the output out of the cache, so a saved output is loaded from where it was saved

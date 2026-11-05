@@ -28,6 +28,7 @@
     "test:drop-queue": "node --test scripts/test-drop-queue.mjs",
     "test:compression-queue": "node --test scripts/test-compression-queue.mjs",
     "test:ui-styles": "node --test scripts/test-ui-styles.mjs",
+    "test:compare-playback": "node --test scripts/test-compare-playback.mjs",
     "test:image-dynamic-range": "node --test scripts/test-image-dynamic-range.mjs",
     "test:video-dynamic-range": "node --test scripts/test-video-dynamic-range.mjs",
     "tsc:check": "tsc --noEmit --skipLibCheck"
