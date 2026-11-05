@@ -1,3 +1,5 @@
+Simple fork from the Compresso. The only change is to allow a queue of videos to be processed, and never autoplay finished compressions.
+
 <div align="center">
   <div align="center">
    <img width="150" height="150" src="public/app-icon-dark.png" alt="Logo" />
