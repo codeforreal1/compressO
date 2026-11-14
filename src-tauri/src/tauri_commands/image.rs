@@ -16,9 +16,17 @@ pub async fn get_image_dynamic_range(
     window: tauri::WebviewWindow,
     image_path: String,
 ) -> Result<crate::core::image_dynamic_range::ImageDynamicRangeInfo, String> {
-    crate::core::image_dynamic_range::inspect_source(&app, &image_path, window.label(), &[])
-        .await
-        .map(|(info, _)| info)
+    // Keep the image inspection future out of Tauri's IPC dispatch stack on Windows. In release
+    // builds Tauri polls command futures inline; this state machine is large enough that the
+    // unboxed chain overflows the main thread's stack before the first image finishes loading.
+    Box::pin(crate::core::image_dynamic_range::inspect_source(
+        &app,
+        &image_path,
+        window.label(),
+        &[],
+    ))
+    .await
+    .map(|(info, _)| info)
 }
 
 #[tauri::command]
@@ -126,8 +134,8 @@ pub async fn prepare_image_preview(
         "main",
         &[],
     ))
-        .await
-        .map(|path| path.to_string_lossy().into_owned())
+    .await
+    .map(|path| path.to_string_lossy().into_owned())
 }
 
 #[tauri::command]

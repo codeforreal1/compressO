@@ -805,12 +805,12 @@ impl ImageCompressor {
                     },
                 );
                 let _cancel_listener = EventListenerGuard::for_app(self.app.clone(), event_id);
-                let (info, readable_source) = super::image_dynamic_range::inspect_source(
+                let (info, readable_source) = Box::pin(super::image_dynamic_range::inspect_source(
                     &self.app,
                     &config.image_path,
                     &self.owner_window,
                     &cancel_ids,
-                )
+                ))
                 .await?;
                 if cancelled.load(Ordering::SeqCst) {
                     return Err("CANCELLED".into());
