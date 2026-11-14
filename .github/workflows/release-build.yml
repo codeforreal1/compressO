@@ -143,7 +143,9 @@ jobs:
           node-version-file: .node-version
           cache: pnpm
 
-      - uses: dtolnay/rust-toolchain@stable
+      # Keep in sync with rust-toolchain.toml. Pinning the compiler also pins Cargo's build
+      # directory layout and avoids release builds changing behavior when a new stable ships.
+      - uses: dtolnay/rust-toolchain@1.95.0
         with:
           targets: ${{ matrix.target }}
 
