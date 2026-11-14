@@ -10,7 +10,8 @@ edition = "2021"
 rust-version = "1.67"
 
 [build-dependencies]
-tauri-build = { version = "2.0.0", features = [] }
+# 2.7.0+ resolves Cargo's per-package build directory layout (needed for externalBin copies)
+tauri-build = { version = "2.7.0", features = [] }
 
 [dependencies]
 serde_json = "1.0"
