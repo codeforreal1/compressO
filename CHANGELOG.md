@@ -1,5 +1,12 @@
 # Changelog
 
+### 4.2.0
+
+Bug Fixes:
+
+- Fixed CompressO crashing on Windows when adding, dragging or dropping an image. Image analysis no longer overflows the Windows IPC stack while the image is loading.
+- Fixed dragging or dropping files onto the Windows system tray popover doing nothing. Native file drops are registered again when the popover is created, so dropped media reaches the drop zone.
+
 ### 4.1.0
 
 Features:

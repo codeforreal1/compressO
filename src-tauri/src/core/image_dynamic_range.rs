@@ -71,10 +71,15 @@ pub async fn inspect_source(
         return Ok((native, path.to_owned()));
     }
     let readable = if super::image_codecs::is_modern(&super::image_codecs::extension(path)) {
-        super::image_codecs::decoded_png(app, path, owner, cancel_ids)
-            .await?
-            .to_string_lossy()
-            .into_owned()
+        // The codec future is much larger than the rest of this future because it contains the
+        // executor's command-building states. Box it so inspection stays small whenever an image
+        // is dropped, including when this only inspects a regular JPEG or PNG.
+        Box::pin(super::image_codecs::decoded_png(
+            app, path, owner, cancel_ids,
+        ))
+        .await?
+        .to_string_lossy()
+        .into_owned()
     } else {
         path.to_owned()
     };
