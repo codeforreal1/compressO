@@ -262,12 +262,20 @@ fn create_tray_window(app_handle: &AppHandle) -> Result<WebviewWindow, String> {
     .minimizable(false)
     .skip_taskbar(true)
     .always_on_top(true)
-    .visible(false)
+    // Build it shown, then hide it below. Wry registers WebView2's native file-drop target while
+    // the window is created; when a dynamically created window starts hidden, WebView2's child
+    // windows are not ready yet and drag & drop stays broken after the window is shown later.
+    // The off-screen position keeps this first show out of sight (see tauri#14643 / wry#1639).
+    .position(-10_000.0, -10_000.0)
+    .visible(true)
     .focused(false)
     .inner_size(TRAY_WINDOW_WIDTH, TRAY_WINDOW_HEIGHT)
     .theme(Some(system_theme()))
     .build()
     .map_err(|err| err.to_string())?;
+
+    // Hidden until the tray icon is clicked; native drag & drop remains registered.
+    window.hide().map_err(|err| err.to_string())?;
 
     // Windows' translucent material for flyouts (Acrylic), which blurs what is behind the popover &
     // follows its light or dark theme. Fails before Windows 11, where the page keeps a solid
