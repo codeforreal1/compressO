@@ -1,5 +1,11 @@
 # Changelog
 
+### 4.2.0
+
+Bug Fixes:
+
+- Fixed CompressO crashing on Windows when adding, dragging or dropping an image. Image analysis no longer overflows the Windows IPC stack while the image is loading.
+
 ### 4.1.0
 
 Features:
