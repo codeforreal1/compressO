@@ -273,7 +273,7 @@
       "credits": "Credits",
       "watchedFolders": "Watch Folder",
       "history": "History",
-      "commandLine": "CLI"
+      "commandLine": "CLI & AI Agents"
     },
     "about": {
       "updateAvailable": "Update available",
@@ -973,6 +973,12 @@
     "swapChannels": "Swap left and right channels",
     "tracks": "Tracks",
     "track": "Track #{{number}}",
+    "addTrack": "Add audio file",
+    "fileFilter": "Audio files",
+    "addTrackHint": "No audio in this video. Add an audio file to attach one.",
+    "addedTrack": "Added audio",
+    "addFailed": "Could not add the audio file",
+    "selectFile": "Select an audio file",
     "channelCount_one": "{{count}} channel",
     "channelCount_other": "{{count}} channels",
     "volumeLabel": "Volume:",

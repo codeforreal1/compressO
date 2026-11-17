@@ -273,7 +273,7 @@
       "credits": "Ghi công",
       "watchedFolders": "Theo dõi thư mục",
       "history": "Lịch sử",
-      "commandLine": "CLI"
+      "commandLine": "CLI và tác nhân AI"
     },
     "about": {
       "updateAvailable": "Có bản cập nhật",
@@ -959,6 +959,12 @@
     "swapChannels": "Đổi kênh trái và phải",
     "tracks": "Rãnh",
     "track": "Rãnh #{{number}}",
+    "addTrack": "Thêm tệp âm thanh",
+    "fileFilter": "Tệp âm thanh",
+    "addTrackHint": "Video này không có âm thanh. Thêm tệp âm thanh để đính kèm.",
+    "addedTrack": "Âm thanh đã thêm",
+    "addFailed": "Không thể thêm tệp âm thanh",
+    "selectFile": "Chọn tệp âm thanh",
     "channelCount_other": "{{count}} kênh",
     "volumeLabel": "Âm lượng:",
     "volume": "Âm lượng",

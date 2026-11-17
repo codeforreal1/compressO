@@ -221,13 +221,15 @@ export function getTargetSizePlan(
 
   const volume = config.audioConfig?.volume ?? 100
   const knownAudioTracks = media.videoInfoRaw?.audioStreams?.length
+  const externalAudioTrackCount = config.externalAudioTracks?.length ?? 0
   const audioTrackCount =
     volume === 0
       ? 0
-      : config.shouldEnableAudioTrackSelection && config.selectedAudioTracks
-        ? config.selectedAudioTracks.length
-        : // Unknown until the audio tracks are read: one is assumed, to keep room for it
-          (knownAudioTracks ?? 1)
+      : (config.shouldEnableAudioTrackSelection && config.selectedAudioTracks
+          ? config.selectedAudioTracks.length
+          : // Unknown until the audio tracks are read: one is assumed, to keep room for it
+            (knownAudioTracks ?? (externalAudioTrackCount > 0 ? 0 : 1))) +
+        externalAudioTrackCount
 
   const videoCodec =
     config.shouldEnableCustomVideoCodec &&
@@ -488,6 +490,10 @@ export function getMediaItemConfig(
                 (v.config?.audioConfig?.volume ?? 100) !== 0
                   ? (v.config?.selectedAudioTracks ?? null)
                   : null,
+              externalAudioPaths:
+                v.config?.externalAudioTracks
+                  ?.map((track) => track.path)
+                  .filter((path) => path.length > 0) ?? null,
             },
             dimensions: sizePlan?.isResolutionLowered
               ? sizePlan.dimensions

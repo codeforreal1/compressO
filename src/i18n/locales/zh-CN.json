@@ -273,7 +273,7 @@
       "credits": "致谢",
       "watchedFolders": "监视文件夹",
       "history": "历史记录",
-      "commandLine": "CLI"
+      "commandLine": "CLI 与 AI 智能体"
     },
     "about": {
       "updateAvailable": "有可用更新",
@@ -959,6 +959,12 @@
     "swapChannels": "交换左右声道",
     "tracks": "音轨",
     "track": "音轨 #{{number}}",
+    "addTrack": "添加音频文件",
+    "fileFilter": "音频文件",
+    "addTrackHint": "此视频没有音频。添加一个音频文件以附加音频。",
+    "addedTrack": "已添加的音频",
+    "addFailed": "无法添加音频文件",
+    "selectFile": "选择音频文件",
     "channelCount_other": "{{count}} 个声道",
     "volumeLabel": "音量：",
     "volume": "音频音量",

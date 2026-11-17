@@ -273,7 +273,7 @@
       "credits": "致謝",
       "watchedFolders": "監看資料夾",
       "history": "歷史記錄",
-      "commandLine": "CLI"
+      "commandLine": "CLI 與 AI 智慧代理"
     },
     "about": {
       "updateAvailable": "有可用的更新",
@@ -959,6 +959,12 @@
     "swapChannels": "交換左右聲道",
     "tracks": "音軌",
     "track": "音軌 #{{number}}",
+    "addTrack": "新增音訊檔案",
+    "fileFilter": "音訊檔案",
+    "addTrackHint": "此影片沒有音訊。新增一個音訊檔案以附加音訊。",
+    "addedTrack": "已新增的音訊",
+    "addFailed": "無法新增音訊檔案",
+    "selectFile": "選擇音訊檔案",
     "channelCount_other": "{{count}} 個聲道",
     "volumeLabel": "音量：",
     "volume": "音訊音量",

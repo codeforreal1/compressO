@@ -273,7 +273,7 @@
       "credits": "Teşekkürler",
       "watchedFolders": "Klasör izleme",
       "history": "Geçmiş",
-      "commandLine": "CLI"
+      "commandLine": "CLI ve AI ajanları"
     },
     "about": {
       "updateAvailable": "Güncelleme mevcut",
@@ -973,6 +973,12 @@
     "swapChannels": "Sol ve sağ kanalları değiştir",
     "tracks": "Parçalar",
     "track": "Parça #{{number}}",
+    "addTrack": "Ses dosyası ekle",
+    "fileFilter": "Ses dosyaları",
+    "addTrackHint": "Bu videoda ses yok. Ses eklemek için bir ses dosyası ekleyin.",
+    "addedTrack": "Eklenen ses",
+    "addFailed": "Ses dosyası eklenemedi",
+    "selectFile": "Bir ses dosyası seç",
     "channelCount_one": "{{count}} kanal",
     "channelCount_other": "{{count}} kanal",
     "volumeLabel": "Ses Düzeyi:",

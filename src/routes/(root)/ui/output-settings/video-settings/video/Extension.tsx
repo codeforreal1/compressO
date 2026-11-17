@@ -35,8 +35,10 @@ function Extension({ mediaIndex }: VideoExtensionProps) {
       ? media[mediaIndex]
       : null
   const { config, pathRaw: videoPathRaw } = video ?? {}
-  const { convertToExtension } =
+  const settingsConfig =
     config ?? commonConfigForBatchCompression[batchConfigKey] ?? {}
+  const { convertToExtension } = settingsConfig
+  const externalAudioTracks = settingsConfig.externalAudioTracks
   // An audio file (or the audio files of a batch) is only written in audio formats
   const isAudioFileSettings =
     mediaIndex >= 0
@@ -45,7 +47,9 @@ function Extension({ mediaIndex }: VideoExtensionProps) {
 
   // Audio can only be extracted from a video that has audio, so find out up front (the same probe &
   // cache as the Audio tab)
-  const hasNoAudio = video?.videoInfoRaw?.audioStreams?.length === 0
+  const hasNoAudio =
+    video?.videoInfoRaw?.audioStreams?.length === 0 &&
+    (externalAudioTracks?.length ?? 0) === 0
   const hasCheckedAudio = !!video?.videoInfoRaw?.audioStreams
   useEffect(() => {
     if (mediaIndex < 0 || !videoPathRaw || hasCheckedAudio) return
@@ -77,7 +81,11 @@ function Extension({ mediaIndex }: VideoExtensionProps) {
             const audioStreams =
               targetVideo.videoInfoRaw?.audioStreams ??
               (await getAudioStreams(targetVideo.pathRaw).catch(() => null))
-            if (audioStreams && audioStreams.length === 0) {
+            if (
+              audioStreams &&
+              audioStreams.length === 0 &&
+              (targetVideo.config.externalAudioTracks?.length ?? 0) === 0
+            ) {
               toast.error(t('extension.noAudio'))
               return
             }

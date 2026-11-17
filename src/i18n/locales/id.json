@@ -273,7 +273,7 @@
       "credits": "Kredit",
       "watchedFolders": "Pantau folder",
       "history": "Riwayat",
-      "commandLine": "CLI"
+      "commandLine": "CLI & Agen AI"
     },
     "about": {
       "updateAvailable": "Pembaruan tersedia",
@@ -959,6 +959,12 @@
     "swapChannels": "Tukar saluran kiri dan kanan",
     "tracks": "Trek",
     "track": "Trek #{{number}}",
+    "addTrack": "Tambah file audio",
+    "fileFilter": "File audio",
+    "addTrackHint": "Video ini tidak memiliki audio. Tambahkan file audio untuk melampirkan audio.",
+    "addedTrack": "Audio ditambahkan",
+    "addFailed": "Tidak dapat menambahkan file audio",
+    "selectFile": "Pilih file audio",
     "channelCount_other": "{{count}} saluran",
     "volumeLabel": "Volume:",
     "volume": "Volume Audio",

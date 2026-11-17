@@ -194,7 +194,23 @@ impl FFMPEG {
         };
         let has_audio_stream = !audio_streams.is_empty();
 
-        if is_audio_target && !has_audio_stream {
+        // Audio files the user attached to the video, each starting at its beginning
+        let external_audio_paths: Vec<String> = audio_config
+            .external_audio_paths
+            .clone()
+            .unwrap_or_default()
+            .into_iter()
+            .filter(|path| !path.trim().is_empty())
+            .collect();
+        for path in &external_audio_paths {
+            if !Path::new(path).exists() {
+                return Err(format!("The added audio file does not exist: {path}"));
+            }
+        }
+        let has_external_audio = !external_audio_paths.is_empty();
+        let has_audio_source = has_audio_stream || has_external_audio;
+
+        if is_audio_target && !has_audio_source {
             return Err(String::from("The video has no audio to extract."));
         }
         // Muted, an audio output (e.g. an audio file at 0%) keeps its audio & silences it: silence of
@@ -307,6 +323,19 @@ impl FFMPEG {
             }
         } else {
             Vec::new()
+        };
+
+        // Attached audio files come after the video, thumbnail & subtitle inputs
+        let external_audio_input_indices: Vec<usize> = if is_gif_target {
+            Vec::new()
+        } else {
+            let mut indices = Vec::new();
+            for path in &external_audio_paths {
+                cmd_args.extend_from_slice(&["-i", path.as_str()]);
+                indices.push(input_index);
+                input_index += 1;
+            }
+            indices
         };
 
         let should_strip_metadata = strip_metadata.unwrap_or(false);
@@ -477,10 +506,23 @@ impl FFMPEG {
         cmd_args.extend(color_args.iter().map(|arg| arg.as_str()));
 
         let audio_codec = audio_output_codec(convert_to_extension, requested_audio_codec);
+        // An attached audio file stands in for the video's own when it has none
+        let external_audio_stream: Option<crate::core::domain::AudioStream> =
+            if let Some(path) = external_audio_paths.first() {
+                let mut ffprobe = FFPROBE::new(&self.app)?.with_owner_window(&self.owner_window);
+                ffprobe
+                    .get_audio_streams(path)
+                    .await
+                    .ok()
+                    .and_then(|streams| streams.into_iter().next())
+            } else {
+                None
+            };
         let source_audio = selected_audio_tracks
             .as_ref()
             .and_then(|tracks| tracks.first())
-            .and_then(|index| audio_streams.get(*index));
+            .and_then(|index| audio_streams.get(*index))
+            .or(external_audio_stream.as_ref());
         let source_sample_rate = source_audio
             .and_then(|stream| stream.sample_rate.parse::<u32>().ok())
             .unwrap_or(48000);
@@ -693,6 +735,46 @@ impl FFMPEG {
             String::new()
         };
 
+        let combined_audio_and_speed_filter = if !combined_audio_filter.is_empty()
+            && !audio_speed_filter.is_empty()
+        {
+            format!("{},{}", combined_audio_filter, audio_speed_filter)
+        } else if !combined_audio_filter.is_empty() {
+            combined_audio_filter.clone()
+        } else {
+            audio_speed_filter.clone()
+        };
+
+        // An attached audio file plays from the start: when it is longer than the output video,
+        // the output is capped at the video's length (a shorter file simply ends, leaving the
+        // video's remaining length silent)
+        let external_audio_limit: Option<String> = if has_external_audio && !is_gif_target {
+            let base_duration = if let Some((_, length)) = self.input_range {
+                Some(length)
+            } else if let Some(segments) = trim_segments.filter(|segments| !segments.is_empty())
+            {
+                Some(
+                    segments
+                        .iter()
+                        .map(|segment| (segment.end - segment.start).max(0.0))
+                        .sum(),
+                )
+            } else {
+                let mut ffprobe = FFPROBE::new(&self.app)?.with_owner_window(&self.owner_window);
+                ffprobe
+                    .get_video_basic_info(video_path)
+                    .await
+                    .ok()
+                    .and_then(|info| info.duration)
+            };
+            base_duration
+                .map(|duration| duration / clamped_speed.unwrap_or(1.0) as f64)
+                .filter(|duration| *duration > 0.0)
+                .map(|duration| format!("{duration:.3}"))
+        } else {
+            None
+        };
+
         if let Some(segments) = trim_segments.filter(|_| !is_audio_target) {
             if !segments.is_empty() {
                 map_video = true;
@@ -820,6 +902,32 @@ impl FFMPEG {
             }
         }
 
+        // Attached audio: added after the video's own tracks; an audio-only output holds one
+        // track, so it uses the first attached one only when the video has no audio
+        let external_audio_inputs_for_output: Vec<usize> = if is_audio_target {
+            if has_audio_stream {
+                Vec::new()
+            } else {
+                external_audio_input_indices.iter().take(1).copied().collect()
+            }
+        } else {
+            external_audio_input_indices.clone()
+        };
+        let mut external_audio_labels: Vec<Option<String>> = Vec::new();
+        if keeps_audio && !is_gif_target {
+            for (position, input_index) in external_audio_inputs_for_output.iter().enumerate() {
+                if combined_audio_and_speed_filter.is_empty() {
+                    external_audio_labels.push(None);
+                } else {
+                    let label = format!("exta{position}");
+                    filter_complex_parts.push(format!(
+                        "[{input_index}:a:0]asetpts=PTS-STARTPTS,{combined_audio_and_speed_filter}[{label}]"
+                    ));
+                    external_audio_labels.push(Some(label));
+                }
+            }
+        }
+
         let fc = match filter_complex_parts.len() {
             0 => "".to_string(),
             _ => filter_complex_parts.join(";").to_string(),
@@ -873,6 +981,20 @@ impl FFMPEG {
             }
         }
 
+        if keeps_audio && !is_gif_target {
+            for (position, input_index) in external_audio_inputs_for_output.iter().enumerate() {
+                audio_args_owned.push("-map".to_string());
+                if let Some(label) = external_audio_labels
+                    .get(position)
+                    .and_then(|label| label.as_ref())
+                {
+                    audio_args_owned.push(format!("[{label}]"));
+                } else {
+                    audio_args_owned.push(format!("{input_index}:a:0"));
+                }
+            }
+        }
+
         // Audio filter
         let audio_filter_args: Vec<String> = {
             if has_audio_stream
@@ -922,7 +1044,7 @@ impl FFMPEG {
                 planned_audio_bitrate.or(audio_config.bitrate),
                 target_size.is_some(),
             ));
-        } else if keeps_audio && has_audio_stream {
+        } else if keeps_audio && has_audio_source {
             if let Some(bitrate) = audio_config.bitrate {
                 audio_args_owned.extend(["-b:a".into(), format!("{}k", bitrate)]);
             }
@@ -1101,6 +1223,9 @@ impl FFMPEG {
         }
 
         let output_path = output_file.display().to_string();
+        if let Some(limit) = external_audio_limit.as_deref() {
+            cmd_args.extend_from_slice(&["-t", limit]);
+        }
         cmd_args.extend_from_slice(&["-y", &output_path]);
 
         // The parts compressed for an estimate are many & short, so they are not logged as usual

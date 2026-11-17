@@ -48,6 +48,7 @@ function AudioBitrate({ mediaIndex }: AudioBitrateProps) {
     shouldEnableCustomBitrate,
     convertToExtension,
     shouldUseTargetSize,
+    externalAudioTracks,
   } = config ?? commonConfigForBatchCompression[batchConfigKey] ?? {}
 
   const handleSwitchToggle = useCallback(() => {
@@ -141,7 +142,9 @@ function AudioBitrate({ mediaIndex }: AudioBitrateProps) {
         batchConfigKey === 'audioFileConfig' ||
         isAudioExtension(convertToExtension)))
 
-  const hasNoAudio = videoInfoRaw?.audioStreams?.length === 0
+  const hasNoAudio =
+    videoInfoRaw?.audioStreams?.length === 0 &&
+    (externalAudioTracks?.length ?? 0) === 0
   const currentValue = audioConfig?.bitrate ?? 128
 
   return (
