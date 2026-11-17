@@ -50,6 +50,19 @@ export type AudioConfig = {
   bitrate?: number | null
   audioCodec?: string | null
   selectedAudioTracks?: readonly number[] | null
+  /**
+   * Audio files attached to the video, from its beginning (see
+   * `VideoConfig.externalAudioTracks`)
+   */
+  externalAudioPaths?: readonly string[] | null
+}
+
+/** An audio file attached to a video, played from the video's beginning */
+export type ExternalAudioTrack = {
+  path: string
+  fileName?: string | null
+  /** Its length, in seconds */
+  duration?: number | null
 }
 
 export type SubtitleConfig = {
@@ -112,6 +125,8 @@ export type VideoConfig = {
   shouldEnableCustomAudioCodec?: boolean
   shouldEnableAudioTrackSelection?: boolean
   selectedAudioTracks?: number[]
+  /** Audio files attached to the video, starting at its beginning */
+  externalAudioTracks?: ExternalAudioTrack[] | null
   subtitlesConfig?: SubtitlesConfig | null
   shouldEnableCustomSpeed?: boolean
   customSpeed?: number | null

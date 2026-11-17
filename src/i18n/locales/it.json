@@ -273,7 +273,7 @@
       "credits": "Riconoscimenti",
       "watchedFolders": "Monitoraggio cartelle",
       "history": "Cronologia",
-      "commandLine": "CLI"
+      "commandLine": "CLI e agenti AI"
     },
     "about": {
       "updateAvailable": "Aggiornamento disponibile",
@@ -987,6 +987,12 @@
     "swapChannels": "Scambia i canali sinistro e destro",
     "tracks": "Tracce",
     "track": "Traccia n. {{number}}",
+    "addTrack": "Aggiungi file audio",
+    "fileFilter": "File audio",
+    "addTrackHint": "Questo video non ha audio. Aggiungi un file audio per allegarne uno.",
+    "addedTrack": "Audio aggiunto",
+    "addFailed": "Impossibile aggiungere il file audio",
+    "selectFile": "Seleziona un file audio",
     "channelCount_one": "{{count}} canale",
     "channelCount_many": "{{count}} canali",
     "channelCount_other": "{{count}} canali",

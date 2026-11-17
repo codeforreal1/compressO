@@ -273,7 +273,7 @@
       "credits": "Créditos",
       "watchedFolders": "Vigilar carpetas",
       "history": "Historial",
-      "commandLine": "CLI"
+      "commandLine": "CLI y agentes de IA"
     },
     "about": {
       "updateAvailable": "Actualización disponible",
@@ -987,6 +987,12 @@
     "swapChannels": "Intercambiar los canales izquierdo y derecho",
     "tracks": "Pistas",
     "track": "Pista n.º {{number}}",
+    "addTrack": "Añadir archivo de audio",
+    "fileFilter": "Archivos de audio",
+    "addTrackHint": "Este video no tiene audio. Añade un archivo de audio para adjuntarlo.",
+    "addedTrack": "Audio añadido",
+    "addFailed": "No se pudo añadir el archivo de audio",
+    "selectFile": "Selecciona un archivo de audio",
     "channelCount_one": "{{count}} canal",
     "channelCount_many": "{{count}} canales",
     "channelCount_other": "{{count}} canales",

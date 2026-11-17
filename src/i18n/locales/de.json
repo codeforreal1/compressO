@@ -273,7 +273,7 @@
       "credits": "Danksagungen",
       "watchedFolders": "Ordnerüberwachung",
       "history": "Verlauf",
-      "commandLine": "CLI"
+      "commandLine": "CLI & KI-Agenten"
     },
     "about": {
       "updateAvailable": "Update verfügbar",
@@ -973,6 +973,12 @@
     "swapChannels": "Linken und rechten Kanal tauschen",
     "tracks": "Spuren",
     "track": "Spur {{number}}",
+    "addTrack": "Audiodatei hinzufügen",
+    "fileFilter": "Audiodateien",
+    "addTrackHint": "Dieses Video hat kein Audio. Füge eine Audiodatei hinzu, um eine anzuhängen.",
+    "addedTrack": "Hinzugefügtes Audio",
+    "addFailed": "Die Audiodatei konnte nicht hinzugefügt werden",
+    "selectFile": "Audiodatei auswählen",
     "channelCount_one": "{{count}} Kanal",
     "channelCount_other": "{{count}} Kanäle",
     "volumeLabel": "Lautstärke:",

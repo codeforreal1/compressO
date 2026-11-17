@@ -273,7 +273,7 @@
       "credits": "Podziękowania",
       "watchedFolders": "Obserwowanie folderów",
       "history": "Historia",
-      "commandLine": "CLI"
+      "commandLine": "CLI i agenci AI"
     },
     "about": {
       "updateAvailable": "Dostępna aktualizacja",
@@ -1001,6 +1001,12 @@
     "swapChannels": "Zamień lewy i prawy kanał",
     "tracks": "Ścieżki",
     "track": "Ścieżka nr {{number}}",
+    "addTrack": "Dodaj plik audio",
+    "fileFilter": "Pliki audio",
+    "addTrackHint": "Ten film nie ma dźwięku. Dodaj plik audio, aby go dołączyć.",
+    "addedTrack": "Dodane audio",
+    "addFailed": "Nie udało się dodać pliku audio",
+    "selectFile": "Wybierz plik audio",
     "channelCount_one": "{{count}} kanał",
     "channelCount_few": "{{count}} kanały",
     "channelCount_many": "{{count}} kanałów",

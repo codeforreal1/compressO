@@ -252,6 +252,9 @@ pub struct AudioConfig {
     pub bitrate: Option<u32>,
     pub audio_codec: Option<String>,
     pub selected_audio_tracks: Option<Vec<usize>>,
+    /// Audio files attached to the video, played from its beginning
+    #[serde(default)]
+    pub external_audio_paths: Option<Vec<String>>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]

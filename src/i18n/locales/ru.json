@@ -273,7 +273,7 @@
       "credits": "Благодарности",
       "watchedFolders": "Отслеживание папок",
       "history": "История",
-      "commandLine": "CLI"
+      "commandLine": "CLI и ИИ-агенты"
     },
     "about": {
       "updateAvailable": "Доступно обновление",
@@ -1001,6 +1001,12 @@
     "swapChannels": "Поменять местами левый и правый каналы",
     "tracks": "Дорожки",
     "track": "Дорожка № {{number}}",
+    "addTrack": "Добавить аудиофайл",
+    "fileFilter": "Аудиофайлы",
+    "addTrackHint": "В этом видео нет звука. Добавьте аудиофайл, чтобы прикрепить звук.",
+    "addedTrack": "Добавленное аудио",
+    "addFailed": "Не удалось добавить аудиофайл",
+    "selectFile": "Выберите аудиофайл",
     "channelCount_one": "{{count}} канал",
     "channelCount_few": "{{count}} канала",
     "channelCount_many": "{{count}} каналов",

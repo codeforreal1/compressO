@@ -273,7 +273,7 @@
       "credits": "크레딧",
       "watchedFolders": "폴더 감시",
       "history": "기록",
-      "commandLine": "CLI"
+      "commandLine": "CLI 및 AI 에이전트"
     },
     "about": {
       "updateAvailable": "업데이트 사용 가능",
@@ -959,6 +959,12 @@
     "swapChannels": "왼쪽과 오른쪽 채널 바꾸기",
     "tracks": "트랙",
     "track": "트랙 #{{number}}",
+    "addTrack": "오디오 파일 추가",
+    "fileFilter": "오디오 파일",
+    "addTrackHint": "이 동영상에는 오디오가 없습니다. 오디오 파일을 추가하여 첨부하세요.",
+    "addedTrack": "추가된 오디오",
+    "addFailed": "오디오 파일을 추가할 수 없습니다",
+    "selectFile": "오디오 파일 선택",
     "channelCount_other": "{{count}}채널",
     "volumeLabel": "음량:",
     "volume": "오디오 음량",

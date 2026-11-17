@@ -133,8 +133,12 @@ function AudioCodec({ mediaIndex }: AudioCodecProps) {
       ? media[mediaIndex]
       : null
   const { config, videoInfoRaw, extension: videoExtension } = video ?? {}
-  const { shouldEnableCustomAudioCodec, convertToExtension, audioConfig } =
-    config ?? commonConfigForBatchCompression[batchConfigKey] ?? {}
+  const {
+    shouldEnableCustomAudioCodec,
+    convertToExtension,
+    audioConfig,
+    externalAudioTracks,
+  } = config ?? commonConfigForBatchCompression[batchConfigKey] ?? {}
 
   const customAudioCodec = audioConfig?.audioCodec ?? '-'
 
@@ -218,7 +222,9 @@ function AudioCodec({ mediaIndex }: AudioCodecProps) {
     [mediaIndex, batchConfigKey],
   )
 
-  const hasNoAudio = videoInfoRaw?.audioStreams?.length === 0
+  const hasNoAudio =
+    videoInfoRaw?.audioStreams?.length === 0 &&
+    (externalAudioTracks?.length ?? 0) === 0
 
   const shouldDisableInput =
     media.length === 0 ||

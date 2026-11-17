@@ -273,7 +273,7 @@
       "credits": "आभार",
       "watchedFolders": "फ़ोल्डर निगरानी",
       "history": "इतिहास",
-      "commandLine": "CLI"
+      "commandLine": "CLI और AI एजेंट"
     },
     "about": {
       "updateAvailable": "अपडेट उपलब्ध है",
@@ -973,6 +973,12 @@
     "swapChannels": "बाएँ और दाएँ चैनल अदला-बदली करें",
     "tracks": "ट्रैक",
     "track": "ट्रैक #{{number}}",
+    "addTrack": "ऑडियो फ़ाइल जोड़ें",
+    "fileFilter": "ऑडियो फ़ाइलें",
+    "addTrackHint": "इस वीडियो में ऑडियो नहीं है। ऑडियो जोड़ने के लिए एक ऑडियो फ़ाइल जोड़ें।",
+    "addedTrack": "जोड़ा गया ऑडियो",
+    "addFailed": "ऑडियो फ़ाइल जोड़ी नहीं जा सकी",
+    "selectFile": "ऑडियो फ़ाइल चुनें",
     "channelCount_one": "{{count}} चैनल",
     "channelCount_other": "{{count}} चैनल",
     "volumeLabel": "वॉल्यूम:",
