@@ -1,7 +1,19 @@
-use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
+use std::sync::atomic::{AtomicBool, Ordering};
 use tauri::Emitter;
 
 use crate::core::domain::UpdateInfo;
+
+/// A download is already running: a second one would interleave its progress with it
+static UPDATE_DOWNLOAD_IN_PROGRESS: AtomicBool = AtomicBool::new(false);
+
+/// Clears the flag when the download ends, including when the command is cancelled or panics
+struct UpdateDownloadGuard;
+
+impl Drop for UpdateDownloadGuard {
+    fn drop(&mut self) {
+        UPDATE_DOWNLOAD_IN_PROGRESS.store(false, Ordering::SeqCst);
+    }
+}
 
 #[tauri::command]
 pub async fn check_update(app_handle: tauri::AppHandle) -> Result<UpdateInfo, String> {
@@ -99,31 +111,43 @@ pub async fn download_and_install_update(app_handle: tauri::AppHandle) -> Result
         .map_err(|e| format!("Failed to check for update: {}", e))?
         .ok_or("No update available")?;
 
-    let downloaded = AtomicUsize::new(0);
-    let total_size = AtomicU64::new(0);
-    let _bytes = response
-        .download_and_install(
-            &|chunk_length, content_length| {
-                let prev = downloaded.fetch_add(chunk_length, Ordering::SeqCst);
+    // A second download would interleave its progress with the first one
+    if UPDATE_DOWNLOAD_IN_PROGRESS.swap(true, Ordering::SeqCst) {
+        return Err(String::from("An update is already being downloaded."));
+    }
+    let _download_guard = UpdateDownloadGuard;
 
-                if total_size.load(Ordering::SeqCst) == 0 {
-                    if let Some(len) = content_length {
-                        total_size.store(len, Ordering::SeqCst);
-                    }
+    let mut downloaded: u64 = 0;
+    let mut total_size: Option<u64> = None;
+    let mut last_emitted_percent: Option<u32> = None;
+    let result = response
+        .download_and_install(
+            |chunk_length, content_length| {
+                downloaded = downloaded.saturating_add(chunk_length as u64);
+                if total_size.is_none() {
+                    total_size = content_length;
                 }
 
-                let total = total_size.load(Ordering::SeqCst);
-                if total > 0 {
-                    let progress = ((prev as f64 / total as f64) * 100.0) as u32;
+                // Emit only when the percentage changes: one event per network chunk floods the
+                // webview, whose events can then arrive out of order
+                let Some(total) = total_size.filter(|total| *total > 0) else {
+                    return;
+                };
+                let progress = ((downloaded as f64 / total as f64) * 100.0)
+                    .floor()
+                    .clamp(0.0, 100.0) as u32;
+                if last_emitted_percent.is_none_or(|last| progress > last) {
+                    last_emitted_percent = Some(progress);
                     let _ = app_handle.emit("update-event", progress.to_string());
                 }
             },
-            &|| {
+            || {
                 let _ = app_handle.emit("update-event", "100");
             },
         )
-        .await
-        .map_err(|e| format!("Failed to download update: {}", e))?;
+        .await;
+
+    result.map_err(|e| format!("Failed to download update: {}", e))?;
     Ok("Update downloaded and installed successfully.".to_string())
 }
 

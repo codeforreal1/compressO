@@ -1,5 +1,19 @@
 # Changelog
 
+### 4.3.0
+
+Features:
+
+- **Add Audio to Videos**: Attach audio files to a video from its Audio settings, including videos without sound. Added audio starts at the beginning of the video, is cut when longer than the video, and a shorter file leaves the rest of the video silent. Added tracks count as kept tracks, so the video's original tracks can be unselected.
+
+Enhancements:
+
+- The CLI settings section is now called **CLI & AI Agents**.
+
+Bug Fixes:
+
+- Fixed the update download percentage jumping back and forth. Progress now moves forward only, is emitted once per percentage point instead of for every downloaded chunk, and only one update can be downloaded at a time.
+
 ### 4.2.0
 
 Bug Fixes:
