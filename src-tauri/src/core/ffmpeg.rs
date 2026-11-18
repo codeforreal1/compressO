@@ -1,9 +1,9 @@
 use crate::core::domain::{
     AudioConfig, BatchCompressionResult, BatchVideoCompressionProgress,
     BatchVideoIndividualCompressionResult, CustomEvents, MediaMetadataConfig, MediaTransform,
-    MediaTransformCrop, MediaTransformHistory, OutputOption, SubtitleStream, SubtitlesConfig, TargetSize,
-    VideoCompressionConfig, VideoCompressionProgress, VideoCompressionResult, VideoThumbnail,
-    VideoTrimSegment,
+    MediaTransformCrop, MediaTransformHistory, OutputOption, SubtitleStream, SubtitlesConfig,
+    TargetSize, VideoClipResult, VideoClipsConfig, VideoCompressionConfig,
+    VideoCompressionProgress, VideoCompressionResult, VideoThumbnail, VideoTrimSegment,
 };
 use crate::core::ffprobe::FFPROBE;
 use crate::core::hardware_encoder;
@@ -65,6 +65,36 @@ fn output_container(extension: &str) -> &str {
         "mts" | "m2ts" => "ts",
         _ => extension,
     }
+}
+
+/// The start & end of each clip of a video, the last one shorter when the length is not a multiple
+/// of `clip_length`
+fn clip_ranges(duration: f64, clip_length: f64) -> Vec<(f64, f64)> {
+    if clip_length <= 0.0 || clip_length >= duration {
+        return Vec::new();
+    }
+    let mut ranges = Vec::new();
+    let mut start = 0.0;
+    while start < duration - 0.001 {
+        let end = (start + clip_length).min(duration);
+        if end - start <= 0.001 {
+            break;
+        }
+        ranges.push((start, end));
+        start = end;
+    }
+    // Container timing can leave a few milliseconds over: keep them in the last clip instead of
+    // making a clip of a few milliseconds
+    if ranges.len() > 2 {
+        let last_length = ranges.last().map(|(start, end)| end - start).unwrap_or(0.0);
+        if last_length < 1.0 {
+            let (_, end) = ranges.pop().unwrap();
+            if let Some(previous) = ranges.last_mut() {
+                previous.1 = end;
+            }
+        }
+    }
+    ranges
 }
 
 /// The encoders of the bundled ffmpeg (`ffmpeg -encoders`), read once
@@ -178,6 +208,7 @@ impl FFMPEG {
         trim_segments: Option<&Vec<VideoTrimSegment>>,
         subtitles_config: Option<&SubtitlesConfig>,
         speed: Option<f32>,
+        clips: Option<&VideoClipsConfig>,
         target_size: Option<&TargetSize>,
         dynamic_range: Option<&ImageDynamicRangeConfig>,
     ) -> Result<VideoCompressionResult, String> {
@@ -185,6 +216,41 @@ impl FFMPEG {
         let requested_audio_codec = audio_config.audio_codec.as_deref();
         if !EXTENSIONS.contains(&convert_to_extension) && !is_audio_target {
             return Err(String::from("Invalid convert to extension."));
+        }
+        // Clips are made from the finished video, after every other setting (see the end)
+        let clip_length_seconds = clips
+            .map(|clips| clips.duration_seconds)
+            .filter(|seconds| seconds.is_finite() && *seconds > 0.0)
+            .filter(|_| !is_audio_target && convert_to_extension != "gif");
+
+        // Fail before encoding a video that cannot be split (the frontend checks this too)
+        if let Some(clip_length) = clip_length_seconds.filter(|_| self.input_range.is_none()) {
+            let base_duration = if let Some(segments) =
+                trim_segments.filter(|segments| !segments.is_empty())
+            {
+                Some(
+                    segments
+                        .iter()
+                        .map(|segment| (segment.end - segment.start).max(0.0))
+                        .sum(),
+                )
+            } else {
+                let mut ffprobe = FFPROBE::new(&self.app)?.with_owner_window(&self.owner_window);
+                ffprobe
+                    .get_video_basic_info(video_path)
+                    .await
+                    .ok()
+                    .and_then(|info| info.duration)
+            };
+            if let Some(output_duration) = base_duration
+                .map(|duration| duration / speed.map(|s| s.clamp(0.25, 4.0) as f64).unwrap_or(1.0))
+            {
+                if clip_length >= output_duration {
+                    return Err(String::from(
+                        "The clip length must be shorter than the video.",
+                    ));
+                }
+            }
         }
         let container = output_container(convert_to_extension);
 
@@ -1223,6 +1289,12 @@ impl FFMPEG {
         }
 
         let output_path = output_file.display().to_string();
+        // Every clip starts on a keyframe, so the clips can be split without re-encoding them
+        let force_keyframes =
+            clip_length_seconds.map(|seconds| format!("expr:gte(t,n_forced*{seconds:.3})"));
+        if let Some(force_keyframes) = force_keyframes.as_deref() {
+            cmd_args.extend_from_slice(&["-force_key_frames:v:0", force_keyframes]);
+        }
         if let Some(limit) = external_audio_limit.as_deref() {
             cmd_args.extend_from_slice(&["-t", limit]);
         }
@@ -1537,6 +1609,36 @@ impl FFMPEG {
             }
         }
 
+        // Clips are made after the video is fully compressed, so every other setting applies to
+        // them as it does to the whole video. The video is encoded with a keyframe at each clip
+        // boundary, so the clips can be split without encoding it again.
+        if let Some(clip_length) = clip_length_seconds {
+            let clips = self
+                .split_video_into_clips(
+                    &output_file,
+                    video_id,
+                    convert_to_extension,
+                    clip_length,
+                    Some(batch_id.as_str()),
+                )
+                .await?;
+            std::fs::remove_file(&output_file).ok();
+            for output in &other_outputs {
+                std::fs::remove_file(&output.file_path).ok();
+            }
+            let first = clips
+                .first()
+                .ok_or_else(|| String::from("The video could not be split into clips."))?;
+            return Ok(VideoCompressionResult {
+                video_id: video_id.to_owned(),
+                file_name: first.file_name.clone(),
+                file_path: first.file_path.clone(),
+                file_metadata: first.file_metadata.clone(),
+                other_outputs: Vec::new(),
+                clips,
+            });
+        }
+
         if convert_to_extension == "gif" {
             log::info!("[ffmpeg] Converting processed video to GIF");
 
@@ -1562,6 +1664,7 @@ impl FFMPEG {
                 file_path: gif_path,
                 file_metadata: file_metadata.ok(),
                 other_outputs: Vec::new(),
+                clips: Vec::new(),
             });
         }
 
@@ -1572,6 +1675,7 @@ impl FFMPEG {
             file_path: output_file.display().to_string(),
             file_metadata: file_metadata.ok(),
             other_outputs,
+            clips: Vec::new(),
         })
     }
 
@@ -1678,6 +1782,7 @@ impl FFMPEG {
                             },
                             None,
                             config.speed,
+                            None,
                             None,
                             config.dynamic_range.as_ref(),
                         )
@@ -1807,6 +1912,7 @@ impl FFMPEG {
                     trim_segments,
                     subtitles_config,
                     speed,
+                    video_options.clips.as_ref(),
                     video_options.target_size.as_ref(),
                     video_options.dynamic_range.as_ref(),
                 )
@@ -1842,6 +1948,117 @@ impl FFMPEG {
         }
 
         Ok(BatchCompressionResult { results })
+    }
+
+    /// Splits a finished video into clips of `clip_length` seconds (the last one shorter), without
+    /// re-encoding: the video was encoded with a keyframe at each clip boundary
+    async fn split_video_into_clips(
+        &mut self,
+        output_file: &Path,
+        video_id: &str,
+        extension: &str,
+        clip_length: f64,
+        batch_id: Option<&str>,
+    ) -> Result<Vec<VideoClipResult>, String> {
+        let output_path = output_file
+            .to_str()
+            .ok_or_else(|| String::from("Invalid output path."))?;
+        let duration = {
+            let mut ffprobe = FFPROBE::new(&self.app)?.with_owner_window(&self.owner_window);
+            ffprobe
+                .get_video_basic_info(output_path)
+                .await?
+                .duration
+                .filter(|duration| *duration > 0.0)
+                .ok_or_else(|| String::from("The video's duration could not be read."))?
+        };
+        if clip_length >= duration {
+            return Err(String::from(
+                "The clip length must be shorter than the video.",
+            ));
+        }
+
+        let ranges = clip_ranges(duration, clip_length);
+        if ranges.is_empty() {
+            return Err(String::from(
+                "The clip length must be shorter than the video.",
+            ));
+        }
+        let clip_count = ranges.len();
+        let mut clips = Vec::with_capacity(clip_count);
+        for (clip_index, (start, end)) in ranges.into_iter().enumerate() {
+            let length = end - start;
+            let file_name = format!("{}-clip-{}.{}", video_id, clip_index + 1, extension);
+            let clip_path: PathBuf = [self.assets_dir.clone(), PathBuf::from(&file_name)]
+                .iter()
+                .collect();
+            let clip_path_str = clip_path.display().to_string();
+
+            let mut ffmpeg_cmd = self.get_ffmpeg_command()?;
+            ffmpeg_cmd.args([
+                "-hide_banner",
+                "-loglevel",
+                "error",
+                "-ss",
+                &format!("{start:.3}"),
+                "-i",
+                output_path,
+                "-t",
+                &format!("{length:.3}"),
+                "-map",
+                "0",
+                "-map_metadata",
+                "0",
+                "-map_chapters",
+                "-1",
+                "-c",
+                "copy",
+                "-avoid_negative_ts",
+                "make_zero",
+            ]);
+            if matches!(extension, "mp4" | "m4v" | "mov") {
+                ffmpeg_cmd.args(["-movflags", "+faststart"]);
+            }
+            ffmpeg_cmd.args(["-y", &clip_path_str]);
+
+            let clip_path_for_cleanup = clip_path.clone();
+            let cancel_callback: CancelCallback = Arc::new(move || {
+                std::fs::remove_file(&clip_path_for_cleanup).ok();
+            });
+            let cancel_ids = match batch_id {
+                Some(batch_id) => vec![video_id.to_string(), batch_id.to_string()],
+                None => vec![video_id.to_string()],
+            };
+            let executor = MediaProcessExecutorBuilder::new(self.app.clone())
+                .owner_window(&self.owner_window)
+                .command(ffmpeg_cmd)
+                .with_cancel_support(cancel_ids, Some(cancel_callback))
+                .build()?;
+            let result = executor.spawn_and_wait().await?;
+            if !result.success() {
+                std::fs::remove_file(&clip_path).ok();
+                return Err(format!(
+                    "Failed to make clip {} of {}.",
+                    clip_index + 1,
+                    clip_count
+                ));
+            }
+
+            let file_metadata = get_file_metadata(&clip_path_str).ok();
+            clips.push(VideoClipResult {
+                index: clip_index + 1,
+                start_seconds: start,
+                end_seconds: end,
+                file_name,
+                file_path: clip_path_str,
+                file_metadata,
+            });
+        }
+
+        if clips.is_empty() {
+            return Err(String::from("The video could not be split into clips."));
+        }
+        Ok(clips)
     }
 
     /// Generates a .jpeg thumbnail image from a video path
@@ -2850,5 +3067,60 @@ mod audio_target_size_tests {
             audio_target_encoder_args("libopus"),
             ["-vbr", "constrained"]
         );
+    }
+}
+
+#[cfg(test)]
+mod clip_tests {
+    use super::*;
+
+    #[test]
+    fn splits_into_equal_clips() {
+        assert_eq!(
+            clip_ranges(300.0, 60.0),
+            vec![
+                (0.0, 60.0),
+                (60.0, 120.0),
+                (120.0, 180.0),
+                (180.0, 240.0),
+                (240.0, 300.0),
+            ]
+        );
+    }
+
+    #[test]
+    fn last_clip_keeps_the_remainder() {
+        assert_eq!(
+            clip_ranges(125.0, 60.0),
+            vec![(0.0, 60.0), (60.0, 120.0), (120.0, 125.0)]
+        );
+    }
+
+    #[test]
+    fn tiny_remainder_after_one_clip_is_kept_so_the_video_is_split() {
+        assert_eq!(
+            clip_ranges(60.5, 60.0),
+            vec![(0.0, 60.0), (60.0, 60.5)]
+        );
+    }
+
+    #[test]
+    fn tiny_container_timing_remainder_joins_the_last_clip() {
+        assert_eq!(
+            clip_ranges(300.04, 60.0),
+            vec![
+                (0.0, 60.0),
+                (60.0, 120.0),
+                (120.0, 180.0),
+                (180.0, 240.0),
+                (240.0, 300.04),
+            ]
+        );
+    }
+
+    #[test]
+    fn no_clips_when_the_length_covers_the_video() {
+        assert!(clip_ranges(120.0, 180.0).is_empty());
+        assert!(clip_ranges(120.0, 120.0).is_empty());
     }
 }

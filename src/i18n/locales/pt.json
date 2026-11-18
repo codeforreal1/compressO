@@ -1108,5 +1108,26 @@
     "videoBoostFormats": "O realce HDR está disponível apenas para vídeos MP4, MOV, MKV, WebM e TS que usam o codec H.265, VP9 ou AV1.",
     "videoBoostLossless": "O realce HDR não está disponível com a compressão sem perdas.",
     "videoSdrOnly": "Este formato ou codec não pode armazenar HDR, portanto o vídeo será convertido para SDR."
+  },
+  "clips": {
+    "title": "Clipes",
+    "length": "Duração do clipe",
+    "minutes": "min",
+    "willCreate_one": "Criará {{count}} clipe",
+    "willCreate_other": "Criará {{count}} clipes",
+    "clipName": "Clipe {{number}}",
+    "fromOriginal": "Clipes de {{name}}",
+    "count_one": "{{count}} clipe",
+    "count_other": "{{count}} clipes",
+    "notAvailable": "Clipes não estão disponíveis para saída GIF ou de áudio.",
+    "tooLong": "A duração do clipe deve ser menor que a do vídeo ({{duration}}).",
+    "invalidLength": "Insira uma duração de clipe maior que 0.",
+    "durationUnknown": "A duração do vídeo ainda não é conhecida.",
+    "chooseFolder": "Escolher uma pasta para os clipes",
+    "willCreate_many": "Criará {{count}} clipes",
+    "count_many": "{{count}} clipes",
+    "batchTooLong": "Um ou mais vídeos são mais curtos que a duração do clipe.",
+    "seconds": "s",
+    "switchUnit": "Mudar para {{unit}}"
   }
 }

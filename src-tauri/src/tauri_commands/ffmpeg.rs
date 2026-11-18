@@ -59,6 +59,7 @@ pub async fn compress_video(
             speed,
             None,
             None,
+            None,
         )
         .await
     {

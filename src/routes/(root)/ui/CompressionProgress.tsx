@@ -11,7 +11,12 @@ import {
 } from '@/types/compression'
 import { formatBytes, getOutputFileName } from '@/utils/fs'
 import { convertDurationToMilliseconds } from '@/utils/string'
-import { getOutputDuration, getOutputOptions, MediaFile } from '../-compression'
+import {
+  getOutputDuration,
+  getOutputOptions,
+  getVideoClipOutputs,
+  MediaFile,
+} from '../-compression'
 import { appProxy } from '../-state'
 
 async function updateDockProgress() {
@@ -148,22 +153,38 @@ function CompressionProgress() {
                   if (completedMedia.type === 'video') {
                     completedMedia.targetSizeRound = null
                   }
+                  const clips =
+                    originalMedia.type === 'video' &&
+                    payload.result.mediaType === 'video'
+                      ? getVideoClipOutputs(payload.result, originalMedia)
+                      : []
+                  const outputSizeInBytes = clips.length
+                    ? clips.reduce(
+                        (sum, clip) => sum + (clip.sizeInBytes ?? 0),
+                        0,
+                      )
+                    : fileMetadata?.size
                   const lateFile = {
                     isSuccessful: true,
-                    fileName: fileMetadata?.fileName,
+                    fileName: clips[0]?.fileName ?? fileMetadata?.fileName,
                     // This event can arrive after the final results, so it must name the file the
                     // same way (after the original, not the generated output file name)
-                    fileNameToDisplay: getOutputFileName(
-                      originalMedia.fileName,
-                      originalMedia.extension,
-                      fileMetadata?.extension,
-                    ),
-                    pathRaw: fileMetadata?.path,
-                    path: core.convertFileSrc(fileMetadata?.path ?? ''),
-                    mimeType: fileMetadata?.extension,
-                    extension: fileMetadata?.extension,
-                    size: formatBytes(fileMetadata?.size ?? 0),
-                    sizeInBytes: fileMetadata?.size,
+                    fileNameToDisplay:
+                      clips[0]?.fileNameToDisplay ??
+                      getOutputFileName(
+                        originalMedia.fileName,
+                        originalMedia.extension,
+                        fileMetadata?.extension,
+                      ),
+                    pathRaw: clips[0]?.pathRaw ?? fileMetadata?.path,
+                    path:
+                      clips[0]?.path ??
+                      core.convertFileSrc(fileMetadata?.path ?? ''),
+                    mimeType: clips[0]?.mimeType ?? fileMetadata?.extension,
+                    extension: clips[0]?.extension ?? fileMetadata?.extension,
+                    size: formatBytes(outputSizeInBytes ?? 0),
+                    sizeInBytes: outputSizeInBytes,
+                    clips: clips.length ? clips : undefined,
                     ...getOutputOptions(
                       payload.result,
                       originalMedia.type === 'video'

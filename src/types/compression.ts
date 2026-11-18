@@ -208,6 +208,18 @@ export type VideoCompressionResult = {
   fileMetadata: FileMetadata
   /** The other outputs made for a target size (each attempt), any of which can be used instead */
   otherOutputs?: { filePath: string; size: number }[]
+  /** The compressed video split into clips (see `VideoCompressionConfig.clips`) */
+  clips?: VideoClipResult[]
+}
+
+export type VideoClipResult = {
+  /** 1-based */
+  index: number
+  startSeconds: number
+  endSeconds: number
+  fileName: string
+  filePath: string
+  fileMetadata?: FileMetadata
 }
 
 export enum CustomEvents {
@@ -448,6 +460,8 @@ export type VideoCompressionConfig = {
    * `null` follows the setting
    */
   useHardwareAcceleration?: boolean | null
+  /** Splits the compressed video into clips of this length, after compressing it */
+  clips?: { durationSeconds: number } | null
 }
 
 export type ImageCompressionProgress = {

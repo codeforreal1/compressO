@@ -1123,5 +1123,28 @@
     "videoBoostFormats": "Усиление HDR доступно только для видео MP4, MOV, MKV, WebM и TS с кодеком H.265, VP9 или AV1.",
     "videoBoostLossless": "Усиление HDR недоступно при сжатии без потерь.",
     "videoSdrOnly": "Этот формат или кодек не может хранить HDR, поэтому видео будет преобразовано в SDR."
+  },
+  "clips": {
+    "title": "Клипы",
+    "length": "Длительность клипа",
+    "minutes": "мин",
+    "willCreate_one": "Будет создан {{count}} клип",
+    "willCreate_other": "Будет создано {{count}} клипов",
+    "clipName": "Клип {{number}}",
+    "fromOriginal": "Клипы из {{name}}",
+    "count_one": "{{count}} клип",
+    "count_other": "{{count}} клипов",
+    "notAvailable": "Клипы недоступны для вывода GIF или аудио.",
+    "tooLong": "Длительность клипа должна быть меньше длительности видео ({{duration}}).",
+    "invalidLength": "Введите длительность клипа больше 0.",
+    "durationUnknown": "Длительность видео пока неизвестна.",
+    "chooseFolder": "Выберите папку для клипов",
+    "willCreate_few": "Будет создано {{count}} клипа",
+    "willCreate_many": "Будет создано {{count}} клипов",
+    "count_few": "{{count}} клипа",
+    "count_many": "{{count}} клипов",
+    "batchTooLong": "Одно или несколько видео короче длительности клипа.",
+    "seconds": "с",
+    "switchUnit": "Переключить на {{unit}}"
   }
 }

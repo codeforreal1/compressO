@@ -1078,5 +1078,24 @@
     "videoBoostFormats": "Tăng cường HDR chỉ khả dụng cho video MP4, MOV, MKV, WebM và TS sử dụng codec H.265, VP9 hoặc AV1.",
     "videoBoostLossless": "Tăng cường HDR không khả dụng khi nén không mất dữ liệu.",
     "videoSdrOnly": "Định dạng hoặc codec này không thể lưu trữ HDR, vì vậy video sẽ được chuyển đổi sang SDR."
+  },
+  "clips": {
+    "title": "Clip",
+    "length": "Độ dài clip",
+    "minutes": "phút",
+    "willCreate_one": "Sẽ tạo {{count}} clip",
+    "willCreate_other": "Sẽ tạo {{count}} clip",
+    "clipName": "Clip {{number}}",
+    "fromOriginal": "Clip từ {{name}}",
+    "count_one": "{{count}} clip",
+    "count_other": "{{count}} clip",
+    "notAvailable": "Clip không khả dụng cho đầu ra GIF hoặc âm thanh.",
+    "tooLong": "Độ dài clip phải ngắn hơn video ({{duration}}).",
+    "invalidLength": "Nhập độ dài clip lớn hơn 0.",
+    "durationUnknown": "Chưa biết thời lượng của video.",
+    "chooseFolder": "Chọn thư mục cho các clip",
+    "batchTooLong": "Một hoặc nhiều video ngắn hơn độ dài clip.",
+    "seconds": "giây",
+    "switchUnit": "Chuyển sang {{unit}}"
   }
 }

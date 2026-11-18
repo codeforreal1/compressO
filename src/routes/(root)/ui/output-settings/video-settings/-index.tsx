@@ -19,6 +19,7 @@ import AudioVolume from './audio/AudioVolume'
 import Others from './others/-index'
 import VideoOnlySection from './VideoOnlySection'
 import BatchResolution from './video/BatchResolution'
+import Clips from './video/Clips'
 import CompressionPreset from './video/CompressionPreset'
 import CustomThumbnail from './video/CustomThumbnail'
 import VideoDimensions from './video/Dimensions'
@@ -174,12 +175,13 @@ function VideoSettings({
                 <VideoFPS mediaIndex={mediaIndex} />
                 <Divider className="my-3" />
                 <CustomThumbnail mediaIndex={mediaIndex} />
+                <Divider className="my-3" />
+                <Clips mediaIndex={mediaIndex} />
               </VideoOnlySection>
-              <>
-                <div className="mt-8">
-                  <VideoExtension mediaIndex={mediaIndex} />
-                </div>
-              </>
+              <Divider className="mt-3" />
+              <div className="pt-5">
+                <VideoExtension mediaIndex={mediaIndex} />
+              </div>
             </div>
           ) : null}
           {tab === 'audio' && isAudioFileSettings ? (

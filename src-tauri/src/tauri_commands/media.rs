@@ -274,6 +274,7 @@ async fn compress_media_item(
                     config.trim_segments.as_ref(),
                     config.subtitles_config.as_ref(),
                     config.speed,
+                    config.clips.as_ref(),
                     config.target_size.as_ref(),
                     config.dynamic_range.as_ref(),
                 )
@@ -296,6 +297,9 @@ async fn compress_media_item(
                 );
                 for other in result_other_outputs(&result) {
                     crate::sys::output_registry::remember(&app, std::path::Path::new(other));
+                }
+                for clip in &result.clips {
+                    crate::sys::output_registry::remember(&app, std::path::Path::new(&clip.file_path));
                 }
                 let media_id = result.video_id.clone();
                 results.lock().unwrap().insert(

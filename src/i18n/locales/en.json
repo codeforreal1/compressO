@@ -1093,5 +1093,24 @@
     "videoBoostFormats": "HDR Boost is only available for MP4, MOV, MKV, WebM, and TS videos that use the H.265, VP9, or AV1 codec.",
     "videoBoostLossless": "HDR Boost is not available with lossless compression.",
     "videoSdrOnly": "This format or codec cannot store HDR, so the video will be converted to SDR."
+  },
+  "clips": {
+    "title": "Clips",
+    "length": "Clip length",
+    "minutes": "min",
+    "willCreate_one": "Will create {{count}} clip",
+    "willCreate_other": "Will create {{count}} clips",
+    "clipName": "Clip {{number}}",
+    "fromOriginal": "Clips from {{name}}",
+    "count_one": "{{count}} clip",
+    "count_other": "{{count}} clips",
+    "notAvailable": "Clips are not available for GIF or audio output.",
+    "tooLong": "Clip length must be shorter than the video ({{duration}}).",
+    "invalidLength": "Enter a clip length above 0.",
+    "durationUnknown": "The video's duration is not known yet.",
+    "chooseFolder": "Choose a folder for the clips",
+    "batchTooLong": "One or more videos are shorter than the clip length.",
+    "seconds": "sec",
+    "switchUnit": "Switch to {{unit}}"
   }
 }

@@ -1078,5 +1078,24 @@
     "videoBoostFormats": "HDR 增强仅适用于使用 H.265、VP9 或 AV1 编解码器的 MP4、MOV、MKV、WebM 和 TS 视频。",
     "videoBoostLossless": "无损压缩不支持 HDR 增强。",
     "videoSdrOnly": "此格式或编解码器无法存储 HDR，因此视频将转换为 SDR。"
+  },
+  "clips": {
+    "title": "片段",
+    "length": "片段时长",
+    "minutes": "分钟",
+    "willCreate_one": "将创建 {{count}} 个片段",
+    "willCreate_other": "将创建 {{count}} 个片段",
+    "clipName": "片段 {{number}}",
+    "fromOriginal": "来自 {{name}} 的片段",
+    "count_one": "{{count}} 个片段",
+    "count_other": "{{count}} 个片段",
+    "notAvailable": "GIF 或音频输出不支持片段。",
+    "tooLong": "片段时长必须短于视频（{{duration}}）。",
+    "invalidLength": "请输入大于 0 的片段时长。",
+    "durationUnknown": "尚未获取视频时长。",
+    "chooseFolder": "选择片段的文件夹",
+    "batchTooLong": "一个或多个视频短于片段时长。",
+    "seconds": "秒",
+    "switchUnit": "切换到{{unit}}"
   }
 }

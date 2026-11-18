@@ -1078,5 +1078,24 @@
     "videoBoostFormats": "Peningkatan HDR hanya tersedia untuk video MP4, MOV, MKV, WebM, dan TS yang menggunakan codec H.265, VP9, atau AV1.",
     "videoBoostLossless": "Peningkatan HDR tidak tersedia dengan kompresi lossless.",
     "videoSdrOnly": "Format atau codec ini tidak dapat menyimpan HDR, sehingga video akan dikonversi ke SDR."
+  },
+  "clips": {
+    "title": "Klip",
+    "length": "Durasi klip",
+    "minutes": "mnt",
+    "willCreate_one": "Akan membuat {{count}} klip",
+    "willCreate_other": "Akan membuat {{count}} klip",
+    "clipName": "Klip {{number}}",
+    "fromOriginal": "Klip dari {{name}}",
+    "count_one": "{{count}} klip",
+    "count_other": "{{count}} klip",
+    "notAvailable": "Klip tidak tersedia untuk output GIF atau audio.",
+    "tooLong": "Durasi klip harus lebih pendek dari video ({{duration}}).",
+    "invalidLength": "Masukkan durasi klip di atas 0.",
+    "durationUnknown": "Durasi video belum diketahui.",
+    "chooseFolder": "Pilih folder untuk klip",
+    "batchTooLong": "Satu atau beberapa video lebih pendek dari durasi klip.",
+    "seconds": "dtk",
+    "switchUnit": "Beralih ke {{unit}}"
   }
 }

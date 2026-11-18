@@ -13,7 +13,10 @@ import ScrollShadow from '@/components/ScrollShadow'
 import Spinner from '@/components/Spinner'
 import { toast } from '@/components/Toast'
 import Tooltip from '@/components/Tooltip'
-import { copyFileToClipboard, showItemInFileManager } from '@/tauri/commands/fs'
+import {
+  copyFilesToClipboard,
+  showItemInFileManager,
+} from '@/tauri/commands/fs'
 import type { MediaTab } from '@/types/app'
 import { zoomInStaggerAnimation } from '@/utils/animation'
 import { formatBytes } from '@/utils/fs'
@@ -21,6 +24,7 @@ import { formatDuration } from '@/utils/string'
 import { cn } from '@/utils/tailwind'
 import { getCompressionLane, type MediaFile } from '../-compression'
 import { pickMediaToAdd } from '../-media'
+import { getOutputClipboardFiles } from '../-save'
 import { appProxy } from '../-state'
 
 type MediaKind = { type: 'video' | 'image'; isAudioFile?: boolean }
@@ -172,9 +176,11 @@ function PreviewBatchMedia() {
   }, [])
 
   const handleCopyToClipboard = useCallback(
-    async (savedPath: string) => {
+    async (mediaFile: MediaFile) => {
+      const files = getOutputClipboardFiles(mediaFile)
+      if (!files.length) return
       try {
-        await copyFileToClipboard(savedPath)
+        await copyFilesToClipboard(files)
         toast.success(t('common.copied'))
       } catch {}
     },
@@ -397,11 +403,7 @@ function PreviewBatchMedia() {
                                 size="sm"
                                 isIconOnly
                                 onPress={() =>
-                                  handleCopyToClipboard(
-                                    (mediaFile?.compressedFile?.savedPath ??
-                                      mediaFile?.compressedFile
-                                        ?.pathRaw) as string,
-                                  )
+                                  handleCopyToClipboard(mediaFile as MediaFile)
                                 }
                                 className="rounded-full text-white"
                               >
@@ -560,6 +562,14 @@ function PreviewBatchMedia() {
                       <p className={cn(['font-medium text-sm truncate block'])}>
                         {mediaFile.fileName ?? ''}
                       </p>
+                      {mediaFile.type === 'video' &&
+                      mediaFile.compressedFile?.clips?.length ? (
+                        <p className="text-xs text-primary">
+                          {t('clips.count', {
+                            count: mediaFile.compressedFile.clips.length,
+                          })}
+                        </p>
+                      ) : null}
                       <Divider className="mt-2" />
                       <section
                         className={cn(

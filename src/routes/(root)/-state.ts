@@ -54,6 +54,8 @@ export const videoConfigInitialState: VideoConfig = {
   },
   shouldEnableAudioTrackSelection: false,
   externalAudioTracks: [],
+  shouldEnableClips: false,
+  clipLengthInSeconds: 60,
   quality: 50,
   shouldUseTargetSize: false,
   targetSizeInMB: DEFAULT_TARGET_SIZE_IN_MB,

@@ -127,6 +127,9 @@ export type VideoConfig = {
   selectedAudioTracks?: number[]
   /** Audio files attached to the video, starting at its beginning */
   externalAudioTracks?: ExternalAudioTrack[] | null
+  /** Split the compressed video into clips of `clipLengthInSeconds` (video output only) */
+  shouldEnableClips?: boolean
+  clipLengthInSeconds?: number
   subtitlesConfig?: SubtitlesConfig | null
   shouldEnableCustomSpeed?: boolean
   customSpeed?: number | null
@@ -141,6 +144,26 @@ export type VideoConfig = {
   presetId?: string
   /** Preset settings that could not be applied to this video (e.g. audio without an audio track) */
   presetSkippedFields?: string[]
+}
+
+export type VideoClipOutput = {
+  /** 1-based, in the order of the clips */
+  index: number
+  startSeconds: number
+  endSeconds: number
+  fileName: string
+  fileNameToDisplay?: string | null
+  pathRaw: string
+  path: string
+  mimeType?: string | null
+  sizeInBytes?: number | null
+  size?: string | null
+  extension?: string | null
+  isSaving?: boolean
+  isSaved?: boolean
+  savedPath?: string
+  /** Its entry in the history (see `-history.ts`), updated when it is saved */
+  historyId?: string
 }
 
 export type Video = {
@@ -198,13 +221,15 @@ export type Video = {
      * Compressed to a target size: every output made for it (by size, the one used among them),
      * any of which can be used instead (see `chooseOutputOption`)
      */
-    options?: { pathRaw: string; sizeInBytes: number }[] | null
+    options?: readonly { pathRaw: string; sizeInBytes: number }[] | null
     /**
      * Another of `options`, looked at while this output is saved: shown in its place, & saved
      * instead only with "Replace saved file" (see `previewOutputOption`)
      */
     previewOption?: { pathRaw: string; sizeInBytes: number } | null
     targetSizeInBytes?: number | null
+    /** The clips of a video split into clips, each saved on its own */
+    clips?: readonly VideoClipOutput[] | null
   } | null
   compressionProgress?: number
   config: VideoConfig
@@ -296,6 +321,8 @@ export type Image = {
     savedPath?: string
     /** Its entry in the history (see `-history.ts`), updated when it is saved */
     historyId?: string
+    /** Videos only: the clips a video was split into */
+    clips?: readonly VideoClipOutput[] | null
   } | null
   compressionProgress?: number
   config: ImageConfig

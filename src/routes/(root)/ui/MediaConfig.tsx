@@ -16,6 +16,7 @@ import CustomizeMediaOnBatchActions from './CustomizeMediaOnBatchActions'
 import ExitMedia from './ExitMedia'
 import OutputSettings from './output-settings/-index'
 import PreviewBatchMedia from './PreviewBatchMedia'
+import PreviewClips from './PreviewClips'
 import PreviewSingleVideo from './PreviewSingleMedia'
 import StartCompression from './StartCompression'
 import styles from './styles.module.css'
@@ -28,10 +29,17 @@ function MediaConfig() {
       activeTab,
       media,
       isCompressing,
+      isProcessCompleted,
       isLoadingMediaFiles,
       selectedMediaIndexForCustomization,
     },
   } = useSnapshot(appProxy)
+
+  const singleFile = media.length === 1 ? media[0] : null
+  const showsClips =
+    singleFile?.type === 'video' &&
+    isProcessCompleted &&
+    (singleFile.compressedFile?.clips?.length ?? 0) > 0
 
   return (
     <Layout
@@ -100,6 +108,8 @@ function MediaConfig() {
                   <CustomizeMediaOnBatchActions />
                 ) : null}
               </>
+            ) : showsClips ? (
+              <PreviewClips mediaIndex={0} />
             ) : (
               <PreviewSingleVideo mediaIndex={0} />
             )}

@@ -1078,5 +1078,24 @@
     "videoBoostFormats": "HDR 增強僅適用於使用 H.265、VP9 或 AV1 編解碼器的 MP4、MOV、MKV、WebM 和 TS 影片。",
     "videoBoostLossless": "無損壓縮不支援 HDR 增強。",
     "videoSdrOnly": "此格式或編解碼器無法儲存 HDR，因此影片將轉換為 SDR。"
+  },
+  "clips": {
+    "title": "片段",
+    "length": "片段長度",
+    "minutes": "分鐘",
+    "willCreate_one": "將建立 {{count}} 個片段",
+    "willCreate_other": "將建立 {{count}} 個片段",
+    "clipName": "片段 {{number}}",
+    "fromOriginal": "來自 {{name}} 的片段",
+    "count_one": "{{count}} 個片段",
+    "count_other": "{{count}} 個片段",
+    "notAvailable": "GIF 或音訊輸出不支援片段。",
+    "tooLong": "片段長度必須短於影片（{{duration}}）。",
+    "invalidLength": "請輸入大於 0 的片段長度。",
+    "durationUnknown": "尚未取得影片長度。",
+    "chooseFolder": "選擇片段的資料夾",
+    "batchTooLong": "一個或多個影片短於片段長度。",
+    "seconds": "秒",
+    "switchUnit": "切換為{{unit}}"
   }
 }

@@ -1093,5 +1093,24 @@
     "videoBoostFormats": "HDR-Verstärkung ist nur für MP4-, MOV-, MKV-, WebM- und TS-Videos mit dem Codec H.265, VP9 oder AV1 verfügbar.",
     "videoBoostLossless": "HDR-Verstärkung ist bei verlustfreier Komprimierung nicht verfügbar.",
     "videoSdrOnly": "Dieses Format oder dieser Codec kann kein HDR speichern, daher wird das Video in SDR umgewandelt."
+  },
+  "clips": {
+    "title": "Clips",
+    "length": "Clip-Länge",
+    "minutes": "Min.",
+    "willCreate_one": "Erstellt {{count}} Clip",
+    "willCreate_other": "Erstellt {{count}} Clips",
+    "clipName": "Clip {{number}}",
+    "fromOriginal": "Clips aus {{name}}",
+    "count_one": "{{count}} Clip",
+    "count_other": "{{count}} Clips",
+    "notAvailable": "Clips sind für GIF- oder Audioausgaben nicht verfügbar.",
+    "tooLong": "Die Clip-Länge muss kürzer als das Video sein ({{duration}}).",
+    "invalidLength": "Gib eine Clip-Länge über 0 ein.",
+    "durationUnknown": "Die Dauer des Videos ist noch nicht bekannt.",
+    "chooseFolder": "Ordner für die Clips auswählen",
+    "batchTooLong": "Mindestens ein Video ist kürzer als die Clip-Länge.",
+    "seconds": "Sek.",
+    "switchUnit": "Zu {{unit}} wechseln"
   }
 }

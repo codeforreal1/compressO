@@ -1093,5 +1093,24 @@
     "videoBoostFormats": "HDR güçlendirme yalnızca H.265, VP9 veya AV1 codec’ini kullanan MP4, MOV, MKV, WebM ve TS videolarında kullanılabilir.",
     "videoBoostLossless": "HDR güçlendirme kayıpsız sıkıştırmayla kullanılamaz.",
     "videoSdrOnly": "Bu biçim veya codec HDR depolayamaz, bu nedenle video SDR’ye dönüştürülecektir."
+  },
+  "clips": {
+    "title": "Klipler",
+    "length": "Klip uzunluğu",
+    "minutes": "dk",
+    "willCreate_one": "{{count}} klip oluşturulacak",
+    "willCreate_other": "{{count}} klip oluşturulacak",
+    "clipName": "Klip {{number}}",
+    "fromOriginal": "{{name}} klipleri",
+    "count_one": "{{count}} klip",
+    "count_other": "{{count}} klip",
+    "notAvailable": "Klipler GIF veya ses çıktısı için kullanılamaz.",
+    "tooLong": "Klip uzunluğu videodan kısa olmalıdır ({{duration}}).",
+    "invalidLength": "0’dan büyük bir klip uzunluğu girin.",
+    "durationUnknown": "Videonun süresi henüz bilinmiyor.",
+    "chooseFolder": "Klipler için bir klasör seç",
+    "batchTooLong": "Bir veya daha fazla video klip uzunluğundan kısa.",
+    "seconds": "sn",
+    "switchUnit": "{{unit}} birimine geç"
   }
 }

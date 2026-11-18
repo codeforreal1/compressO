@@ -1078,5 +1078,24 @@
     "videoBoostFormats": "HDR 부스트는 H.265, VP9 또는 AV1 코덱을 사용하는 MP4, MOV, MKV, WebM 및 TS 동영상에서만 사용할 수 있습니다.",
     "videoBoostLossless": "무손실 압축에서는 HDR 부스트를 사용할 수 없습니다.",
     "videoSdrOnly": "이 형식 또는 코덱은 HDR을 저장할 수 없으므로 동영상이 SDR로 변환됩니다."
+  },
+  "clips": {
+    "title": "클립",
+    "length": "클립 길이",
+    "minutes": "분",
+    "willCreate_one": "{{count}}개의 클립을 만듭니다",
+    "willCreate_other": "{{count}}개의 클립을 만듭니다",
+    "clipName": "클립 {{number}}",
+    "fromOriginal": "{{name}}의 클립",
+    "count_one": "클립 {{count}}개",
+    "count_other": "클립 {{count}}개",
+    "notAvailable": "GIF 또는 오디오 출력에서는 클립을 사용할 수 없습니다.",
+    "tooLong": "클립 길이는 동영상보다 짧아야 합니다 ({{duration}}).",
+    "invalidLength": "0보다 큰 클립 길이를 입력하세요.",
+    "durationUnknown": "동영상 길이를 아직 알 수 없습니다.",
+    "chooseFolder": "클립을 저장할 폴더 선택",
+    "batchTooLong": "하나 이상의 동영상이 클립 길이보다 짧습니다.",
+    "seconds": "초",
+    "switchUnit": "{{unit}}(으)로 전환"
   }
 }

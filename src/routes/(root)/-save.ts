@@ -25,6 +25,68 @@ function getMediaOutput(media: Pick<Media, 'config'>) {
 }
 
 /**
+ * Saves the clips of a compressed video into `destinationDirectory`, keeping each clip's name.
+ * Clips already saved are skipped, so a partial save can be retried. Returns how many were saved
+ * & failed, & the first/last clip paths saved.
+ */
+async function saveVideoClips(
+  mediaIndex: number,
+  destinationDirectory: string,
+  prefix: string,
+) {
+  const mediaFile = appProxy.state.media[mediaIndex]
+  const file = mediaFile?.type === 'video' ? mediaFile.compressedFile : null
+  const clips = file?.clips ?? []
+  let savedCount = 0
+  let failedCount = 0
+  let firstSavedPath: string | null = null
+  let lastSavedPath: string | null = null
+
+  for (const clip of clips) {
+    if (clip.isSaved || !clip.pathRaw) continue
+    clip.isSaving = true
+    try {
+      const savedPath = await moveFile(
+        clip.pathRaw,
+        `${destinationDirectory}/${prefix}${clip.fileNameToDisplay || clip.fileName}`,
+        {
+          replaceOriginal: settingsStore.replaceOriginalFiles
+            ? mediaFile?.pathRaw
+            : null,
+        },
+      )
+      clip.savedPath = savedPath
+      clip.isSaving = false
+      clip.isSaved = true
+      firstSavedPath ??= savedPath
+      lastSavedPath = savedPath
+      savedCount++
+      recordSavedOutput(
+        clip,
+        clip.historyId
+          ? (mediaFile?.id ?? null)
+          : `${mediaFile?.id ?? ''}:clip-${clip.index}`,
+      )
+    } catch (_) {
+      clip.isSaving = false
+      failedCount++
+    }
+  }
+
+  const current = appProxy.state.media[mediaIndex]
+  const currentFile = current?.type === 'video' ? current.compressedFile : null
+  if (currentFile) {
+    currentFile.isSaving = false
+    currentFile.isSaved =
+      clips.length > 0 && clips.every((clip) => clip.isSaved)
+    currentFile.savedPath =
+      clips.find((clip) => clip.savedPath)?.savedPath ?? currentFile.savedPath
+  }
+
+  return { savedCount, failedCount, firstSavedPath, lastSavedPath }
+}
+
+/**
  * Saves every compressed output that isn't saved yet into the directory returned by
  * `getBaseDirectory` (skipped when it returns `null`).
  *
@@ -60,7 +122,10 @@ async function saveCompressedMedia(
   for (let i = 0; i < media.length; i++) {
     const mediaFile = media[i]
     const { compressedFile } = mediaFile
-    if (!compressedFile?.pathRaw || compressedFile.isSaved) continue
+    if (!compressedFile) continue
+    const clips = mediaFile.type === 'video' ? compressedFile?.clips : undefined
+    if ((!compressedFile.pathRaw && !clips?.length) || compressedFile.isSaved)
+      continue
 
     const baseDirectory = getBaseDirectory(mediaFile)
     if (baseDirectory == null) continue
@@ -92,6 +157,24 @@ async function saveCompressedMedia(
         location = destinationTopFolder
       }
 
+      if (clips?.length) {
+        const result = await saveVideoClips(i, destinationDirectory, prefix)
+        if (result.savedCount > 0) {
+          savedLocations.add(location)
+          lastSavedPath = result.lastSavedPath ?? lastSavedPath
+        }
+        savedCount += result.savedCount
+        failedCount += result.failedCount
+        if (result.failedCount > 0) {
+          appProxy.state.media[i].compressedFile = {
+            ...(snapshot(appProxy).state.media[i].compressedFile ?? {}),
+            isSaving: false,
+          }
+        }
+        continue
+      }
+
+      if (!compressedFile.pathRaw) continue
       const savedPath = await moveFile(
         compressedFile.pathRaw,
         `${destinationDirectory}/${prefix}${compressedFile.fileNameToDisplay || mediaFile.fileName}`,
@@ -261,13 +344,54 @@ export async function saveCompressedMediaWithPrompt(mediaIndex?: number) {
   const isSingle = media.length === 1
   const mediaFile = media[index]
   const compressedFile = mediaFile?.compressedFile
-  if (!compressedFile?.pathRaw) return
+  if (!compressedFile) return
+  const clips = mediaFile?.type === 'video' ? compressedFile.clips : undefined
+  if (!compressedFile.pathRaw && !clips?.length) return
+
+  if (clips?.length) {
+    const directory = await open({
+      directory: true,
+      title: t('clips.chooseFolder'),
+    })
+    if (typeof directory !== 'string') return
+
+    if (isSingle) appProxy.state.isSaving = true
+    compressedFile.isSaving = true
+    const result = await saveVideoClips(
+      index,
+      directory,
+      getMediaOutput(mediaFile).filePrefix,
+    )
+    if (result.failedCount > 0) {
+      toast.error(
+        result.savedCount > 0
+          ? t('save.partiallySaved', {
+              saved: result.savedCount,
+              count: result.savedCount + result.failedCount,
+              failed: result.failedCount,
+            })
+          : t('save.failed'),
+      )
+    }
+    if (isSingle) {
+      if (result.firstSavedPath)
+        appProxy.state.savedPath = result.firstSavedPath
+      appProxy.state.isSaving = false
+    }
+    const savedFile = appProxy.state.media[index]?.compressedFile
+    appProxy.state.isSaved = appProxy.state.media.every(
+      (item) =>
+        !item.compressedFile?.isSuccessful || !!item.compressedFile?.isSaved,
+    )
+    if (savedFile) savedFile.isSaving = false
+    return
+  }
 
   const pathToSave = await save({
     title: t('save.chooseLocation'),
     defaultPath: `${getMediaOutput(mediaFile).filePrefix}${compressedFile.fileNameToDisplay ?? mediaFile.fileName ?? ''}`,
   })
-  if (!pathToSave) return
+  if (!pathToSave || !compressedFile.pathRaw) return
 
   // The dialog gives the exact path (the name may have been edited), so it's used as is. Even if
   // "Replace" was confirmed in it, an existing file isn't replaced; a numbered name is used instead,
@@ -378,6 +502,56 @@ export async function autoSaveCompressedMedia() {
 }
 
 /**
+ * A media's outputs as they are copied to the clipboard: each clip when it was split, or the one
+ * output. From where it was saved, or (not saved yet) pasted under the name it would be saved with
+ * (prefix & original name), not its generated cache name.
+ */
+export function getOutputClipboardFiles(
+  mediaFile: Pick<Media, 'type' | 'compressedFile' | 'fileName' | 'config'>,
+): { path: string; fileName?: string }[] {
+  const { compressedFile } = mediaFile
+  const prefix = getMediaOutput(mediaFile).filePrefix
+  const clips = mediaFile.type === 'video' ? compressedFile?.clips : undefined
+  if (clips?.length) {
+    return clips.flatMap((clip) => {
+      if (clip.savedPath) return [{ path: clip.savedPath }]
+      if (!clip.pathRaw) return []
+      return [
+        {
+          path: clip.pathRaw,
+          fileName: `${prefix}${clip.fileNameToDisplay || clip.fileName}`,
+        },
+      ]
+    })
+  }
+  const single = getOutputClipboardFile(mediaFile)
+  return single ? [single] : []
+}
+
+/**
+ * One clip as it is copied to the clipboard: from where it was saved, or (not saved yet) pasted
+ * under the name it would be saved with (prefix & clip name), not its generated cache name.
+ */
+export function getClipClipboardFile(
+  mediaFile: { config?: { presetId?: string | null } | null },
+  clip: {
+    savedPath?: string
+    pathRaw: string
+    fileName: string
+    fileNameToDisplay?: string | null
+  },
+): { path: string; fileName?: string } | null {
+  if (clip.savedPath) return { path: clip.savedPath }
+  if (!clip.pathRaw) return null
+  return {
+    path: clip.pathRaw,
+    fileName: `${getPresetOutput(mediaFile.config?.presetId).filePrefix}${
+      clip.fileNameToDisplay || clip.fileName
+    }`,
+  }
+}
+
+/**
  * A media's output as it is copied to the clipboard: from where it was saved, or (not saved yet)
  * pasted under the name it would be saved with (prefix & original name), not its generated cache
  * name. `null` without an output.
@@ -413,7 +587,7 @@ export async function autoCopyCompressedMediaToClipboard() {
 
   const files = media.flatMap((mediaFile) =>
     mediaFile.compressedFile?.isSuccessful
-      ? (getOutputClipboardFile(mediaFile) ?? [])
+      ? getOutputClipboardFiles(mediaFile)
       : [],
   )
   if (!files.length) return

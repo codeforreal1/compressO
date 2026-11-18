@@ -56,6 +56,22 @@ pub struct VideoCompressionResult {
     /// The other outputs made for a target size (each attempt), any of which can be used instead
     #[serde(default)]
     pub other_outputs: Vec<OutputOption>,
+    /// The compressed video split into clips, when clips are enabled
+    #[serde(default)]
+    pub clips: Vec<VideoClipResult>,
+}
+
+/// One clip of a video split into clips
+#[derive(Serialize, Deserialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct VideoClipResult {
+    /// 1-based
+    pub index: usize,
+    pub start_seconds: f64,
+    pub end_seconds: f64,
+    pub file_name: String,
+    pub file_path: String,
+    pub file_metadata: Option<FileMetadata>,
 }
 
 /// An output a video can be saved as instead (see `VideoCompressionResult::other_outputs`)
@@ -175,6 +191,16 @@ pub struct VideoCompressionConfig {
     /// line); `None` follows the setting
     #[serde(default)]
     pub use_hardware_acceleration: Option<bool>,
+    /// Splits the compressed video into clips of this length, after compressing it
+    #[serde(default)]
+    pub clips: Option<VideoClipsConfig>,
+}
+
+/// Splits a compressed video into clips of `duration_seconds`
+#[derive(Serialize, Deserialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct VideoClipsConfig {
+    pub duration_seconds: f64,
 }
 
 /// A file size for video or audio-only output. The frontend budgets its bitrate from the output

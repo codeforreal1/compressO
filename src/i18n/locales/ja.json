@@ -1078,5 +1078,24 @@
     "videoBoostFormats": "HDRブーストは、H.265、VP9、AV1コーデックを使用するMP4、MOV、MKV、WebM、TS動画でのみ利用できます。",
     "videoBoostLossless": "ロスレス圧縮ではHDRブーストを利用できません。",
     "videoSdrOnly": "この形式またはコーデックはHDRを保存できないため、動画はSDRに変換されます。"
+  },
+  "clips": {
+    "title": "クリップ",
+    "length": "クリップの長さ",
+    "minutes": "分",
+    "willCreate_one": "{{count}} 個のクリップを作成します",
+    "willCreate_other": "{{count}} 個のクリップを作成します",
+    "clipName": "クリップ {{number}}",
+    "fromOriginal": "{{name}} のクリップ",
+    "count_one": "{{count}} 個のクリップ",
+    "count_other": "{{count}} 個のクリップ",
+    "notAvailable": "GIF または音声出力ではクリップを使用できません。",
+    "tooLong": "クリップの長さは動画より短くする必要があります（{{duration}}）。",
+    "invalidLength": "0 より長いクリップの長さを入力してください。",
+    "durationUnknown": "動画の長さはまだ取得できていません。",
+    "chooseFolder": "クリップの保存先フォルダーを選択",
+    "batchTooLong": "1 つ以上の動画がクリップの長さより短くなっています。",
+    "seconds": "秒",
+    "switchUnit": "{{unit}} に切り替え"
   }
 }
