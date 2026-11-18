@@ -129,7 +129,11 @@ export type VideoConfig = {
   externalAudioTracks?: ExternalAudioTrack[] | null
   /** Split the compressed video into clips of `clipLengthInSeconds` (video output only) */
   shouldEnableClips?: boolean
+  /** How clips are chosen: by their length, or by how many there are */
+  clipsMode?: 'time' | 'count'
   clipLengthInSeconds?: number
+  /** Number of equal clips when `clipsMode` is `count` */
+  clipCount?: number
   subtitlesConfig?: SubtitlesConfig | null
   shouldEnableCustomSpeed?: boolean
   customSpeed?: number | null

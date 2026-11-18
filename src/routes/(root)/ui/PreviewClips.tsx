@@ -1,6 +1,6 @@
 import { ScrollShadow } from '@heroui/react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { useCallback } from 'react'
+import { type ReactNode, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
@@ -26,10 +26,24 @@ import { appProxy } from '../-state'
 
 type PreviewClipsProps = {
   mediaIndex: number
+  /** Shown at the end of the header (e.g. the Close button of a batch's media) */
+  headerEnd?: ReactNode
+  /** A media of a batch is closed with its own button, not the batch's exit */
+  showExit?: boolean
+}
+
+/** A time as shown, with hundredths only when they are not zero (e.g. `00:05` or `00:05.25`) */
+const formatClipTime = (seconds: number) => {
+  const text = formatDuration(seconds)
+  return text.endsWith('.00') ? text.slice(0, -3) : text
 }
 
 /** The clips of a single video, shown as the cards of a batch */
-function PreviewClips({ mediaIndex }: PreviewClipsProps) {
+function PreviewClips({
+  mediaIndex,
+  headerEnd,
+  showExit = true,
+}: PreviewClipsProps) {
   const { t } = useTranslation()
   const {
     state: { media },
@@ -59,18 +73,22 @@ function PreviewClips({ mediaIndex }: PreviewClipsProps) {
   }, [])
 
   return (
-    <div className="h-full min-h-0 flex flex-col overflow-hidden">
-      <div className="flex items-center gap-2 pb-4">
-        <div className="flex min-w-0 items-center gap-1">
-          <ExitMedia />
-          <Code size="sm" className="w-fit rounded-xl px-4 text-xs truncate">
+    <div className="h-full min-h-0 w-full min-w-0 flex flex-col overflow-hidden">
+      <div className="flex w-full min-w-0 items-center gap-2 pb-4">
+        <div className="flex flex-1 min-w-0 items-center gap-1">
+          {showExit ? <ExitMedia /> : null}
+          <Code
+            size="sm"
+            className="min-w-0 max-w-[25%] rounded-xl px-4 text-xs truncate"
+          >
             {mediaFile?.fileName ?? ''}
           </Code>
         </div>
+        {headerEnd ? <div className="shrink-0">{headerEnd}</div> : null}
       </div>
 
       <ScrollShadow
-        className="h-[65vh] hlg:h-[70vh] shrink-0 overflow-hidden overflow-y-auto"
+        className="h-[65vh] w-full min-w-0 hlg:h-[70vh] shrink-0 overflow-hidden overflow-y-auto"
         hideScrollBar
       >
         <AnimatePresence mode="wait">
@@ -79,17 +97,17 @@ function PreviewClips({ mediaIndex }: PreviewClipsProps) {
             initial="hidden"
             animate="show"
             exit="hidden"
-            className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 3xl:grid-cols-4 gap-4 pb-4"
+            className="grid min-w-0 grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 3xl:grid-cols-4 gap-4 pb-4"
           >
             {clips.map((clip) => (
               <motion.div
                 key={`${clip.index}-${clip.pathRaw}`}
                 layout
                 variants={zoomInStaggerAnimation.item}
-                className="relative overflow-hidden rounded-xl border-1 border-zinc-200 dark:border-zinc-900"
+                className="relative min-w-0 overflow-hidden rounded-xl border-1 border-primary"
               >
                 <Card
-                  className="bg-zinc-100/5 dark:bg-zinc-900 rounded-none overflow-hidden"
+                  className="w-full min-w-0 bg-zinc-100/5 dark:bg-zinc-900 rounded-none overflow-hidden"
                   radius="lg"
                 >
                   <div className="relative w-full overflow-hidden">
@@ -155,7 +173,7 @@ function PreviewClips({ mediaIndex }: PreviewClipsProps) {
                       ) : null}
                     </div>
                   </div>
-                  <section className="px-3 py-2 mt-1">
+                  <section className="min-w-0 px-3 py-2 mt-1">
                     <p className="font-medium text-sm truncate">
                       {t('clips.clipName', { number: clip.index })}
                     </p>
@@ -166,13 +184,8 @@ function PreviewClips({ mediaIndex }: PreviewClipsProps) {
                     <section className="flex min-h-[48px] items-center justify-between gap-2 text-[12px]">
                       <p className="text-[16px] font-bold">{clip.size}</p>
                       <p className="text-gray-500 dark:text-gray-400">
-                        {formatDuration(clip.startSeconds, {
-                          disableMilliseconds: true,
-                        })}{' '}
-                        –{' '}
-                        {formatDuration(clip.endSeconds, {
-                          disableMilliseconds: true,
-                        })}
+                        {formatClipTime(clip.startSeconds)} –{' '}
+                        {formatClipTime(clip.endSeconds)}
                       </p>
                     </section>
                   </section>

@@ -1096,6 +1096,16 @@
     "chooseFolder": "Chọn thư mục cho các clip",
     "batchTooLong": "Một hoặc nhiều video ngắn hơn độ dài clip.",
     "seconds": "giây",
-    "switchUnit": "Chuyển sang {{unit}}"
+    "switchUnit": "Chuyển sang {{unit}}",
+    "mode": "Chia clip theo",
+    "modes": {
+      "time": "Thời gian",
+      "count": "Tổng số clip"
+    },
+    "countUnit": "clip",
+    "invalidCount": "Nhập ít nhất 2 clip.",
+    "tooMany": "Quá nhiều clip. Mỗi clip phải dài ít nhất 1 giây.",
+    "eachClip": "{{duration}} mỗi clip",
+    "batchInvalid": "Một số video không thể chia với cài đặt clip này."
   }
 }

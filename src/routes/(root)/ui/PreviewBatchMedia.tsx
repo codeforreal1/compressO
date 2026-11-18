@@ -557,19 +557,19 @@ function PreviewBatchMedia() {
                           </motion.div>
                         ) : null}
                       </AnimatePresence>
+                      {mediaFile.type === 'video' &&
+                      mediaFile.compressedFile?.clips?.length ? (
+                        <div className="absolute bottom-2 left-2 z-20 rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur-sm">
+                          {t('clips.count', {
+                            count: mediaFile.compressedFile.clips.length,
+                          })}
+                        </div>
+                      ) : null}
                     </div>
                     <section className="px-3 py-2 mt-1">
                       <p className={cn(['font-medium text-sm truncate block'])}>
                         {mediaFile.fileName ?? ''}
                       </p>
-                      {mediaFile.type === 'video' &&
-                      mediaFile.compressedFile?.clips?.length ? (
-                        <p className="text-xs text-primary">
-                          {t('clips.count', {
-                            count: mediaFile.compressedFile.clips.length,
-                          })}
-                        </p>
-                      ) : null}
                       <Divider className="mt-2" />
                       <section
                         className={cn(

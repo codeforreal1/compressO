@@ -191,18 +191,17 @@ function PreviewSingleMedia({
           {/* The editors take the whole preview */}
           <div
             className={cn([
-              'flex items-center gap-1 min-w-0',
+              'flex flex-1 items-center gap-1 min-w-0',
               isEditing && 'invisible',
             ])}
           >
             {/* A media of a batch is closed with the batch's exit instead */}
             {media.length === 1 ? <ExitMedia /> : null}
-            <Code size="sm" className="w-fit rounded-xl px-4 text-xs truncate">
-              {singleFileNameDisplay?.length > 50
-                ? `${singleFileNameDisplay?.slice(0, 20)}...${singleFileNameDisplay?.slice(
-                    -10,
-                  )}`
-                : singleFileNameDisplay}
+            <Code
+              size="sm"
+              className="min-w-0 max-w-[25%] rounded-xl px-4 text-xs truncate"
+            >
+              {singleFileNameDisplay}
             </Code>
             {mediaFile?.pathRaw ? (
               <Tooltip

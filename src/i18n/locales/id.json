@@ -1096,6 +1096,16 @@
     "chooseFolder": "Pilih folder untuk klip",
     "batchTooLong": "Satu atau beberapa video lebih pendek dari durasi klip.",
     "seconds": "dtk",
-    "switchUnit": "Beralih ke {{unit}}"
+    "switchUnit": "Beralih ke {{unit}}",
+    "mode": "Bagi klip berdasarkan",
+    "modes": {
+      "time": "Waktu",
+      "count": "Total klip"
+    },
+    "countUnit": "klip",
+    "invalidCount": "Masukkan minimal 2 klip.",
+    "tooMany": "Terlalu banyak klip. Setiap klip harus minimal 1 detik.",
+    "eachClip": "{{duration}} per klip",
+    "batchInvalid": "Beberapa video tidak dapat dibagi dengan pengaturan klip ini."
   }
 }

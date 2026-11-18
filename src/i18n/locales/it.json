@@ -1128,6 +1128,16 @@
     "count_many": "{{count}} clip",
     "batchTooLong": "Uno o più video sono più corti della durata del clip.",
     "seconds": "s",
-    "switchUnit": "Passa a {{unit}}"
+    "switchUnit": "Passa a {{unit}}",
+    "mode": "Dividi clip per",
+    "modes": {
+      "time": "Tempo",
+      "count": "Totale clip"
+    },
+    "countUnit": "clip",
+    "invalidCount": "Inserisci almeno 2 clip.",
+    "tooMany": "Troppi clip. Ogni clip deve durare almeno 1 secondo.",
+    "eachClip": "{{duration}} ciascuno",
+    "batchInvalid": "Alcuni video non possono essere divisi con queste impostazioni dei clip."
   }
 }

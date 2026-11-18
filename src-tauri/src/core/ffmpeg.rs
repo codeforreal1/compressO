@@ -40,6 +40,9 @@ const EXTENSIONS: [&str; 10] = [
 /// Audio formats a video's audio can be extracted to
 const AUDIO_EXTENSIONS: [&str; 6] = ["mp3", "m4a", "wav", "flac", "ogg", "opus"];
 
+/// No clip can be shorter than this
+const MIN_CLIP_LENGTH_SECONDS: f64 = 1.0;
+
 /// Audio codec for an audio-only output: the requested one when the format supports it, otherwise
 /// the format's usual codec
 fn audio_output_codec(extension: &str, requested_codec: Option<&str>) -> String {
@@ -225,6 +228,11 @@ impl FFMPEG {
 
         // Fail before encoding a video that cannot be split (the frontend checks this too)
         if let Some(clip_length) = clip_length_seconds.filter(|_| self.input_range.is_none()) {
+            if clip_length < MIN_CLIP_LENGTH_SECONDS {
+                return Err(String::from(
+                    "Each clip must be at least 1 second long.",
+                ));
+            }
             let base_duration = if let Some(segments) =
                 trim_segments.filter(|segments| !segments.is_empty())
             {
@@ -1975,6 +1983,11 @@ impl FFMPEG {
         if clip_length >= duration {
             return Err(String::from(
                 "The clip length must be shorter than the video.",
+            ));
+        }
+        if clip_length < MIN_CLIP_LENGTH_SECONDS {
+            return Err(String::from(
+                "Each clip must be at least 1 second long.",
             ));
         }
 

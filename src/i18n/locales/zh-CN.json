@@ -1096,6 +1096,16 @@
     "chooseFolder": "选择片段的文件夹",
     "batchTooLong": "一个或多个视频短于片段时长。",
     "seconds": "秒",
-    "switchUnit": "切换到{{unit}}"
+    "switchUnit": "切换到{{unit}}",
+    "mode": "分割片段方式",
+    "modes": {
+      "time": "时间",
+      "count": "片段总数"
+    },
+    "countUnit": "个",
+    "invalidCount": "请至少输入 2 个片段。",
+    "tooMany": "片段过多。每个片段至少需要 1 秒。",
+    "eachClip": "每个 {{duration}}",
+    "batchInvalid": "部分视频无法使用此片段设置进行分割。"
   }
 }

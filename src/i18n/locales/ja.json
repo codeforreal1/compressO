@@ -1096,6 +1096,16 @@
     "chooseFolder": "クリップの保存先フォルダーを選択",
     "batchTooLong": "1 つ以上の動画がクリップの長さより短くなっています。",
     "seconds": "秒",
-    "switchUnit": "{{unit}} に切り替え"
+    "switchUnit": "{{unit}} に切り替え",
+    "mode": "クリップの分割方法",
+    "modes": {
+      "time": "時間",
+      "count": "クリップ総数"
+    },
+    "countUnit": "クリップ",
+    "invalidCount": "2 つ以上のクリップを入力してください。",
+    "tooMany": "クリップが多すぎます。各クリップは 1 秒以上必要です。",
+    "eachClip": "各 {{duration}}",
+    "batchInvalid": "このクリップ設定では分割できない動画があります。"
   }
 }

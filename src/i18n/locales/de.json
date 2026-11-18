@@ -1111,6 +1111,16 @@
     "chooseFolder": "Ordner für die Clips auswählen",
     "batchTooLong": "Mindestens ein Video ist kürzer als die Clip-Länge.",
     "seconds": "Sek.",
-    "switchUnit": "Zu {{unit}} wechseln"
+    "switchUnit": "Zu {{unit}} wechseln",
+    "mode": "Clips aufteilen nach",
+    "modes": {
+      "time": "Zeit",
+      "count": "Gesamtanzahl Clips"
+    },
+    "countUnit": "Clips",
+    "invalidCount": "Mindestens 2 Clips eingeben.",
+    "tooMany": "Zu viele Clips. Jeder Clip muss mindestens 1 Sekunde lang sein.",
+    "eachClip": "je {{duration}}",
+    "batchInvalid": "Einige Videos können mit diesen Clip-Einstellungen nicht aufgeteilt werden."
   }
 }

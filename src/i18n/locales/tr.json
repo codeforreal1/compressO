@@ -1111,6 +1111,16 @@
     "chooseFolder": "Klipler için bir klasör seç",
     "batchTooLong": "Bir veya daha fazla video klip uzunluğundan kısa.",
     "seconds": "sn",
-    "switchUnit": "{{unit}} birimine geç"
+    "switchUnit": "{{unit}} birimine geç",
+    "mode": "Klipleri böl",
+    "modes": {
+      "time": "Süre",
+      "count": "Toplam klip"
+    },
+    "countUnit": "klip",
+    "invalidCount": "En az 2 klip girin.",
+    "tooMany": "Çok fazla klip. Her klip en az 1 saniye olmalıdır.",
+    "eachClip": "her biri {{duration}}",
+    "batchInvalid": "Bazı videolar bu klip ayarlarıyla bölünemiyor."
   }
 }

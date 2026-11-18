@@ -1111,6 +1111,16 @@
     "chooseFolder": "Choose a folder for the clips",
     "batchTooLong": "One or more videos are shorter than the clip length.",
     "seconds": "sec",
-    "switchUnit": "Switch to {{unit}}"
+    "switchUnit": "Switch to {{unit}}",
+    "mode": "Split clips by",
+    "modes": {
+      "time": "Time",
+      "count": "Total clips"
+    },
+    "countUnit": "clips",
+    "invalidCount": "Enter at least 2 clips.",
+    "tooMany": "Too many clips. Each clip must be at least 1 second.",
+    "eachClip": "{{duration}} each",
+    "batchInvalid": "Some videos cannot be split with these clip settings."
   }
 }

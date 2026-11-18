@@ -331,8 +331,19 @@ export function getClipsWarning(media: MediaFile) {
   if (!durationInSeconds) {
     return 'clips.durationUnknown' as const
   }
+  if (media.config.clipsMode === 'count') {
+    const count = media.config.clipCount ?? 2
+    if (!Number.isInteger(count) || count < 2) {
+      return 'clips.invalidCount' as const
+    }
+    // Each clip must be at least 1 second long
+    if (count > Math.floor(durationInSeconds)) {
+      return 'clips.tooMany' as const
+    }
+    return null
+  }
   const lengthInSeconds = media.config.clipLengthInSeconds ?? 60
-  if (!(lengthInSeconds > 0)) {
+  if (lengthInSeconds < 1) {
     return 'clips.invalidLength' as const
   }
   if (lengthInSeconds >= durationInSeconds) {
@@ -500,6 +511,14 @@ export function getMediaItemConfig(
     ((v.config.isLossless &&
       !isHdrJpegOutput(imageOutput, imageOperation, v.dynamicRangeInfo)) ||
       isHdrPngOutput(imageOutput, imageOperation, v.dynamicRangeInfo))
+  const clipsDurationSeconds =
+    v.type === 'video'
+      ? v.config?.clipsMode === 'count'
+        ? getOutputDuration(v) /
+          1000 /
+          Math.max(2, Math.floor(v.config.clipCount ?? 2))
+        : (v.config?.clipLengthInSeconds ?? 60)
+      : 0
   return {
     videoConfig:
       v.type === 'video'
@@ -582,7 +601,7 @@ export function getMediaItemConfig(
                   : v.config?.convertToExtension,
               )
                 ? {
-                    durationSeconds: v.config.clipLengthInSeconds ?? 60,
+                    durationSeconds: clipsDurationSeconds,
                   }
                 : null,
             fps: sizePlan?.fps

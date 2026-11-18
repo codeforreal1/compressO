@@ -1096,6 +1096,16 @@
     "chooseFolder": "클립을 저장할 폴더 선택",
     "batchTooLong": "하나 이상의 동영상이 클립 길이보다 짧습니다.",
     "seconds": "초",
-    "switchUnit": "{{unit}}(으)로 전환"
+    "switchUnit": "{{unit}}(으)로 전환",
+    "mode": "클립 분할 기준",
+    "modes": {
+      "time": "시간",
+      "count": "총 클립 수"
+    },
+    "countUnit": "개",
+    "invalidCount": "클립을 2개 이상 입력하세요.",
+    "tooMany": "클립이 너무 많습니다. 각 클립은 최소 1초여야 합니다.",
+    "eachClip": "각 {{duration}}",
+    "batchInvalid": "이 클립 설정으로 분할할 수 없는 동영상이 있습니다."
   }
 }

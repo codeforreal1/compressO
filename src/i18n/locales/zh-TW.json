@@ -1096,6 +1096,16 @@
     "chooseFolder": "選擇片段的資料夾",
     "batchTooLong": "一個或多個影片短於片段長度。",
     "seconds": "秒",
-    "switchUnit": "切換為{{unit}}"
+    "switchUnit": "切換為{{unit}}",
+    "mode": "分割片段方式",
+    "modes": {
+      "time": "時間",
+      "count": "片段總數"
+    },
+    "countUnit": "個",
+    "invalidCount": "請至少輸入 2 個片段。",
+    "tooMany": "片段過多。每個片段至少需要 1 秒。",
+    "eachClip": "每個 {{duration}}",
+    "batchInvalid": "部分影片無法使用此片段設定進行分割。"
   }
 }

@@ -1145,6 +1145,16 @@
     "count_many": "{{count}} klipów",
     "batchTooLong": "Co najmniej jeden film jest krótszy niż długość klipu.",
     "seconds": "s",
-    "switchUnit": "Przełącz na {{unit}}"
+    "switchUnit": "Przełącz na {{unit}}",
+    "mode": "Podziel klipy według",
+    "modes": {
+      "time": "Czas",
+      "count": "Łączna liczba klipów"
+    },
+    "countUnit": "klipów",
+    "invalidCount": "Wpisz co najmniej 2 klipy.",
+    "tooMany": "Zbyt wiele klipów. Każdy klip musi mieć co najmniej 1 sekundę.",
+    "eachClip": "{{duration}} każdy",
+    "batchInvalid": "Niektórych filmów nie można podzielić przy użyciu tych ustawień klipów."
   }
 }
