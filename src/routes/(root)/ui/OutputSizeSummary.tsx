@@ -47,8 +47,10 @@ function OutputSizeSummary({ mediaIndex }: OutputSizeSummaryProps) {
 
   return (
     <>
-      <div className="flex justify-center items-center mt-2">
-        <p className="text-2xl font-bold mx-4">{mediaSize}</p>
+      <div className="mt-1 flex items-center justify-center sm:mt-2">
+        <p className="mx-2 text-lg font-bold sm:mx-4 sm:text-2xl">
+          {mediaSize}
+        </p>
         <motion.div
           initial={isSmaller ? { opacity: 0, x: -12 } : false}
           animate={{ opacity: 1, x: 0 }}
@@ -57,10 +59,10 @@ function OutputSizeSummary({ mediaIndex }: OutputSizeSummaryProps) {
           <Icon
             name="curvedArrow"
             className="text-black dark:text-white rotate-[-65deg] translate-y-[-8px]"
-            size={100}
+            size={80}
           />
         </motion.div>
-        <p className="text-3xl font-bold mx-4 text-primary">
+        <p className="mx-2 text-xl font-bold text-primary sm:mx-4 sm:text-3xl">
           <ImpactPop
             trigger={outputSizeInBytes}
             delay={RESULT_COUNT_SECONDS}
@@ -77,7 +79,7 @@ function OutputSizeSummary({ mediaIndex }: OutputSizeSummaryProps) {
         </p>
       </div>
       {isSmaller ? (
-        <p className="block text-5xl text-center text-primary">
+        <p className="block text-3xl text-center text-primary sm:text-5xl">
           <AnimatedNumber
             value={compressedSizeDiff}
             from={0}

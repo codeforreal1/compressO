@@ -1148,7 +1148,7 @@
     "switchUnit": "Przełącz na {{unit}}",
     "mode": "Podziel klipy według",
     "modes": {
-      "time": "Czas",
+      "time": "Klipy czasowe",
       "count": "Łączna liczba klipów"
     },
     "countUnit": "klipów",

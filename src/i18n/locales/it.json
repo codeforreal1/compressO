@@ -1131,7 +1131,7 @@
     "switchUnit": "Passa a {{unit}}",
     "mode": "Dividi clip per",
     "modes": {
-      "time": "Tempo",
+      "time": "Clip temporizzati",
       "count": "Totale clip"
     },
     "countUnit": "clip",

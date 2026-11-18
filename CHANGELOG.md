@@ -5,10 +5,11 @@
 Features:
 
 - **Add Audio to Videos**: Attach audio files to a video from its Audio settings, including videos without sound. Added audio starts at the beginning of the video, is cut when longer than the video, and a shorter file leaves the rest of the video silent. Added tracks count as kept tracks, so the video's original tracks can be unselected.
-- **Clips**: Split a compressed video into clips by their length, set in seconds or minutes, or into a chosen number of equal clips with the Time / Total clips switch. Each clip is cut from the finished output with a stream copy, so trim, speed, Target Size, HDR, audio, subtitles and a custom thumbnail are kept, and nothing is encoded again. Finished clips appear as batch-style cards with copy and show-in-folder actions, and the result shows the original video size and the total size of all clips. Clips settings can be saved in video presets. No clip can be shorter than 1 second, and the clip length must be shorter than the video.
+- **Clips**: Split a compressed video into a chosen number of equal clips, the default, or by their length in seconds or minutes with the Total clips / Timed clips switch. Each clip is cut from the finished output with a stream copy, so trim, speed, Target Size, HDR, audio, subtitles and a custom thumbnail are kept, and nothing is encoded again. Finished clips appear as batch-style cards with copy and show-in-folder actions, and double-clicking a card plays that clip in a read-only preview. The result shows the original video size and the total size of all clips. Clips settings can be saved in video presets. No clip can be shorter than 1 second, and the clip length must be shorter than the video.
 
 Enhancements:
 
+- Double-clicking a video in a batch opens it: its settings before compression, like the pencil button, or its single-video preview once compressed.
 - The CLI settings section is now called **CLI & AI Agents**.
 
 Bug Fixes:

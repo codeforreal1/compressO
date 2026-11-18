@@ -53,7 +53,7 @@ function Clips({ mediaIndex }: ClipsProps) {
   const [isInMinutes, setIsInMinutes] = useState(true)
 
   const isGif = convertToExtension === 'gif'
-  const mode = clipsMode ?? 'time'
+  const mode = clipsMode ?? 'count'
   const clipLength = clipLengthInSeconds ?? 60
   const totalClips = Math.max(2, Math.round(clipTotal ?? 2))
   const unitScale = isInMinutes ? 60 : 1
@@ -117,7 +117,7 @@ function Clips({ mediaIndex }: ClipsProps) {
         videoConfig.clipLengthInSeconds = 60
       }
       if (!videoConfig.clipsMode) {
-        videoConfig.clipsMode = 'time'
+        videoConfig.clipsMode = 'count'
       }
       if (!videoConfig.clipCount) {
         videoConfig.clipCount = 2
@@ -132,7 +132,7 @@ function Clips({ mediaIndex }: ClipsProps) {
           commonConfig.clipLengthInSeconds = 60
         }
         if (!commonConfig.clipsMode) {
-          commonConfig.clipsMode = 'time'
+          commonConfig.clipsMode = 'count'
         }
         if (!commonConfig.clipCount) {
           commonConfig.clipCount = 2
@@ -228,7 +228,7 @@ function Clips({ mediaIndex }: ClipsProps) {
             {t('clips.title')}
           </span>
         </Switch>
-        {topRightLabel ? (
+        {shouldEnableClips && topRightLabel ? (
           <span className="ml-auto text-xs text-gray-600 dark:text-gray-400">
             {topRightLabel}
           </span>
@@ -240,6 +240,25 @@ function Clips({ mediaIndex }: ClipsProps) {
             <ToggleSection
               aria-label={t('clips.mode')}
               options={[
+                {
+                  value: 'count',
+                  label: t('clips.modes.count'),
+                  content: (
+                    <StepperInput
+                      aria-label={t('clips.modes.count')}
+                      decreaseLabel={t('common.decrease')}
+                      increaseLabel={t('common.increase')}
+                      value={totalClips}
+                      minValue={2}
+                      maxValue={maxClips}
+                      step={1}
+                      decimals={0}
+                      unit={t('clips.countUnit')}
+                      onChange={handleCountChange}
+                      isDisabled={shouldDisableInput || isGif}
+                    />
+                  ),
+                },
                 {
                   value: 'time',
                   label: t('clips.modes.time'),
@@ -271,25 +290,6 @@ function Clips({ mediaIndex }: ClipsProps) {
                         />
                       }
                       onChange={handleLengthChange}
-                      isDisabled={shouldDisableInput || isGif}
-                    />
-                  ),
-                },
-                {
-                  value: 'count',
-                  label: t('clips.modes.count'),
-                  content: (
-                    <StepperInput
-                      aria-label={t('clips.modes.count')}
-                      decreaseLabel={t('common.decrease')}
-                      increaseLabel={t('common.increase')}
-                      value={totalClips}
-                      minValue={2}
-                      maxValue={maxClips}
-                      step={1}
-                      decimals={0}
-                      unit={t('clips.countUnit')}
-                      onChange={handleCountChange}
                       isDisabled={shouldDisableInput || isGif}
                     />
                   ),

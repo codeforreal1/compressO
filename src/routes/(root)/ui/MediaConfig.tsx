@@ -32,6 +32,7 @@ function MediaConfig() {
       isProcessCompleted,
       isLoadingMediaFiles,
       selectedMediaIndexForCustomization,
+      isPreviewingClip,
     },
   } = useSnapshot(appProxy)
 
@@ -48,7 +49,14 @@ function MediaConfig() {
         className: 'h-full',
       }}
     >
-      <div className={cn(['h-full p-6', styles.videoConfigContainer])}>
+      <div
+        className={cn([
+          'h-full p-6',
+          isPreviewingClip
+            ? 'grid grid-cols-1 gap-4'
+            : styles.videoConfigContainer,
+        ])}
+      >
         <section
           className={cn(
             'relative min-w-0 w-full h-full px-4 py-6 rounded-xl border-2 border-zinc-200 dark:border-zinc-800',
@@ -115,29 +123,31 @@ function MediaConfig() {
             )}
           </AnimatePresence>
         </section>
-        <section className="relative p-4 w-full h-full rounded-xl border-2 border-zinc-200 dark:border-zinc-800">
-          <div className="flex items-center justify-between w-full mb-2">
-            <Title
-              title={
-                media.length === 1 || selectedMediaIndexForCustomization > -1
-                  ? t('mediaConfig.outputSettings')
-                  : t('mediaConfig.batchSettings')
-              }
-              className="text-xl font-bold"
-            />
-            {!isCompressing ? <CompressionActions /> : null}
-          </div>
-          <ScrollShadow className="h-[78vh] hxl:h-[82vh] pb-10" hideScrollBar>
-            <OutputSettings
-              mediaIndex={
-                media.length === 1 ? 0 : selectedMediaIndexForCustomization
-              }
-            />
-          </ScrollShadow>
-          <div className="absolute bottom-4 left-4 right-4">
-            <StartCompression />
-          </div>
-        </section>
+        {!isPreviewingClip ? (
+          <section className="relative p-4 w-full h-full rounded-xl border-2 border-zinc-200 dark:border-zinc-800">
+            <div className="flex items-center justify-between w-full mb-2">
+              <Title
+                title={
+                  media.length === 1 || selectedMediaIndexForCustomization > -1
+                    ? t('mediaConfig.outputSettings')
+                    : t('mediaConfig.batchSettings')
+                }
+                className="text-xl font-bold"
+              />
+              {!isCompressing ? <CompressionActions /> : null}
+            </div>
+            <ScrollShadow className="h-[78vh] hxl:h-[82vh] pb-10" hideScrollBar>
+              <OutputSettings
+                mediaIndex={
+                  media.length === 1 ? 0 : selectedMediaIndexForCustomization
+                }
+              />
+            </ScrollShadow>
+            <div className="absolute bottom-4 left-4 right-4">
+              <StartCompression />
+            </div>
+          </section>
+        ) : null}
       </div>
       {isCompressing ? <CompressionProgress /> : null}
     </Layout>

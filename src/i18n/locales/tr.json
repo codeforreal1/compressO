@@ -1114,7 +1114,7 @@
     "switchUnit": "{{unit}} birimine geç",
     "mode": "Klipleri böl",
     "modes": {
-      "time": "Süre",
+      "time": "Süreli klipler",
       "count": "Toplam klip"
     },
     "countUnit": "klip",

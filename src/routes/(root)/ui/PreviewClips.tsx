@@ -1,6 +1,7 @@
 import { ScrollShadow } from '@heroui/react'
+import { core } from '@tauri-apps/api'
 import { AnimatePresence, motion } from 'framer-motion'
-import { type ReactNode, useCallback } from 'react'
+import { type ReactNode, useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
@@ -12,6 +13,7 @@ import Icon from '@/components/Icon'
 import Image from '@/components/Image'
 import { toast } from '@/components/Toast'
 import Tooltip from '@/components/Tooltip'
+import VideoPlayer from '@/components/VideoPlayer'
 import {
   copyFilesToClipboard,
   showItemInFileManager,
@@ -51,6 +53,34 @@ function PreviewClips({
   const mediaFile = media[mediaIndex]
   const clips =
     mediaFile?.type === 'video' ? (mediaFile.compressedFile?.clips ?? []) : []
+  const [previewClip, setPreviewClip] = useState<VideoClipOutput | null>(null)
+  const previewClipSrc = previewClip
+    ? previewClip.savedPath
+      ? core.convertFileSrc(previewClip.savedPath)
+      : previewClip.path
+    : null
+
+  // The output settings apply to the whole video, not to a clip being previewed
+  useEffect(() => {
+    appProxy.state.isPreviewingClip = !!previewClip
+    return () => {
+      appProxy.state.isPreviewingClip = false
+    }
+  }, [previewClip])
+
+  useEffect(() => {
+    if (!previewClip) return
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        setPreviewClip(null)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [previewClip])
 
   const handleCopy = useCallback(
     async (clip: VideoClipOutput) => {
@@ -72,8 +102,94 @@ function PreviewClips({
     } catch {}
   }, [])
 
+  if (previewClip && previewClipSrc) {
+    return (
+      <div
+        className="relative flex h-full w-full flex-col justify-center"
+        role="dialog"
+        aria-label={t('clips.clipName', { number: previewClip.index })}
+      >
+        <div className="z-[1] flex w-full items-center justify-between gap-2 pb-4">
+          <div className="flex min-w-0 items-center gap-1">
+            <Code
+              size="sm"
+              className="min-w-0 max-w-[25%] rounded-xl px-4 text-xs truncate"
+            >
+              {previewClip.fileNameToDisplay ?? previewClip.fileName}
+            </Code>
+            <div className="ml-2 flex shrink-0 items-center gap-2">
+              <span className="text-sm font-bold">{previewClip.size}</span>
+              <Divider orientation="vertical" className="h-4" />
+              <span className="text-xs text-gray-500 dark:text-gray-400">
+                {formatClipTime(previewClip.startSeconds)} –{' '}
+                {formatClipTime(previewClip.endSeconds)}
+              </span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Tooltip
+              content={t('batch.copyOutput')}
+              aria-label={t('batch.copyOutput')}
+            >
+              <Button
+                size="sm"
+                isIconOnly
+                variant="flat"
+                onPress={() => handleCopy(previewClip)}
+              >
+                <Icon name="copy" size={18} />
+              </Button>
+            </Tooltip>
+            {previewClip.savedPath ? (
+              <Tooltip
+                content={t('common.showInFileManager')}
+                aria-label={t('common.showInFileManager')}
+              >
+                <Button
+                  size="sm"
+                  isIconOnly
+                  variant="flat"
+                  onPress={() => handleOpenInFileManager(previewClip)}
+                >
+                  <Icon name="fileExplorer" size={18} />
+                </Button>
+              </Tooltip>
+            ) : null}
+            <Button
+              size="sm"
+              variant="flat"
+              radius="md"
+              className="h-7"
+              onPress={() => setPreviewClip(null)}
+            >
+              {t('common.close')}
+            </Button>
+          </div>
+        </div>
+
+        <div className="flex min-h-0 flex-1 items-center justify-center">
+          <VideoPlayer
+            url={previewClipSrc}
+            controls={false}
+            playPauseOnSpaceKeydown={false}
+            disableClosedCaptions
+            containerClassName="w-full h-full"
+            style={{ width: '100%', height: '100%' }}
+            config={{
+              file: {
+                attributes: {
+                  style: { objectFit: 'contain' },
+                },
+              },
+            }}
+          />
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="h-full min-h-0 w-full min-w-0 flex flex-col overflow-hidden">
+    <div className="grid h-full min-h-0 w-full min-w-0 grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden">
       <div className="flex w-full min-w-0 items-center gap-2 pb-4">
         <div className="flex flex-1 min-w-0 items-center gap-1">
           {showExit ? <ExitMedia /> : null}
@@ -83,12 +199,17 @@ function PreviewClips({
           >
             {mediaFile?.fileName ?? ''}
           </Code>
+          {clips.length > 0 ? (
+            <span className="ml-1 shrink-0 text-xs font-medium text-primary">
+              {t('clips.count', { count: clips.length })}
+            </span>
+          ) : null}
         </div>
         {headerEnd ? <div className="shrink-0">{headerEnd}</div> : null}
       </div>
 
       <ScrollShadow
-        className="h-[65vh] w-full min-w-0 hlg:h-[70vh] shrink-0 overflow-hidden overflow-y-auto"
+        className="min-h-0 w-full overflow-hidden overflow-y-auto"
         hideScrollBar
       >
         <AnimatePresence mode="wait">
@@ -104,7 +225,16 @@ function PreviewClips({
                 key={`${clip.index}-${clip.pathRaw}`}
                 layout
                 variants={zoomInStaggerAnimation.item}
-                className="relative min-w-0 overflow-hidden rounded-xl border-1 border-primary"
+                role="button"
+                tabIndex={0}
+                onDoubleClick={() => setPreviewClip(clip)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault()
+                    setPreviewClip(clip)
+                  }
+                }}
+                className="relative min-w-0 cursor-pointer overflow-hidden rounded-xl border-1 border-primary"
               >
                 <Card
                   className="w-full min-w-0 bg-zinc-100/5 dark:bg-zinc-900 rounded-none overflow-hidden"
@@ -134,7 +264,12 @@ function PreviewClips({
                         />
                       </div>
                     )}
-                    <div className="absolute top-2 left-2 z-10 flex gap-2 items-center">
+                    <div
+                      className="absolute top-2 left-2 z-10 flex gap-2 items-center"
+                      onClick={(event) => event.stopPropagation()}
+                      onDoubleClick={(event) => event.stopPropagation()}
+                      onKeyDown={(event) => event.stopPropagation()}
+                    >
                       <Tooltip
                         content={t('batch.copyOutput')}
                         aria-label={t('batch.copyOutput')}
@@ -195,11 +330,8 @@ function PreviewClips({
           </motion.div>
         </AnimatePresence>
       </ScrollShadow>
-      <section className="shrink-0 pt-4">
+      <section className="shrink-0 pt-2 sm:pt-4">
         <OutputSizeSummary mediaIndex={mediaIndex} />
-        <p className="mt-1 text-center text-xs text-gray-600 dark:text-gray-400">
-          {t('clips.count', { count: clips.length })}
-        </p>
       </section>
     </div>
   )

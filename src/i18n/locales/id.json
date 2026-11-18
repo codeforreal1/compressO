@@ -1099,7 +1099,7 @@
     "switchUnit": "Beralih ke {{unit}}",
     "mode": "Bagi klip berdasarkan",
     "modes": {
-      "time": "Waktu",
+      "time": "Klip berdurasi",
       "count": "Total klip"
     },
     "countUnit": "klip",

@@ -1099,7 +1099,7 @@
     "switchUnit": "切换到{{unit}}",
     "mode": "分割片段方式",
     "modes": {
-      "time": "时间",
+      "time": "定时片段",
       "count": "片段总数"
     },
     "countUnit": "个",

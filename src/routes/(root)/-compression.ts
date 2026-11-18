@@ -331,7 +331,7 @@ export function getClipsWarning(media: MediaFile) {
   if (!durationInSeconds) {
     return 'clips.durationUnknown' as const
   }
-  if (media.config.clipsMode === 'count') {
+  if ((media.config.clipsMode ?? 'count') === 'count') {
     const count = media.config.clipCount ?? 2
     if (!Number.isInteger(count) || count < 2) {
       return 'clips.invalidCount' as const
@@ -513,7 +513,7 @@ export function getMediaItemConfig(
       isHdrPngOutput(imageOutput, imageOperation, v.dynamicRangeInfo))
   const clipsDurationSeconds =
     v.type === 'video'
-      ? v.config?.clipsMode === 'count'
+      ? (v.config?.clipsMode ?? 'count') === 'count'
         ? getOutputDuration(v) /
           1000 /
           Math.max(2, Math.floor(v.config.clipCount ?? 2))

@@ -1099,7 +1099,7 @@
     "switchUnit": "{{unit}} に切り替え",
     "mode": "クリップの分割方法",
     "modes": {
-      "time": "時間",
+      "time": "時間指定クリップ",
       "count": "クリップ総数"
     },
     "countUnit": "クリップ",

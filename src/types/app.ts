@@ -350,6 +350,8 @@ export type App = {
   totalSelectedMediaCount: number
   /** Media is being added to an existing selection (see `addMedia`) */
   isAppendingMedia: boolean
+  /** A clip is open in the read-only clip preview */
+  isPreviewingClip?: boolean
   /** The compression waits for the drop zone to finish the media it is compressing (macOS) */
   isWaitingForDropZone?: boolean
   /** Before compressing to a target size, the size at the quality settings is estimated */

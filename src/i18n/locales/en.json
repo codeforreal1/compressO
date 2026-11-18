@@ -1114,7 +1114,7 @@
     "switchUnit": "Switch to {{unit}}",
     "mode": "Split clips by",
     "modes": {
-      "time": "Time",
+      "time": "Timed clips",
       "count": "Total clips"
     },
     "countUnit": "clips",

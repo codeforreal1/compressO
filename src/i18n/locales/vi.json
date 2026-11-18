@@ -1099,7 +1099,7 @@
     "switchUnit": "Chuyển sang {{unit}}",
     "mode": "Chia clip theo",
     "modes": {
-      "time": "Thời gian",
+      "time": "Clip theo thời gian",
       "count": "Tổng số clip"
     },
     "countUnit": "clip",

@@ -345,6 +345,17 @@ function PreviewBatchMedia() {
                   key={mediaFile.id}
                   layout
                   variants={zoomInStaggerAnimation.item}
+                  onDoubleClick={() => {
+                    if (isCompressing || isLoadingMediaFiles) return
+                    // Not compressed yet: same as its pencil action
+                    if (
+                      !mediaFile.isProcessCompleted ||
+                      mediaFile.compressedFile?.isSuccessful
+                    ) {
+                      appProxy.state.selectedMediaIndexForCustomization =
+                        originalIndex
+                    }
+                  }}
                   className={cn([
                     'relative rounded-xl border-1 overflow-hidden',
                     isPast
@@ -389,54 +400,33 @@ function PreviewBatchMedia() {
                           />
                         </div>
                       )}
-                      <div className="absolute top-2 left-2 z-10 flex gap-2 items-center">
+                      <div
+                        className="absolute top-2 left-2 z-10 flex gap-2 items-center"
+                        onDoubleClick={(event) => event.stopPropagation()}
+                      >
                         {!mediaFile?.isCompressing &&
                         mediaFile?.isProcessCompleted &&
                         mediaFile?.compressedFile?.isSuccessful ? (
-                          <>
-                            {/* Can copy to output immediately after it's process is completed. no need to wait for other processes */}
-                            <Tooltip
-                              content={t('batch.copyOutput')}
-                              aria-label={t('batch.copyOutput')}
+                          /* Can copy to output immediately after it's process is completed. no need to wait for other processes */
+                          <Tooltip
+                            content={t('batch.copyOutput')}
+                            aria-label={t('batch.copyOutput')}
+                          >
+                            <Button
+                              size="sm"
+                              isIconOnly
+                              onPress={() =>
+                                handleCopyToClipboard(mediaFile as MediaFile)
+                              }
+                              className="rounded-full text-white"
                             >
-                              <Button
-                                size="sm"
-                                isIconOnly
-                                onPress={() =>
-                                  handleCopyToClipboard(mediaFile as MediaFile)
-                                }
-                                className="rounded-full text-white"
-                              >
-                                <Icon
-                                  name="copy"
-                                  size={28}
-                                  className="text-primary"
-                                />
-                              </Button>
-                            </Tooltip>
-                            {!isCompressing ? (
-                              <Tooltip
-                                content={t('batch.compareOutput')}
-                                aria-label={t('batch.compareOutput')}
-                              >
-                                <Button
-                                  size="sm"
-                                  isIconOnly
-                                  onPress={() => {
-                                    appProxy.state.selectedMediaIndexForCustomization =
-                                      originalIndex
-                                  }}
-                                  className="rounded-full text-white"
-                                >
-                                  <Icon
-                                    name="compare"
-                                    size={20}
-                                    className="text-primary"
-                                  />
-                                </Button>
-                              </Tooltip>
-                            ) : null}
-                          </>
+                              <Icon
+                                name="copy"
+                                size={28}
+                                className="text-primary"
+                              />
+                            </Button>
+                          </Tooltip>
                         ) : null}
                         {mediaFile.isProcessCompleted &&
                         mediaFile?.compressedFile?.isSaved &&
@@ -474,6 +464,7 @@ function PreviewBatchMedia() {
                             size="sm"
                             isIconOnly
                             onPress={() => handleRemoveMedia(originalIndex)}
+                            onDoubleClick={(event) => event.stopPropagation()}
                             className="absolute top-2 right-2 z-10 p-2 rounded-full bg-zinc-800/80 text-white hover:bg-zinc-700 transition-colors"
                           >
                             <Icon name="cross" size={18} />
@@ -485,6 +476,7 @@ function PreviewBatchMedia() {
                               appProxy.state.selectedMediaIndexForCustomization =
                                 originalIndex
                             }}
+                            onDoubleClick={(event) => event.stopPropagation()}
                             className={cn(
                               'absolute bottom-2 left-2 z-10 rounded-full text-white hover:bg-zinc-700 transition-colors',
                               mediaFile.isConfigDirty

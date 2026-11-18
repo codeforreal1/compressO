@@ -1099,7 +1099,7 @@
     "switchUnit": "{{unit}}(으)로 전환",
     "mode": "클립 분할 기준",
     "modes": {
-      "time": "시간",
+      "time": "시간 기준 클립",
       "count": "총 클립 수"
     },
     "countUnit": "개",
