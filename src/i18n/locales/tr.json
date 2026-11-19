@@ -237,6 +237,13 @@
         "retryTargetSizeOnCpu": {
           "title": "Hedef boyutlara hızlandırma olmadan ulaş",
           "description": "Yalnızca \"Hedef boyut\" için geçerlidir. Bir video hedef boyutunu tutturamazsa donanım hızlandırma olmadan yeniden sıkıştırılır; bu daha yavaştır ama boyuta daha yakındır."
+        },
+        "cpuThreadLimit": {
+          "title": "Maksimum CPU çekirdeği",
+          "description": "FFmpeg'in CPU'da kodlarken kullanacağı CPU çekirdeği sayısını sınırlar. Varsayılan olarak tüm çekirdekler kullanılır.",
+          "all": "Tüm çekirdekler",
+          "cores_one": "{{count}} çekirdek",
+          "cores_other": "{{count}} çekirdek"
         }
       },
       "storage": {

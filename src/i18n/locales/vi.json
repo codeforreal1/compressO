@@ -237,6 +237,12 @@
         "retryTargetSizeOnCpu": {
           "title": "Đạt kích thước mục tiêu không dùng tăng tốc",
           "description": "Chỉ áp dụng cho \"Kích thước mục tiêu\". Khi video không đạt kích thước mục tiêu, nó được nén lại không dùng tăng tốc phần cứng, chậm hơn nhưng sát kích thước hơn."
+        },
+        "cpuThreadLimit": {
+          "title": "Số lõi CPU tối đa",
+          "description": "Giới hạn số lõi CPU mà FFmpeg sử dụng khi mã hóa trên CPU. Theo mặc định, tất cả các lõi đều được sử dụng.",
+          "all": "Tất cả lõi",
+          "cores_other": "{{count}} lõi"
         }
       },
       "storage": {

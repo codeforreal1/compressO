@@ -27,6 +27,14 @@ function readTintOpacity(key: string, fallback: number) {
     : fallback
 }
 
+/** The stored CPU thread limit, or `null` for all available threads */
+function readCpuThreadLimit() {
+  const stored = localStorage.getItem(constants.cpuThreadLimit)
+  if (stored == null) return null
+  const limit = Number(stored)
+  return Number.isInteger(limit) && limit > 0 ? limit : null
+}
+
 export type SaveLocation = keyof typeof saveLocations
 
 /**
@@ -101,6 +109,11 @@ export type SettingsState = {
    */
   useHardwareAcceleration: boolean
   /**
+   * The maximum CPU threads FFmpeg may use for CPU encoding, or `null` for all of them
+   * (see `cpu_limit.rs`)
+   */
+  cpuThreadLimit: number | null
+  /**
    * With hardware acceleration, a video that missed its target size is compressed again on the CPU
    * (on by default), which keeps to the size more closely (see `ffmpeg.rs`)
    */
@@ -173,6 +186,7 @@ function readSettings(): SettingsState {
     watchedFolders: readWatchedFolders(),
     useHardwareAcceleration:
       localStorage.getItem(constants.useHardwareAcceleration) === 'true',
+    cpuThreadLimit: readCpuThreadLimit(),
     // Only an explicit opt-out turns it off
     retryTargetSizeOnCpu:
       localStorage.getItem(constants.retryTargetSizeOnCpu) !== 'false',
@@ -300,6 +314,14 @@ subscribe(settingsStore, () => {
     constants.useHardwareAcceleration,
     String(settingsStore.useHardwareAcceleration),
   )
+  if (settingsStore.cpuThreadLimit == null) {
+    localStorage.removeItem(constants.cpuThreadLimit)
+  } else {
+    localStorage.setItem(
+      constants.cpuThreadLimit,
+      String(settingsStore.cpuThreadLimit),
+    )
+  }
   localStorage.setItem(
     constants.retryTargetSizeOnCpu,
     String(settingsStore.retryTargetSizeOnCpu),

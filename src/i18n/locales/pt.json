@@ -237,6 +237,14 @@
         "retryTargetSizeOnCpu": {
           "title": "Atingir tamanhos alvo sem aceleração",
           "description": "Aplica-se apenas a \"Tamanho alvo\". Quando um vídeo não atinge o tamanho alvo, ele é comprimido novamente sem aceleração de hardware, o que é mais lento, porém mais próximo do tamanho."
+        },
+        "cpuThreadLimit": {
+          "title": "Número máximo de núcleos de CPU",
+          "description": "Limita quantos núcleos de CPU o FFmpeg usa ao codificar na CPU. Todos os núcleos são usados por padrão.",
+          "all": "Todos os núcleos",
+          "cores_many": "{{count}} núcleos",
+          "cores_one": "{{count}} núcleo",
+          "cores_other": "{{count}} núcleos"
         }
       },
       "storage": {

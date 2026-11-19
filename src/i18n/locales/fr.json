@@ -237,6 +237,14 @@
         "retryTargetSizeOnCpu": {
           "title": "Atteindre les tailles cibles sans accélération",
           "description": "S’applique uniquement à « Taille cible ». Lorsqu’une vidéo manque sa taille cible, elle est compressée à nouveau sans accélération matérielle, ce qui est plus lent mais plus proche de la taille."
+        },
+        "cpuThreadLimit": {
+          "title": "Nombre maximal de cœurs CPU",
+          "description": "Limite le nombre de cœurs CPU utilisés par FFmpeg lors de l’encodage sur le processeur. Tous les cœurs sont utilisés par défaut.",
+          "all": "Tous les cœurs",
+          "cores_many": "{{count}} cœurs",
+          "cores_one": "{{count}} cœur",
+          "cores_other": "{{count}} cœurs"
         }
       },
       "storage": {

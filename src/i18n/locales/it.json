@@ -237,6 +237,14 @@
         "retryTargetSizeOnCpu": {
           "title": "Raggiungere le dimensioni obiettivo senza accelerazione",
           "description": "Si applica solo a \"Dimensione obiettivo\". Quando un video non raggiunge la dimensione obiettivo, viene compresso di nuovo senza accelerazione hardware: è più lento ma più vicino alla dimensione."
+        },
+        "cpuThreadLimit": {
+          "title": "Numero massimo di core CPU",
+          "description": "Limita quanti core CPU usa FFmpeg durante la codifica sulla CPU. Per impostazione predefinita vengono usati tutti i core.",
+          "all": "Tutti i core",
+          "cores_many": "{{count}} core",
+          "cores_one": "{{count}} core",
+          "cores_other": "{{count}} core"
         }
       },
       "storage": {

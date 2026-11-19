@@ -237,6 +237,12 @@
         "retryTargetSizeOnCpu": {
           "title": "Capai ukuran target tanpa akselerasi",
           "description": "Hanya berlaku untuk \"Ukuran target\". Jika video tidak mencapai ukuran targetnya, video dikompres ulang tanpa akselerasi perangkat keras, yang lebih lambat tetapi lebih mendekati ukurannya."
+        },
+        "cpuThreadLimit": {
+          "title": "Inti CPU maksimum",
+          "description": "Membatasi berapa banyak inti CPU yang digunakan FFmpeg saat mengodekan di CPU. Semua inti digunakan secara default.",
+          "all": "Semua inti",
+          "cores_other": "{{count}} inti"
         }
       },
       "storage": {

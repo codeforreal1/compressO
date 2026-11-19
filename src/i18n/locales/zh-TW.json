@@ -237,6 +237,12 @@
         "retryTargetSizeOnCpu": {
           "title": "不使用加速來達到目標大小",
           "description": "僅適用於「依目標大小」。影片未達到目標大小時，將不使用硬體加速重新壓縮，速度較慢但更接近目標大小。"
+        },
+        "cpuThreadLimit": {
+          "title": "CPU 核心上限",
+          "description": "限制 FFmpeg 在 CPU 上編碼時使用的 CPU 核心數。預設使用所有核心。",
+          "all": "所有核心",
+          "cores_other": "{{count}} 個核心"
         }
       },
       "storage": {

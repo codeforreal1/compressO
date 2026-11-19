@@ -13,6 +13,7 @@ import {
 } from '@/hooks/useAutoCompressSync'
 import { useClipboardWatchSync } from '@/hooks/useClipboardWatchSync'
 import { useCliSettingsSync } from '@/hooks/useCliSettingsSync'
+import { useCpuThreadLimitSync } from '@/hooks/useCpuThreadLimit'
 import { useHardwareEncodingSync } from '@/hooks/useHardwareEncoding'
 import { useKeepAwakeSync } from '@/hooks/useKeepAwakeSync'
 import { watchPrimaryColor } from '@/hooks/usePrimaryColor'
@@ -60,6 +61,7 @@ function MainRoot() {
   // Also from the menu bar's window, which stays open while the main one is closed
   useWatchedFoldersSync()
   useHardwareEncodingSync()
+  useCpuThreadLimitSync()
   useKeepAwakeSync()
   useCliSettingsSync()
   const { showMenuBarIcon } = useSnapshot(settingsStore)
@@ -126,6 +128,7 @@ function TrayRoot() {
   // Also from the menu bar's window, which stays open while the main one is closed
   useWatchedFoldersSync()
   useHardwareEncodingSync()
+  useCpuThreadLimitSync()
   useKeepAwakeSync()
   useCliSettingsSync()
   // The menu bar's window compresses the drop zone's queue

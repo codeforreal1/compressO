@@ -237,6 +237,12 @@
         "retryTargetSizeOnCpu": {
           "title": "アクセラレーションなしで目標サイズに合わせる",
           "description": "「目標サイズ」にのみ適用されます。動画が目標サイズに届かない場合、ハードウェアアクセラレーションなしで再圧縮します。時間はかかりますが、サイズにより近くなります。"
+        },
+        "cpuThreadLimit": {
+          "title": "CPUコアの上限",
+          "description": "CPUでのエンコード時にFFmpegが使用するCPUコア数を制限します。デフォルトではすべてのコアを使用します。",
+          "all": "すべてのコア",
+          "cores_other": "{{count}}コア"
         }
       },
       "storage": {

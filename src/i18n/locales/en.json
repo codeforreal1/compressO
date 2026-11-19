@@ -237,6 +237,13 @@
         "retryTargetSizeOnCpu": {
           "title": "Reach target sizes without acceleration",
           "description": "Applies only to Target Size. When a video misses its target size, it is compressed again without hardware acceleration, which is slower but closer to the size."
+        },
+        "cpuThreadLimit": {
+          "title": "Maximum CPU cores",
+          "description": "Limits how many CPU cores FFmpeg uses when encoding on the CPU. All cores are used by default.",
+          "all": "All cores",
+          "cores_one": "{{count}} core",
+          "cores_other": "{{count}} cores"
         }
       },
       "storage": {

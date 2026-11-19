@@ -207,6 +207,8 @@ pub fn to_hardware_args(
             }
             // x264's speed preset
             ("-preset", Some(_)) => index += 2,
+            // The CPU encoder's thread limit does not apply to the graphics card
+            ("-threads", Some(_)) => index += 2,
             ("-crf", Some(crf)) => {
                 let crf = crf.parse::<f32>().unwrap_or(28.0);
                 args.extend(quality_args(encoder, crf));
@@ -407,6 +409,19 @@ mod tests {
             let hardware = to_hardware_args(&cpu_args, &other, None);
             assert!(hardware.windows(2).any(|pair| pair == ["-maxrate:v:0", "10500k"]));
         }
+    }
+
+    #[test]
+    fn cpu_thread_limit_is_not_passed_to_the_graphics_card() {
+        let cpu_args = args(&[
+            "-i", "in.mp4", "-c:v:0", "libx264", "-threads", "4", "-y", "out.mp4",
+        ]);
+        let hardware = to_hardware_args(
+            &cpu_args,
+            &encoder("h264_videotoolbox", Codec::H264, Api::VideoToolbox),
+            None,
+        );
+        assert!(!hardware.iter().any(|arg| arg == "-threads"));
     }
 
     #[test]

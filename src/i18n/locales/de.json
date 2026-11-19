@@ -237,6 +237,13 @@
         "retryTargetSizeOnCpu": {
           "title": "Zielgrößen ohne Beschleunigung erreichen",
           "description": "Gilt nur für „Zielgröße“. Wenn ein Video seine Zielgröße verfehlt, wird es ohne Hardwarebeschleunigung erneut komprimiert. Das ist langsamer, trifft die Größe aber genauer."
+        },
+        "cpuThreadLimit": {
+          "title": "Maximale CPU-Kerne",
+          "description": "Begrenzt, wie viele CPU-Kerne FFmpeg bei der Codierung auf der CPU verwendet. Standardmäßig werden alle Kerne verwendet.",
+          "all": "Alle Kerne",
+          "cores_one": "{{count}} Kern",
+          "cores_other": "{{count}} Kerne"
         }
       },
       "storage": {

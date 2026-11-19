@@ -1,3 +1,4 @@
+use crate::core::cpu_limit;
 use crate::core::domain::{
     AudioConfig, BatchCompressionResult, BatchVideoCompressionProgress,
     BatchVideoIndividualCompressionResult, CustomEvents, MediaMetadataConfig, MediaTransform,
@@ -1319,7 +1320,14 @@ impl FFMPEG {
         // On the graphics card first when it can encode the codec (not GIFs, audio or lossless), then
         // on the CPU if that fails, so a video is never lost to the graphics card (see
         // `hardware_encoder`)
-        let cpu_args: Vec<String> = cmd_args.iter().map(|arg| arg.to_string()).collect();
+        let mut cpu_args: Vec<String> = cmd_args.iter().map(|arg| arg.to_string()).collect();
+        // A CPU encode is limited to the chosen number of threads; hardware encoding has its own
+        // settings, & audio encoders do not need the limit
+        if !is_audio_target {
+            if let Some(limit) = cpu_limit::thread_limit() {
+                cpu_args = with_thread_limit(&cpu_args, limit);
+            }
+        }
         let hardware_encoder = if preset_name.is_some() && !is_gif_target && !is_audio_target {
             hardware_encoder::encoder_for(&self.app, &output_codec, self.hardware_acceleration).await
         } else {
@@ -2438,6 +2446,20 @@ fn bitrate_args(video_bitrate: u32) -> Vec<String> {
     ]
 }
 
+/// Adds FFmpeg's encoder thread limit before the output file, so it applies to the output codec
+/// (see Settings -> Output -> Maximum CPU cores)
+fn with_thread_limit(args: &[String], limit: usize) -> Vec<String> {
+    let mut next = Vec::with_capacity(args.len() + 2);
+    let Some(output_option) = args.iter().rposition(|arg| arg == "-y") else {
+        next.extend_from_slice(args);
+        return next;
+    };
+    next.extend_from_slice(&args[..output_option]);
+    next.extend(["-threads".to_string(), limit.to_string()]);
+    next.extend_from_slice(&args[output_option..]);
+    next
+}
+
 /// The arguments of an ffmpeg command encoding at a video bitrate (see `bitrate_args`): its
 /// bitrate options replaced, & a constant quality (`-crf`) dropped
 fn with_bitrate(args: &[String], video_bitrate: u32) -> Vec<String> {
@@ -2726,6 +2748,46 @@ fn build_straighten_filter(angle: f64) -> Option<String> {
     Some(format!(
         "rotate={radians}:ow=rotw({radians}):oh=roth({radians}):fillcolor=black@0"
     ))
+}
+
+#[cfg(test)]
+mod thread_limit_tests {
+    use super::*;
+
+    #[test]
+    fn thread_limit_is_added_before_the_output() {
+        let args: Vec<String> = [
+            "-i",
+            "in.mp4",
+            "-c:v:0",
+            "libx264",
+            "-crf",
+            "28",
+            "-y",
+            "out.mp4",
+        ]
+        .into_iter()
+        .map(String::from)
+        .collect();
+        assert_eq!(
+            with_thread_limit(&args, 4),
+            [
+                "-i",
+                "in.mp4",
+                "-c:v:0",
+                "libx264",
+                "-crf",
+                "28",
+                "-threads",
+                "4",
+                "-y",
+                "out.mp4",
+            ]
+            .into_iter()
+            .map(String::from)
+            .collect::<Vec<_>>()
+        );
+    }
 }
 
 #[cfg(test)]

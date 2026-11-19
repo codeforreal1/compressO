@@ -27,8 +27,9 @@ use tauri_plugin_fs::FsExt;
 
 use tauri_commands::{
     app::{
-        get_log_file_path, get_open_at_login, log_error, open_files_access_settings, open_login_items_settings, restart_app, set_keep_awake_settings,
-        set_native_texts,
+        get_cpu_thread_count, get_log_file_path, get_open_at_login, log_error,
+        open_files_access_settings, open_login_items_settings, restart_app,
+        set_cpu_thread_limit, set_keep_awake_settings, set_native_texts,
         set_open_at_login, take_opened_at_login, OPENED_AT_LOGIN_ARG,
     },
     compression_status::{
@@ -550,6 +551,8 @@ async fn run() {
             set_batch_paused,
             set_hardware_encoding_enabled,
             get_hardware_encoders,
+            get_cpu_thread_count,
+            set_cpu_thread_limit,
             extract_subtitle,
             generate_video_thumbnail,
             core::waveform::get_audio_waveform,

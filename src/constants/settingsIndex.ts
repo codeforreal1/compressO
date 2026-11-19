@@ -199,6 +199,13 @@ export const SETTINGS_INDEX = {
       t('settings.output.performance.retryTargetSizeOnCpu.description'),
     ],
   },
+  cpuThreadLimit: {
+    page: 'output',
+    getText: (t) => [
+      t('settings.output.performance.cpuThreadLimit.title'),
+      t('settings.output.performance.cpuThreadLimit.description'),
+    ],
+  },
   clearCache: {
     page: 'output',
     getText: (t) => [

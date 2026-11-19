@@ -9,9 +9,11 @@ import Button from '@/components/Button'
 import Icon from '@/components/Icon'
 import InfoTooltip from '@/components/InfoTooltip'
 import Select from '@/components/Select'
+import Slider from '@/components/Slider'
 import Switch from '@/components/Switch'
 import TextInput from '@/components/TextInput'
 import { toast } from '@/components/Toast'
+import { useCpuThreadCount } from '@/hooks/useCpuThreadLimit'
 import { useHardwareEncoders } from '@/hooks/useHardwareEncoding'
 import {
   type SaveLocation,
@@ -44,6 +46,7 @@ function Output() {
     copyOutputToClipboard,
     copyBatchOutputToClipboard,
     useHardwareAcceleration,
+    cpuThreadLimit,
     retryTargetSizeOnCpu,
   } = useSnapshot(settingsStore)
   const { outputFilePrefix, saveLocation, saveFolder } =
@@ -52,6 +55,15 @@ function Output() {
   const hardwareEncoders = useHardwareEncoders()
   const hasHardwareAcceleration =
     hardwareEncoders == null || hardwareEncoders.length > 0
+  const cpuThreadCount = useCpuThreadCount()
+  // A limit saved on a computer with more cores becomes "All cores" here
+  const cpuThreadMax = cpuThreadCount ?? 1
+  const cpuThreadValue =
+    cpuThreadLimit == null ||
+    cpuThreadCount == null ||
+    cpuThreadLimit >= cpuThreadCount
+      ? cpuThreadMax
+      : cpuThreadLimit
 
   const handleSaveLocationChange = async (location: SaveLocation) => {
     // A fixed folder needs a folder; keep the previous option if none is chosen
@@ -282,6 +294,40 @@ function Output() {
               settingsStore.retryTargetSizeOnCpu = isSelected
             }}
           />
+        </SettingsRow>
+        <SettingsRow
+          settingId="cpuThreadLimit"
+          title={t('settings.output.performance.cpuThreadLimit.title')}
+          description={t(
+            'settings.output.performance.cpuThreadLimit.description',
+          )}
+        >
+          <div className="w-[220px]">
+            <Slider
+              aria-label={t('settings.output.performance.cpuThreadLimit.title')}
+              minValue={1}
+              maxValue={cpuThreadMax}
+              step={1}
+              value={cpuThreadValue}
+              isDisabled={!cpuThreadCount || cpuThreadCount <= 1}
+              onChange={(value) => {
+                const next = Array.isArray(value) ? value[0] : value
+                settingsStore.cpuThreadLimit =
+                  next >= cpuThreadMax ? null : next
+              }}
+              getValue={(value) => {
+                const count = Array.isArray(value) ? value[0] : value
+                if (cpuThreadCount == null || count >= cpuThreadCount) {
+                  return `${t('settings.output.performance.cpuThreadLimit.all')}${
+                    cpuThreadCount ? ` (${cpuThreadCount})` : ''
+                  }`
+                }
+                return t('settings.output.performance.cpuThreadLimit.cores', {
+                  count,
+                })
+              }}
+            />
+          </div>
         </SettingsRow>
       </SettingsSection>
 
