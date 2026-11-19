@@ -600,17 +600,23 @@ export async function autoCopyCompressedMediaToClipboard() {
 }
 
 /** An output of the menu bar's queue, saved on its own (see `saveQueueOutput`) */
+export type QueueOutputFile = {
+  /** The output in the app's cache */
+  path: string
+  /** Its size in bytes */
+  size: number
+  /** Name to save it under, without the prefix */
+  fileName: string
+}
+
 export type QueueOutput = {
   /** The original media */
   sourcePath: string
   /** Folder relative to the dropped folder (e.g. `Vacation/Day1`), mirrored when saving */
   relativeDir: string
   originalSize: number
-  /** The compressed output (in the app's cache) */
-  outputPath: string
-  outputSize: number
-  /** Name to save it under, without the prefix */
-  outputFileName: string
+  /** The compressed output(s) in the app's cache: one, or a video's clips */
+  outputs: QueueOutputFile[]
   /** The preset it was compressed with, whose save location & prefix are used */
   presetId?: string | null
   /**
@@ -646,9 +652,14 @@ export async function saveQueueOutput(
     topFolders,
   }: { groupKey: string; topFolders: Map<string, Promise<string>> },
 ): Promise<
-  { savedPath: string } | { reason: 'no-save-location' | 'larger' | 'failed' }
+  | { savedPaths: string[] }
+  | { reason: 'no-save-location' | 'larger' | 'failed' }
 > {
   const settings = output.settings ?? {}
+  const outputSize = output.outputs.reduce(
+    (total, file) => total + file.size,
+    0,
+  )
   const saveLargerOutputs =
     settings.skipLargerOutputs != null
       ? !settings.skipLargerOutputs
@@ -678,9 +689,12 @@ export async function saveQueueOutput(
   if (
     !saveLargerOutputs &&
     output.originalSize > 0 &&
-    output.outputSize > output.originalSize
+    outputSize > output.originalSize
   ) {
     return { reason: 'larger' }
+  }
+  if (!output.outputs.length) {
+    return { reason: 'failed' }
   }
 
   // Same folder: right next to the original, in its own folder, e.g. `/a/Vacation/Day1/clip.mp4`
@@ -715,30 +729,37 @@ export async function saveQueueOutput(
         '/',
       )
     }
-    const fileName =
-      settings.outputFolder && settings.outputFileName
+    // A single output (e.g. the command line's `--output=file.mp4`) keeps its exact name;
+    // clips keep each clip's own name after the preset's prefix
+    const exactFileName =
+      settings.outputFolder &&
+      settings.outputFileName &&
+      output.outputs.length === 1
         ? settings.outputFileName
-        : `${outputFilePrefix}${output.outputFileName}`
-    try {
-      const savedPath = await moveFile(
-        output.outputPath,
-        `${destinationDirectory}/${fileName}`,
-        {
-          replaceOriginal: replaceOriginalFiles ? output.sourcePath : null,
-        },
-      )
-      return { savedPath }
-    } catch (error) {
-      if (isFixedFolder) throw error
-      // Next to an original in a folder the app cannot write to (e.g. a file copied from another
-      // computer, kept in a shared folder): saved where images copied in a browser are, the app's
-      // own folder (see `save_clipboard_image`), instead of not at all
-      const savedPath = await moveFile(
-        output.outputPath,
-        await join(await appDataDir(), 'assets', fileName),
-      )
-      return { savedPath }
+        : null
+    const savedPaths: string[] = []
+    for (const file of output.outputs) {
+      const fileName = exactFileName ?? `${outputFilePrefix}${file.fileName}`
+      try {
+        savedPaths.push(
+          await moveFile(file.path, `${destinationDirectory}/${fileName}`, {
+            replaceOriginal: replaceOriginalFiles ? output.sourcePath : null,
+          }),
+        )
+      } catch (error) {
+        if (isFixedFolder) throw error
+        // Next to an original in a folder the app cannot write to (e.g. a file copied from another
+        // computer, kept in a shared folder): saved where images copied in a browser are, the app's
+        // own folder (see `save_clipboard_image`), instead of not at all
+        savedPaths.push(
+          await moveFile(
+            file.path,
+            await join(await appDataDir(), 'assets', fileName),
+          ),
+        )
+      }
     }
+    return { savedPaths }
   } catch {
     return { reason: 'failed' }
   }

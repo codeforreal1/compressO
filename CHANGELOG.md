@@ -6,19 +6,23 @@ Features:
 
 - **Add Audio to Videos**: Attach audio files to a video from its Audio settings, including videos without sound. Added audio starts at the beginning of the video, is cut when longer than the video, and a shorter file leaves the rest of the video silent. Added tracks count as kept tracks, so the video's original tracks can be unselected.
 - **Clips**: Split a compressed video into a chosen number of equal clips, the default, or by their length in seconds or minutes with the Total clips / Timed clips switch. Each clip is cut from the finished output with a stream copy, so trim, speed, Target Size, HDR, audio, subtitles and a custom thumbnail are kept, and nothing is encoded again. Finished clips appear as batch-style cards with copy and show-in-folder actions, and double-clicking a card plays that clip in a read-only preview. The result shows the original video size and the total size of all clips. Clips settings can be saved in video presets. No clip can be shorter than 1 second, and the clip length must be shorter than the video.
-- **Maximum CPU cores**: Limit how many CPU cores FFmpeg uses when it encodes on the CPU, in Settings → Output. All available cores are used by default, and hardware acceleration is not affected.
+- **Maximum CPU cores**: Limit how many CPU cores FFmpeg uses when it encodes on the CPU, in Settings → General. All available cores are used by default, and hardware acceleration is not affected.
 
 Enhancements:
 
 - Double-clicking a video in a batch opens it: its settings before compression, like the pencil button, or its single-video preview once compressed.
 - The CLI settings section is now called **CLI & AI Agents**.
 - The **Clips** and **Custom Thumbnail** settings moved from the Video tab to the Others tab, keeping the Video tab focused on encoding and output.
+- Performance settings (hardware acceleration, the CPU core limit, and the target-size CPU fallback) moved from Settings → Output to Settings → General, above Sleep.
+- The maximum CPU cores slider now shows **All (14)** at the maximum and just the number for a limited value.
+- Video preset summaries now include the preset’s clip mode: **2 clips** for count-based clips, or **Timed clips** for time-based clips.
 - Portrait and vertical videos now preview at the correct size, centered in the player with the timeline and file details below them. The video also fills its frame in clip previews and before/after compares, and clip previews show the clip number with a copy button that matches the folder button.
 
 Bug Fixes:
 
 - Fixed the update download percentage jumping back and forth. Progress now moves forward only, is emitted once per percentage point instead of for every downloaded chunk, and only one update can be downloaded at a time.
 - Fixed videos with embedded cover art failing to preview, compress, trim, or convert to GIF with **No output**. Some MP4s, such as those from X/Twitter, carry a 0×0 attached picture as the first video stream; CompressO now selects the actual video stream instead of the cover art.
+- Fixed clips from a preset being ignored by the drop zone and watched folders: the preset did split the video, but only the first clip was saved. Every clip is now saved, counted in the queue, recorded in History, and cleaned up when its item is cleared.
 
 ### 4.2.0
 

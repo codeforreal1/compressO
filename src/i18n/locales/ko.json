@@ -78,6 +78,24 @@
         },
         "restart": "재시작"
       },
+      "performance": {
+        "title": "성능",
+        "hardwareAcceleration": {
+          "title": "하드웨어 가속 사용",
+          "description": "하드웨어 가속으로 비디오를 더 빠르게 압축합니다(파일이 약간 커질 수 있음)",
+          "unavailable": "이 컴퓨터에서는 하드웨어 가속을 사용할 수 없습니다."
+        },
+        "retryTargetSizeOnCpu": {
+          "title": "가속 없이 목표 크기에 맞추기",
+          "description": "\"목표 크기\"에만 적용됩니다. 동영상이 목표 크기에 맞지 않으면 하드웨어 가속 없이 다시 압축합니다. 더 느리지만 크기에 더 가깝습니다."
+        },
+        "cpuThreadLimit": {
+          "title": "최대 CPU 코어",
+          "description": "CPU에서 인코딩할 때 FFmpeg가 사용할 CPU 코어 수를 제한합니다. 기본적으로 모든 코어를 사용합니다.",
+          "all": "모두",
+          "cores_other": "{{count}}"
+        }
+      },
       "sleep": {
         "title": "잠자기",
         "preventSleep": {
@@ -225,24 +243,6 @@
         "includeBatch": {
           "title": "일괄 출력 포함",
           "description": "여러 파일을 한 번에 압축할 때도 파일을 복사합니다."
-        }
-      },
-      "performance": {
-        "title": "성능",
-        "hardwareAcceleration": {
-          "title": "하드웨어 가속 사용",
-          "description": "하드웨어 가속으로 비디오를 더 빠르게 압축합니다(파일이 약간 커질 수 있음)",
-          "unavailable": "이 컴퓨터에서는 하드웨어 가속을 사용할 수 없습니다."
-        },
-        "retryTargetSizeOnCpu": {
-          "title": "가속 없이 목표 크기에 맞추기",
-          "description": "\"목표 크기\"에만 적용됩니다. 동영상이 목표 크기에 맞지 않으면 하드웨어 가속 없이 다시 압축합니다. 더 느리지만 크기에 더 가깝습니다."
-        },
-        "cpuThreadLimit": {
-          "title": "최대 CPU 코어",
-          "description": "CPU에서 인코딩할 때 FFmpeg가 사용할 CPU 코어 수를 제한합니다. 기본적으로 모든 코어를 사용합니다.",
-          "all": "모든 코어",
-          "cores_other": "{{count}}개 코어"
         }
       },
       "storage": {

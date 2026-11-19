@@ -78,6 +78,26 @@
         },
         "restart": "Riavvia"
       },
+      "performance": {
+        "title": "Prestazioni",
+        "hardwareAcceleration": {
+          "title": "Usa l’accelerazione hardware",
+          "description": "Comprimi i video più velocemente con l’accelerazione hardware (i file possono essere leggermente più grandi)",
+          "unavailable": "L’accelerazione hardware non è disponibile su questo computer."
+        },
+        "retryTargetSizeOnCpu": {
+          "title": "Raggiungere le dimensioni obiettivo senza accelerazione",
+          "description": "Si applica solo a \"Dimensione obiettivo\". Quando un video non raggiunge la dimensione obiettivo, viene compresso di nuovo senza accelerazione hardware: è più lento ma più vicino alla dimensione."
+        },
+        "cpuThreadLimit": {
+          "title": "Numero massimo di core CPU",
+          "description": "Limita quanti core CPU usa FFmpeg durante la codifica sulla CPU. Per impostazione predefinita vengono usati tutti i core.",
+          "all": "Tutti",
+          "cores_many": "{{count}}",
+          "cores_one": "{{count}}",
+          "cores_other": "{{count}}"
+        }
+      },
       "sleep": {
         "title": "Stop",
         "preventSleep": {
@@ -225,26 +245,6 @@
         "includeBatch": {
           "title": "Includi gli output dei lotti",
           "description": "Copia i file anche quando ne vengono compressi diversi insieme."
-        }
-      },
-      "performance": {
-        "title": "Prestazioni",
-        "hardwareAcceleration": {
-          "title": "Usa l’accelerazione hardware",
-          "description": "Comprimi i video più velocemente con l’accelerazione hardware (i file possono essere leggermente più grandi)",
-          "unavailable": "L’accelerazione hardware non è disponibile su questo computer."
-        },
-        "retryTargetSizeOnCpu": {
-          "title": "Raggiungere le dimensioni obiettivo senza accelerazione",
-          "description": "Si applica solo a \"Dimensione obiettivo\". Quando un video non raggiunge la dimensione obiettivo, viene compresso di nuovo senza accelerazione hardware: è più lento ma più vicino alla dimensione."
-        },
-        "cpuThreadLimit": {
-          "title": "Numero massimo di core CPU",
-          "description": "Limita quanti core CPU usa FFmpeg durante la codifica sulla CPU. Per impostazione predefinita vengono usati tutti i core.",
-          "all": "Tutti i core",
-          "cores_many": "{{count}} core",
-          "cores_one": "{{count}} core",
-          "cores_other": "{{count}} core"
         }
       },
       "storage": {

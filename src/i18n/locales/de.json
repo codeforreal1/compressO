@@ -78,6 +78,25 @@
         },
         "restart": "Neu starten"
       },
+      "performance": {
+        "title": "Leistung",
+        "hardwareAcceleration": {
+          "title": "Hardwarebeschleunigung verwenden",
+          "description": "Videos mit Hardwarebeschleunigung schneller komprimieren (Dateien können etwas größer sein)",
+          "unavailable": "Hardwarebeschleunigung ist auf diesem Computer nicht verfügbar."
+        },
+        "retryTargetSizeOnCpu": {
+          "title": "Zielgrößen ohne Beschleunigung erreichen",
+          "description": "Gilt nur für „Zielgröße“. Wenn ein Video seine Zielgröße verfehlt, wird es ohne Hardwarebeschleunigung erneut komprimiert. Das ist langsamer, trifft die Größe aber genauer."
+        },
+        "cpuThreadLimit": {
+          "title": "Maximale CPU-Kerne",
+          "description": "Begrenzt, wie viele CPU-Kerne FFmpeg bei der Codierung auf der CPU verwendet. Standardmäßig werden alle Kerne verwendet.",
+          "all": "Alle",
+          "cores_one": "{{count}}",
+          "cores_other": "{{count}}"
+        }
+      },
       "sleep": {
         "title": "Ruhezustand",
         "preventSleep": {
@@ -225,25 +244,6 @@
         "includeBatch": {
           "title": "Stapelausgaben einbeziehen",
           "description": "Die Dateien auch kopieren, wenn mehrere gleichzeitig komprimiert werden."
-        }
-      },
-      "performance": {
-        "title": "Leistung",
-        "hardwareAcceleration": {
-          "title": "Hardwarebeschleunigung verwenden",
-          "description": "Videos mit Hardwarebeschleunigung schneller komprimieren (Dateien können etwas größer sein)",
-          "unavailable": "Hardwarebeschleunigung ist auf diesem Computer nicht verfügbar."
-        },
-        "retryTargetSizeOnCpu": {
-          "title": "Zielgrößen ohne Beschleunigung erreichen",
-          "description": "Gilt nur für „Zielgröße“. Wenn ein Video seine Zielgröße verfehlt, wird es ohne Hardwarebeschleunigung erneut komprimiert. Das ist langsamer, trifft die Größe aber genauer."
-        },
-        "cpuThreadLimit": {
-          "title": "Maximale CPU-Kerne",
-          "description": "Begrenzt, wie viele CPU-Kerne FFmpeg bei der Codierung auf der CPU verwendet. Standardmäßig werden alle Kerne verwendet.",
-          "all": "Alle Kerne",
-          "cores_one": "{{count}} Kern",
-          "cores_other": "{{count}} Kerne"
         }
       },
       "storage": {

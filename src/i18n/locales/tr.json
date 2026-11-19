@@ -78,6 +78,25 @@
         },
         "restart": "Yeniden başlat"
       },
+      "performance": {
+        "title": "Performans",
+        "hardwareAcceleration": {
+          "title": "Donanım hızlandırmayı kullan",
+          "description": "Videoları donanım hızlandırmayla daha hızlı sıkıştırın (dosyalar biraz daha büyük olabilir)",
+          "unavailable": "Bu bilgisayarda donanım hızlandırma kullanılamıyor."
+        },
+        "retryTargetSizeOnCpu": {
+          "title": "Hedef boyutlara hızlandırma olmadan ulaş",
+          "description": "Yalnızca \"Hedef boyut\" için geçerlidir. Bir video hedef boyutunu tutturamazsa donanım hızlandırma olmadan yeniden sıkıştırılır; bu daha yavaştır ama boyuta daha yakındır."
+        },
+        "cpuThreadLimit": {
+          "title": "Maksimum CPU çekirdeği",
+          "description": "FFmpeg'in CPU'da kodlarken kullanacağı CPU çekirdeği sayısını sınırlar. Varsayılan olarak tüm çekirdekler kullanılır.",
+          "all": "Tümü",
+          "cores_one": "{{count}}",
+          "cores_other": "{{count}}"
+        }
+      },
       "sleep": {
         "title": "Uyku",
         "preventSleep": {
@@ -225,25 +244,6 @@
         "includeBatch": {
           "title": "Toplu çıktıları dahil et",
           "description": "Birden fazla dosya aynı anda sıkıştırıldığında da dosyaları kopyalayın."
-        }
-      },
-      "performance": {
-        "title": "Performans",
-        "hardwareAcceleration": {
-          "title": "Donanım hızlandırmayı kullan",
-          "description": "Videoları donanım hızlandırmayla daha hızlı sıkıştırın (dosyalar biraz daha büyük olabilir)",
-          "unavailable": "Bu bilgisayarda donanım hızlandırma kullanılamıyor."
-        },
-        "retryTargetSizeOnCpu": {
-          "title": "Hedef boyutlara hızlandırma olmadan ulaş",
-          "description": "Yalnızca \"Hedef boyut\" için geçerlidir. Bir video hedef boyutunu tutturamazsa donanım hızlandırma olmadan yeniden sıkıştırılır; bu daha yavaştır ama boyuta daha yakındır."
-        },
-        "cpuThreadLimit": {
-          "title": "Maksimum CPU çekirdeği",
-          "description": "FFmpeg'in CPU'da kodlarken kullanacağı CPU çekirdeği sayısını sınırlar. Varsayılan olarak tüm çekirdekler kullanılır.",
-          "all": "Tüm çekirdekler",
-          "cores_one": "{{count}} çekirdek",
-          "cores_other": "{{count}} çekirdek"
         }
       },
       "storage": {

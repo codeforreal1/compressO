@@ -1301,6 +1301,14 @@ export function describeVideoPresetSettings(
     if (settings.shouldEnableCustomFPS && settings.customFPS) {
       lines.push(translate('presets.summary.fps', { fps: settings.customFPS }))
     }
+    // Clips are a video-only, post-encoding setting; GIFs cannot be split
+    if (settings.shouldEnableClips && settings.convertToExtension !== 'gif') {
+      lines.push(
+        settings.clipsMode === 'time'
+          ? translate('clips.modes.time')
+          : translate('clips.count', { count: settings.clipCount ?? 2 }),
+      )
+    }
   }
   if (settings.shouldEnableCustomSpeed && settings.customSpeed) {
     lines.push(

@@ -208,6 +208,11 @@ function IslandTile({
           {reduction != null && reduction > 0
             ? t('queue.status.smaller', { value: reduction })
             : t('queue.status.done')}
+          {item.clipCount > 1 ? (
+            <span className="text-white/80">
+              · {t('clips.count', { count: item.clipCount })}
+            </span>
+          ) : null}
         </div>
       ) : (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-danger/40 text-white text-[10px]">

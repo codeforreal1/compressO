@@ -8,7 +8,7 @@ import {
 } from '@/tauri/commands/hardwareEncoder'
 
 /**
- * Tells the backend whether to use hardware acceleration (Settings -> Output), in every
+ * Tells the backend whether to use hardware acceleration (Settings -> General), in every
  * window that compresses (the main window & the menu bar's)
  */
 export function useHardwareEncodingSync() {

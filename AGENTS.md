@@ -21,6 +21,11 @@ Read `README.md` for the product and `CHANGELOG.md` for the current release note
   `src-tauri/binaries/**`, `src-tauri/tool-bundle/**` (except `.gitkeep`), `dist/**`.
 - `src-tauri/bin/**` contains pinned, hash-verified sidecars. Do not replace or rebuild them
   unless the task is specifically about tool packaging.
+- **Identifiers**: release builds use `com.compresso.app` from `src-tauri/tauri.conf.json`.
+  `pnpm tauri:dev` and `tauri:build:debug` merge `src-tauri/tauri.dev.conf.json`, which only
+  overrides the identifier to `com.compresso.dev` so development data, login items, logs, and
+  updater state do not mix with the installed app. Never change the production identifier: it
+  would break existing app data and updates.
 
 ## First files to read
 
@@ -294,7 +299,8 @@ To add a setting, update the store defaults/read/write, constants, the Settings 
   "replace original" by trashing the original only when the setting is on.
 - A dropped folder preserves its structure by default; the top folder is chosen once per save
   so all files land together.
-- Clips are saved independently (`saveVideoClips`); partial saves are retryable.
+- Clips are saved independently (the main window's `saveVideoClips`, and every clip of a
+  drop-zone/watched-folder/CLI output in the queue); partial saves are retryable.
 - If an output is larger than the original and "save larger outputs" is off, it stays in the
   cache for the Save button; the queue reports `larger` / no-save-location reasons.
 - History is a Rust-owned `history.json` (max 20,000 entries) emitted as `history-changed`,

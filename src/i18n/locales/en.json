@@ -78,6 +78,25 @@
         },
         "restart": "Restart"
       },
+      "performance": {
+        "title": "Performance",
+        "hardwareAcceleration": {
+          "title": "Use hardware acceleration",
+          "description": "Compress videos faster with hardware acceleration (Files can be slightly larger)",
+          "unavailable": "Hardware acceleration is not available on this computer."
+        },
+        "retryTargetSizeOnCpu": {
+          "title": "Reach target sizes without acceleration",
+          "description": "Applies only to Target Size. When a video misses its target size, it is compressed again without hardware acceleration, which is slower but closer to the size."
+        },
+        "cpuThreadLimit": {
+          "title": "Maximum CPU cores",
+          "description": "Limits how many CPU cores FFmpeg uses when encoding on the CPU. All cores are used by default.",
+          "all": "All",
+          "cores_one": "{{count}}",
+          "cores_other": "{{count}}"
+        }
+      },
       "sleep": {
         "title": "Sleep",
         "preventSleep": {
@@ -225,25 +244,6 @@
         "includeBatch": {
           "title": "Include batch outputs",
           "description": "Also copy the files when several are compressed at once."
-        }
-      },
-      "performance": {
-        "title": "Performance",
-        "hardwareAcceleration": {
-          "title": "Use hardware acceleration",
-          "description": "Compress videos faster with hardware acceleration (Files can be slightly larger)",
-          "unavailable": "Hardware acceleration is not available on this computer."
-        },
-        "retryTargetSizeOnCpu": {
-          "title": "Reach target sizes without acceleration",
-          "description": "Applies only to Target Size. When a video misses its target size, it is compressed again without hardware acceleration, which is slower but closer to the size."
-        },
-        "cpuThreadLimit": {
-          "title": "Maximum CPU cores",
-          "description": "Limits how many CPU cores FFmpeg uses when encoding on the CPU. All cores are used by default.",
-          "all": "All cores",
-          "cores_one": "{{count}} core",
-          "cores_other": "{{count}} cores"
         }
       },
       "storage": {

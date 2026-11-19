@@ -78,6 +78,26 @@
         },
         "restart": "Reiniciar"
       },
+      "performance": {
+        "title": "Desempenho",
+        "hardwareAcceleration": {
+          "title": "Usar aceleração por hardware",
+          "description": "Comprimir vídeos mais rápido com aceleração por hardware (os arquivos podem ficar um pouco maiores)",
+          "unavailable": "A aceleração por hardware não está disponível neste computador."
+        },
+        "retryTargetSizeOnCpu": {
+          "title": "Atingir tamanhos alvo sem aceleração",
+          "description": "Aplica-se apenas a \"Tamanho alvo\". Quando um vídeo não atinge o tamanho alvo, ele é comprimido novamente sem aceleração de hardware, o que é mais lento, porém mais próximo do tamanho."
+        },
+        "cpuThreadLimit": {
+          "title": "Número máximo de núcleos de CPU",
+          "description": "Limita quantos núcleos de CPU o FFmpeg usa ao codificar na CPU. Todos os núcleos são usados por padrão.",
+          "all": "Todas",
+          "cores_many": "{{count}}",
+          "cores_one": "{{count}}",
+          "cores_other": "{{count}}"
+        }
+      },
       "sleep": {
         "title": "Repouso",
         "preventSleep": {
@@ -225,26 +245,6 @@
         "includeBatch": {
           "title": "Incluir resultados em lote",
           "description": "Copiar também os arquivos quando vários forem comprimidos de uma vez."
-        }
-      },
-      "performance": {
-        "title": "Desempenho",
-        "hardwareAcceleration": {
-          "title": "Usar aceleração por hardware",
-          "description": "Comprimir vídeos mais rápido com aceleração por hardware (os arquivos podem ficar um pouco maiores)",
-          "unavailable": "A aceleração por hardware não está disponível neste computador."
-        },
-        "retryTargetSizeOnCpu": {
-          "title": "Atingir tamanhos alvo sem aceleração",
-          "description": "Aplica-se apenas a \"Tamanho alvo\". Quando um vídeo não atinge o tamanho alvo, ele é comprimido novamente sem aceleração de hardware, o que é mais lento, porém mais próximo do tamanho."
-        },
-        "cpuThreadLimit": {
-          "title": "Número máximo de núcleos de CPU",
-          "description": "Limita quantos núcleos de CPU o FFmpeg usa ao codificar na CPU. Todos os núcleos são usados por padrão.",
-          "all": "Todos os núcleos",
-          "cores_many": "{{count}} núcleos",
-          "cores_one": "{{count}} núcleo",
-          "cores_other": "{{count}} núcleos"
         }
       },
       "storage": {

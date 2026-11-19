@@ -12,7 +12,9 @@ import Slider from '@/components/Slider'
 import Switch from '@/components/Switch'
 import { ThemeSwitcher } from '@/components/ThemeSwitcher'
 import { toast } from '@/components/Toast'
+import { useCpuThreadCount } from '@/hooks/useCpuThreadLimit'
 import { useDropQueue } from '@/hooks/useDropQueue'
+import { useHardwareEncoders } from '@/hooks/useHardwareEncoding'
 import { usePrimaryColor } from '@/hooks/usePrimaryColor'
 import { isWindowTintSupported } from '@/hooks/useWindowTint'
 import { LANGUAGES, type LanguageCode } from '@/i18n/languages'
@@ -178,7 +180,23 @@ function General() {
     enableAudioWaveforms,
     preventSleepWhileCompressing,
     keepScreenOnWhileCompressing,
+    useHardwareAcceleration,
+    cpuThreadLimit,
+    retryTargetSizeOnCpu,
   } = useSnapshot(settingsStore)
+  // `null` while hardware acceleration is being checked (when the app starts)
+  const hardwareEncoders = useHardwareEncoders()
+  const hasHardwareAcceleration =
+    hardwareEncoders == null || hardwareEncoders.length > 0
+  const cpuThreadCount = useCpuThreadCount()
+  // A limit saved on a computer with more cores becomes the "All" maximum here
+  const cpuThreadMax = cpuThreadCount ?? 1
+  const cpuThreadValue =
+    cpuThreadLimit == null ||
+    cpuThreadCount == null ||
+    cpuThreadLimit >= cpuThreadCount
+      ? cpuThreadMax
+      : cpuThreadLimit
   // Read when the app starts, so a change applies after a restart
   const needsRestart =
     isLinux && enableVideoPreviews !== isVideoPreviewAvailable
@@ -328,6 +346,91 @@ function General() {
       ) : null}
 
       <StartupSection />
+      <SettingsSection title={t('settings.general.performance.title')}>
+        <SettingsRow
+          settingId="hardwareAcceleration"
+          title={t('settings.general.performance.hardwareAcceleration.title')}
+          description={t(
+            'settings.general.performance.hardwareAcceleration.description',
+          )}
+        >
+          <div className="flex items-center gap-2">
+            <InfoTooltip
+              content={
+                !hasHardwareAcceleration &&
+                t(
+                  'settings.general.performance.hardwareAcceleration.unavailable',
+                )
+              }
+            />
+            <Switch
+              aria-label={t(
+                'settings.general.performance.hardwareAcceleration.title',
+              )}
+              isSelected={useHardwareAcceleration && hasHardwareAcceleration}
+              isDisabled={!hasHardwareAcceleration}
+              onValueChange={(isSelected) => {
+                settingsStore.useHardwareAcceleration = isSelected
+              }}
+            />
+          </div>
+        </SettingsRow>
+        <SettingsRow
+          settingId="retryTargetSizeOnCpu"
+          isVisible={useHardwareAcceleration && hasHardwareAcceleration}
+          isNested
+          title={t('settings.general.performance.retryTargetSizeOnCpu.title')}
+          description={t(
+            'settings.general.performance.retryTargetSizeOnCpu.description',
+          )}
+        >
+          <Switch
+            aria-label={t(
+              'settings.general.performance.retryTargetSizeOnCpu.title',
+            )}
+            isSelected={retryTargetSizeOnCpu}
+            onValueChange={(isSelected) => {
+              settingsStore.retryTargetSizeOnCpu = isSelected
+            }}
+          />
+        </SettingsRow>
+        <SettingsRow
+          settingId="cpuThreadLimit"
+          title={t('settings.general.performance.cpuThreadLimit.title')}
+          description={t(
+            'settings.general.performance.cpuThreadLimit.description',
+          )}
+        >
+          <div className="w-[220px]">
+            <Slider
+              aria-label={t(
+                'settings.general.performance.cpuThreadLimit.title',
+              )}
+              minValue={1}
+              maxValue={cpuThreadMax}
+              step={1}
+              value={cpuThreadValue}
+              isDisabled={!cpuThreadCount || cpuThreadCount <= 1}
+              onChange={(value) => {
+                const next = Array.isArray(value) ? value[0] : value
+                settingsStore.cpuThreadLimit =
+                  next >= cpuThreadMax ? null : next
+              }}
+              getValue={(value) => {
+                const count = Array.isArray(value) ? value[0] : value
+                if (cpuThreadCount == null || count >= cpuThreadCount) {
+                  return `${t('settings.general.performance.cpuThreadLimit.all')}${
+                    cpuThreadCount ? ` (${cpuThreadCount})` : ''
+                  }`
+                }
+                return t('settings.general.performance.cpuThreadLimit.cores', {
+                  count,
+                })
+              }}
+            />
+          </div>
+        </SettingsRow>
+      </SettingsSection>
       <SettingsSection title={t('settings.general.sleep.title')}>
         <SettingsRow
           settingId="preventSleep"

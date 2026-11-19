@@ -58,7 +58,7 @@ export async function waitForDropZone(signal: AbortSignal) {
 }
 
 /**
- * Hardware acceleration settings chosen for one media instead of the app's (Settings -> Output),
+ * Hardware acceleration settings chosen for one media instead of the app's (Settings -> General),
  * e.g. on the command line
  */
 export type AccelerationSettings = {

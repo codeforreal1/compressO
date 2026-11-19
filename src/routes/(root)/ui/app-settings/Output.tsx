@@ -9,12 +9,9 @@ import Button from '@/components/Button'
 import Icon from '@/components/Icon'
 import InfoTooltip from '@/components/InfoTooltip'
 import Select from '@/components/Select'
-import Slider from '@/components/Slider'
 import Switch from '@/components/Switch'
 import TextInput from '@/components/TextInput'
 import { toast } from '@/components/Toast'
-import { useCpuThreadCount } from '@/hooks/useCpuThreadLimit'
-import { useHardwareEncoders } from '@/hooks/useHardwareEncoding'
 import {
   type SaveLocation,
   sanitizeFileNamePart,
@@ -45,25 +42,9 @@ function Output() {
     preserveFolderStructure,
     copyOutputToClipboard,
     copyBatchOutputToClipboard,
-    useHardwareAcceleration,
-    cpuThreadLimit,
-    retryTargetSizeOnCpu,
   } = useSnapshot(settingsStore)
   const { outputFilePrefix, saveLocation, saveFolder } =
     useSnapshot(settingsStore)
-  // `null` while hardware acceleration is being checked (when the app starts)
-  const hardwareEncoders = useHardwareEncoders()
-  const hasHardwareAcceleration =
-    hardwareEncoders == null || hardwareEncoders.length > 0
-  const cpuThreadCount = useCpuThreadCount()
-  // A limit saved on a computer with more cores becomes "All cores" here
-  const cpuThreadMax = cpuThreadCount ?? 1
-  const cpuThreadValue =
-    cpuThreadLimit == null ||
-    cpuThreadCount == null ||
-    cpuThreadLimit >= cpuThreadCount
-      ? cpuThreadMax
-      : cpuThreadLimit
 
   const handleSaveLocationChange = async (location: SaveLocation) => {
     // A fixed folder needs a folder; keep the previous option if none is chosen
@@ -244,90 +225,6 @@ function Output() {
               settingsStore.copyBatchOutputToClipboard = isSelected
             }}
           />
-        </SettingsRow>
-      </SettingsSection>
-
-      <SettingsSection title={t('settings.output.performance.title')}>
-        <SettingsRow
-          settingId="hardwareAcceleration"
-          title={t('settings.output.performance.hardwareAcceleration.title')}
-          description={t(
-            'settings.output.performance.hardwareAcceleration.description',
-          )}
-        >
-          <div className="flex items-center gap-2">
-            <InfoTooltip
-              content={
-                !hasHardwareAcceleration &&
-                t(
-                  'settings.output.performance.hardwareAcceleration.unavailable',
-                )
-              }
-            />
-            <Switch
-              aria-label={t(
-                'settings.output.performance.hardwareAcceleration.title',
-              )}
-              isSelected={useHardwareAcceleration && hasHardwareAcceleration}
-              isDisabled={!hasHardwareAcceleration}
-              onValueChange={(isSelected) => {
-                settingsStore.useHardwareAcceleration = isSelected
-              }}
-            />
-          </div>
-        </SettingsRow>
-        <SettingsRow
-          settingId="retryTargetSizeOnCpu"
-          isVisible={useHardwareAcceleration && hasHardwareAcceleration}
-          isNested
-          title={t('settings.output.performance.retryTargetSizeOnCpu.title')}
-          description={t(
-            'settings.output.performance.retryTargetSizeOnCpu.description',
-          )}
-        >
-          <Switch
-            aria-label={t(
-              'settings.output.performance.retryTargetSizeOnCpu.title',
-            )}
-            isSelected={retryTargetSizeOnCpu}
-            onValueChange={(isSelected) => {
-              settingsStore.retryTargetSizeOnCpu = isSelected
-            }}
-          />
-        </SettingsRow>
-        <SettingsRow
-          settingId="cpuThreadLimit"
-          title={t('settings.output.performance.cpuThreadLimit.title')}
-          description={t(
-            'settings.output.performance.cpuThreadLimit.description',
-          )}
-        >
-          <div className="w-[220px]">
-            <Slider
-              aria-label={t('settings.output.performance.cpuThreadLimit.title')}
-              minValue={1}
-              maxValue={cpuThreadMax}
-              step={1}
-              value={cpuThreadValue}
-              isDisabled={!cpuThreadCount || cpuThreadCount <= 1}
-              onChange={(value) => {
-                const next = Array.isArray(value) ? value[0] : value
-                settingsStore.cpuThreadLimit =
-                  next >= cpuThreadMax ? null : next
-              }}
-              getValue={(value) => {
-                const count = Array.isArray(value) ? value[0] : value
-                if (cpuThreadCount == null || count >= cpuThreadCount) {
-                  return `${t('settings.output.performance.cpuThreadLimit.all')}${
-                    cpuThreadCount ? ` (${cpuThreadCount})` : ''
-                  }`
-                }
-                return t('settings.output.performance.cpuThreadLimit.cores', {
-                  count,
-                })
-              }}
-            />
-          </div>
         </SettingsRow>
       </SettingsSection>
 

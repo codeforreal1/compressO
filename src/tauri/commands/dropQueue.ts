@@ -32,13 +32,15 @@ export type DropQueueItem = {
   progress: number
   originalSize: number | null
   outputSize: number | null
-  /** Where the output was saved */
+  /** Where the output was saved; for a split video, the first clip's path */
   savedPath: string | null
   /**
-   * The output in the app's cache, when it was not saved (e.g. larger than the original); deleted
-   * when the item is cleared
+   * The outputs in the app's cache, when they were not saved (a split video has several);
+   * deleted when the item is cleared
    */
-  outputPath: string | null
+  outputPaths: string[]
+  /** Number of clips the video was split into; 0 or 1 when it was not split */
+  clipCount: number
   /** Why it failed, or was not saved (e.g. larger than the original) */
   message: string | null
   /** It failed as the system did not allow opening it (e.g. macOS privacy settings) */
@@ -104,7 +106,8 @@ export type DropQueueItemUpdate = Partial<
     | 'originalSize'
     | 'outputSize'
     | 'savedPath'
-    | 'outputPath'
+    | 'outputPaths'
+    | 'clipCount'
     | 'message'
     | 'isAccessDenied'
     | 'needsSaveLocation'

@@ -5,7 +5,7 @@ import { settingsStore } from '@/stores/settingsStore'
 import { getCpuThreadCount, setCpuThreadLimit } from '@/tauri/commands/cpu'
 
 /**
- * Tells the backend how many CPU threads FFmpeg may use (Settings -> Output), in every window that
+ * Tells the backend how many CPU threads FFmpeg may use (Settings -> General), in every window that
  * compresses (the main window & the menu bar's)
  */
 export function useCpuThreadLimitSync() {

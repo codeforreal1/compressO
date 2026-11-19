@@ -78,6 +78,27 @@
         },
         "restart": "Uruchom ponownie"
       },
+      "performance": {
+        "title": "Wydajność",
+        "hardwareAcceleration": {
+          "title": "Używaj akceleracji sprzętowej",
+          "description": "Szybciej kompresuj filmy dzięki akceleracji sprzętowej (pliki mogą być nieco większe)",
+          "unavailable": "Akceleracja sprzętowa nie jest dostępna na tym komputerze."
+        },
+        "retryTargetSizeOnCpu": {
+          "title": "Osiągaj rozmiar docelowy bez przyspieszenia",
+          "description": "Dotyczy tylko trybu „Rozmiar docelowy”. Gdy wideo nie osiągnie rozmiaru docelowego, jest kompresowane ponownie bez przyspieszenia sprzętowego, co jest wolniejsze, ale dokładniejsze."
+        },
+        "cpuThreadLimit": {
+          "title": "Maksymalna liczba rdzeni CPU",
+          "description": "Ogranicza liczbę rdzeni CPU używanych przez FFmpeg podczas kodowania na CPU. Domyślnie używane są wszystkie rdzenie.",
+          "all": "Wszystkie",
+          "cores_few": "{{count}}",
+          "cores_many": "{{count}}",
+          "cores_one": "{{count}}",
+          "cores_other": "{{count}}"
+        }
+      },
       "sleep": {
         "title": "Uśpienie",
         "preventSleep": {
@@ -225,27 +246,6 @@
         "includeBatch": {
           "title": "Uwzględniaj wyniki wsadowe",
           "description": "Kopiuj pliki również wtedy, gdy kilka jest kompresowanych naraz."
-        }
-      },
-      "performance": {
-        "title": "Wydajność",
-        "hardwareAcceleration": {
-          "title": "Używaj akceleracji sprzętowej",
-          "description": "Szybciej kompresuj filmy dzięki akceleracji sprzętowej (pliki mogą być nieco większe)",
-          "unavailable": "Akceleracja sprzętowa nie jest dostępna na tym komputerze."
-        },
-        "retryTargetSizeOnCpu": {
-          "title": "Osiągaj rozmiar docelowy bez przyspieszenia",
-          "description": "Dotyczy tylko trybu „Rozmiar docelowy”. Gdy wideo nie osiągnie rozmiaru docelowego, jest kompresowane ponownie bez przyspieszenia sprzętowego, co jest wolniejsze, ale dokładniejsze."
-        },
-        "cpuThreadLimit": {
-          "title": "Maksymalna liczba rdzeni CPU",
-          "description": "Ogranicza liczbę rdzeni CPU używanych przez FFmpeg podczas kodowania na CPU. Domyślnie używane są wszystkie rdzenie.",
-          "all": "Wszystkie rdzenie",
-          "cores_few": "{{count}} rdzenie",
-          "cores_many": "{{count}} rdzeni",
-          "cores_one": "{{count}} rdzeń",
-          "cores_other": "{{count}} rdzeni"
         }
       },
       "storage": {
