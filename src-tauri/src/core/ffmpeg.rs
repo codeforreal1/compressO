@@ -850,6 +850,8 @@ impl FFMPEG {
             None
         };
 
+        // `V` selects the actual video, not an attached picture (cover art) that some MP4s
+        // carry as a 0×0 first video stream; `v` fed that still image to the filter instead.
         if let Some(segments) = trim_segments.filter(|_| !is_audio_target) {
             if !segments.is_empty() {
                 map_video = true;
@@ -861,7 +863,7 @@ impl FFMPEG {
                         .map(|f| format!("{},", f))
                         .unwrap_or_default();
                     filter_complex_parts.push(format!(
-                        "[0:v]trim={}:{},setpts=PTS-STARTPTS,{}{}[outv]",
+                        "[0:V:0]trim={}:{},setpts=PTS-STARTPTS,{}{}[outv]",
                         seg.start, seg.end, speed_part, video_post_process
                     ));
                 } else {
@@ -872,7 +874,7 @@ impl FFMPEG {
                         let label = format!("v{}", i);
                         video_labels.push(format!("[{}]", label));
                         video_parts.push(format!(
-                            "[0:v]trim={}:{},setpts=PTS-STARTPTS[{}]",
+                            "[0:V:0]trim={}:{},setpts=PTS-STARTPTS[{}]",
                             seg.start, seg.end, label
                         ));
                     }
@@ -899,7 +901,10 @@ impl FFMPEG {
                 .as_ref()
                 .map(|f| format!("{},", f))
                 .unwrap_or_default();
-            filter_complex_parts.push(format!("[0:v]{}{}[outv]", speed_part, video_post_process));
+            filter_complex_parts.push(format!(
+                "[0:V:0]{}{}[outv]",
+                speed_part, video_post_process
+            ));
             map_video = true;
         }
 

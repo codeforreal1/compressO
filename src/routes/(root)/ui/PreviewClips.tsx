@@ -118,6 +118,10 @@ function PreviewClips({
               {previewClip.fileNameToDisplay ?? previewClip.fileName}
             </Code>
             <div className="ml-2 flex shrink-0 items-center gap-2">
+              <span className="text-xs font-medium text-primary">
+                {t('clips.clipName', { number: previewClip.index })}
+              </span>
+              <Divider orientation="vertical" className="h-4" />
               <span className="text-sm font-bold">{previewClip.size}</span>
               <Divider orientation="vertical" className="h-4" />
               <span className="text-xs text-gray-500 dark:text-gray-400">
@@ -137,7 +141,7 @@ function PreviewClips({
                 variant="flat"
                 onPress={() => handleCopy(previewClip)}
               >
-                <Icon name="copy" size={18} />
+                <Icon name="copy" size={24} />
               </Button>
             </Tooltip>
             {previewClip.savedPath ? (
@@ -178,7 +182,13 @@ function PreviewClips({
             config={{
               file: {
                 attributes: {
-                  style: { objectFit: 'contain' },
+                  // ReactPlayer replaces the video's default style with these attributes, so
+                  // the size must be repeated alongside the fit.
+                  style: {
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'contain',
+                  },
                 },
               },
             }}

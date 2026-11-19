@@ -63,6 +63,13 @@ function MediaOutputCompareSlider({
     mediaFile?.thumbnailPath,
   )
   const id = useId()
+  // The source dimensions can be unknown for unusual files; 16:9 keeps the preview in a sane box
+  const videoWidth =
+    mediaFile?.type === 'video' ? mediaFile.dimensions?.width : undefined
+  const videoHeight =
+    mediaFile?.type === 'video' ? mediaFile.dimensions?.height : undefined
+  const videoAspectRatio =
+    videoWidth && videoHeight ? videoWidth / videoHeight : 16 / 9
 
   const renderImage = useCallback(
     (src: string, options?: renderImageDefaultType) => {
@@ -136,20 +143,33 @@ function MediaOutputCompareSlider({
             disablePlayPauseControlAtCenter
             disablePlayPauseViaContainerClick
             containerClassName="w-full h-full"
+            mediaContainerClassName="mx-auto overflow-hidden"
+            mediaContainerStyle={{
+              width: `min(100%, calc(60vh * ${videoAspectRatio}))`,
+              height: '60vh',
+            }}
             style={{
-              width: '100%',
-              minWidth: '50vw',
               maxHeight: '60vh',
-              aspectRatio:
-                (mediaFile?.dimensions?.width ?? 1) /
-                (mediaFile?.dimensions?.height ?? 1),
+            }}
+            config={{
+              file: {
+                attributes: {
+                  // ReactPlayer replaces the video's default style with these attributes, so
+                  // the size must be repeated alongside the fit.
+                  style: {
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'contain',
+                  },
+                },
+              },
             }}
             muted={options?.isOriginal}
           />
         </div>
       )
     },
-    [mediaFile?.dimensions?.width, mediaFile?.dimensions?.height],
+    [videoAspectRatio],
   )
 
   // Saving moves the output out of the cache, so a saved output is loaded from where it was saved

@@ -495,6 +495,15 @@ function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
 
   // An audio file plays like a video, over its cover art (or a music icon), as it has no picture
   const isAudioFile = mediaFile?.type === 'video' && !!mediaFile.isAudioFile
+  // The source dimensions can be unknown for unusual files; 16:9 keeps the preview in a sane box
+  const videoWidth =
+    mediaFile?.type === 'video' ? mediaFile.dimensions?.width : undefined
+  const videoHeight =
+    mediaFile?.type === 'video' ? mediaFile.dimensions?.height : undefined
+  const videoAspectRatio =
+    !isAudioFile && videoWidth && videoHeight
+      ? videoWidth / videoHeight
+      : 16 / 9
   const audioFileBackdrop = isAudioFile ? (
     <div className="absolute inset-0 flex items-center justify-center overflow-hidden rounded-3xl border-1 border-zinc-200 dark:border-zinc-900">
       {waveform ? (
@@ -567,6 +576,11 @@ function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
                 playPauseOnSpaceKeydown={!showTransformerLayout}
                 autoFocus
                 containerClassName="w-full h-full"
+                mediaContainerClassName="mx-auto overflow-hidden"
+                mediaContainerStyle={{
+                  width: `min(100%, calc(60vh * ${videoAspectRatio}))`,
+                  height: '60vh',
+                }}
                 contextMenu={
                   !isProcessCompleted && !isAudioFile ? (
                     <div className="min-w-[120px] p-0">
@@ -582,18 +596,19 @@ function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
                   ) : null
                 }
                 style={{
-                  width: '100%',
-                  minWidth: '50vw',
                   maxHeight: '60vh',
-                  aspectRatio: isAudioFile
-                    ? 16 / 9
-                    : (mediaFile?.dimensions?.width ?? 1) /
-                      (mediaFile?.dimensions?.height ?? 1),
                 }}
                 config={{
                   file: {
                     attributes: {
                       crossOrigin: 'anonymous',
+                      // ReactPlayer replaces the video's default style with these attributes, so
+                      // the size must be repeated alongside the fit.
+                      style: {
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'contain',
+                      },
                     },
                     tracks: [],
                     // Played as audio, whatever the format (e.g. FLAC, Opus)

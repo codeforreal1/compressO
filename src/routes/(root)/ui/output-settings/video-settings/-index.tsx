@@ -19,9 +19,7 @@ import AudioVolume from './audio/AudioVolume'
 import Others from './others/-index'
 import VideoOnlySection from './VideoOnlySection'
 import BatchResolution from './video/BatchResolution'
-import Clips from './video/Clips'
 import CompressionPreset from './video/CompressionPreset'
-import CustomThumbnail from './video/CustomThumbnail'
 import VideoDimensions from './video/Dimensions'
 import DynamicRange from './video/DynamicRange'
 import VideoExtension from './video/Extension'
@@ -173,10 +171,6 @@ function VideoSettings({
               </>
               <VideoOnlySection isDisabled={isAudioOutput}>
                 <VideoFPS mediaIndex={mediaIndex} />
-                <Divider className="my-3" />
-                <CustomThumbnail mediaIndex={mediaIndex} />
-                <Divider className="my-3" />
-                <Clips mediaIndex={mediaIndex} />
               </VideoOnlySection>
               <Divider className="mt-3" />
               <div className="pt-5">
@@ -240,8 +234,8 @@ function VideoSettings({
             <>
               <Others
                 mediaIndex={mediaIndex}
-                disableSubtitles={isAudioOutput}
-                hideSubtitles={isAudioFileSettings}
+                disableVideoOptions={isAudioOutput}
+                hideVideoOptions={isAudioFileSettings}
               />
             </>
           ) : null}

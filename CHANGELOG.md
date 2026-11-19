@@ -12,10 +12,13 @@ Enhancements:
 
 - Double-clicking a video in a batch opens it: its settings before compression, like the pencil button, or its single-video preview once compressed.
 - The CLI settings section is now called **CLI & AI Agents**.
+- The **Clips** and **Custom Thumbnail** settings moved from the Video tab to the Others tab, keeping the Video tab focused on encoding and output.
+- Portrait and vertical videos now preview at the correct size, centered in the player with the timeline and file details below them. The video also fills its frame in clip previews and before/after compares, and clip previews show the clip number with a copy button that matches the folder button.
 
 Bug Fixes:
 
 - Fixed the update download percentage jumping back and forth. Progress now moves forward only, is emitted once per percentage point instead of for every downloaded chunk, and only one update can be downloaded at a time.
+- Fixed videos with embedded cover art failing to preview, compress, trim, or convert to GIF with **No output**. Some MP4s, such as those from X/Twitter, carry a 0×0 attached picture as the first video stream; CompressO now selects the actual video stream instead of the cover art.
 
 ### 4.2.0
 

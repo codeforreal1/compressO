@@ -46,6 +46,9 @@ export interface VideoPlayerRef {
 export interface VideoPlayerProps extends BaseReactPlayerProps {
   playPauseOnSpaceKeydown?: boolean
   containerClassName?: ClassNameValue
+  /** Sizes the video box only; the timeline keeps the container's full width */
+  mediaContainerClassName?: ClassNameValue
+  mediaContainerStyle?: React.CSSProperties
   enableTimelinePlayer?: boolean
   disableClosedCaptions?: boolean
   contextMenu?: React.ReactNode
@@ -80,6 +83,8 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
       url,
       playPauseOnSpaceKeydown,
       containerClassName,
+      mediaContainerClassName,
+      mediaContainerStyle,
       enableTimelinePlayer,
       disableClosedCaptions,
       contextMenu,
@@ -429,7 +434,8 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
     return (
       <div className={cn('w-full h-full', containerClassName)}>
         <div
-          className="relative w-full h-full"
+          className={cn('relative w-full h-full', mediaContainerClassName)}
+          style={mediaContainerStyle}
           {...(!disablePlayPauseViaContainerClick
             ? {
                 role: 'button',
