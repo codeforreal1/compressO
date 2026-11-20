@@ -28,6 +28,7 @@
     "test:drop-queue": "node --test scripts/test-drop-queue.mjs",
     "test:image-dynamic-range": "node --test scripts/test-image-dynamic-range.mjs",
     "test:video-dynamic-range": "node --test scripts/test-video-dynamic-range.mjs",
+    "test:watched-folders": "node --test scripts/test-watched-folders.mjs scripts/test-watched-folders-command.mjs",
     "tsc:check": "tsc --noEmit --skipLibCheck"
   },
   "dependencies": {

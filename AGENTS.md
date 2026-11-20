@@ -51,6 +51,7 @@ pnpm test:audio-target-size   # node:test, transpiles a TS module
 pnpm test:drop-queue
 pnpm test:image-dynamic-range
 pnpm test:video-dynamic-range
+pnpm test:watched-folders
 node --test scripts/test-dependency-sources.mjs
 
 cd src-tauri && cargo check
@@ -343,8 +344,9 @@ To add a setting, update the store defaults/read/write, constants, the Settings 
   be needed; do not remove `WEBKIT_DISABLE_*` guidance.
 - CLI (`src-tauri/cli`) has no compression of its own: it connects to the running app over a
   local socket (named pipe on Windows), starts the app in the background if needed, and uses
-  the same drop queue/presets/output settings. `compresso mcp` exposes `compress`,
-  `list_presets`, and `cancel_compression`. The CLI crate is built by
+  the same drop queue/presets/output settings. `compresso watch` lists/adds/updates/removes
+  watched folders, and `compresso mcp` exposes `compress`, `list_presets`, `cancel_compression`,
+  and watched-folder management. The CLI crate is built by
   `scripts/build-cli.mjs`; `src-tauri/binaries` is generated and ignored.
 
 ## Release and packaging

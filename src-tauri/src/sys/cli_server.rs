@@ -11,6 +11,8 @@
 //! - `{"type":"expand","inputs":[..]}`: the media of files & folders, without compressing them
 //! - `{"type":"compress","inputs":[..],"job":{..}}`: compresses them (see `CliJob`), answered with
 //!   `accepted`, then `progress` & `file` for each media, & `done`
+//! - `{"type":"addWatchedFolder"|"updateWatchedFolder"|"removeWatchedFolder",..}`: changes the
+//!   watched folders, through the window that keeps them (see `watch_folders_bridge`)
 //! - `{"type":"cancel"}`: cancels the compression of this connection
 //!
 //! Closing the connection cancels its media not compressed yet. An app started by the command line
@@ -26,6 +28,7 @@ use tauri::{AppHandle, Manager};
 use tokio::io::{AsyncBufReadExt, AsyncRead, AsyncWrite, AsyncWriteExt, BufReader};
 
 use crate::core::domain::CollectedFile;
+use crate::sys::watch_folders_bridge::{PresetChanges, WatchFolderCommand};
 use crate::tauri_commands::drop_queue::{self, CliJob, DropQueueItem, DropQueueItemStatus};
 
 /// Passed by the command line when it starts the app: no window is shown (nor the Dock icon), &
@@ -33,7 +36,7 @@ use crate::tauri_commands::drop_queue::{self, CliJob, DropQueueItem, DropQueueIt
 pub const BACKGROUND_ARG: &str = "--background";
 
 /// Version of the messages, raised when they change in a way older command lines cannot follow
-const PROTOCOL_VERSION: u32 = 1;
+const PROTOCOL_VERSION: u32 = 2;
 
 /// Started by the command line, & not used by the user since: quits once the command line is done
 static IS_LAUNCHED_FOR_CLI: AtomicBool = AtomicBool::new(false);
@@ -161,6 +164,32 @@ enum Request {
         #[serde(default)]
         job: CliJob,
     },
+    #[serde(rename = "addWatchedFolder")]
+    AddWatchedFolder {
+        path: String,
+        #[serde(default, rename = "isEnabled")]
+        is_enabled: Option<bool>,
+        #[serde(default, rename = "presetIds")]
+        preset_ids: Option<PresetChanges>,
+    },
+    #[serde(rename = "updateWatchedFolder")]
+    UpdateWatchedFolder {
+        #[serde(default)]
+        id: Option<String>,
+        #[serde(default)]
+        path: Option<String>,
+        #[serde(default, rename = "isEnabled")]
+        is_enabled: Option<bool>,
+        #[serde(default, rename = "presetIds")]
+        preset_ids: Option<PresetChanges>,
+    },
+    #[serde(rename = "removeWatchedFolder")]
+    RemoveWatchedFolder {
+        #[serde(default)]
+        id: Option<String>,
+        #[serde(default)]
+        path: Option<String>,
+    },
     Cancel,
 }
 
@@ -244,6 +273,48 @@ where
                     }
                 }
             }
+            Request::AddWatchedFolder {
+                path,
+                is_enabled,
+                preset_ids,
+            } => {
+                send_watched_folders_command(
+                    &app_handle,
+                    &writer,
+                    WatchFolderCommand::Add {
+                        path,
+                        is_enabled,
+                        preset_ids,
+                    },
+                )
+                .await
+            }
+            Request::UpdateWatchedFolder {
+                id,
+                path,
+                is_enabled,
+                preset_ids,
+            } => {
+                send_watched_folders_command(
+                    &app_handle,
+                    &writer,
+                    WatchFolderCommand::Update {
+                        id,
+                        path,
+                        is_enabled,
+                        preset_ids,
+                    },
+                )
+                .await
+            }
+            Request::RemoveWatchedFolder { id, path } => {
+                send_watched_folders_command(
+                    &app_handle,
+                    &writer,
+                    WatchFolderCommand::Remove { id, path },
+                )
+                .await
+            }
             Request::Cancel => {
                 if let Some((job_id, _)) = &job {
                     drop_queue::cancel_cli_job(&app_handle, job_id);
@@ -268,6 +339,40 @@ where
 
 fn error_message(code: &str, message: &str) -> serde_json::Value {
     json!({ "type": "error", "code": code, "message": message })
+}
+
+/// Asks the window that keeps the watched folders to change them, & sends its answer or the reason
+/// it could not (see `watch_folders_bridge`)
+async fn send_watched_folders_command<S>(
+    app_handle: &AppHandle,
+    writer: &Writer<S>,
+    command: WatchFolderCommand,
+) -> Result<(), ()>
+where
+    S: AsyncWrite + Send + 'static,
+{
+    match crate::sys::watch_folders_bridge::forward(app_handle, command).await {
+        Ok(result) if result["ok"].as_bool() == Some(true) => {
+            let mut message = result;
+            if let Some(object) = message.as_object_mut() {
+                object.remove("ok");
+                object.insert("type".to_string(), json!("watchedFolders"));
+            }
+            send(writer, message).await
+        }
+        Ok(result) => {
+            let code = result["code"].as_str().unwrap_or("invalidRequest");
+            let text = result["message"]
+                .as_str()
+                .unwrap_or("CompressO could not change its watched folders.");
+            log::warn!("[cli] Watched folders command failed: {} {}", code, text);
+            send(writer, error_message(code, text)).await
+        }
+        Err(err) => {
+            log::warn!("[cli] Watched folders command failed: {}", err);
+            send(writer, error_message("notReady", &err)).await
+        }
+    }
 }
 
 fn hello_message(app_handle: &AppHandle) -> serde_json::Value {

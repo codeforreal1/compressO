@@ -13,3 +13,4 @@ pub mod native_text;
 pub mod output_registry;
 pub mod quit;
 pub mod watch_folders;
+pub mod watch_folders_bridge;

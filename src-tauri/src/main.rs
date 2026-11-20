@@ -531,6 +531,7 @@ async fn run() {
             core::tool_bundle::get_tool_status,
             sys::cli_settings::sync_cli_settings,
             sys::cli_server::take_background_launch,
+            sys::watch_folders_bridge::complete_watched_folders_command,
             sys::cli_install::get_cli_install_status,
             sys::cli_install::install_cli,
             sys::cli_install::uninstall_cli,

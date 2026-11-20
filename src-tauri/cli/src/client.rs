@@ -8,7 +8,7 @@ use crate::app::{self, Stream};
 use crate::error::CliError;
 
 /// The messages this command line speaks (the app's `PROTOCOL_VERSION`)
-const PROTOCOL_VERSION: u64 = 1;
+const PROTOCOL_VERSION: u64 = 2;
 
 /// What happens while the app is reached, to tell the user
 pub enum StartupStatus {
@@ -126,6 +126,20 @@ pub fn app_error(message: &Value) -> CliError {
     match message["code"].as_str() {
         Some("noMedia") => CliError::new(crate::error::exit_code::USAGE, "noMedia", text),
         Some("outputFolder") => CliError::new(crate::error::exit_code::USAGE, "outputFolder", text),
+        Some("unknownPreset") => {
+            CliError::new(crate::error::exit_code::USAGE, "unknownPreset", text)
+        }
+        Some("unknownWatchedFolder") => {
+            CliError::new(crate::error::exit_code::USAGE, "unknownWatchedFolder", text)
+        }
+        Some("missingFolder") => {
+            CliError::new(crate::error::exit_code::USAGE, "missingFolder", text)
+        }
+        Some("rootFolder") => CliError::new(crate::error::exit_code::USAGE, "rootFolder", text),
+        Some("invalidRequest") => {
+            CliError::new(crate::error::exit_code::USAGE, "invalidRequest", text)
+        }
+        Some("accessDenied") => CliError::new(crate::error::exit_code::APP, "accessDenied", text),
         Some("notReady") => CliError::new(crate::error::exit_code::APP, "notReady", text),
         _ => CliError::app(text),
     }

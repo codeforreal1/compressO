@@ -304,3 +304,101 @@ pub fn print_presets(settings: &Settings) {
     }
     println!("* The default preset of its media type, used without --video-preset=, --image-preset= or --audio-preset=.");
 }
+
+fn watched_folder_preset<'a>(folder: &'a serde_json::Value, media_type: &str) -> &'a str {
+    folder["presets"][media_type]["name"]
+        .as_str()
+        .unwrap_or("?")
+}
+
+fn watched_folder_warning(warning: &str) -> &str {
+    match warning {
+        "missingFolder" => "the folder is missing",
+        "saveLocation" => {
+            "its presets ask where to save, so it is not watched (choose presets that save automatically)"
+        }
+        "menuBarIconOff" => {
+            "the menu bar / tray icon is off, so it is not watched (Settings > General)"
+        }
+        _ => warning,
+    }
+}
+
+/// `compresso watch list`
+pub fn print_watched_folders(value: &serde_json::Value) {
+    let Some(folders) = value["watchedFolders"].as_array() else {
+        println!("No watched folders.");
+        return;
+    };
+    if folders.is_empty() {
+        println!("No watched folders.");
+        println!("Add one with: compresso watch add <folder>");
+        return;
+    }
+    for folder in folders {
+        let name = folder["name"].as_str().unwrap_or("?");
+        let path = folder["path"].as_str().unwrap_or("?");
+        let id = folder["id"].as_str().unwrap_or("?");
+        let is_enabled = folder["isEnabled"].as_bool().unwrap_or(false);
+        let is_watched = folder["isWatched"].as_bool().unwrap_or(false);
+        let state = if is_watched {
+            "watching"
+        } else if is_enabled {
+            "not watching"
+        } else {
+            "off"
+        };
+        let mark = if is_watched { "*" } else { " " };
+        println!("{mark} {name}  [{state}]");
+        println!("    {path}");
+        println!("    id: {id}");
+        println!(
+            "    video: {} · image: {} · audio: {}",
+            watched_folder_preset(folder, "video"),
+            watched_folder_preset(folder, "image"),
+            watched_folder_preset(folder, "audio"),
+        );
+        if let Some(warnings) = folder["warnings"].as_array() {
+            for warning in warnings.iter().filter_map(|warning| warning.as_str()) {
+                println!("    ! {}", watched_folder_warning(warning));
+            }
+        }
+    }
+    println!();
+    println!("Update or remove with: compresso watch update|remove <id or folder>");
+}
+
+/// `compresso watch add|update|remove`
+pub fn print_watch_change(value: &serde_json::Value, action: &str) {
+    let folder = &value["folder"];
+    let name = folder["name"].as_str();
+    match action {
+        "add" => {
+            if value["added"].as_bool() == Some(true) {
+                match name {
+                    Some(name) => println!("Added {name} to watched folders."),
+                    None => println!("Added the folder to watched folders."),
+                }
+            } else {
+                match name {
+                    Some(name) => println!("{name} is already watched."),
+                    None => println!("The folder is already watched."),
+                }
+            }
+        }
+        "update" => match name {
+            Some(name) => println!("Updated {name}."),
+            None => println!("Updated the watched folder."),
+        },
+        "remove" => {
+            if value["removed"].as_bool() == Some(true) {
+                println!("Removed the folder from watched folders.");
+            } else {
+                println!("No watched folder matched; nothing was removed.");
+            }
+        }
+        _ => {}
+    }
+    println!();
+    print_watched_folders(value);
+}

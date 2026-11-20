@@ -232,6 +232,7 @@ export enum CustomEvents {
   BatchImageIndividualCompressionCompletion = 'BatchImageIndividualCompressionCompletion',
   BatchMediaCompressionProgress = 'BatchMediaCompressionProgress',
   BatchMediaIndividualCompressionCompletion = 'BatchMediaIndividualCompressionCompletion',
+  WatchedFoldersCommand = 'WatchedFoldersCommand',
 }
 
 export type VideoCompressionProgress = {

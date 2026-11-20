@@ -144,16 +144,40 @@ pub fn set_watched_folders(folders: Vec<WatchedFolder>, supported_extensions: Ve
         return;
     };
 
-    // Folders no longer watched (removed, turned off, or moved to another path)
-    states.retain(|state| {
-        let is_kept = folders.contains(&state.folder);
-        if !is_kept {
-            let _ = debouncer.watcher().unwatch(&state.real_path);
-        }
-        is_kept
-    });
+    // The same path may be sent twice (e.g. by two windows), or kept twice by an older app: watch
+    // each path once, keeping the first folder (& updating its id/name on the state)
+    let mut unique_folders: Vec<WatchedFolder> = Vec::new();
     for folder in folders {
-        if states.iter().any(|state| state.folder == folder) {
+        if unique_folders
+            .iter()
+            .any(|watched| watched.path == folder.path)
+        {
+            continue;
+        }
+        unique_folders.push(folder);
+    }
+
+    // Folders no longer watched (removed, turned off, or moved to another path)
+    let watched_paths: HashSet<&str> = unique_folders
+        .iter()
+        .map(|folder| folder.path.as_str())
+        .collect();
+    let mut kept_paths: HashSet<String> = HashSet::new();
+    states.retain(|state| {
+        if !watched_paths.contains(state.folder.path.as_str()) {
+            let _ = debouncer.watcher().unwatch(&state.real_path);
+            return false;
+        }
+        // A state for this path is already kept: do not unwatch the path it shares
+        kept_paths.insert(state.folder.path.clone())
+    });
+    for folder in unique_folders {
+        // The same path, with another id or name (e.g. changed by the command line): keep its watch
+        if let Some(state) = states
+            .iter_mut()
+            .find(|state| state.folder.path == folder.path)
+        {
+            state.folder = folder;
             continue;
         }
         let Ok(real_path) = std::fs::canonicalize(&folder.path) else {

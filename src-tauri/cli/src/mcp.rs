@@ -13,6 +13,7 @@ use tokio::io::{AsyncBufReadExt, BufReader};
 use crate::error::{exit_code, CliError};
 use crate::job::{self, CompressOptions, Event, Overrides};
 use crate::settings::MEDIA_TYPES;
+use crate::watched_folders::PresetChanges;
 
 /// The protocol versions this server speaks, the latest last
 const PROTOCOL_VERSIONS: [&str; 3] = ["2024-11-05", "2025-03-26", "2025-06-18"];
@@ -21,7 +22,8 @@ const INSTRUCTIONS: &str = "Compresses videos, images and audio files with the p
 CompressO app on this computer, as if they were dropped on the app. Use list_presets to see the \
 presets, then compress with absolute paths. Outputs follow the user's CompressO settings (save \
 location, file name prefix, skipping larger outputs, replacing original files) unless a setting \
-is given.";
+is given. Watched folders can also be listed and managed: new media in them is compressed with \
+the folder's presets while CompressO runs.";
 
 /// Writes a message to stdout (one line)
 fn write_message(message: &Value) {
@@ -83,6 +85,67 @@ fn tools() -> Value {
                 "properties": {
                     "mediaType": { "type": "string", "enum": MEDIA_TYPES, "description": "Only the presets of this media type" },
                 },
+            },
+        },
+        {
+            "name": "list_watched_folders",
+            "title": "List watched folders",
+            "description": "Lists the folders whose new media CompressO compresses automatically (Settings > Watch Folder), with the presets used for videos, images and audio. Shows whether each folder is enabled and actually watched. Folders are watched while CompressO runs.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {},
+            },
+        },
+        {
+            "name": "add_watched_folder",
+            "title": "Add a watched folder",
+            "description": "Adds an existing absolute folder to watch: new media that lands in it (and its subfolders) is compressed with the folder's presets while CompressO runs. Files already in the folder are not compressed. Adding a folder that is already watched returns it with added false. Presets are names or ids (see list_presets), or default to follow the default preset. A folder whose presets ask where to save is not watched until its presets or the app's save location can save automatically.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string", "description": "Absolute path of an existing folder" },
+                    "enabled": switch("Watch it right away (on by default)"),
+                    "videoPreset": { "type": "string", "description": "Preset for videos in it, by name or id, or default" },
+                    "imagePreset": { "type": "string", "description": "Preset for images in it, by name or id, or default" },
+                    "audioPreset": { "type": "string", "description": "Preset for audio files in it, by name or id, or default" },
+                },
+                "required": ["path"],
+            },
+        },
+        {
+            "name": "update_watched_folder",
+            "title": "Update a watched folder",
+            "description": "Turns a watched folder on or off, or changes the preset used for its videos, images or audio, by the folder's id (from list_watched_folders or add_watched_folder) or its exact path. Omitted settings stay unchanged. Use default to follow the default preset. Does not change or delete any files.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "id": { "type": "string", "description": "The watched folder's id (preferred)" },
+                    "path": { "type": "string", "description": "The watched folder's exact path, instead of its id" },
+                    "enabled": switch("Watch the folder (true) or stop watching it (false)"),
+                    "videoPreset": { "type": "string", "description": "Preset for videos in it, by name or id, or default" },
+                    "imagePreset": { "type": "string", "description": "Preset for images in it, by name or id, or default" },
+                    "audioPreset": { "type": "string", "description": "Preset for audio files in it, by name or id, or default" },
+                },
+                "anyOf": [
+                    { "required": ["id"] },
+                    { "required": ["path"] },
+                ],
+            },
+        },
+        {
+            "name": "remove_watched_folder",
+            "title": "Remove a watched folder",
+            "description": "Stops watching a folder and removes it from CompressO's watched folders, by id (from list_watched_folders) or exact path. Does not delete the folder or its files, and does not remove media already queued.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "id": { "type": "string", "description": "The watched folder's id (preferred)" },
+                    "path": { "type": "string", "description": "The watched folder's exact path, instead of its id" },
+                },
+                "anyOf": [
+                    { "required": ["id"] },
+                    { "required": ["path"] },
+                ],
             },
         },
         {
@@ -277,6 +340,78 @@ async fn call_list_presets(id: Value, arguments: Value) {
     respond(&id, tool_result(json!({ "presets": presets }), false));
 }
 
+enum WatchedFoldersAction {
+    List,
+    Add,
+    Update,
+    Remove,
+}
+
+async fn call_watched_folders(id: Value, arguments: Value, action: WatchedFoldersAction) {
+    match watched_folders_result(action, arguments).await {
+        Ok(value) => respond(&id, tool_result(value, false)),
+        Err(err) => respond(&id, tool_error(&err)),
+    }
+}
+
+async fn watched_folders_result(
+    action: WatchedFoldersAction,
+    arguments: Value,
+) -> Result<Value, CliError> {
+    match action {
+        WatchedFoldersAction::List => crate::watched_folders::list().await,
+        WatchedFoldersAction::Add => {
+            let path = required_text(&arguments, "path")?;
+            crate::watched_folders::add(
+                path,
+                arguments["enabled"].as_bool(),
+                preset_changes(&arguments),
+            )
+            .await
+        }
+        WatchedFoldersAction::Update => {
+            let id = optional_text(&arguments, "id");
+            let path = optional_text(&arguments, "path");
+            let presets = preset_changes(&arguments);
+            let is_enabled = arguments["enabled"].as_bool();
+            if is_enabled.is_none() && presets.is_none() {
+                return Err(CliError::usage(
+                    "Give enabled, videoPreset, imagePreset or audioPreset to update.",
+                ));
+            }
+            crate::watched_folders::update(id, path, is_enabled, presets).await
+        }
+        WatchedFoldersAction::Remove => {
+            crate::watched_folders::remove(
+                optional_text(&arguments, "id"),
+                optional_text(&arguments, "path"),
+            )
+            .await
+        }
+    }
+}
+
+fn optional_text(arguments: &Value, key: &str) -> Option<String> {
+    arguments[key]
+        .as_str()
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+        .map(String::from)
+}
+
+fn required_text(arguments: &Value, key: &str) -> Result<String, CliError> {
+    optional_text(arguments, key).ok_or_else(|| CliError::usage(format!("Give {key}.")))
+}
+
+fn preset_changes(arguments: &Value) -> Option<PresetChanges> {
+    let changes = PresetChanges {
+        video: optional_text(arguments, "videoPreset"),
+        image: optional_text(arguments, "imagePreset"),
+        audio: optional_text(arguments, "audioPreset"),
+    };
+    (!changes.is_empty()).then_some(changes)
+}
+
 fn cancel_job(running: &SharedRunning, job_id: &str) -> bool {
     let running = running.borrow();
     let Some(request) = running.by_job.get(job_id) else {
@@ -344,6 +479,34 @@ async fn serve_messages() -> i32 {
                     }
                     "list_presets" => {
                         tokio::task::spawn_local(call_list_presets(id, arguments));
+                    }
+                    "list_watched_folders" => {
+                        tokio::task::spawn_local(call_watched_folders(
+                            id,
+                            arguments,
+                            WatchedFoldersAction::List,
+                        ));
+                    }
+                    "add_watched_folder" => {
+                        tokio::task::spawn_local(call_watched_folders(
+                            id,
+                            arguments,
+                            WatchedFoldersAction::Add,
+                        ));
+                    }
+                    "update_watched_folder" => {
+                        tokio::task::spawn_local(call_watched_folders(
+                            id,
+                            arguments,
+                            WatchedFoldersAction::Update,
+                        ));
+                    }
+                    "remove_watched_folder" => {
+                        tokio::task::spawn_local(call_watched_folders(
+                            id,
+                            arguments,
+                            WatchedFoldersAction::Remove,
+                        ));
                     }
                     "cancel_compression" => {
                         let job_id = arguments["jobId"].as_str().unwrap_or_default();

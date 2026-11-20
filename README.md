@@ -70,10 +70,19 @@ The command is available:
 - Windows: added to the PATH by the installer (open a new terminal after installing)
 - Linux: installed with the `.deb` package; for the AppImage, Settings > CLI > Install (or run `CompressO.AppImage --cli`)
 
-MCP server (stdio), for agents such as Claude: `compress`, `list_presets` and `cancel_compression` tools.
+MCP server (stdio), for agents such as Claude, with these tools: `compress`, `list_presets`, `cancel_compression`, `list_watched_folders`, `add_watched_folder`, `update_watched_folder` and `remove_watched_folder`.
 ```json
 { "mcpServers": { "compresso": { "command": "compresso", "args": ["mcp"] } } }
 ```
+
+Watched folders can also be managed from the terminal:
+```bash
+compresso watch list
+compresso watch add ~/Downloads/photos --video-preset="2 clips"
+compresso watch update <id or folder> --enabled=0
+compresso watch remove <id or folder>
+```
+New media in a watched folder is compressed with its presets while CompressO runs.
 
 
 ### Tech

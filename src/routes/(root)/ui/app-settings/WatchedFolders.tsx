@@ -28,6 +28,10 @@ import {
   savesAutomatically,
 } from '@/utils/presetOutput'
 import { hasTray, TRAY_CONTEXT } from '@/utils/tray'
+import {
+  generateWatchedFolderId,
+  normalizeWatchedFolderPath,
+} from '@/utils/watchedFolders'
 import PresetChoiceSelect from './PresetChoiceSelect'
 import { SettingsRow, SettingsSection } from './SettingsLayout'
 
@@ -152,16 +156,23 @@ function WatchedFolders() {
   const addFolder = async () => {
     const path = await pickFolderToWatch()
     if (!path) return
-    if (settingsStore.watchedFolders.some((folder) => folder.path === path)) {
+    const folderPath = normalizeWatchedFolderPath(path)
+    if (
+      settingsStore.watchedFolders.some(
+        (folder) => normalizeWatchedFolderPath(folder.path) === folderPath,
+      )
+    ) {
       toast.info(t('settings.dropZone.watchedFolders.add.alreadyWatched'))
       return
     }
     settingsStore.watchedFolders.push({
-      id: `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
-      path,
+      id: generateWatchedFolderId(),
+      path: folderPath,
       isEnabled: true,
     })
-    setMissingPaths((current) => current.filter((missing) => missing !== path))
+    setMissingPaths((current) =>
+      current.filter((missing) => missing !== folderPath),
+    )
   }
 
   const removeFolder = (id: string) => {

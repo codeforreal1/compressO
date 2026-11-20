@@ -10,6 +10,7 @@ mod job;
 mod mcp;
 mod output;
 mod settings;
+mod watched_folders;
 
 use args::Command;
 use error::{exit_code, CliError};
@@ -44,6 +45,7 @@ async fn run() -> i32 {
             exit_code::SUCCESS
         }
         Command::Presets { json } => list_presets(json).await,
+        Command::Watch(command) => watch(command).await,
         Command::Mcp => mcp::serve().await,
         Command::Compress(parsed) => compress(parsed).await,
     }
@@ -71,6 +73,65 @@ async fn list_presets(json: bool) -> i32 {
         }
         Err(err) => report_error(&err, json),
     }
+}
+
+/// `compresso watch ...`
+async fn watch(command: args::WatchCommand) -> i32 {
+    match command {
+        args::WatchCommand::List { json } => match watched_folders::list().await {
+            Ok(value) => print_watch_result(value, json, None),
+            Err(err) => report_error(&err, json),
+        },
+        args::WatchCommand::Add(change) => {
+            let args::WatchFolderChange {
+                folder,
+                is_enabled,
+                presets,
+                json,
+            } = change;
+            let (_, path) = folder.into_id_path();
+            let presets = (!presets.is_empty()).then_some(presets);
+            match watched_folders::add(path.unwrap_or_default(), is_enabled, presets).await {
+                Ok(value) => print_watch_result(value, json, Some("add")),
+                Err(err) => report_error(&err, json),
+            }
+        }
+        args::WatchCommand::Update(change) => {
+            let args::WatchFolderChange {
+                folder,
+                is_enabled,
+                presets,
+                json,
+            } = change;
+            let (id, path) = folder.into_id_path();
+            let presets = (!presets.is_empty()).then_some(presets);
+            match watched_folders::update(id, path, is_enabled, presets).await {
+                Ok(value) => print_watch_result(value, json, Some("update")),
+                Err(err) => report_error(&err, json),
+            }
+        }
+        args::WatchCommand::Remove { folder, json } => {
+            let (id, path) = folder.into_id_path();
+            match watched_folders::remove(id, path).await {
+                Ok(value) => print_watch_result(value, json, Some("remove")),
+                Err(err) => report_error(&err, json),
+            }
+        }
+    }
+}
+
+fn print_watch_result(value: serde_json::Value, json: bool, action: Option<&str>) -> i32 {
+    if json {
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&value).unwrap_or_default()
+        );
+    } else if let Some(action) = action {
+        output::print_watch_change(&value, action);
+    } else {
+        output::print_watched_folders(&value);
+    }
+    exit_code::SUCCESS
 }
 
 /// The settings, from the app (started first when it is not running)

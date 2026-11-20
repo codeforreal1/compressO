@@ -1,0 +1,17 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "servers": {
+      "compresso": {
+        "type": "local",
+        "command": ["compresso", "mcp"],
+      },
+    },
+  },
+  "plugins": [
+    {
+      "package": "opencode-tps-meter@latest",
+      "options": { "showElapsed": true, "enableColorCoding": true },
+    },
+  ],
+}

@@ -1,6 +1,7 @@
 import { core } from '@tauri-apps/api'
 
 import type { PresetMediaType, PresetOutput } from '@/types/preset'
+import type { WatchedFolderChoice } from './watchedFolders'
 
 /** A preset as the command line sees it (see `CliSettings`) */
 export type CliPreset = {
@@ -36,6 +37,10 @@ export type CliSettings = {
   extensions: Record<PresetMediaType, string[]>
   /** The formats each media type can be saved in (a video also as audio) */
   outputExtensions: Record<PresetMediaType, string[]>
+  /** Settings -> Watch Folder, as the command line lists & changes them */
+  watchedFolders: WatchedFolderChoice[]
+  /** Settings -> General: watched folders need the menu bar / tray icon on macOS & Windows */
+  showMenuBarIcon: boolean
 }
 
 /**

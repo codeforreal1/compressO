@@ -119,6 +119,7 @@ pub enum CustomEvents {
     BatchImageIndividualCompressionCompletion,
     BatchMediaCompressionProgress,
     BatchMediaIndividualCompressionCompletion,
+    WatchedFoldersCommand,
 }
 
 #[derive(EnumProperty)]

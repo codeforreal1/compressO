@@ -22,6 +22,7 @@ import {
   STANDARD_PRESET_ID,
 } from '@/types/preset'
 import { getPresetOutput } from '@/utils/presetOutput'
+import { getWatchedFolderChoices } from '@/utils/watchedFolders'
 
 const MEDIA_TYPES: PresetMediaType[] = ['video', 'image', 'audio']
 
@@ -74,6 +75,11 @@ function getCliSettings(): CliSettings {
       image: Object.keys(extensions.image),
       audio: Object.keys(extensions.audio),
     },
+    watchedFolders: getWatchedFolderChoices(
+      settingsStore.watchedFolders,
+      presetsStore.presets as Preset[],
+    ),
+    showMenuBarIcon: settingsStore.showMenuBarIcon,
   }
 }
 
