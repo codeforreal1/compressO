@@ -556,6 +556,15 @@ impl FFMPEG {
             }
         }
 
+        // For HEVC codecs in MP4/MOV containers, use hvc1 tag for Apple compatibility.
+        // By default ffmpeg writes hev1, which macOS Finder/QuickLook/QuickTime don't recognize.
+        let needs_hvc1_tag = (output_codec.contains("265")
+            || output_codec.contains("hevc"))
+            && matches!(convert_to_extension, "mp4" | "mov");
+        if needs_hvc1_tag {
+            cmd_args.extend_from_slice(&["-tag:v:0", "hvc1"]);
+        }
+
         // Quality
         let compression_quality: String = {
             let default_crf: u16 = 28;
