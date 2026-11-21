@@ -296,14 +296,12 @@ a[href] *,
   .ReactVirtualized__Grid::-webkit-scrollbar:horizontal:hover {
   height: 8px !important;
   @apply opacity-100 !important;
-
 }
 
 .timeline-editor-edit-area
   .ReactVirtualized__Grid::-webkit-scrollbar-thumb:horizontal:hover {
   height: 8px !important;
   @apply opacity-100 !important;
-
 }
 
 .timeline-editor-cursor-top > path {

@@ -66,9 +66,9 @@ brew install --cask codeforreal1/tap/compresso
 CompressO can compress media from a terminal with the `compresso` command, and AI agents can use it through its MCP server. The app does the compression with your presets and output settings, as if the media was dropped on it.
 The command is available:
 
-- macOS: Settings > CLI > Install (or run `/Applications/CompressO.app/Contents/MacOS/compressO` with arguments)
+- macOS: Settings > CLI & AI Agents > Install (or run `/Applications/CompressO.app/Contents/MacOS/compressO` with arguments)
 - Windows: added to the PATH by the installer (open a new terminal after installing)
-- Linux: installed with the `.deb` package; for the AppImage, Settings > CLI > Install (or run `CompressO.AppImage --cli`)
+- Linux: installed with the `.deb` package; for the AppImage, Settings > CLI & AI Agents > Install (or run `CompressO.AppImage --cli`)
 
 MCP server (stdio), for agents such as Claude, with these tools: `compress`, `list_presets`, `cancel_compression`, `list_watched_folders`, `add_watched_folder`, `update_watched_folder` and `remove_watched_folder`.
 ```json
