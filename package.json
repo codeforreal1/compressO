@@ -28,6 +28,7 @@
     "test:contract": "node --test scripts/test-contract.mjs",
     "test:drop-queue": "node --test scripts/test-drop-queue.mjs",
     "test:file-name-template": "node --test scripts/test-file-name-template.mjs",
+    "test:format-bytes": "node --test scripts/test-format-bytes.mjs",
     "test:image-dynamic-range": "node --test scripts/test-image-dynamic-range.mjs",
     "test:video-dynamic-range": "node --test scripts/test-video-dynamic-range.mjs",
     "test:watched-folders": "node --test scripts/test-watched-folders.mjs scripts/test-watched-folders-command.mjs",

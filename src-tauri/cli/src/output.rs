@@ -6,17 +6,41 @@ use crate::job::{Event, FileResult, Report};
 use crate::settings::{Settings, MEDIA_TYPES};
 
 pub fn format_bytes(bytes: u64) -> String {
+    format_bytes_for(bytes, cfg!(windows))
+}
+
+fn format_bytes_for(bytes: u64, windows: bool) -> String {
     const UNITS: [&str; 5] = ["B", "KB", "MB", "GB", "TB"];
-    // Windows Explorer divides by 1024 while labeling the units KB/MB/GB
-    const BASE: f64 = if cfg!(windows) { 1024.0 } else { 1000.0 };
+    let base = if windows { 1024.0 } else { 1000.0 };
     let mut value = bytes as f64;
     let mut unit = 0;
-    while value >= BASE && unit < UNITS.len() - 1 {
-        value /= BASE;
+    while value >= 1000.0 && unit < UNITS.len() - 1 {
+        value /= base;
         unit += 1;
     }
     if unit == 0 {
-        format!("{bytes} B")
+        return format!("{bytes} B");
+    }
+    if windows {
+        let decimals = if value < 10.0 {
+            2usize
+        } else if value < 100.0 {
+            1
+        } else {
+            0
+        };
+        let factor = 10f64.powi(decimals as i32);
+        let truncated = (value * factor + 1e-9).floor() / factor;
+        let mut number = format!("{truncated:.decimals$}");
+        if decimals > 0 {
+            while number.ends_with('0') {
+                number.pop();
+            }
+            if number.ends_with('.') {
+                number.pop();
+            }
+        }
+        format!("{number} {}", UNITS[unit])
     } else {
         format!("{value:.1} {}", UNITS[unit])
     }
@@ -462,4 +486,26 @@ pub fn print_watch_change(value: &serde_json::Value, action: &str) {
     }
     println!();
     print_watched_folders(value);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::format_bytes_for;
+
+    #[test]
+    fn windows_formatting_matches_explorer() {
+        assert_eq!(format_bytes_for(500, true), "500 B");
+        assert_eq!(format_bytes_for(1024, true), "1 KB");
+        assert_eq!(format_bytes_for(1500, true), "1.46 KB");
+        assert_eq!(format_bytes_for(512_000, true), "500 KB");
+        assert_eq!(format_bytes_for(486_302_795, true), "463 MB");
+        assert_eq!(format_bytes_for(1_055_668_335, true), "0.98 GB");
+    }
+
+    #[test]
+    fn non_windows_formatting_uses_decimal_units() {
+        assert_eq!(format_bytes_for(512_000, false), "512.0 KB");
+        assert_eq!(format_bytes_for(486_302_795, false), "486.3 MB");
+        assert_eq!(format_bytes_for(1_055_668_335, false), "1.1 GB");
+    }
 }
