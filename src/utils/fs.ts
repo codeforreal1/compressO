@@ -1,11 +1,16 @@
 import prettyBytes from 'pretty-bytes'
 
 /**
- * Formats bytes to appropriate human readable format like KB, MB, GB, etc
- * @param {number} bytes: Bytes to format
+ * Formats bytes to a human-readable size (KB, MB, GB, etc.). Windows Explorer divides by 1024
+ * while labeling the units KB/MB/GB, whereas macOS/Linux file managers use 1000.
  */
 export function formatBytes(bytes: number): string {
   if (!bytes) return '0'
+  if (getPlatform().isWindows) {
+    return prettyBytes(bytes, { binary: true })
+      .replace(/kiB$/, 'KB')
+      .replace(/([MGTPEZY])iB$/, '$1B')
+  }
   return prettyBytes(bytes)
 }
 
