@@ -148,7 +148,8 @@
       "empty_audio": "Il n’y a encore aucun préréglage audio. Ajustez les réglages d’un fichier audio et sélectionnez le bouton plus à côté du menu Préréglage pour les enregistrer comme préréglage.",
       "mediaType": "Type de média",
       "standardOutput": "Son emplacement d’enregistrement et le nommage des fichiers se règlent dans <setting>Sortie</setting>.",
-      "cannotDeleteStandard": "Le préréglage Standard ne peut pas être supprimé."
+      "cannotDeleteStandard": "Le préréglage Standard ne peut pas être supprimé.",
+      "newFromContract": "Nouveau depuis un contrat"
     },
     "dropZone": {
       "turnOnTrayIcon_macos": "La zone de dépôt se trouve dans la barre des menus. Activez d’abord « <setting>Afficher l’icône dans la barre des menus</setting> » dans Général.",
@@ -399,7 +400,22 @@
           "json": "Afficher les résultats en JSON, pour les scripts et les agents d’IA.",
           "quiet": "N’afficher que les erreurs.",
           "list": "Lister vos préréglages, avec celui par défaut de chaque type de média.",
-          "help": "Afficher toutes les options et les codes de sortie."
+          "help": "Afficher toutes les options et les codes de sortie.",
+          "contractFile": "Compresser des médias avec un fichier contrat JSON CompressO ponctuel (prend en charge metadata.set, thumbnail et subtitles).",
+          "contractStdin": "Lire un contrat JSON ponctuel depuis l’entrée standard.",
+          "contractSchema": "Afficher le schéma JSON pour les contrats vidéo, image ou audio.",
+          "contractValidate": "Valider un fichier contrat JSON sans compresser de média ni enregistrer de préréglage.",
+          "presetGet": "Exporter un préréglage enregistré en contrat JSON.",
+          "presetCreate": "Créer un préréglage dans l’application depuis un fichier contrat JSON.",
+          "presetUpdate": "Mettre à jour un préréglage existant à l’aide de champs partiels de contrat JSON.",
+          "cpuThreads": "Limiter les threads CPU pour cette compression uniquement (0 utilise tous les threads).",
+          "capabilities": "Afficher la version, les threads CPU disponibles, encodeurs matériels, outils et fichier journal.",
+          "inspect": "Analyser dimensions, codecs, flux, plage dynamique et EXIF sans compresser.",
+          "cacheClear": "Vider le cache temporaire lorsqu’aucune compression ni média ouvert n’est actif.",
+          "history": "Lister les compressions récentes enregistrées par CompressO (history clear pour effacer).",
+          "queue": "Consulter ou contrôler la file d’attente (list, pause, resume, clear, cancel).",
+          "logs": "Afficher le chemin du fichier journal actuel et les dernières lignes.",
+          "about": "Afficher la version de CompressO, la licence, l’auteur, les liens et les crédits des outils open source."
         }
       },
       "agents": {
@@ -1149,5 +1165,25 @@
     "tooMany": "Trop de clips. Chaque clip doit durer au moins 1 seconde.",
     "eachClip": "{{duration}} chacun",
     "batchInvalid": "Certaines vidéos ne peuvent pas être découpées avec ces réglages de clips."
+  },
+  "contract": {
+    "exportTooltip": "Exporter le contrat JSON",
+    "saveFile": "Enregistrer le contrat en .json",
+    "copy": "Copier le contrat JSON",
+    "saveType": "Enregistrer le contrat {{type}} (.json)",
+    "copyType": "Copier le contrat JSON {{type}}",
+    "copied": "Contrat JSON copié dans le presse-papiers.",
+    "copyFailed": "Impossible de copier le contrat JSON.",
+    "exported": "Contrat JSON exporté.",
+    "exportFailed": "Impossible d’exporter le contrat JSON.",
+    "import": {
+      "title": "Nouveau préréglage depuis un contrat JSON",
+      "loadFile": "Charger un fichier .json",
+      "jsonLabel": "Contrat JSON CompressO",
+      "validate": "Valider",
+      "create": "Créer le préréglage",
+      "invalidJson": "JSON invalide : {{message}}",
+      "readFailed": "Impossible de lire le fichier du contrat."
+    }
   }
 }

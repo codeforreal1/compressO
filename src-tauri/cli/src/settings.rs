@@ -33,6 +33,12 @@ pub struct Settings {
     /// Settings -> Watch Folder; `None` when written by an older app
     #[serde(default)]
     pub watched_folders: Option<Vec<WatchedFolder>>,
+    /// JSON Schemas for each media contract (v1)
+    #[serde(default)]
+    pub contract_schemas: Option<serde_json::Value>,
+    /// Machine-readable capabilities & limits for contracts
+    #[serde(default)]
+    pub contract_capabilities: Option<serde_json::Value>,
 }
 
 /// A folder whose new media the app compresses, as the app stores it
@@ -80,9 +86,15 @@ pub struct Preset {
     pub name: String,
     pub media_type: String,
     pub is_default: bool,
+    #[serde(default)]
+    pub revision: Option<u64>,
+    #[serde(default)]
+    pub updated_at: Option<String>,
     pub output: PresetOutput,
     #[serde(default)]
     pub summary: Vec<String>,
+    #[serde(default)]
+    pub contract: Option<serde_json::Value>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]

@@ -147,7 +147,8 @@
       "empty_audio": "There are no audio presets yet. Adjust the settings of an audio file and select the plus button next to the Preset menu to save them as a preset.",
       "mediaType": "Media type",
       "standardOutput": "Its save location and file naming are set in <setting>Output</setting>.",
-      "cannotDeleteStandard": "The Standard preset cannot be deleted."
+      "cannotDeleteStandard": "The Standard preset cannot be deleted.",
+      "newFromContract": "New from contract"
     },
     "dropZone": {
       "turnOnTrayIcon_macos": "The drop zone is in the menu bar. Turn on <setting>Show menu bar icon</setting> in General first.",
@@ -398,7 +399,22 @@
           "quiet": "Print only errors.",
           "list": "List your presets, with the default one of each media type.",
           "help": "Show every option and the exit codes.",
-          "replaceWindows": "Replace the original when the output has the same name and format. The original is moved to the Recycle Bin."
+          "replaceWindows": "Replace the original when the output has the same name and format. The original is moved to the Recycle Bin.",
+          "contractFile": "Compress media with a one-shot CompressO JSON contract file (supports metadata.set, thumbnail, and subtitles).",
+          "contractStdin": "Read a one-shot JSON contract from standard input.",
+          "contractSchema": "Print the JSON Schema for video, image, or audio contracts.",
+          "contractValidate": "Validate a JSON contract file without compressing media or saving a preset.",
+          "presetGet": "Export a saved preset as a JSON contract.",
+          "presetCreate": "Create a new preset in the app from a JSON contract file.",
+          "presetUpdate": "Patch an existing preset using partial JSON contract fields.",
+          "cpuThreads": "Limit CPU encoding threads for this compression only (0 uses all available threads).",
+          "capabilities": "Show app version, available CPU threads, hardware encoders, bundled tools, and log path.",
+          "inspect": "Probe dimensions, codecs, streams, dynamic range, and EXIF metadata without compressing.",
+          "cacheClear": "Clear temporary cache files when no compression or open media is active.",
+          "history": "List recent compressions recorded by CompressO (use history clear to reset).",
+          "queue": "Inspect or control the drop/watch compression queue (list, pause, resume, clear, cancel).",
+          "logs": "Show the current log file path and recent log lines.",
+          "about": "Show CompressO version, license, author, website/changelog/GitHub links, and open-source tool credits."
         }
       },
       "agents": {
@@ -1131,5 +1147,25 @@
     "tooMany": "Too many clips. Each clip must be at least 1 second.",
     "eachClip": "{{duration}} each",
     "batchInvalid": "Some videos cannot be split with these clip settings."
+  },
+  "contract": {
+    "exportTooltip": "Export JSON contract",
+    "saveFile": "Save contract as .json",
+    "copy": "Copy contract JSON",
+    "saveType": "Save {{type}} contract (.json)",
+    "copyType": "Copy {{type}} contract JSON",
+    "copied": "JSON contract copied to clipboard.",
+    "copyFailed": "Could not copy JSON contract.",
+    "exported": "JSON contract exported.",
+    "exportFailed": "Could not export JSON contract.",
+    "import": {
+      "title": "New preset from JSON contract",
+      "loadFile": "Load .json file",
+      "jsonLabel": "CompressO JSON contract",
+      "validate": "Validate",
+      "create": "Create preset",
+      "invalidJson": "Invalid JSON: {{message}}",
+      "readFailed": "Could not read the contract file."
+    }
   }
 }

@@ -148,7 +148,8 @@
       "empty_audio": "Non ci sono ancora preset audio. Regoli le impostazioni di un file audio e selezioni il pulsante più accanto al menu Preset per salvarle come preset.",
       "mediaType": "Tipo di file",
       "standardOutput": "La posizione di salvataggio e la denominazione dei file si impostano in <setting>Output</setting>.",
-      "cannotDeleteStandard": "La preimpostazione Standard non può essere eliminata."
+      "cannotDeleteStandard": "La preimpostazione Standard non può essere eliminata.",
+      "newFromContract": "Nuovo da contratto"
     },
     "dropZone": {
       "turnOnTrayIcon_macos": "La zona di rilascio si trova nella barra dei menu. Attivi prima «<setting>Mostra icona nella barra dei menu</setting>» in Generali.",
@@ -399,7 +400,22 @@
           "json": "Stampi i risultati in JSON, per script e agenti IA.",
           "quiet": "Stampi solo gli errori.",
           "list": "Elenchi i Suoi preset, con quello predefinito di ogni tipo di contenuto.",
-          "help": "Mostri tutte le opzioni e i codici di uscita."
+          "help": "Mostri tutte le opzioni e i codici di uscita.",
+          "contractFile": "Comprimi i media con un file contratto JSON di CompressO monouso (supporta metadata.set, thumbnail e subtitles).",
+          "contractStdin": "Leggi un contratto JSON monouso dall’input standard.",
+          "contractSchema": "Stampa lo schema JSON per i contratti video, immagine o audio.",
+          "contractValidate": "Convalida un file contratto JSON senza comprimere media né salvare un preset.",
+          "presetGet": "Esporta un preset salvato come contratto JSON.",
+          "presetCreate": "Crea un nuovo preset nell’app da un file contratto JSON.",
+          "presetUpdate": "Aggiorna un preset esistente usando campi parziali del contratto JSON.",
+          "cpuThreads": "Limita i thread CPU solo per questa compressione (0 usa tutti i thread disponibili).",
+          "capabilities": "Mostra versione app, thread CPU disponibili, encoder hardware, strumenti e percorso log.",
+          "inspect": "Analizza dimensioni, codec, flussi, gamma dinamica e metadati EXIF senza comprimere.",
+          "cacheClear": "Svuota la cache temporanea quando nessuna compressione o media è attivo.",
+          "history": "Elenca le compressioni recenti registrate da CompressO (usa history clear per cancellare).",
+          "queue": "Ispeziona o controlla la coda di compressione (list, pause, resume, clear, cancel).",
+          "logs": "Mostra il percorso del file di log corrente e le righe recenti.",
+          "about": "Mostra versione di CompressO, licenza, autore, link a sito/changelog/GitHub e crediti open source."
         }
       },
       "agents": {
@@ -1149,5 +1165,25 @@
     "tooMany": "Troppi clip. Ogni clip deve durare almeno 1 secondo.",
     "eachClip": "{{duration}} ciascuno",
     "batchInvalid": "Alcuni video non possono essere divisi con queste impostazioni dei clip."
+  },
+  "contract": {
+    "exportTooltip": "Esporta contratto JSON",
+    "saveFile": "Salva contratto come .json",
+    "copy": "Copia JSON del contratto",
+    "saveType": "Salva contratto {{type}} (.json)",
+    "copyType": "Copia JSON contratto {{type}}",
+    "copied": "Contratto JSON copiato negli appunti.",
+    "copyFailed": "Impossibile copiare il contratto JSON.",
+    "exported": "Contratto JSON esportato.",
+    "exportFailed": "Impossibile esportare il contratto JSON.",
+    "import": {
+      "title": "Nuovo preset da contratto JSON",
+      "loadFile": "Carica file .json",
+      "jsonLabel": "Contratto JSON CompressO",
+      "validate": "Convalida",
+      "create": "Crea preset",
+      "invalidJson": "JSON non valido: {{message}}",
+      "readFailed": "Impossibile leggere il file del contratto."
+    }
   }
 }

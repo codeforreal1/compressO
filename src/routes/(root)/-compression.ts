@@ -64,6 +64,7 @@ export async function waitForDropZone(signal: AbortSignal) {
 export type AccelerationSettings = {
   useHardwareAcceleration: boolean
   retryTargetSizeOnCpu: boolean
+  cpuThreads?: number | null
 }
 
 export type MediaFile =
@@ -689,6 +690,7 @@ export function getMediaItemConfig(
               : (v.config?.dynamicRange ?? null),
             useHardwareAcceleration:
               v.acceleration?.useHardwareAcceleration ?? null,
+            cpuThreads: v.acceleration?.cpuThreads ?? null,
           } satisfies VideoCompressionConfig)
         : undefined,
     imageConfig:

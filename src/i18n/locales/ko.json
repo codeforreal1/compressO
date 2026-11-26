@@ -146,7 +146,8 @@
       "empty_audio": "아직 오디오 프리셋이 없습니다. 오디오 파일의 설정을 조정한 다음 프리셋 메뉴 옆의 더하기 버튼을 선택하여 프리셋으로 저장하십시오.",
       "mediaType": "미디어 유형",
       "standardOutput": "저장 위치와 파일 이름 지정은 [<setting>출력</setting>]에서 설정합니다.",
-      "cannotDeleteStandard": "표준 프리셋은 삭제할 수 없습니다."
+      "cannotDeleteStandard": "표준 프리셋은 삭제할 수 없습니다.",
+      "newFromContract": "계약에서 새로 만들기"
     },
     "dropZone": {
       "turnOnTrayIcon_macos": "드롭 영역은 메뉴 막대에 있습니다. 먼저 일반에서 '<setting>메뉴 막대 아이콘 표시</setting>'를 켜십시오.",
@@ -397,7 +398,22 @@
           "json": "스크립트와 AI 에이전트를 위해 결과를 JSON으로 출력합니다.",
           "quiet": "오류만 출력합니다.",
           "list": "미디어 유형별 기본 프리셋과 함께 프리셋을 나열합니다.",
-          "help": "모든 옵션과 종료 코드를 표시합니다."
+          "help": "모든 옵션과 종료 코드를 표시합니다.",
+          "contractFile": "일회용 CompressO JSON 계약 파일로 미디어를 압축합니다(metadata.set, thumbnail, subtitles 지원).",
+          "contractStdin": "표준 입력에서 일회용 JSON 계약을 읽습니다.",
+          "contractSchema": "비디오, 이미지 또는 오디오 계약의 JSON 스키마를 출력합니다.",
+          "contractValidate": "미디어를 압축하거나 프리셋을 저장하지 않고 JSON 계약 파일을 검증합니다.",
+          "presetGet": "저장된 프리셋을 JSON 계약으로 내보냅니다.",
+          "presetCreate": "JSON 계약 파일에서 앱에 새 프리셋을 만듭니다.",
+          "presetUpdate": "일부 JSON 계약 필드로 기존 프리셋을 업데이트합니다.",
+          "cpuThreads": "이번 압축에만 CPU 스레드 수를 제한합니다(0은 사용 가능한 모든 스레드 사용).",
+          "capabilities": "앱 버전, 사용 가능한 CPU 스레드, 하드웨어 인코더, 도구 상태, 로그 경로를 표시합니다.",
+          "inspect": "압축하지 않고 해상도, 코덱, 스트림, 다이내믹 레인지, EXIF 메타데이터를 검사합니다.",
+          "cacheClear": "진행 중인 압축이나 열린 미디어가 없을 때 임시 캐시를 비웁니다.",
+          "history": "CompressO에 기록된 최근 압축 기록을 표시합니다(history clear로 초기화).",
+          "queue": "드롭/감시 대기열을 확인하거나 제어합니다(list, pause, resume, clear, cancel).",
+          "logs": "현재 로그 파일 경로와 최근 로그 줄을 표시합니다.",
+          "about": "CompressO 버전, 라이선스, 제작자, 웹사이트/변경 로그/GitHub 링크 및 오픈 소스 크레딧을 표시합니다."
         }
       },
       "agents": {
@@ -1115,5 +1131,25 @@
     "tooMany": "클립이 너무 많습니다. 각 클립은 최소 1초여야 합니다.",
     "eachClip": "각 {{duration}}",
     "batchInvalid": "이 클립 설정으로 분할할 수 없는 동영상이 있습니다."
+  },
+  "contract": {
+    "exportTooltip": "JSON 계약 내보내기",
+    "saveFile": "계약을 .json으로 저장",
+    "copy": "계약 JSON 복사",
+    "saveType": "{{type}} 계약 저장 (.json)",
+    "copyType": "{{type}} 계약 JSON 복사",
+    "copied": "JSON 계약이 클립보드에 복사되었습니다.",
+    "copyFailed": "JSON 계약을 복사할 수 없습니다.",
+    "exported": "JSON 계약을 내보냈습니다.",
+    "exportFailed": "JSON 계약을 내보낼 수 없습니다.",
+    "import": {
+      "title": "JSON 계약으로 새 프리셋 만들기",
+      "loadFile": ".json 파일 불러오기",
+      "jsonLabel": "CompressO JSON 계약",
+      "validate": "검증",
+      "create": "프리셋 만들기",
+      "invalidJson": "잘못된 JSON: {{message}}",
+      "readFailed": "계약 파일을 읽을 수 없습니다."
+    }
   }
 }

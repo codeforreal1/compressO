@@ -32,6 +32,8 @@ pub struct FFMPEG {
     input_range: Option<(f64, f64)>,
     /// Overrides the hardware acceleration setting, see `with_hardware_acceleration`
     hardware_acceleration: Option<bool>,
+    /// Overrides the global CPU thread limit (`Some(0)` = all threads), see `with_cpu_thread_limit`
+    cpu_thread_limit: Option<usize>,
 }
 
 const EXTENSIONS: [&str; 10] = [
@@ -135,6 +137,7 @@ impl FFMPEG {
             owner_window: String::from("main"),
             input_range: None,
             hardware_acceleration: None,
+            cpu_thread_limit: None,
         })
     }
 
@@ -142,6 +145,12 @@ impl FFMPEG {
     /// e.g. for a compression from the command line
     pub fn with_hardware_acceleration(mut self, enabled: Option<bool>) -> Self {
         self.hardware_acceleration = enabled;
+        self
+    }
+
+    /// Overrides the global CPU thread limit for CPU encoding (`Some(0)` = all threads)
+    pub fn with_cpu_thread_limit(mut self, limit: Option<usize>) -> Self {
+        self.cpu_thread_limit = limit;
         self
     }
 
@@ -1329,7 +1338,7 @@ impl FFMPEG {
         // A CPU encode is limited to the chosen number of threads; hardware encoding has its own
         // settings, & audio encoders do not need the limit
         if !is_audio_target {
-            if let Some(limit) = cpu_limit::thread_limit() {
+            if let Some(limit) = cpu_limit::resolve_thread_limit(self.cpu_thread_limit) {
                 cpu_args = with_thread_limit(&cpu_args, limit);
             }
         }
@@ -1779,6 +1788,7 @@ impl FFMPEG {
                     let result = FFMPEG::new(&app)?
                         .with_owner_window(&owner_window)
                         .with_hardware_acceleration(config.use_hardware_acceleration)
+                        .with_cpu_thread_limit(config.cpu_threads)
                         .with_input_range(range)
                         .compress_video(
                             &config.video_path,

@@ -146,7 +146,8 @@
       "empty_audio": "尚无音频预设。调整某个音频文件的设置，然后选择“预设”菜单旁的加号按钮，即可将其保存为预设。",
       "mediaType": "媒体类型",
       "standardOutput": "其保存位置和文件命名方式在“<setting>输出</setting>”中设置。",
-      "cannotDeleteStandard": "无法删除标准预设。"
+      "cannotDeleteStandard": "无法删除标准预设。",
+      "newFromContract": "从契约新建"
     },
     "dropZone": {
       "turnOnTrayIcon_macos": "拖放区位于菜单栏中。请先在“通用”中打开“<setting>显示菜单栏图标</setting>”。",
@@ -397,7 +398,22 @@
           "json": "以 JSON 输出结果，供脚本和 AI 代理使用。",
           "quiet": "仅输出错误。",
           "list": "列出您的预设，以及每种媒体类型的默认预设。",
-          "help": "显示所有选项和退出代码。"
+          "help": "显示所有选项和退出代码。",
+          "contractFile": "使用一次性 CompressO JSON 契约文件压缩媒体（支持 metadata.set、thumbnail 和 subtitles）。",
+          "contractStdin": "从标准输入读取一次性 JSON 契约。",
+          "contractSchema": "输出视频、图片或音频契约的 JSON Schema。",
+          "contractValidate": "校验 JSON 契约文件，不执行压缩也不保存预设。",
+          "presetGet": "将已保存的预设导出为 JSON 契约。",
+          "presetCreate": "从 JSON 契约文件在应用中创建新预设。",
+          "presetUpdate": "使用部分 JSON 契约字段更新现有预设。",
+          "cpuThreads": "仅对本次压缩限制 CPU 线程数（0 表示使用全部可用线程）。",
+          "capabilities": "查看应用版本、可用 CPU 线程、硬件编码器、内置工具与日志路径。",
+          "inspect": "在不压缩的情况下检查分辨率、编码、音视频轨道、动态范围与 EXIF 信息。",
+          "cacheClear": "在没有进行中的压缩或已打开媒体时清理临时缓存。",
+          "history": "列出 CompressO 记录的最近压缩历史（使用 history clear 清空）。",
+          "queue": "查看或控制拖放/监控压缩队列（list、pause、resume、clear、cancel）。",
+          "logs": "显示当前日志文件路径及最近的日志内容。",
+          "about": "显示 CompressO 版本、许可证、作者、网站/更新日志/GitHub 链接及开源工具致谢。"
         }
       },
       "agents": {
@@ -1115,5 +1131,25 @@
     "tooMany": "片段过多。每个片段至少需要 1 秒。",
     "eachClip": "每个 {{duration}}",
     "batchInvalid": "部分视频无法使用此片段设置进行分割。"
+  },
+  "contract": {
+    "exportTooltip": "导出 JSON 契约",
+    "saveFile": "保存契约为 .json",
+    "copy": "复制契约 JSON",
+    "saveType": "保存{{type}}契约 (.json)",
+    "copyType": "复制{{type}}契约 JSON",
+    "copied": "JSON 契约已复制到剪贴板。",
+    "copyFailed": "无法复制 JSON 契约。",
+    "exported": "JSON 契约已导出。",
+    "exportFailed": "无法导出 JSON 契约。",
+    "import": {
+      "title": "从 JSON 契约新建预设",
+      "loadFile": "加载 .json 文件",
+      "jsonLabel": "CompressO JSON 契约",
+      "validate": "验证",
+      "create": "创建预设",
+      "invalidJson": "无效的 JSON：{{message}}",
+      "readFailed": "无法读取契约文件。"
+    }
   }
 }

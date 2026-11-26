@@ -70,10 +70,31 @@ The command is available:
 - Windows: added to the PATH by the installer (open a new terminal after installing)
 - Linux: installed with the `.deb` package; for the AppImage, Settings > CLI & AI Agents > Install (or run `CompressO.AppImage --cli`)
 
-MCP server (stdio), for agents such as Claude, with these tools: `compress`, `list_presets`, `cancel_compression`, `list_watched_folders`, `add_watched_folder`, `update_watched_folder` and `remove_watched_folder`.
+MCP server (stdio), for agents such as Claude, with these tools: `compress`, `list_presets`, `get_preset`, `create_preset`, `update_preset`, `delete_preset`, `set_default_preset`, `get_contract_schema`, `validate_contract`, `get_capabilities`, `inspect_media`, `get_history`, `clear_history`, `get_queue`, `manage_queue`, `get_logs`, `clear_cache`, `about`, `cancel_compression`, `list_watched_folders`, `add_watched_folder`, `update_watched_folder` and `remove_watched_folder`.
 ```json
 { "mcpServers": { "compresso": { "command": "compresso", "args": ["mcp"] } } }
 ```
+
+Create presets or run one-shot compressions with **CompressO JSON contracts** (`video`, `image`, `audio`), limit CPU threads per job, or inspect files and capabilities from the terminal:
+```bash
+compresso contract schema video
+compresso presets create web.json
+compresso presets update "Web" patch.json
+compresso clip.mov --contract=web.json --cpu-threads=4
+compresso capabilities
+compresso inspect clip.mov
+compresso queue list
+compresso history --limit=10
+compresso cache clear
+compresso logs --tail=50
+compresso about
+```
+
+| Scope | Fields |
+| --- | --- |
+| **Preset + One-shot** | `format`, `compression` (`quality` / `targetSize` / `lossless` / `none`), `speed`, `metadata.mode` (`strip`/`keep`), `video.codec`, `resolution`, `fps`, `transform`, `hdr`, `audio` (`volumePercent`, `codec`, `channels`, `bitrateKbps`), `clips`, `svg`, `output` |
+| **One-shot only** (single file or batch) | `settings.metadata.set` (tag values), `settings.video.thumbnail`, `settings.subtitles` |
+| **Not in contract** | Per-file `trim`, free pixel crop, `straighten` tilt, exact `width × height`, audio track selection |
 
 Watched folders can also be managed from the terminal:
 ```bash

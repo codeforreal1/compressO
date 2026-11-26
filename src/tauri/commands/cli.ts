@@ -1,5 +1,6 @@
 import { core } from '@tauri-apps/api'
 
+import type { PresetContract } from '@/contract/types'
 import type { PresetMediaType, PresetOutput } from '@/types/preset'
 import type { WatchedFolderChoice } from './watchedFolders'
 
@@ -10,10 +11,14 @@ export type CliPreset = {
   mediaType: PresetMediaType
   /** The default preset of its media type (starred in Settings -> Presets) */
   isDefault: boolean
+  revision?: number
+  updatedAt?: string
   /** Where its outputs are saved: its own, or the Standard preset's */
   output: PresetOutput
   /** What it changes, in English, e.g. `["MP4", "Quality 70%"]` */
   summary: string[]
+  /** The CompressO JSON contract of this preset */
+  contract: PresetContract
 }
 
 /**
@@ -41,6 +46,10 @@ export type CliSettings = {
   watchedFolders: WatchedFolderChoice[]
   /** Settings -> General: watched folders need the menu bar / tray icon on macOS & Windows */
   showMenuBarIcon: boolean
+  /** JSON Schemas for each media contract (oneShot mode, including x-compresso-scope) */
+  contractSchemas?: Record<PresetMediaType, unknown>
+  /** Machine-readable capabilities & limits for contracts */
+  contractCapabilities?: unknown
 }
 
 /**

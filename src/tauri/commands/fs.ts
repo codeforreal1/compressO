@@ -91,3 +91,11 @@ export function readFilesFromClipboard() {
 export function readFilesFromPaths(paths: string[]) {
   return core.invoke<CollectedFile[]>('read_files_from_paths', { paths })
 }
+
+export function readTextFile(path: string): Promise<string> {
+  return core.invoke<string>('read_text_file', { path })
+}
+
+export function writeTextFile(path: string, contents: string): Promise<void> {
+  return core.invoke<void>('write_text_file', { path, contents })
+}

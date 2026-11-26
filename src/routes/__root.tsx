@@ -16,6 +16,7 @@ import { useCliSettingsSync } from '@/hooks/useCliSettingsSync'
 import { useCpuThreadLimitSync } from '@/hooks/useCpuThreadLimit'
 import { useHardwareEncodingSync } from '@/hooks/useHardwareEncoding'
 import { useKeepAwakeSync } from '@/hooks/useKeepAwakeSync'
+import { usePresetsCommand } from '@/hooks/usePresetsCommand'
 import { watchPrimaryColor } from '@/hooks/usePrimaryColor'
 import { useThemeSync } from '@/hooks/useTheme'
 import { useWatchedFoldersCommand } from '@/hooks/useWatchedFoldersCommand'
@@ -65,6 +66,7 @@ function MainRoot() {
   useCpuThreadLimitSync()
   useKeepAwakeSync()
   useWatchedFoldersCommand()
+  usePresetsCommand()
   useCliSettingsSync()
   const { showMenuBarIcon } = useSnapshot(settingsStore)
 
@@ -133,6 +135,7 @@ function TrayRoot() {
   useCpuThreadLimitSync()
   useKeepAwakeSync()
   useWatchedFoldersCommand()
+  usePresetsCommand()
   useCliSettingsSync()
   // The menu bar's window compresses the drop zone's queue
   useDropQueueRunner()

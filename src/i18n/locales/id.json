@@ -146,7 +146,8 @@
       "empty_audio": "Belum ada preset audio. Sesuaikan pengaturan sebuah file audio, lalu pilih tombol plus di samping menu Preset untuk menyimpannya sebagai preset.",
       "mediaType": "Jenis media",
       "standardOutput": "Lokasi penyimpanan dan penamaan filenya diatur di <setting>Keluaran</setting>.",
-      "cannotDeleteStandard": "Preset Standar tidak dapat dihapus."
+      "cannotDeleteStandard": "Preset Standar tidak dapat dihapus.",
+      "newFromContract": "Baru dari kontrak"
     },
     "dropZone": {
       "turnOnTrayIcon_macos": "Zona taruh berada di bar menu. Aktifkan terlebih dahulu “<setting>Tampilkan ikon bar menu</setting>” di Umum.",
@@ -397,7 +398,22 @@
           "json": "Cetak hasil dalam JSON, untuk skrip dan agen AI.",
           "quiet": "Cetak kesalahan saja.",
           "list": "Tampilkan daftar preset Anda, beserta preset default setiap jenis media.",
-          "help": "Tampilkan semua opsi dan kode keluar."
+          "help": "Tampilkan semua opsi dan kode keluar.",
+          "contractFile": "Kompres media menggunakan file kontrak JSON CompressO sekali pakai (mendukung metadata.set, thumbnail, dan subtitles).",
+          "contractStdin": "Baca kontrak JSON sekali pakai dari input standar.",
+          "contractSchema": "Tampilkan Skema JSON untuk kontrak video, gambar, atau audio.",
+          "contractValidate": "Validasi file kontrak JSON tanpa mengompres media atau menyimpan preset.",
+          "presetGet": "Ekspor preset tersimpan sebagai kontrak JSON.",
+          "presetCreate": "Buat preset baru di aplikasi dari file kontrak JSON.",
+          "presetUpdate": "Perbarui sebagian preset yang ada menggunakan bidang kontrak JSON parsial.",
+          "cpuThreads": "Batasi thread CPU hanya untuk kompresi ini (0 memakai semua thread yang tersedia).",
+          "capabilities": "Tampilkan versi aplikasi, thread CPU tersedia, encoder perangkat keras, alat, dan path log.",
+          "inspect": "Periksa dimensi, codec, stream, rentang dinamis, dan metadata EXIF tanpa mengompres.",
+          "cacheClear": "Bersihkan cache sementara saat tidak ada kompresi atau media terbuka yang aktif.",
+          "history": "Tampilkan riwayat kompresi terbaru CompressO (gunakan history clear untuk menghapus).",
+          "queue": "Periksa atau kendalikan antrean kompresi (list, pause, resume, clear, cancel).",
+          "logs": "Tampilkan path file log saat ini dan baris log terbaru.",
+          "about": "Tampilkan versi CompressO, lisensi, pembuat, tautan situs/changelog/GitHub, dan kredit alat sumber terbuka."
         }
       },
       "agents": {
@@ -1115,5 +1131,25 @@
     "tooMany": "Terlalu banyak klip. Setiap klip harus minimal 1 detik.",
     "eachClip": "{{duration}} per klip",
     "batchInvalid": "Beberapa video tidak dapat dibagi dengan pengaturan klip ini."
+  },
+  "contract": {
+    "exportTooltip": "Ekspor kontrak JSON",
+    "saveFile": "Simpan kontrak sebagai .json",
+    "copy": "Salin JSON kontrak",
+    "saveType": "Simpan kontrak {{type}} (.json)",
+    "copyType": "Salin JSON kontrak {{type}}",
+    "copied": "Kontrak JSON disalin ke papan klip.",
+    "copyFailed": "Tidak dapat menyalin kontrak JSON.",
+    "exported": "Kontrak JSON diekspor.",
+    "exportFailed": "Tidak dapat mengekspor kontrak JSON.",
+    "import": {
+      "title": "Preset baru dari kontrak JSON",
+      "loadFile": "Muat file .json",
+      "jsonLabel": "Kontrak JSON CompressO",
+      "validate": "Validasi",
+      "create": "Buat preset",
+      "invalidJson": "JSON tidak valid: {{message}}",
+      "readFailed": "Tidak dapat membaca file kontrak."
+    }
   }
 }

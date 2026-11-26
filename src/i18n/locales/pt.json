@@ -148,7 +148,8 @@
       "empty_audio": "Ainda não há predefinições de áudio. Ajuste as configurações de um arquivo de áudio e selecione o botão de adição ao lado do menu Predefinição para salvá-las como predefinição.",
       "mediaType": "Tipo de mídia",
       "standardOutput": "O seu local de salvamento e a nomenclatura dos arquivos são definidos em <setting>Saída</setting>.",
-      "cannotDeleteStandard": "A predefinição Padrão não pode ser excluída."
+      "cannotDeleteStandard": "A predefinição Padrão não pode ser excluída.",
+      "newFromContract": "Novo a partir de contrato"
     },
     "dropZone": {
       "turnOnTrayIcon_macos": "A área de soltar fica na barra de menus. Ative primeiro “<setting>Mostrar ícone na barra de menus</setting>” em Geral.",
@@ -399,7 +400,22 @@
           "json": "Mostrar os resultados em JSON, para scripts e agentes de IA.",
           "quiet": "Mostrar apenas os erros.",
           "list": "Listar suas predefinições, com a padrão de cada tipo de mídia.",
-          "help": "Mostrar todas as opções e os códigos de saída."
+          "help": "Mostrar todas as opções e os códigos de saída.",
+          "contractFile": "Comprima mídia com um arquivo de contrato JSON CompressO único (suporta metadata.set, thumbnail e subtitles).",
+          "contractStdin": "Leia um contrato JSON único a partir da entrada padrão.",
+          "contractSchema": "Exiba o esquema JSON para contratos de vídeo, imagem ou áudio.",
+          "contractValidate": "Valide um arquivo de contrato JSON sem comprimir mídia nem salvar uma predefinição.",
+          "presetGet": "Exporte uma predefinição salva como contrato JSON.",
+          "presetCreate": "Crie uma nova predefinição no app a partir de um arquivo de contrato JSON.",
+          "presetUpdate": "Atualize uma predefinição existente usando campos parciais de contrato JSON.",
+          "cpuThreads": "Limita as threads de CPU apenas nesta compressão (0 usa todas as disponíveis).",
+          "capabilities": "Mostra versão do app, threads de CPU disponíveis, encoders de hardware, ferramentas e log.",
+          "inspect": "Inspeciona dimensões, codecs, faixas, faixa dinâmica e EXIF sem comprimir.",
+          "cacheClear": "Limpa o cache temporário quando não há compressão nem mídia aberta ativa.",
+          "history": "Lista as compressões recentes registradas pelo CompressO (history clear para limpar).",
+          "queue": "Inspeciona ou controla a fila de compressão (list, pause, resume, clear, cancel).",
+          "logs": "Mostra o caminho do arquivo de log atual e as últimas linhas.",
+          "about": "Mostra a versão do CompressO, licença, autor, links de site/changelog/GitHub e créditos de código aberto."
         }
       },
       "agents": {
@@ -1149,5 +1165,25 @@
     "tooMany": "Clipes demais. Cada clipe deve ter pelo menos 1 segundo.",
     "eachClip": "{{duration}} cada",
     "batchInvalid": "Alguns vídeos não podem ser divididos com estas configurações de clipes."
+  },
+  "contract": {
+    "exportTooltip": "Exportar contrato JSON",
+    "saveFile": "Salvar contrato como .json",
+    "copy": "Copiar JSON do contrato",
+    "saveType": "Salvar contrato de {{type}} (.json)",
+    "copyType": "Copiar JSON do contrato de {{type}}",
+    "copied": "Contrato JSON copiado para a área de transferência.",
+    "copyFailed": "Não foi possível copiar o contrato JSON.",
+    "exported": "Contrato JSON exportado.",
+    "exportFailed": "Não foi possível exportar o contrato JSON.",
+    "import": {
+      "title": "Nova predefinição a partir de contrato JSON",
+      "loadFile": "Carregar arquivo .json",
+      "jsonLabel": "Contrato JSON do CompressO",
+      "validate": "Validar",
+      "create": "Criar predefinição",
+      "invalidJson": "JSON inválido: {{message}}",
+      "readFailed": "Não foi possível ler o arquivo do contrato."
+    }
   }
 }

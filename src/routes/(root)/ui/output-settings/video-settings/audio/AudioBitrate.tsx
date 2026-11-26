@@ -6,21 +6,11 @@ import { useSnapshot } from 'valtio'
 
 import Select from '@/components/Select'
 import Switch from '@/components/Switch'
-import { isAudioExtension } from '@/types/compression'
+import { AUDIO_BITRATES, isAudioExtension } from '@/types/compression'
 import { slideDownTransition } from '@/utils/animation'
 import { isAudioOutput } from '@/utils/audio'
 import { appProxy, normalizeBatchMediaConfig } from '../../../../-state'
 import { useBatchVideoConfigKey } from '../-batchConfig'
-
-const AUDIO_BITRATES = [
-  { value: 64, label: '64 kbps' },
-  { value: 96, label: '96 kbps' },
-  { value: 128, label: '128 kbps' },
-  { value: 160, label: '160 kbps' },
-  { value: 192, label: '192 kbps' },
-  { value: 256, label: '256 kbps' },
-  { value: 320, label: '320 kbps' },
-]
 
 type AudioBitrateProps = {
   mediaIndex: number

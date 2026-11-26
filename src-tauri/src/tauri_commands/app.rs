@@ -188,6 +188,12 @@ pub fn set_open_at_login(app: AppHandle, enabled: bool) -> Result<(), String> {
     .map_err(|err| err.to_string())
 }
 
+/// Writes a frontend diagnostic message to the log file
+#[tauri::command]
+pub fn log_info(message: String) {
+    log::info!("[frontend] {}", message);
+}
+
 /// Writes a failure the frontend handled to the log file (e.g. why a dropped media could not be
 /// compressed), so it can be found later
 #[tauri::command]

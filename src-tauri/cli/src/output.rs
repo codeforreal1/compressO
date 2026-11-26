@@ -265,8 +265,11 @@ fn describe_file(file: &FileResult) -> String {
 }
 
 /// `compresso presets`
-pub fn print_presets(settings: &Settings) {
+pub fn print_presets(settings: &Settings, filter_media_type: Option<&str>) {
     for media_type in MEDIA_TYPES {
+        if filter_media_type.is_some_and(|mt| mt != media_type) {
+            continue;
+        }
         let title = match media_type {
             "video" => "Video presets",
             "image" => "Image presets",
@@ -305,6 +308,62 @@ pub fn print_presets(settings: &Settings) {
         println!();
     }
     println!("* The default preset of its media type, used without --video-preset=, --image-preset= or --audio-preset=.");
+}
+
+pub fn print_preset_change(value: &serde_json::Value, action: &str) {
+    match action {
+        "create" => {
+            let preset = &value["preset"];
+            let name = preset["name"].as_str().unwrap_or("?");
+            let mt = preset["mediaType"].as_str().unwrap_or("?");
+            if value["replaced"].as_bool() == Some(true) {
+                println!("Replaced {mt} preset \"{name}\".");
+            } else {
+                println!("Created {mt} preset \"{name}\".");
+            }
+        }
+        "update" => {
+            let preset = &value["preset"];
+            let name = preset["name"].as_str().unwrap_or("?");
+            let mt = preset["mediaType"].as_str().unwrap_or("?");
+            let rev = preset["revision"].as_u64().unwrap_or(1);
+            println!("Updated {mt} preset \"{name}\" (revision {rev}).");
+        }
+        "delete" => {
+            let name = value["deletedName"].as_str().unwrap_or("?");
+            let mt = value["mediaType"].as_str().unwrap_or("?");
+            println!("Deleted {mt} preset \"{name}\".");
+            if value["defaultResetToStandard"].as_bool() == Some(true) {
+                println!("Default {mt} preset reset to Standard.");
+            }
+            if let Some(folders) = value["affectedWatchedFolders"]
+                .as_array()
+                .filter(|list| !list.is_empty())
+            {
+                let paths: Vec<&str> = folders
+                    .iter()
+                    .filter_map(|f| f["path"].as_str())
+                    .collect();
+                println!(
+                    "Watched folders now falling back to default: {}",
+                    paths.join(", ")
+                );
+            }
+        }
+        "default" => {
+            let name = value["presetName"].as_str().unwrap_or("?");
+            let mt = value["mediaType"].as_str().unwrap_or("?");
+            println!("Default {mt} preset set to \"{name}\".");
+        }
+        _ => {}
+    }
+    if let Some(warnings) = value["warnings"].as_array() {
+        for warning in warnings {
+            if let Some(msg) = warning["message"].as_str() {
+                eprintln!("Warning: {msg}");
+            }
+        }
+    }
 }
 
 fn watched_folder_preset<'a>(folder: &'a serde_json::Value, media_type: &str) -> &'a str {

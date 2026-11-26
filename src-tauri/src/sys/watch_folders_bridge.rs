@@ -1,21 +1,13 @@
 //! Changes to the watched folders asked for by the command line (see `cli_server`): the folders are
 //! kept by the frontend (`localStorage`), so the app's windows are asked to change them, & one of
 //! them answers once the change is applied (see `useWatchedFoldersCommand`).
-use std::collections::HashMap;
 use std::path::Path;
-use std::sync::{Mutex, OnceLock};
-use std::time::{Duration, Instant};
 
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
-use tauri::{AppHandle, Emitter, Manager};
+use tauri::AppHandle;
 
 use crate::core::domain::CustomEvents;
-
-/// How long the command line waits for a window to apply a change
-const ANSWER_TIMEOUT: Duration = Duration::from_secs(10);
-/// How long before the event is sent again (a window may still be loading its frontend)
-const RETRY_INTERVAL: Duration = Duration::from_millis(500);
 
 /// A change to one of the watched folders' presets, by media type; omitted ones stay unchanged
 #[derive(Serialize, Deserialize, Clone, Debug, Default)]
@@ -61,13 +53,6 @@ pub enum WatchFolderCommand {
     },
 }
 
-type PendingRequests = Mutex<HashMap<String, tokio::sync::oneshot::Sender<Value>>>;
-
-fn pending() -> &'static PendingRequests {
-    static PENDING: OnceLock<PendingRequests> = OnceLock::new();
-    PENDING.get_or_init(Default::default)
-}
-
 /// Sends a change to a window & waits until it answers with the folders as they are now
 pub async fn forward(
     app_handle: &AppHandle,
@@ -82,74 +67,13 @@ pub async fn forward(
         }
     }
 
-    let request_id = nanoid::nanoid!();
-    let (sender, mut receiver) = tokio::sync::oneshot::channel();
-    {
-        let mut requests = pending()
-            .lock()
-            .map_err(|_| "CompressO could not change its watched folders.".to_string())?;
-        requests.insert(request_id.clone(), sender);
-    }
-
-    // One window answers for the whole request: sending it to another while this one is still
-    // applying it would change the folders twice (e.g. while the tray window is being created)
-    let Some(window) = target_window(app_handle) else {
-        if let Ok(mut requests) = pending().lock() {
-            requests.remove(&request_id);
-        }
-        return Err(String::from(
-            "Open CompressO once, then try again. It has no window to change its watched folders.",
-        ));
-    };
-    let payload = json!({ "requestId": request_id, "command": command });
-    let deadline = Instant::now() + ANSWER_TIMEOUT;
-    let result = loop {
-        if let Err(err) = app_handle.emit_to(
-            window,
-            CustomEvents::WatchedFoldersCommand.as_ref(),
-            &payload,
-        ) {
-            log::warn!("[watched-folders] Could not ask {}: {}", window, err);
-            break Err(
-                "CompressO closed the window before changing its watched folders.".to_string(),
-            );
-        }
-        match tokio::time::timeout(RETRY_INTERVAL, &mut receiver).await {
-            Ok(Ok(result)) => break Ok(result),
-            Ok(Err(_)) => {
-                break Err(
-                    "CompressO closed the window before changing its watched folders.".to_string(),
-                );
-            }
-            Err(_) if Instant::now() >= deadline => {
-                break Err(
-                    "CompressO did not answer. Open CompressO once, then try again.".to_string(),
-                );
-            }
-            Err(_) => {}
-        }
-    };
-
-    if let Ok(mut requests) = pending().lock() {
-        requests.remove(&request_id);
-    }
-    result
-}
-
-/// The window that keeps & compresses the watched folders: the menu bar / tray window where there
-/// is one, otherwise the main window
-fn target_window(app_handle: &AppHandle) -> Option<&'static str> {
-    #[cfg(any(target_os = "macos", windows))]
-    if app_handle
-        .get_webview_window(crate::tray_popover::TRAY_WINDOW_LABEL)
-        .is_some()
-    {
-        return Some(crate::tray_popover::TRAY_WINDOW_LABEL);
-    }
-    if app_handle.get_webview_window("main").is_some() {
-        return Some("main");
-    }
-    None
+    crate::sys::window_bridge::forward(
+        app_handle,
+        CustomEvents::WatchedFoldersCommand.as_ref(),
+        &command,
+        "watched-folders",
+    )
+    .await
 }
 
 /// A folder to watch: an existing, readable folder that is not a filesystem root, with a trailing
@@ -222,14 +146,7 @@ fn normalized_folder_path(path: &str) -> Result<String, (&'static str, String)> 
 /// Answers a change asked for by the command line (see `forward`), from the window that applied it
 #[tauri::command]
 pub fn complete_watched_folders_command(request_id: String, result: Value) {
-    let Some(sender) = pending()
-        .lock()
-        .ok()
-        .and_then(|mut requests| requests.remove(&request_id))
-    else {
-        return;
-    };
-    let _ = sender.send(result);
+    crate::sys::window_bridge::complete(request_id, result);
 }
 
 #[cfg(test)]

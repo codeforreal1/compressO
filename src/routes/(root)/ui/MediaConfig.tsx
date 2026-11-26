@@ -14,6 +14,7 @@ import CompressionActions from './CompressionActions'
 import CompressionProgress from './CompressionProgress'
 import CustomizeMediaOnBatchActions from './CustomizeMediaOnBatchActions'
 import ExitMedia from './ExitMedia'
+import ExportContractButton from './ExportContractButton'
 import OutputSettings from './output-settings/-index'
 import PreviewBatchMedia from './PreviewBatchMedia'
 import PreviewClips from './PreviewClips'
@@ -134,7 +135,12 @@ function MediaConfig() {
                 }
                 className="text-xl font-bold"
               />
-              {!isCompressing ? <CompressionActions /> : null}
+              {!isCompressing ? (
+                <div className="flex items-center gap-1">
+                  <ExportContractButton />
+                  <CompressionActions />
+                </div>
+              ) : null}
             </div>
             <ScrollShadow className="h-[78vh] hxl:h-[82vh] pb-10" hideScrollBar>
               <OutputSettings

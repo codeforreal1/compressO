@@ -12,6 +12,7 @@ import {
   moveFile,
 } from '@/tauri/commands/fs'
 import { Image, Video } from '@/types/app'
+import type { PresetOutput } from '@/types/preset'
 import {
   applyFileNameTemplate,
   getLegacyPrefixFromTemplate,
@@ -668,6 +669,10 @@ export type QueueOutput = {
   outputs: QueueOutputFile[]
   /** The preset it was compressed with, whose save location & prefix are used */
   presetId?: string | null
+  /** Inline contract output override (for one-shot CLI contracts) */
+  presetOutput?: PresetOutput | null
+  /** Inline contract display name for `{preset}` template token */
+  presetName?: string | null
   /**
    * Output settings chosen instead of the app's & the preset's (on the command line, see
    * `CliJob`); each one left out (`null`) follows them
@@ -714,7 +719,7 @@ export async function saveQueueOutput(
     settings.skipLargerOutputs != null
       ? !settings.skipLargerOutputs
       : settingsStore.saveLargerOutputs
-  const presetOutput = getPresetOutput(output.presetId)
+  const presetOutput = output.presetOutput ?? getPresetOutput(output.presetId)
   const saveLocation = settings.outputFolder
     ? ('fixedFolder' as const)
     : presetOutput.saveLocation
@@ -790,7 +795,8 @@ export async function saveQueueOutput(
       output.outputs.length === 1
         ? settings.outputFileName
         : null
-    const presetName = getPresetNameForTemplate(output.presetId)
+    const presetName =
+      output.presetName ?? getPresetNameForTemplate(output.presetId)
     const savedPaths: string[] = []
     let replacedOriginal = false
     for (const file of output.outputs) {

@@ -368,7 +368,7 @@ To add a setting, update the store defaults/read/write, constants, the Settings 
 | Change | Start with |
 | --- | --- |
 | Output setting for a media type | `ui/output-settings/{video,image}-settings/`; config in `types/app.ts` + `-state.ts`; Rust `VideoCompressionConfig`/`ImageCompressionConfig`; `core/ffmpeg.rs`/`core/image.rs` |
-| Preset field | `types/preset.ts` field lists; `-presets.ts` pick/apply/save/describe; default preset UI |
+| Preset field | `types/preset.ts` field lists; `-presets.ts` pick/apply/save/describe; `src/contract/` types/spec/translate/validate; default preset UI |
 | App setting | `stores/settingsStore.ts` + `constants` + `ui/app-settings/*` + `SETTINGS_INDEX` |
 | Tauri command | `src-tauri/src/tauri_commands/*`, register in `main.rs`, wrapper in `src/tauri/commands/*`, capability if a plugin permission is needed |
 | Rust/Tauri event | `core/domain.rs` + `types/compression.ts`; always clean up listeners |

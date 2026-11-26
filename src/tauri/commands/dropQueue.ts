@@ -1,5 +1,11 @@
 import { core } from '@tauri-apps/api'
 
+import type {
+  AudioContract,
+  ImageContract,
+  VideoContract,
+} from '@/contract/types'
+
 /** Sent to every window with the whole queue when it changes */
 export const DROP_QUEUE_EVENT = 'drop-queue-changed'
 
@@ -99,6 +105,12 @@ export type CliJob = {
   fileNameTemplate: string | null
   useHardwareAcceleration: boolean | null
   reachTargetSizesWithoutAcceleration: boolean | null
+  cpuThreads: number | null
+  contracts?: {
+    video?: VideoContract | null
+    image?: ImageContract | null
+    audio?: AudioContract | null
+  } | null
 }
 
 export type DropQueueItemUpdate = Partial<

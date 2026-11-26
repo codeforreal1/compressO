@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import Accordion from '@/components/Accordion'
 import Button from '@/components/Button'
 import CodeBlock from '@/components/CodeBlock'
+import Divider from '@/components/Divider'
 import Icon from '@/components/Icon'
 import { toast } from '@/components/Toast'
 import {
@@ -61,10 +62,40 @@ const EXAMPLES = [
     id: 'targetSize',
     code: 'compresso clip.mov --hardware-acceleration=1 --reach-target-sizes-without-acceleration=1',
   },
+  {
+    id: 'cpuThreads',
+    code: 'compresso clip.mov --cpu-threads=4',
+  },
   { id: 'dryRun', code: 'compresso Trip --dry-run' },
   { id: 'json', code: 'compresso Trip --json' },
   { id: 'quiet', code: 'compresso Trip --quiet' },
   { id: 'list', code: 'compresso presets' },
+  {
+    id: 'contractFile',
+    code: 'compresso clip.mov --contract=video.contract.json',
+  },
+  {
+    id: 'contractStdin',
+    code: 'cat video.contract.json | compresso clip.mov --contract=-',
+  },
+  { id: 'contractSchema', code: 'compresso contract schema video' },
+  {
+    id: 'contractValidate',
+    code: 'compresso contract validate video.contract.json',
+  },
+  {
+    id: 'presetGet',
+    code: 'compresso presets get "Web" --media-type=video',
+  },
+  { id: 'presetCreate', code: 'compresso presets create web.contract.json' },
+  { id: 'presetUpdate', code: 'compresso presets update "Web" patch.json' },
+  { id: 'capabilities', code: 'compresso capabilities' },
+  { id: 'inspect', code: 'compresso inspect clip.mov' },
+  { id: 'cacheClear', code: 'compresso cache clear' },
+  { id: 'history', code: 'compresso history --limit=10' },
+  { id: 'queue', code: 'compresso queue list' },
+  { id: 'logs', code: 'compresso logs --tail=50' },
+  { id: 'about', code: 'compresso about' },
   { id: 'help', code: 'compresso --help' },
 ] as const
 
@@ -89,16 +120,19 @@ function UsageExamples() {
           <Icon name="caret" size={14} className={isOpen ? '-rotate-90' : ''} />
         )}
       >
-        <div className="flex flex-col gap-4">
-          {EXAMPLES.map(({ id, code }) => (
-            <div key={id}>
-              <CodeBlock code={code} isCopyable />
-              <p className="mt-1.5 text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
-                {t(
-                  `settings.commandLine.terminal.examples.${id === 'replace' && isWindows ? 'replaceWindows' : id}`,
-                )}
-              </p>
-            </div>
+        <div className="flex flex-col gap-3">
+          {EXAMPLES.map(({ id, code }, index) => (
+            <React.Fragment key={id}>
+              {index > 0 && <Divider />}
+              <div>
+                <CodeBlock code={code} isCopyable />
+                <p className="mt-1.5 text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                  {t(
+                    `settings.commandLine.terminal.examples.${id === 'replace' && isWindows ? 'replaceWindows' : id}`,
+                  )}
+                </p>
+              </div>
+            </React.Fragment>
           ))}
         </div>
       </AccordionItem>

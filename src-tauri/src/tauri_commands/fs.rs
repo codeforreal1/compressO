@@ -37,6 +37,47 @@ pub async fn get_svg_dimension(image_path: &str) -> Result<(u32, u32), String> {
     fs::get_svg_dimension(image_path)
 }
 
+/// Reads a UTF-8 text file chosen by the user (e.g. importing a JSON contract preset)
+#[tauri::command]
+pub async fn read_text_file(path: &str) -> Result<String, String> {
+    match tokio::fs::read_to_string(path).await {
+        Ok(contents) => {
+            log::info!("[fs] Read text file {} ({} bytes)", path, contents.len());
+            Ok(contents)
+        }
+        Err(err) => {
+            log::error!("[fs] Could not read text file {}: {}", path, err);
+            Err(fs::file_error(&err))
+        }
+    }
+}
+
+/// Writes a UTF-8 text file to a user-selected path (e.g. exporting a JSON contract)
+#[tauri::command]
+pub async fn write_text_file(path: &str, contents: String) -> Result<(), String> {
+    let target = PathBuf::from(path);
+    if let Some(parent) = target.parent().filter(|p| !p.as_os_str().is_empty()) {
+        if let Err(err) = tokio::fs::create_dir_all(parent).await {
+            log::error!(
+                "[fs] Could not create parent folder {}: {}",
+                parent.display(),
+                err
+            );
+            return Err(fs::file_error(&err));
+        }
+    }
+    match tokio::fs::write(&target, contents.as_bytes()).await {
+        Ok(()) => {
+            log::info!("[fs] Wrote text file {} ({} bytes)", path, contents.len());
+            Ok(())
+        }
+        Err(err) => {
+            log::error!("[fs] Could not write text file {}: {}", path, err);
+            Err(fs::file_error(&err))
+        }
+    }
+}
+
 #[derive(serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MoveFileResult {
@@ -295,14 +336,42 @@ pub async fn delete_file(path: &str) -> Result<(), String> {
     Ok(())
 }
 
-#[tauri::command]
-pub async fn delete_cache(app: tauri::AppHandle) -> Result<(), String> {
-    let ffmpeg = ffmpeg::FFMPEG::new(&app)?;
+/// Returns why cache clearing must wait right now, or `None` when safe to delete cached files
+pub fn cache_clear_block_reason(app: &tauri::AppHandle) -> Option<&'static str> {
+    if crate::tauri_commands::compression_status::is_compressing(app) {
+        return Some("Compression is currently in progress.");
+    }
+    if crate::tauri_commands::drop_queue::is_queue_active(app) {
+        return Some("Queue compression is currently active.");
+    }
+    let status = crate::tauri_commands::compression_status::get_compression_status(app.clone());
+    if status.has_unsaved_output {
+        return Some("Unsaved compressed outputs exist in the main window.");
+    }
+    if status.media_count > 0 {
+        return Some("Media is currently open in the main window.");
+    }
+    None
+}
+
+/// Clears cached files only when no compression, active queue item, or open/unsaved media uses them
+pub async fn clear_cache_if_idle(app: &tauri::AppHandle) -> Result<(), String> {
+    if let Some(reason) = cache_clear_block_reason(app) {
+        log::warn!("[fs] Refused cache clear: {}", reason);
+        return Err(reason.to_string());
+    }
+    let ffmpeg = ffmpeg::FFMPEG::new(app)?;
     if let Err(err) = fs::delete_stale_files(&ffmpeg.get_asset_dir(), 0).await {
         return Err(err.to_string());
     }
-    fs::reset_clipboard_dir(&app)?;
+    fs::reset_clipboard_dir(app)?;
+    log::info!("[fs] Cleared cache directory");
     Ok(())
+}
+
+#[tauri::command]
+pub async fn delete_cache(app: tauri::AppHandle) -> Result<(), String> {
+    clear_cache_if_idle(&app).await
 }
 
 #[tauri::command]

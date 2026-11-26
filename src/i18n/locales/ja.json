@@ -146,7 +146,8 @@
       "empty_audio": "オーディオのプリセットはまだありません。オーディオファイルの設定を調整し、「プリセット」メニューの横にあるプラスボタンを選択すると、プリセットとして保存できます。",
       "mediaType": "メディアの種類",
       "standardOutput": "保存場所とファイル名の付け方は「<setting>出力</setting>」で設定します。",
-      "cannotDeleteStandard": "標準プリセットは削除できません。"
+      "cannotDeleteStandard": "標準プリセットは削除できません。",
+      "newFromContract": "コントラクトから作成"
     },
     "dropZone": {
       "turnOnTrayIcon_macos": "ドロップゾーンはメニューバーにあります。先に「一般」で「<setting>メニューバーにアイコンを表示</setting>」をオンにしてください。",
@@ -397,7 +398,22 @@
           "json": "スクリプトや AI エージェント向けに、結果を JSON で出力します。",
           "quiet": "エラーだけを出力します。",
           "list": "プリセットを、メディアの種類ごとのデフォルトと合わせて一覧表示します。",
-          "help": "すべてのオプションと終了コードを表示します。"
+          "help": "すべてのオプションと終了コードを表示します。",
+          "contractFile": "ワンショットの CompressO JSON コントラクトファイルでメディアを圧縮します（metadata.set、thumbnail、subtitles に対応）。",
+          "contractStdin": "標準入力からワンショット JSON コントラクトを読み込みます。",
+          "contractSchema": "動画・画像・音声コントラクトの JSON スキーマを出力します。",
+          "contractValidate": "メディアの圧縮やプリセット保存を行わずに JSON コントラクトファイルを検証します。",
+          "presetGet": "保存済みプリセットを JSON コントラクトとして書き出します。",
+          "presetCreate": "JSON コントラクトファイルからアプリに新しいプリセットを作成します。",
+          "presetUpdate": "JSON コントラクトの部分的なフィールドで既存のプリセットを更新します。",
+          "cpuThreads": "この圧縮のみ CPU スレッド数を制限します（0 で利用可能な全スレッドを使用）。",
+          "capabilities": "アプリ版、利用可能な CPU スレッド、ハードウェアエンコーダ、ツール、ログパスを表示します。",
+          "inspect": "圧縮せずに解像度・コーデック・ストリーム・ダイナミックレンジ・EXIF を調査します。",
+          "cacheClear": "圧縮中や開いているメディアがないときに一時キャッシュを削除します。",
+          "history": "CompressO に記録された最近の圧縮履歴を表示します（history clear で消去）。",
+          "queue": "ドロップ／監視キューの状態確認や操作を行います（list, pause, resume, clear, cancel）。",
+          "logs": "現在のログファイルのパスと最近のログ行を表示します。",
+          "about": "CompressO のバージョン・ライセンス・作成者・Web/変更履歴/GitHub リンク・クレジットを表示します。"
         }
       },
       "agents": {
@@ -1115,5 +1131,25 @@
     "tooMany": "クリップが多すぎます。各クリップは 1 秒以上必要です。",
     "eachClip": "各 {{duration}}",
     "batchInvalid": "このクリップ設定では分割できない動画があります。"
+  },
+  "contract": {
+    "exportTooltip": "JSON コントラクトを書き出す",
+    "saveFile": "コントラクトを .json として保存",
+    "copy": "コントラクト JSON をコピー",
+    "saveType": "{{type}} コントラクトを保存 (.json)",
+    "copyType": "{{type}} コントラクト JSON をコピー",
+    "copied": "JSON コントラクトをクリップボードにコピーしました。",
+    "copyFailed": "JSON コントラクトをコピーできませんでした。",
+    "exported": "JSON コントラクトを書き出しました。",
+    "exportFailed": "JSON コントラクトを書き出せませんでした。",
+    "import": {
+      "title": "JSON コントラクトから新規プリセット",
+      "loadFile": ".json ファイルを読み込む",
+      "jsonLabel": "CompressO JSON コントラクト",
+      "validate": "検証",
+      "create": "プリセットを作成",
+      "invalidJson": "無効な JSON: {{message}}",
+      "readFailed": "コントラクトファイルを読み込めませんでした。"
+    }
   }
 }

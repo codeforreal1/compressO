@@ -149,7 +149,8 @@
       "empty_audio": "Nie ma jeszcze ustawień wstępnych audio. Dostosuj ustawienia pliku audio i wybierz przycisk plusa obok menu Ustawienie wstępne, aby zapisać je jako ustawienie wstępne.",
       "mediaType": "Typ multimediów",
       "standardOutput": "Jego miejsce zapisu i nazewnictwo plików ustawia się w sekcji <setting>Wyjście</setting>.",
-      "cannotDeleteStandard": "Nie można usunąć ustawienia Standardowego."
+      "cannotDeleteStandard": "Nie można usunąć ustawienia Standardowego.",
+      "newFromContract": "Nowy z kontraktu"
     },
     "dropZone": {
       "turnOnTrayIcon_macos": "Strefa upuszczania znajduje się na pasku menu. Najpierw włącz opcję „<setting>Pokazuj ikonę na pasku menu</setting>” w sekcji Ogólne.",
@@ -400,7 +401,22 @@
           "json": "Wyświetl wyniki jako JSON, dla skryptów i agentów AI.",
           "quiet": "Wyświetlaj tylko błędy.",
           "list": "Wyświetl ustawienia wstępne, z domyślnym dla każdego typu plików.",
-          "help": "Pokaż wszystkie opcje i kody wyjścia."
+          "help": "Pokaż wszystkie opcje i kody wyjścia.",
+          "contractFile": "Kompresuj multimedia za pomocą jednorazowego pliku kontraktu JSON CompressO (obsługuje metadata.set, thumbnail i subtitles).",
+          "contractStdin": "Odczytaj jednorazowy kontrakt JSON ze standardowego wejścia.",
+          "contractSchema": "Wyświetl schemat JSON dla kontraktów wideo, obrazu lub dźwięku.",
+          "contractValidate": "Sprawdź poprawność pliku kontraktu JSON bez kompresji multimediów ani zapisywania presetu.",
+          "presetGet": "Eksportuj zapisany preset jako kontrakt JSON.",
+          "presetCreate": "Utwórz nowy preset w aplikacji z pliku kontraktu JSON.",
+          "presetUpdate": "Zaktualizuj istniejący preset za pomocą częściowych pól kontraktu JSON.",
+          "cpuThreads": "Ogranicz liczbę wątków CPU tylko dla tej kompresji (0 używa wszystkich dostępnych).",
+          "capabilities": "Pokaż wersję aplikacji, dostępne wątki CPU, enkodery sprzętowe, narzędzia i ścieżkę logów.",
+          "inspect": "Sprawdź wymiary, kodeki, strumienie, zakres dynamiczny i metadane EXIF bez kompresji.",
+          "cacheClear": "Wyczyść tymczasową pamięć podręczną, gdy nie trwa kompresja ani nie ma otwartych mediów.",
+          "history": "Wyświetl ostatnie kompresje zapisane przez CompressO (history clear czyści historię).",
+          "queue": "Sprawdź lub kontroluj kolejkę kompresji (list, pause, resume, clear, cancel).",
+          "logs": "Pokaż ścieżkę bieżącego pliku dziennika i ostatnie wiersze.",
+          "about": "Pokaż wersję CompressO, licencję, autora, linki do strony/dziennika zmian/GitHub i podziękowania."
         }
       },
       "agents": {
@@ -1167,5 +1183,25 @@
     "tooMany": "Zbyt wiele klipów. Każdy klip musi mieć co najmniej 1 sekundę.",
     "eachClip": "{{duration}} każdy",
     "batchInvalid": "Niektórych filmów nie można podzielić przy użyciu tych ustawień klipów."
+  },
+  "contract": {
+    "exportTooltip": "Eksportuj kontrakt JSON",
+    "saveFile": "Zapisz kontrakt jako .json",
+    "copy": "Kopiuj JSON kontraktu",
+    "saveType": "Zapisz kontrakt {{type}} (.json)",
+    "copyType": "Kopiuj JSON kontraktu {{type}}",
+    "copied": "Kontrakt JSON skopiowano do schowka.",
+    "copyFailed": "Nie udało się skopiować kontraktu JSON.",
+    "exported": "Kontrakt JSON wyeksportowano.",
+    "exportFailed": "Nie udało się wyeksportować kontraktu JSON.",
+    "import": {
+      "title": "Nowy preset z kontraktu JSON",
+      "loadFile": "Wczytaj plik .json",
+      "jsonLabel": "Kontrakt JSON CompressO",
+      "validate": "Sprawdź",
+      "create": "Utwórz preset",
+      "invalidJson": "Nieprawidłowy JSON: {{message}}",
+      "readFailed": "Nie udało się odczytać pliku kontraktu."
+    }
   }
 }

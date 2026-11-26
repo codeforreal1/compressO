@@ -20,6 +20,7 @@ pub struct Overrides {
     pub file_name_template: Option<String>,
     pub use_hardware_acceleration: Option<bool>,
     pub reach_target_sizes_without_acceleration: Option<bool>,
+    pub cpu_threads: Option<usize>,
 }
 
 #[derive(Default, Clone, Debug)]
@@ -30,6 +31,10 @@ pub struct CompressOptions {
     pub presets: HashMap<&'static str, String>,
     /// For a single file: its preset, whatever its media type (`--preset=`)
     pub preset: Option<String>,
+    /// Contract files (`--contract=<file|->`), loaded and validated before queuing
+    pub contract_files: Vec<String>,
+    /// Pre-parsed one-shot CompressO JSON contracts by media type (`video`, `image`, `audio`)
+    pub contracts: HashMap<&'static str, Value>,
     /// Saved here instead of the presets' save locations: a folder, or for a single file the file
     /// to save, whose extension is the format it is converted to
     pub output: Option<PathBuf>,
@@ -110,6 +115,8 @@ pub struct EffectiveSettings {
     /// Set when a naming template was chosen; otherwise each preset's template is used
     #[serde(rename = "filenameTemplate", skip_serializing_if = "Option::is_none")]
     pub file_name_template: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cpu_threads: Option<usize>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub output_folder: Option<String>,
 }
@@ -250,13 +257,13 @@ fn is_file_output(path: &Path, settings: &Settings) -> bool {
 fn destination_folder(
     file_path: &str,
     relative_dir: &str,
-    preset: &Preset,
+    preset_output: &crate::settings::PresetOutput,
     options: &CompressOptions,
     preserve_folder_structure: bool,
 ) -> String {
     let folder = match &options.output {
         Some(folder) => Some(folder.display().to_string()),
-        None if preset.output.save_location == "fixedFolder" => preset.output.save_folder.clone(),
+        None if preset_output.save_location == "fixedFolder" => preset_output.save_folder.clone(),
         None => None,
     };
     match folder {
@@ -271,6 +278,37 @@ fn destination_folder(
     }
 }
 
+fn contract_preset_output(
+    contract: &Value,
+    fallback: &crate::settings::PresetOutput,
+) -> crate::settings::PresetOutput {
+    let Some(output) = contract.get("output").filter(|value| value.is_object()) else {
+        return fallback.clone();
+    };
+    let save_location = match output["saveTo"].as_str() {
+        Some("folder") => "fixedFolder".to_string(),
+        Some("ask") => "ask".to_string(),
+        _ => "sameFolder".to_string(),
+    };
+    let save_folder = output["folder"].as_str().map(String::from);
+    let template = output["fileNameTemplate"].as_str().map(String::from);
+    crate::settings::PresetOutput {
+        save_location,
+        save_folder,
+        file_name_template: template,
+        file_prefix: String::new(),
+    }
+}
+
+fn contract_display_name(contract: &Value) -> String {
+    contract["name"]
+        .as_str()
+        .map(str::trim)
+        .filter(|name| !name.is_empty())
+        .unwrap_or("Custom contract")
+        .to_string()
+}
+
 /// Compresses the media of the inputs, telling `on_event` what happens. Stops early (cancelling the
 /// media not compressed yet) once `cancel` turns true.
 pub async fn run(
@@ -279,10 +317,50 @@ pub async fn run(
     mut cancel: tokio::sync::watch::Receiver<bool>,
 ) -> Result<Report, CliError> {
     check_inputs(options)?;
+
+    // Read any `--contract=<file|->` inputs up front before launching/connecting to the app
+    let mut raw_contracts: HashMap<&'static str, Value> = options.contracts.clone();
+    for path in &options.contract_files {
+        let parsed = crate::contract::read_json_input(path)?;
+        let mt = parsed["mediaType"].as_str().unwrap_or_default();
+        let mt = crate::contract::check_media_type(mt).map_err(|_| {
+            CliError::usage(format!(
+                "Contract {path} must specify \"mediaType\": \"video\", \"image\", or \"audio\"."
+            ))
+        })?;
+        if raw_contracts.contains_key(mt) {
+            return Err(CliError::usage(format!(
+                "Only one contract can be given per media type (got multiple for {mt})."
+            )));
+        }
+        if options.presets.contains_key(mt) {
+            return Err(CliError::usage(format!(
+                "Use either --contract= or --{mt}-preset=, not both."
+            )));
+        }
+        raw_contracts.insert(mt, parsed);
+    }
+    for mt in raw_contracts.keys() {
+        if options.presets.contains_key(mt) {
+            return Err(CliError::usage(format!(
+                "Use either a {mt} contract or --{mt}-preset=, not both."
+            )));
+        }
+    }
+
     let mut connection = Connection::open(|status| on_event(Event::Startup(status))).await?;
     let answer = connection.request(json!({ "type": "getSettings" })).await?;
     let settings: Settings = serde_json::from_value(answer["settings"].clone())
         .map_err(|_| CliError::app("CompressO sent settings this command line cannot read."))?;
+
+    // Validate & normalize any inline one-shot contracts via the app
+    let mut contracts: HashMap<&'static str, Value> = HashMap::new();
+    for (mt, raw) in raw_contracts {
+        let validated =
+            crate::contract::validate_with_connection(&mut connection, raw, Some("oneShot"), false)
+                .await?;
+        contracts.insert(mt, validated["contract"].clone());
+    }
 
     // Every preset chosen must exist, even for media types not among the inputs
     let mut presets: HashMap<&str, &Preset> = HashMap::new();
@@ -352,9 +430,9 @@ pub async fn run(
             .into_iter()
             .find(|media_type| Some(*media_type) == files[0]["mediaType"].as_str())
             .unwrap_or("video");
-        if options.presets.contains_key(media_type) {
+        if options.presets.contains_key(media_type) || contracts.contains_key(media_type) {
             return Err(CliError::usage(format!(
-                "Use either --preset= or --{media_type}-preset=, not both."
+                "Use either --preset= or --{media_type}-preset= / --contract=, not both."
             )));
         }
         presets.insert(media_type, settings.find_preset(media_type, Some(name))?);
@@ -436,25 +514,33 @@ pub async fn run(
         }
     }
 
-    // The media types among the inputs, & the presets they are compressed with
+    // The media types among the inputs, & the presets/contracts they are compressed with
     let mut used: BTreeMap<String, String> = BTreeMap::new();
+    let mut effective_outputs: HashMap<String, crate::settings::PresetOutput> = HashMap::new();
     for file in &files {
         let media_type = file["mediaType"].as_str().unwrap_or("video");
-        if let Some(preset) = presets.get(media_type) {
+        if let Some(contract) = contracts.get(media_type) {
+            used.insert(media_type.to_string(), contract_display_name(contract));
+            let standard_output = settings.find_preset(media_type, None)?.output.clone();
+            effective_outputs.insert(
+                media_type.to_string(),
+                contract_preset_output(contract, &standard_output),
+            );
+        } else if let Some(preset) = presets.get(media_type) {
             used.insert(media_type.to_string(), preset.name.clone());
+            effective_outputs.insert(media_type.to_string(), preset.output.clone());
         }
     }
     // Nothing here can ask where to save
     if options.output.is_none() {
-        for media_type in used.keys() {
-            let preset = presets[media_type.as_str()];
-            if !preset.output.saves_automatically() {
+        for (media_type, label) in &used {
+            let output = &effective_outputs[media_type];
+            if !output.saves_automatically() {
                 return Err(CliError::new(
                     exit_code::NEEDS_OUTPUT,
                     "needsOutput",
                     format!(
-                        "The {media_type} preset \"{}\" asks where to save each time. Choose a folder with --output=<folder>.",
-                        preset.name
+                        "The {media_type} preset/contract \"{label}\" asks where to save each time. Choose a folder with --output=<folder>.",
                     ),
                 ));
             }
@@ -482,6 +568,7 @@ pub async fn run(
         },
         file_name_prefix: overrides.file_name_prefix.clone(),
         file_name_template: overrides.file_name_template.clone(),
+        cpu_threads: overrides.cpu_threads,
         // The file's folder, for a file
         output_folder: match &output_file {
             Some(path) => path.parent().map(|folder| folder.display().to_string()),
@@ -496,7 +583,7 @@ pub async fn run(
     let mut report = Report {
         status: String::new(),
         job_id: None,
-        presets: used,
+        presets: used.clone(),
         settings: effective,
         files: Vec::new(),
         skipped,
@@ -508,10 +595,7 @@ pub async fn run(
         let media_type = file["mediaType"].as_str().unwrap_or("video").to_string();
         FileResult {
             input: file["path"].as_str().unwrap_or_default().to_string(),
-            preset: presets
-                .get(media_type.as_str())
-                .map(|preset| preset.name.clone())
-                .unwrap_or_default(),
+            preset: used.get(&media_type).cloned().unwrap_or_default(),
             media_type,
             status: status.to_string(),
             output: None,
@@ -536,11 +620,11 @@ pub async fn run(
                     result.output_folder = report.settings.output_folder.clone();
                     return result;
                 }
-                let preset = presets[result.media_type.as_str()];
+                let preset_output = &effective_outputs[result.media_type.as_str()];
                 result.output_folder = Some(destination_folder(
                     &result.input,
                     file["relativeDir"].as_str().unwrap_or_default(),
-                    preset,
+                    preset_output,
                     options,
                     report.settings.output.preserve_folder_structure,
                 ));
@@ -553,9 +637,14 @@ pub async fn run(
 
     let mut job = json!({
         "presetIds": {
-            "video": chosen.contains("video").then(|| &presets["video"].id),
-            "image": chosen.contains("image").then(|| &presets["image"].id),
-            "audio": chosen.contains("audio").then(|| &presets["audio"].id),
+            "video": (!contracts.contains_key("video") && chosen.contains("video")).then(|| &presets["video"].id),
+            "image": (!contracts.contains_key("image") && chosen.contains("image")).then(|| &presets["image"].id),
+            "audio": (!contracts.contains_key("audio") && chosen.contains("audio")).then(|| &presets["audio"].id),
+        },
+        "contracts": {
+            "video": contracts.get("video"),
+            "image": contracts.get("image"),
+            "audio": contracts.get("audio"),
         },
         "outputFolder": report.settings.output_folder,
         "outputFileName": output_file
@@ -583,6 +672,9 @@ pub async fn run(
         ),
     ] {
         job[key] = json!(value);
+    }
+    if let Some(threads) = overrides.cpu_threads {
+        job["cpuThreads"] = json!(threads);
     }
 
     on_event(Event::Plan(&report));

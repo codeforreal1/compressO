@@ -146,7 +146,8 @@
       "empty_audio": "尚無音訊預設。調整某個音訊檔案的設定，然後選擇「預設」選單旁的加號按鈕，即可儲存為預設。",
       "mediaType": "媒體類型",
       "standardOutput": "其儲存位置和檔案命名方式在「<setting>輸出</setting>」中設定。",
-      "cannotDeleteStandard": "無法刪除標準預設。"
+      "cannotDeleteStandard": "無法刪除標準預設。",
+      "newFromContract": "從契約新增"
     },
     "dropZone": {
       "turnOnTrayIcon_macos": "拖放區位於選單列中。請先在「一般」中開啟「<setting>顯示選單列圖示</setting>」。",
@@ -397,7 +398,22 @@
           "json": "以 JSON 輸出結果，供指令碼與 AI 代理使用。",
           "quiet": "僅輸出錯誤。",
           "list": "列出您的預設，以及每種媒體類型的預設值預設。",
-          "help": "顯示所有選項與結束代碼。"
+          "help": "顯示所有選項與結束代碼。",
+          "contractFile": "使用一次性 CompressO JSON 契約檔案壓縮媒體（支援 metadata.set、thumbnail 與 subtitles）。",
+          "contractStdin": "從標準輸入讀取一次性 JSON 契約。",
+          "contractSchema": "輸出影片、圖片或音訊契約的 JSON Schema。",
+          "contractValidate": "驗證 JSON 契約檔案，不執行壓縮也不儲存預設。",
+          "presetGet": "將已儲存的預設匯出為 JSON 契約。",
+          "presetCreate": "從 JSON 契約檔案在應用程式中建立新預設。",
+          "presetUpdate": "使用部分 JSON 契約欄位更新現有預設。",
+          "cpuThreads": "僅針對本次壓縮限制 CPU 執行緒數（0 表示使用全部可用執行緒）。",
+          "capabilities": "檢視應用程式版本、可用 CPU 執行緒、硬體編碼器、工具狀態與日誌路徑。",
+          "inspect": "在不壓縮的情況下檢查尺寸、編解碼器、串流、動態範圍與 EXIF 中繼資料。",
+          "cacheClear": "在沒有進行中的壓縮或開啟中的媒體時清除暫存快取。",
+          "history": "列出 CompressO 記錄的近期壓縮歷史（使用 history clear 清除）。",
+          "queue": "檢視或控制拖放／監控壓縮佇列（list、pause、resume、clear、cancel）。",
+          "logs": "顯示目前日誌檔案路徑與近期日誌內容。",
+          "about": "顯示 CompressO 版本、授權條款、作者、網站／更新日誌／GitHub 連結與開源工具致謝。"
         }
       },
       "agents": {
@@ -1115,5 +1131,25 @@
     "tooMany": "片段過多。每個片段至少需要 1 秒。",
     "eachClip": "每個 {{duration}}",
     "batchInvalid": "部分影片無法使用此片段設定進行分割。"
+  },
+  "contract": {
+    "exportTooltip": "匯出 JSON 契約",
+    "saveFile": "將契約儲存為 .json",
+    "copy": "複製契約 JSON",
+    "saveType": "儲存{{type}}契約 (.json)",
+    "copyType": "複製{{type}}契約 JSON",
+    "copied": "已將 JSON 契約複製到剪貼簿。",
+    "copyFailed": "無法複製 JSON 契約。",
+    "exported": "已匯出 JSON 契約。",
+    "exportFailed": "無法匯出 JSON 契約。",
+    "import": {
+      "title": "從 JSON 契約新增預設",
+      "loadFile": "載入 .json 檔案",
+      "jsonLabel": "CompressO JSON 契約",
+      "validate": "驗證",
+      "create": "建立預設",
+      "invalidJson": "無效的 JSON：{{message}}",
+      "readFailed": "無法讀取契約檔案。"
+    }
   }
 }

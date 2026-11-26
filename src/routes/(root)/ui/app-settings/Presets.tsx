@@ -1,4 +1,5 @@
-import { Tab } from '@heroui/react'
+import { DropdownItem, DropdownMenu, DropdownTrigger, Tab } from '@heroui/react'
+import { save } from '@tauri-apps/plugin-dialog'
 import { AnimatePresence, motion } from 'framer-motion'
 import cloneDeep from 'lodash/cloneDeep'
 import React from 'react'
@@ -7,11 +8,14 @@ import { useSnapshot } from 'valtio'
 
 import AnimatedLabel from '@/components/AnimatedLabel'
 import Button from '@/components/Button'
+import Dropdown from '@/components/Dropdown'
 import Icon from '@/components/Icon'
 import SettingLink from '@/components/SettingLink'
 import Tabs from '@/components/Tabs'
 import TextInput from '@/components/TextInput'
+import { toast } from '@/components/Toast'
 import Tooltip from '@/components/Tooltip'
+import { presetToContract } from '@/contract'
 import { t } from '@/i18n'
 import {
   generatePresetId,
@@ -21,11 +25,15 @@ import {
   presetsStore,
   setDefaultPreset,
 } from '@/stores/presetsStore'
+import { logError, logInfo } from '@/tauri/commands/app'
+import { writeTextFile } from '@/tauri/commands/fs'
 import {
   type Preset,
   type PresetMediaType,
   STANDARD_PRESET_ID,
 } from '@/types/preset'
+import { glassMenuItem } from '@/utils/glass'
+import ImportContractModal from './ImportContractModal'
 import PresetOutputFields from './PresetOutputFields'
 import {
   deletePresetAndUnlinkMedia,
@@ -34,6 +42,7 @@ import {
   describeVideoPresetSettings,
   getPreset as getPresetOfType,
 } from '../../-presets'
+import { showContractExportedToast } from '../../-toasts'
 
 function describePreset(preset: Preset) {
   switch (preset.mediaType) {
@@ -57,6 +66,8 @@ function duplicatePreset(preset: Preset) {
       t('settings.presets.copyName', { name: preset.name }),
       preset.mediaType,
     ),
+    revision: 1,
+    updatedAt: new Date().toISOString(),
   })
 }
 
@@ -106,6 +117,59 @@ function PresetCard({ preset, isFirst, isLast, isDefault }: PresetCardProps) {
       return
     }
     target.name = trimmedName
+    target.revision = (target.revision ?? 1) + 1
+    target.updatedAt = new Date().toISOString()
+  }
+
+  const handleContractAction = async (action: 'copy' | 'save') => {
+    const presetLabel = `${preset.mediaType}:${preset.id} (${isStandard ? 'Standard' : preset.name})`
+    let jsonText: string
+    try {
+      const contract = presetToContract({
+        ...preset,
+        name: isStandard ? 'Standard' : preset.name,
+      })
+      jsonText = `${JSON.stringify(contract, null, 2)}\n`
+    } catch (error) {
+      logError(`[contract] Could not serialize preset ${presetLabel}`, error)
+      toast.error(
+        action === 'copy'
+          ? t('contract.copyFailed')
+          : t('contract.exportFailed'),
+      )
+      return
+    }
+    if (action === 'copy') {
+      try {
+        await navigator.clipboard.writeText(jsonText)
+        logInfo(`[contract] Copied preset ${presetLabel} contract to clipboard`)
+        toast.success(t('contract.copied'))
+      } catch (error) {
+        logError(
+          `[contract] Could not copy preset ${presetLabel} contract to clipboard`,
+          error,
+        )
+        toast.error(t('contract.copyFailed'))
+      }
+      return
+    }
+    try {
+      const slug = (isStandard ? 'standard' : preset.name)
+        .toLowerCase()
+        .replace(/[^a-z0-9-_]+/g, '-')
+        .replace(/^-|-$/g, '')
+      const targetPath = await save({
+        defaultPath: `${slug || 'preset'}.contract.json`,
+        filters: [{ name: 'JSON', extensions: ['json'] }],
+      })
+      if (!targetPath) return
+      await writeTextFile(targetPath, jsonText)
+      logInfo(`[contract] Exported preset ${presetLabel} to ${targetPath}`)
+      showContractExportedToast(targetPath)
+    } catch (error) {
+      logError(`[contract] Could not export preset ${presetLabel}`, error)
+      toast.error(t('contract.exportFailed'))
+    }
   }
 
   return (
@@ -187,6 +251,43 @@ function PresetCard({ preset, isFirst, isLast, isDefault }: PresetCardProps) {
               <Icon name="copy" />
             </Button>
           </Tooltip>
+          <Dropdown placement="bottom-end">
+            <DropdownTrigger>
+              <Button
+                isIconOnly
+                size="sm"
+                variant="light"
+                aria-label={t('contract.exportTooltip')}
+              >
+                <Tooltip
+                  content={t('contract.exportTooltip')}
+                  aria-label={t('contract.exportTooltip')}
+                >
+                  <Icon name="terminal" size={16} />
+                </Tooltip>
+              </Button>
+            </DropdownTrigger>
+            <DropdownMenu
+              aria-label={t('contract.exportTooltip')}
+              itemClasses={{ base: glassMenuItem }}
+              onAction={(key) =>
+                void handleContractAction(key as 'copy' | 'save')
+              }
+            >
+              <DropdownItem
+                key="copy"
+                startContent={<Icon name="copy" size={15} />}
+              >
+                {t('contract.copy')}
+              </DropdownItem>
+              <DropdownItem
+                key="save"
+                startContent={<Icon name="download" size={15} />}
+              >
+                {t('contract.saveFile')}
+              </DropdownItem>
+            </DropdownMenu>
+          </Dropdown>
           {/* The Standard preset cannot be deleted: its button is disabled, & says why when
               hovered (a disabled button gets no hover, so its wrapper shows the tooltip) */}
           {isStandard ? (
@@ -252,7 +353,11 @@ function PresetCard({ preset, isFirst, isLast, isDefault }: PresetCardProps) {
             presetName={preset.name}
             onChange={(output) => {
               const target = getPreset()
-              if (target) target.output = output
+              if (target) {
+                target.output = output
+                target.revision = (target.revision ?? 1) + 1
+                target.updatedAt = new Date().toISOString()
+              }
             }}
           />
         </div>
@@ -302,22 +407,32 @@ const PRESET_TABS: PresetMediaType[] = ['video', 'image', 'audio']
 function Presets() {
   const { t } = useTranslation()
   const [mediaType, setMediaType] = React.useState<PresetMediaType>('video')
+  const [isImportOpen, setIsImportOpen] = React.useState(false)
 
   return (
     <>
-      <Tabs
-        aria-label={t('settings.presets.mediaType')}
-        size="sm"
-        selectedKey={mediaType}
-        onSelectionChange={(key) => setMediaType(key as PresetMediaType)}
-        className="mb-4"
-        // Compact, like the batch's filter tabs
-        classNames={{ tabContent: 'text-[11px]', tab: 'h-5' }}
-      >
-        {PRESET_TABS.map((type) => (
-          <Tab key={type} title={t(`outputSettings.tabs.${type}` as const)} />
-        ))}
-      </Tabs>
+      <div className="flex items-center justify-between gap-2 mb-4">
+        <Tabs
+          aria-label={t('settings.presets.mediaType')}
+          size="sm"
+          selectedKey={mediaType}
+          onSelectionChange={(key) => setMediaType(key as PresetMediaType)}
+          // Compact, like the batch's filter tabs
+          classNames={{ tabContent: 'text-[11px]', tab: 'h-5' }}
+        >
+          {PRESET_TABS.map((type) => (
+            <Tab key={type} title={t(`outputSettings.tabs.${type}` as const)} />
+          ))}
+        </Tabs>
+        <Button
+          size="sm"
+          variant="flat"
+          startContent={<Icon name="plus" size={14} />}
+          onPress={() => setIsImportOpen(true)}
+        >
+          {t('settings.presets.newFromContract')}
+        </Button>
+      </div>
       <AnimatePresence mode="wait" initial={false}>
         <motion.div
           key={mediaType}
@@ -329,6 +444,12 @@ function Presets() {
           <PresetList mediaType={mediaType} />
         </motion.div>
       </AnimatePresence>
+      <ImportContractModal
+        isOpen={isImportOpen}
+        defaultMediaType={mediaType}
+        onClose={() => setIsImportOpen(false)}
+        onCreated={(createdType) => setMediaType(createdType)}
+      />
     </>
   )
 }

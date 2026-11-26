@@ -147,7 +147,8 @@
       "empty_audio": "Es gibt noch keine Audio-Voreinstellungen. Passen Sie die Einstellungen einer Audiodatei an und wählen Sie die Plus-Schaltfläche neben dem Menü „Voreinstellung“, um sie als Voreinstellung zu speichern.",
       "mediaType": "Medientyp",
       "standardOutput": "Speicherort und Dateibenennung werden unter „<setting>Ausgabe</setting>“ festgelegt.",
-      "cannotDeleteStandard": "Die Standard-Voreinstellung kann nicht gelöscht werden."
+      "cannotDeleteStandard": "Die Standard-Voreinstellung kann nicht gelöscht werden.",
+      "newFromContract": "Neu aus Vertrag"
     },
     "dropZone": {
       "turnOnTrayIcon_macos": "Die Ablagezone befindet sich in der Menüleiste. Aktivieren Sie zuerst „<setting>Symbol in der Menüleiste anzeigen</setting>“ unter „Allgemein“.",
@@ -398,7 +399,22 @@
           "json": "Die Ergebnisse als JSON ausgeben, für Skripte und KI-Agenten.",
           "quiet": "Nur Fehler ausgeben.",
           "list": "Ihre Voreinstellungen auflisten, mit der Standard-Voreinstellung jedes Medientyps.",
-          "help": "Alle Optionen und die Exit-Codes anzeigen."
+          "help": "Alle Optionen und die Exit-Codes anzeigen.",
+          "contractFile": "Medien mit einer einmaligen CompressO-JSON-Contract-Datei komprimieren (unterstützt metadata.set, thumbnail und subtitles).",
+          "contractStdin": "Einen einmaligen JSON-Contract von der Standardeingabe lesen.",
+          "contractSchema": "Das JSON-Schema für Video-, Bild- oder Audio-Contracts ausgeben.",
+          "contractValidate": "Eine JSON-Contract-Datei prüfen, ohne Medien zu komprimieren oder ein Preset zu speichern.",
+          "presetGet": "Ein gespeichertes Preset als JSON-Contract exportieren.",
+          "presetCreate": "Ein neues Preset in der App aus einer JSON-Contract-Datei erstellen.",
+          "presetUpdate": "Ein vorhandenes Preset mit teilweisen JSON-Contract-Feldern aktualisieren.",
+          "cpuThreads": "CPU-Encoding-Threads nur für diese Komprimierung begrenzen (0 nutzt alle verfügbaren Threads).",
+          "capabilities": "App-Version, verfügbare CPU-Threads, Hardware-Encoder, Tools und Log-Pfad anzeigen.",
+          "inspect": "Abmessungen, Codecs, Streams, Dynamikumfang und EXIF-Metadaten ohne Komprimierung prüfen.",
+          "cacheClear": "Temporäre Cache-Dateien löschen, wenn keine Komprimierung oder Medien geöffnet sind.",
+          "history": "Zuletzt von CompressO erfasste Komprimierungen auflisten (history clear zum Zurücksetzen).",
+          "queue": "Drop-/Überwachungs-Warteschlange prüfen oder steuern (list, pause, resume, clear, cancel).",
+          "logs": "Aktuellen Log-Dateipfad und die letzten Log-Zeilen anzeigen.",
+          "about": "CompressO-Version, Lizenz, Autor, Website-/Changelog-/GitHub-Links und Open-Source-Credits anzeigen."
         }
       },
       "agents": {
@@ -1131,5 +1147,25 @@
     "tooMany": "Zu viele Clips. Jeder Clip muss mindestens 1 Sekunde lang sein.",
     "eachClip": "je {{duration}}",
     "batchInvalid": "Einige Videos können mit diesen Clip-Einstellungen nicht aufgeteilt werden."
+  },
+  "contract": {
+    "exportTooltip": "JSON-Vertrag exportieren",
+    "saveFile": "Vertrag als .json speichern",
+    "copy": "Vertrags-JSON kopieren",
+    "saveType": "{{type}}-Vertrag speichern (.json)",
+    "copyType": "{{type}}-Vertrags-JSON kopieren",
+    "copied": "JSON-Vertrag in die Zwischenablage kopiert.",
+    "copyFailed": "JSON-Vertrag konnte nicht kopiert werden.",
+    "exported": "JSON-Vertrag exportiert.",
+    "exportFailed": "JSON-Vertrag konnte nicht exportiert werden.",
+    "import": {
+      "title": "Neue Vorgabe aus JSON-Vertrag",
+      "loadFile": ".json-Datei laden",
+      "jsonLabel": "CompressO-JSON-Vertrag",
+      "validate": "Prüfen",
+      "create": "Vorgabe erstellen",
+      "invalidJson": "Ungültiges JSON: {{message}}",
+      "readFailed": "Vertragsdatei konnte nicht gelesen werden."
+    }
   }
 }

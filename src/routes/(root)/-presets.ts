@@ -12,6 +12,7 @@ import {
 import { getAudioStreams } from '@/tauri/commands/ffprobe'
 import { ImageConfig, VideoConfig } from '@/types/app'
 import {
+  AUDIO_CODECS,
   type BatchResolution,
   extensions,
   getAudioFileOutputExtension,
@@ -63,7 +64,6 @@ import {
   normalizeBatchMediaConfig,
   videoConfigInitialState,
 } from './-state'
-import { AUDIO_CODECS } from './ui/output-settings/video-settings/audio/AudioCodec'
 
 /** Video preset settings that only apply to a video with audio */
 const audioPresetFields: VideoPresetField[] = [

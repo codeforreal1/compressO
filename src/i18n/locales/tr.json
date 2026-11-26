@@ -147,7 +147,8 @@
       "empty_audio": "Henüz ses ön ayarı yok. Bir ses dosyasının ayarlarını düzenleyin ve bunları ön ayar olarak kaydetmek için Ön ayar menüsünün yanındaki artı düğmesini seçin.",
       "mediaType": "Medya türü",
       "standardOutput": "Kaydetme konumu ve dosya adlandırma <setting>Çıktı</setting> bölümünde ayarlanır.",
-      "cannotDeleteStandard": "Standart ön ayar silinemez."
+      "cannotDeleteStandard": "Standart ön ayar silinemez.",
+      "newFromContract": "Sözleşmeden yeni"
     },
     "dropZone": {
       "turnOnTrayIcon_macos": "Bırakma alanı menü çubuğundadır. Önce Genel’de “<setting>Menü çubuğu simgesini göster</setting>” seçeneğini açın.",
@@ -398,7 +399,22 @@
           "json": "Sonuçları betikler ve yapay zekâ ajanları için JSON olarak yazdırın.",
           "quiet": "Yalnızca hataları yazdırın.",
           "list": "Ön ayarlarınızı, her medya türünün varsayılanıyla birlikte listeleyin.",
-          "help": "Tüm seçenekleri ve çıkış kodlarını gösterin."
+          "help": "Tüm seçenekleri ve çıkış kodlarını gösterin.",
+          "contractFile": "Tek seferlik CompressO JSON sözleşme dosyasıyla medyayı sıkıştırın (metadata.set, thumbnail ve subtitles desteklenir).",
+          "contractStdin": "Standart girdiden tek seferlik JSON sözleşmesi okuyun.",
+          "contractSchema": "Video, görsel veya ses sözleşmeleri için JSON Şemasını yazdırın.",
+          "contractValidate": "Medya sıkıştırmadan veya ön ayar kaydetmeden bir JSON sözleşme dosyasını doğrulayın.",
+          "presetGet": "Kayıtlı bir ön ayarı JSON sözleşmesi olarak dışa aktarın.",
+          "presetCreate": "Bir JSON sözleşme dosyasından uygulamada yeni ön ayar oluşturun.",
+          "presetUpdate": "Kısmi JSON sözleşme alanlarıyla mevcut bir ön ayarı güncelleyin.",
+          "cpuThreads": "Yalnızca bu sıkıştırma için CPU iş parçacıklarını sınırlayın (0 tüm çekirdekleri kullanır).",
+          "capabilities": "Uygulama sürümü, kullanılabilir CPU iş parçacıkları, donanım kodlayıcılar ve günlük yolunu gösterir.",
+          "inspect": "Sıkıştırmadan boyutları, kodekleri, akışları, dinamik aralığı ve EXIF verilerini inceler.",
+          "cacheClear": "Etkin sıkıştırma veya açık medya yokken geçici önbelleği temizler.",
+          "history": "CompressO tarafından kaydedilen son sıkıştırmaları listeler (temizlemek için history clear).",
+          "queue": "Bırakma/izleme kuyruğunu denetler veya yönetir (list, pause, resume, clear, cancel).",
+          "logs": "Geçerli günlük dosyası yolunu ve son günlük satırlarını gösterir.",
+          "about": "CompressO sürümünü, lisansını, yazarını, web/değişiklik günlüğü/GitHub bağlantılarını ve açık kaynak kredilerini gösterir."
         }
       },
       "agents": {
@@ -1131,5 +1147,25 @@
     "tooMany": "Çok fazla klip. Her klip en az 1 saniye olmalıdır.",
     "eachClip": "her biri {{duration}}",
     "batchInvalid": "Bazı videolar bu klip ayarlarıyla bölünemiyor."
+  },
+  "contract": {
+    "exportTooltip": "JSON sözleşmesini dışa aktar",
+    "saveFile": "Sözleşmeyi .json olarak kaydet",
+    "copy": "Sözleşme JSON’unu kopyala",
+    "saveType": "{{type}} sözleşmesini kaydet (.json)",
+    "copyType": "{{type}} sözleşme JSON’unu kopyala",
+    "copied": "JSON sözleşmesi panoya kopyalandı.",
+    "copyFailed": "JSON sözleşmesi kopyalanamadı.",
+    "exported": "JSON sözleşmesi dışa aktarıldı.",
+    "exportFailed": "JSON sözleşmesi dışa aktarılamadı.",
+    "import": {
+      "title": "JSON sözleşmesinden yeni ön ayar",
+      "loadFile": ".json dosyası yükle",
+      "jsonLabel": "CompressO JSON sözleşmesi",
+      "validate": "Doğrula",
+      "create": "Ön ayar oluştur",
+      "invalidJson": "Geçersiz JSON: {{message}}",
+      "readFailed": "Sözleşme dosyası okunamadı."
+    }
   }
 }

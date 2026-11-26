@@ -2,119 +2,61 @@ import isEqual from 'lodash/isEqual'
 import { proxy, snapshot, subscribe } from 'valtio'
 
 import * as constants from '@/constants'
+import { logError, logInfo } from '@/tauri/commands/app'
+import { type PresetMediaType, STANDARD_PRESET_ID } from '@/types/preset'
 import {
-  type Preset,
-  type PresetMediaType,
-  type PresetOutput,
-  STANDARD_PRESET_ID,
-} from '@/types/preset'
+  loadPresetsWithMigration,
+  type PresetsStateData,
+  serializePresetContracts,
+} from './presetMigration'
 import {
-  getLegacyPrefixFromTemplate,
-  migratePrefixToTemplate,
-} from '@/utils/fileNameTemplate'
+  createPresetInState,
+  deletePresetInState,
+  getAvailablePresetNameInList,
+  resolvePresetRef,
+  setDefaultPresetInState,
+  updatePresetInState,
+  type WatchedFolderLike,
+} from './presetOperations'
 
-const PRESETS_SCHEMA_VERSION = 1
+export type PresetsState = PresetsStateData
 
-export type PresetsState = {
-  /** Presets created by the user, in the order they are listed (the Standard preset is not stored) */
-  presets: Preset[]
-  /** Preset of each media type applied to newly added media (the Standard preset unless set) */
-  defaultPresetIds: Record<PresetMediaType, string>
-}
-
-type StoredPresets = PresetsState & { schemaVersion: number }
-
-function isValidPreset(preset: unknown): preset is Preset {
-  const value = preset as Partial<Preset> | null
-  return (
-    !!value &&
-    typeof value.id === 'string' &&
-    value.id !== STANDARD_PRESET_ID &&
-    typeof value.name === 'string' &&
-    (value.mediaType === 'video' ||
-      value.mediaType === 'image' ||
-      value.mediaType === 'audio') &&
-    typeof value.settings === 'object' &&
-    value.settings != null
-  )
-}
-
-function normalizeOutput(output: unknown): PresetOutput | null {
-  const value = output as Partial<PresetOutput> | null
-  if (
-    !value ||
-    (value.saveLocation !== 'ask' &&
-      value.saveLocation !== 'fixedFolder' &&
-      value.saveLocation !== 'sameFolder') ||
-    (value.saveFolder !== null && typeof value.saveFolder !== 'string') ||
-    (typeof value.fileNameTemplate !== 'string' &&
-      typeof value.filePrefix !== 'string')
-  ) {
-    return null
-  }
-  const fileNameTemplate =
-    typeof value.fileNameTemplate === 'string'
-      ? value.fileNameTemplate
-      : migratePrefixToTemplate(value.filePrefix)
-  return {
-    saveLocation: value.saveLocation,
-    saveFolder: value.saveFolder,
-    fileNameTemplate,
-    filePrefix: getLegacyPrefixFromTemplate(fileNameTemplate),
-  }
-}
-
-/** Reads the stored presets, dropping anything that is not a valid preset */
-function readPresets(): PresetsState {
-  const fallback: PresetsState = {
-    presets: [],
-    defaultPresetIds: {
-      video: STANDARD_PRESET_ID,
-      image: STANDARD_PRESET_ID,
-      audio: STANDARD_PRESET_ID,
-    },
-  }
+function persistContracts(state: PresetsStateData) {
   try {
-    const stored = JSON.parse(
-      localStorage.getItem(constants.presets) ?? 'null',
-    ) as Partial<StoredPresets> | null
-    if (!stored || stored.schemaVersion !== PRESETS_SCHEMA_VERSION) {
-      return fallback
-    }
-    const presets = (Array.isArray(stored.presets) ? stored.presets : [])
-      .filter(isValidPreset)
-      // An output that is not valid is dropped (the preset follows the Standard preset's)
-      .map((preset) =>
-        preset.output
-          ? { ...preset, output: normalizeOutput(preset.output) }
-          : preset,
-      )
-    const getDefaultPresetId = (mediaType: PresetMediaType) => {
-      const id = stored.defaultPresetIds?.[mediaType]
-      return presets.some(
-        (preset) => preset.id === id && preset.mediaType === mediaType,
-      )
-        ? id!
-        : STANDARD_PRESET_ID
-    }
-    return {
-      presets,
-      defaultPresetIds: {
-        video: getDefaultPresetId('video'),
-        image: getDefaultPresetId('image'),
-        audio: getDefaultPresetId('audio'),
-      },
-    }
-  } catch {
-    return fallback
+    localStorage.setItem(
+      constants.presetContracts,
+      JSON.stringify(serializePresetContracts(state)),
+    )
+  } catch (error) {
+    logError('[presets] Could not persist preset contracts to storage', error)
   }
+}
+
+/** Reads v2 contract-backed presets, or migrates v1 presets without deleting the old key */
+function readPresets(): PresetsState {
+  const { state, migratedFromLegacy } = loadPresetsWithMigration(
+    localStorage.getItem(constants.presetContracts),
+    localStorage.getItem(constants.presets),
+  )
+  if (migratedFromLegacy) {
+    logInfo(
+      `[presets] Migrated ${state.presets.length} legacy preset(s) to v2 contracts`,
+    )
+    persistContracts(state)
+  }
+  return state
 }
 
 export const presetsStore = proxy<PresetsState>(readPresets())
 
 // Changed in another window (e.g. saved in the main window, used by the menu bar's)
 window.addEventListener('storage', (evt) => {
-  if (evt.storageArea !== localStorage || evt.key !== constants.presets) return
+  if (
+    evt.storageArea !== localStorage ||
+    evt.key !== constants.presetContracts
+  ) {
+    return
+  }
   const { presets, defaultPresetIds } = readPresets()
   if (!isEqual(presets, snapshot(presetsStore).presets)) {
     presetsStore.presets = presets
@@ -125,12 +67,7 @@ window.addEventListener('storage', (evt) => {
 })
 
 subscribe(presetsStore, () => {
-  const stored: StoredPresets = {
-    schemaVersion: PRESETS_SCHEMA_VERSION,
-    presets: presetsStore.presets,
-    defaultPresetIds: presetsStore.defaultPresetIds,
-  }
-  localStorage.setItem(constants.presets, JSON.stringify(stored))
+  persistContracts(presetsStore)
 })
 
 /** A preset created by the user (`undefined` for the Standard preset or a deleted one) */
@@ -147,16 +84,7 @@ export function getAvailablePresetName(
   name: string,
   mediaType: PresetMediaType,
 ) {
-  const names = new Set(
-    presetsStore.presets
-      .filter((preset) => preset.mediaType === mediaType)
-      .map((preset) => preset.name.toLowerCase()),
-  )
-  names.add('standard')
-  if (!names.has(name.toLowerCase())) return name
-  let count = 2
-  while (names.has(`${name} (${count})`.toLowerCase())) count++
-  return `${name} (${count})`
+  return getAvailablePresetNameInList(presetsStore.presets, name, mediaType)
 }
 
 export function deletePreset(id: string) {
@@ -190,4 +118,37 @@ export function movePreset(id: string, direction: -1 | 1) {
 /** Makes a preset the one applied to newly added media of its type */
 export function setDefaultPreset(mediaType: PresetMediaType, id: string) {
   presetsStore.defaultPresetIds[mediaType] = id
+}
+
+export function createPresetFromContract(
+  rawContract: unknown,
+  options?: Parameters<typeof createPresetInState>[2],
+) {
+  return createPresetInState(presetsStore, rawContract, options)
+}
+
+export function updatePresetFromContract(
+  ref: string,
+  patchOrContract: unknown,
+  options?: Parameters<typeof updatePresetInState>[3],
+) {
+  return updatePresetInState(presetsStore, ref, patchOrContract, options)
+}
+
+export function deletePresetByRef(
+  ref: string,
+  options?: {
+    mediaType?: PresetMediaType
+    watchedFolders?: readonly WatchedFolderLike[]
+  },
+) {
+  return deletePresetInState(presetsStore, ref, options)
+}
+
+export function setDefaultPresetByRef(ref: string, mediaType: PresetMediaType) {
+  return setDefaultPresetInState(presetsStore, ref, mediaType)
+}
+
+export function findPresetByRef(ref: string, mediaType?: PresetMediaType) {
+  return resolvePresetRef(presetsStore.presets, ref, mediaType)
 }

@@ -120,6 +120,7 @@ pub enum CustomEvents {
     BatchMediaCompressionProgress,
     BatchMediaIndividualCompressionCompletion,
     WatchedFoldersCommand,
+    PresetsCommand,
 }
 
 #[derive(EnumProperty)]
@@ -192,6 +193,9 @@ pub struct VideoCompressionConfig {
     /// line); `None` follows the setting
     #[serde(default)]
     pub use_hardware_acceleration: Option<bool>,
+    /// Maximum CPU threads for CPU encoding (`None` follows global limit, `0` uses all threads)
+    #[serde(default)]
+    pub cpu_threads: Option<usize>,
     /// Splits the compressed video into clips of this length, after compressing it
     #[serde(default)]
     pub clips: Option<VideoClipsConfig>,

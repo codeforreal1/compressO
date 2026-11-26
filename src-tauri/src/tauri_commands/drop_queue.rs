@@ -140,6 +140,22 @@ pub struct CliJob {
     pub use_hardware_acceleration: Option<bool>,
     #[serde(default)]
     pub reach_target_sizes_without_acceleration: Option<bool>,
+    #[serde(default)]
+    pub cpu_threads: Option<usize>,
+    /// One-shot CompressO JSON contracts per media type (validated before queuing)
+    #[serde(default)]
+    pub contracts: CliContracts,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct CliContracts {
+    #[serde(default)]
+    pub video: Option<serde_json::Value>,
+    #[serde(default)]
+    pub image: Option<serde_json::Value>,
+    #[serde(default)]
+    pub audio: Option<serde_json::Value>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, Default)]

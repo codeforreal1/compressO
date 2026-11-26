@@ -124,6 +124,7 @@ export function recordQueueHistory({
   outputSize,
   mediaType,
   presetId,
+  presetName,
 }: {
   /** Of the queue item (each compression of it gets its own entry) */
   id: string
@@ -138,6 +139,7 @@ export function recordQueueHistory({
   outputSize: number | null
   mediaType: HistoryEntry['mediaType']
   presetId: string | null | undefined
+  presetName?: string | null
 }) {
   const source: HistorySource = isFromCommandLine
     ? 'commandLine'
@@ -158,7 +160,7 @@ export function recordQueueHistory({
       originalSize,
       outputPath,
       outputSize,
-      presetName: getPresetName(presetId),
+      presetName: presetName ?? getPresetName(presetId),
     },
   ]).catch(() => {})
 }

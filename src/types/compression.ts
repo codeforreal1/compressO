@@ -123,6 +123,103 @@ export function isVideoCodecCompatible(codec: string, container: string) {
   )
 }
 
+export type AudioCodecOption = {
+  value: string
+  name: string
+  description: string
+  compatible_containers: (VideoExtension | AudioExtension)[]
+}
+
+/** Audio codecs that can be chosen, with the output containers that can hold them */
+export const AUDIO_CODECS: readonly AudioCodecOption[] = [
+  {
+    value: 'aac',
+    name: 'AAC',
+    get description() {
+      return t('codecs.audio.aac')
+    },
+    compatible_containers: ['mp4', 'mov', 'mkv', 'ts', 'm4a'],
+  },
+  {
+    value: 'libmp3lame',
+    name: 'MP3',
+    get description() {
+      return t('codecs.audio.libmp3lame')
+    },
+    compatible_containers: ['mp4', 'mov', 'mkv', 'avi', 'ts', 'mp3'],
+  },
+  {
+    value: 'libopus',
+    name: 'Opus',
+    get description() {
+      return t('codecs.audio.libopus')
+    },
+    compatible_containers: ['webm', 'mkv', 'ogg', 'opus'],
+  },
+  {
+    value: 'libvorbis',
+    name: 'Vorbis',
+    get description() {
+      return t('codecs.audio.libvorbis')
+    },
+    compatible_containers: ['webm', 'mkv', 'ogg'],
+  },
+  {
+    value: 'ac3',
+    name: 'AC3',
+    get description() {
+      return t('codecs.audio.ac3')
+    },
+    compatible_containers: ['mp4', 'mov', 'mkv', 'avi', 'ts'],
+  },
+  {
+    value: 'alac',
+    name: 'ALAC',
+    get description() {
+      return t('codecs.audio.alac')
+    },
+    compatible_containers: ['mp4', 'mov', 'm4a'],
+  },
+  {
+    value: 'flac',
+    name: 'FLAC',
+    get description() {
+      return t('codecs.audio.flac')
+    },
+    compatible_containers: ['mkv', 'flac', 'ogg'],
+  },
+  {
+    value: 'pcm_s16le',
+    name: 'PCM',
+    get description() {
+      return t('codecs.audio.pcm_s16le')
+    },
+    compatible_containers: ['mov', 'avi', 'wav'],
+  },
+]
+
+export function isAudioCodecCompatible(codec: string, container: string) {
+  const option = AUDIO_CODECS.find((c) => c.value === codec)
+  return (
+    !option ||
+    option.compatible_containers.includes(
+      container as VideoExtension | AudioExtension,
+    )
+  )
+}
+
+export const AUDIO_BITRATES = [
+  { value: 64, label: '64 kbps' },
+  { value: 96, label: '96 kbps' },
+  { value: 128, label: '128 kbps' },
+  { value: 160, label: '160 kbps' },
+  { value: 192, label: '192 kbps' },
+  { value: 256, label: '256 kbps' },
+  { value: 320, label: '320 kbps' },
+] as const
+
+export type AudioBitrateValue = (typeof AUDIO_BITRATES)[number]['value']
+
 /**
  * Resolutions as the size of the longer side (the width of a landscape media, the height of a
  * portrait one; 16:9 sizes, e.g. 1080p is 1920x1080 or 1080x1920). Used by the resolution buttons,
@@ -233,6 +330,7 @@ export enum CustomEvents {
   BatchMediaCompressionProgress = 'BatchMediaCompressionProgress',
   BatchMediaIndividualCompressionCompletion = 'BatchMediaIndividualCompressionCompletion',
   WatchedFoldersCommand = 'WatchedFoldersCommand',
+  PresetsCommand = 'PresetsCommand',
 }
 
 export type VideoCompressionProgress = {
@@ -461,6 +559,8 @@ export type VideoCompressionConfig = {
    * `null` follows the setting
    */
   useHardwareAcceleration?: boolean | null
+  /** Maximum CPU threads for CPU encoding (`null` = global setting, `0` = all cores) */
+  cpuThreads?: number | null
   /** Splits the compressed video into clips of this length, after compressing it */
   clips?: { durationSeconds: number } | null
 }

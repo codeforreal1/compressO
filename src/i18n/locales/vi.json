@@ -146,7 +146,8 @@
       "empty_audio": "Chưa có cài đặt sẵn cho âm thanh. Hãy điều chỉnh cài đặt của một tệp âm thanh và chọn nút dấu cộng bên cạnh menu Cài đặt sẵn để lưu thành cài đặt sẵn.",
       "mediaType": "Loại phương tiện",
       "standardOutput": "Vị trí lưu và cách đặt tên tệp của nó được đặt trong <setting>Đầu ra</setting>.",
-      "cannotDeleteStandard": "Không thể xóa cài đặt sẵn Tiêu chuẩn."
+      "cannotDeleteStandard": "Không thể xóa cài đặt sẵn Tiêu chuẩn.",
+      "newFromContract": "Tạo từ hợp đồng"
     },
     "dropZone": {
       "turnOnTrayIcon_macos": "Vùng thả nằm trên thanh menu. Trước tiên, hãy bật “<setting>Hiển thị biểu tượng trên thanh menu</setting>” trong Chung.",
@@ -397,7 +398,22 @@
           "json": "In kết quả dạng JSON, cho tập lệnh và tác tử AI.",
           "quiet": "Chỉ in lỗi.",
           "list": "Liệt kê các cài đặt sẵn của bạn, cùng cài đặt sẵn mặc định của mỗi loại phương tiện.",
-          "help": "Hiện mọi tùy chọn và mã thoát."
+          "help": "Hiện mọi tùy chọn và mã thoát.",
+          "contractFile": "Nén phương tiện bằng tệp hợp đồng JSON CompressO dùng một lần (hỗ trợ metadata.set, thumbnail và subtitles).",
+          "contractStdin": "Đọc hợp đồng JSON dùng một lần từ đầu vào chuẩn.",
+          "contractSchema": "In JSON Schema cho hợp đồng video, hình ảnh hoặc âm thanh.",
+          "contractValidate": "Kiểm tra tính hợp lệ của tệp hợp đồng JSON mà không nén tệp hay lưu cấu hình mẫu.",
+          "presetGet": "Xuất cấu hình mẫu đã lưu dưới dạng hợp đồng JSON.",
+          "presetCreate": "Tạo cấu hình mẫu mới trong ứng dụng từ tệp hợp đồng JSON.",
+          "presetUpdate": "Cập nhật cấu hình mẫu hiện có bằng các trường hợp đồng JSON một phần.",
+          "cpuThreads": "Giới hạn luồng CPU chỉ cho lần nén này (0 dùng tất cả luồng khả dụng).",
+          "capabilities": "Hiển thị phiên bản, số luồng CPU, bộ mã hóa phần cứng, công cụ và đường dẫn nhật ký.",
+          "inspect": "Kiểm tra kích thước, codec, luồng, dải tương phản động và EXIF mà không cần nén.",
+          "cacheClear": "Xóa bộ nhớ đệm tạm thời khi không có quá trình nén hoặc tệp đang mở.",
+          "history": "Liệt kê lịch sử nén gần đây của CompressO (dùng history clear để xóa).",
+          "queue": "Kiểm tra hoặc điều khiển hàng đợi nén (list, pause, resume, clear, cancel).",
+          "logs": "Hiển thị đường dẫn tệp nhật ký hiện tại và các dòng gần nhất.",
+          "about": "Hiển thị phiên bản CompressO, giấy phép, tác giả, liên kết trang web/nhật ký thay đổi/GitHub và ghi công."
         }
       },
       "agents": {
@@ -1115,5 +1131,25 @@
     "tooMany": "Quá nhiều clip. Mỗi clip phải dài ít nhất 1 giây.",
     "eachClip": "{{duration}} mỗi clip",
     "batchInvalid": "Một số video không thể chia với cài đặt clip này."
+  },
+  "contract": {
+    "exportTooltip": "Xuất hợp đồng JSON",
+    "saveFile": "Lưu hợp đồng dạng .json",
+    "copy": "Sao chép JSON hợp đồng",
+    "saveType": "Lưu hợp đồng {{type}} (.json)",
+    "copyType": "Sao chép JSON hợp đồng {{type}}",
+    "copied": "Đã sao chép hợp đồng JSON vào bảng tạm.",
+    "copyFailed": "Không thể sao chép hợp đồng JSON.",
+    "exported": "Đã xuất hợp đồng JSON.",
+    "exportFailed": "Không thể xuất hợp đồng JSON.",
+    "import": {
+      "title": "Cấu hình mới từ hợp đồng JSON",
+      "loadFile": "Tải tệp .json",
+      "jsonLabel": "Hợp đồng JSON CompressO",
+      "validate": "Kiểm tra",
+      "create": "Tạo cấu hình",
+      "invalidJson": "JSON không hợp lệ: {{message}}",
+      "readFailed": "Không thể đọc tệp hợp đồng."
+    }
   }
 }

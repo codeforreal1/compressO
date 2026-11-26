@@ -25,6 +25,7 @@
     "lint-staged": "lint-staged",
     "i18n:check": "node scripts/check-translations.mjs",
     "test:audio-target-size": "node --test scripts/test-audio-target-size.mjs",
+    "test:contract": "node --test scripts/test-contract.mjs",
     "test:drop-queue": "node --test scripts/test-drop-queue.mjs",
     "test:file-name-template": "node --test scripts/test-file-name-template.mjs",
     "test:image-dynamic-range": "node --test scripts/test-image-dynamic-range.mjs",

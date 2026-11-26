@@ -3,6 +3,17 @@ import clamp from 'lodash/clamp'
 import cloneDeep from 'lodash/cloneDeep'
 import { useEffect } from 'react'
 
+import {
+  applyOneShotContractOverrides,
+  contractOutputToPresetOutput,
+  contractToPreset,
+} from '@/contract'
+import type {
+  AudioContract,
+  ImageContract,
+  MediaContract,
+  VideoContract,
+} from '@/contract/types'
 import { useDropQueue, useDropQueuePaused } from '@/hooks/useDropQueue'
 import { t } from '@/i18n'
 import {
@@ -29,7 +40,7 @@ import {
   videoConfigInitialState,
 } from '@/routes/(root)/-state'
 import { settingsStore } from '@/stores/settingsStore'
-import { logError } from '@/tauri/commands/app'
+import { logError, logInfo } from '@/tauri/commands/app'
 import { getCompressionStatus } from '@/tauri/commands/compression'
 import {
   type DropQueueItem,
@@ -63,6 +74,7 @@ import { type PresetMediaType, STANDARD_PRESET_ID } from '@/types/preset'
 import { getOutputFileName } from '@/utils/fs'
 import {
   DROP_ZONE_PRESET_SETTINGS,
+  getPresetOutput,
   resolvePresetChoice,
 } from '@/utils/presetOutput'
 import { convertDurationToMilliseconds } from '@/utils/string'
@@ -91,6 +103,19 @@ async function waitForMainWindow() {
   }
 }
 
+function getQueueContract<T extends PresetMediaType>(
+  item: DropQueueItem,
+  mediaType: T,
+):
+  | (T extends 'video'
+      ? VideoContract
+      : T extends 'image'
+        ? ImageContract
+        : AudioContract)
+  | null {
+  return (item.cliJob?.contracts?.[mediaType] ?? null) as never
+}
+
 /**
  * The preset a queued media is compressed with: the one chosen on the command line, its watched
  * folder's, or the drop zone's (Settings -> Drop Zone), Default (the preset starred now) unless
@@ -117,7 +142,8 @@ function getQueueAcceleration(
   const job = item.cliJob
   if (
     job?.useHardwareAcceleration == null &&
-    job?.reachTargetSizesWithoutAcceleration == null
+    job?.reachTargetSizesWithoutAcceleration == null &&
+    job?.cpuThreads == null
   ) {
     return undefined
   }
@@ -127,6 +153,7 @@ function getQueueAcceleration(
     retryTargetSizeOnCpu:
       job.reachTargetSizesWithoutAcceleration ??
       settingsStore.retryTargetSizeOnCpu,
+    ...(job.cpuThreads != null ? { cpuThreads: job.cpuThreads } : {}),
   }
 }
 
@@ -163,23 +190,34 @@ async function readQueueMedia(item: DropQueueItem): Promise<MediaFile> {
     extension,
   }
 
-  // With the drop zone's audio preset (not the video one, made for videos)
+  // With the drop zone's audio preset (or inline contract)
   if (isAudioFileExtension(extension)) {
     const info = await getVideoBasicInfo(item.path).catch(() => null)
+    const contract = getQueueContract(item, 'audio')
+    const preset = contract
+      ? (contractToPreset('cli-contract', contract) as ReturnType<
+          typeof getAudioPreset
+        >)
+      : getAudioPreset(getQueuePresetId(item, 'audio'))
+    let config = applyAudioPresetToConfig(
+      {
+        ...cloneDeep(audioFileConfigInitialState),
+        convertToExtension: getAudioFileOutputExtension(extension),
+      },
+      preset,
+      { sourceExtension: extension },
+      { isBatchConfig: false },
+    )
+    if (contract) {
+      logInfo(`[drop-queue] Applying one-shot audio contract to ${item.path}`)
+      config = applyOneShotContractOverrides(config, contract)
+    }
     return {
       ...base,
       type: 'video',
       isAudioFile: true,
       videoDuration: info?.duration ?? null,
-      config: applyAudioPresetToConfig(
-        {
-          ...cloneDeep(audioFileConfigInitialState),
-          convertToExtension: getAudioFileOutputExtension(extension),
-        },
-        getAudioPreset(getQueuePresetId(item, 'audio')),
-        { sourceExtension: extension },
-        { isBatchConfig: false },
-      ),
+      config,
     }
   }
 
@@ -190,31 +228,41 @@ async function readQueueMedia(item: DropQueueItem): Promise<MediaFile> {
       width && height && !Number.isNaN(width) && !Number.isNaN(height)
         ? { width, height }
         : undefined
-    const preset = getVideoPreset(getQueuePresetId(item, 'video'))
+    const contract = getQueueContract(item, 'video')
+    const preset = contract
+      ? (contractToPreset('cli-contract', contract) as ReturnType<
+          typeof getVideoPreset
+        >)
+      : getVideoPreset(getQueuePresetId(item, 'video'))
     // Whether it has audio only matters for a preset's audio settings
     const audioStreams =
       preset.id !== STANDARD_PRESET_ID
         ? await getAudioStreams(item.path).catch(() => null)
         : null
-    const config = cloneDeep(videoConfigInitialState)
+    const baseConfig = cloneDeep(videoConfigInitialState)
     if (extension && extension in extensions.video) {
-      config.convertToExtension = extension as keyof typeof extensions.video
+      baseConfig.convertToExtension = extension as keyof typeof extensions.video
+    }
+    let config = applyVideoPresetToConfig(
+      baseConfig,
+      preset,
+      {
+        sourceExtension: extension,
+        hasAudio: audioStreams ? audioStreams.length > 0 : null,
+        dimensions,
+      },
+      { isBatchConfig: false },
+    )
+    if (contract) {
+      logInfo(`[drop-queue] Applying one-shot video contract to ${item.path}`)
+      config = applyOneShotContractOverrides(config, contract)
     }
     return {
       ...base,
       type: 'video',
       videoDuration: info?.duration ?? null,
       dimensions,
-      config: applyVideoPresetToConfig(
-        config,
-        preset,
-        {
-          sourceExtension: extension,
-          hasAudio: audioStreams ? audioStreams.length > 0 : null,
-          dimensions,
-        },
-        { isBatchConfig: false },
-      ),
+      config,
     }
   }
 
@@ -223,13 +271,22 @@ async function readQueueMedia(item: DropQueueItem): Promise<MediaFile> {
     : getImageDimension(item.path)
   ).catch(() => [0, 0])
   const dimensions = width && height ? { width, height } : undefined
-  const config = cloneDeep(imageConfigInitialState)
+  const baseConfig = cloneDeep(imageConfigInitialState)
   // Formats that can only be opened are converted to PNG by default
   if (
     (inputOnlyExtensions.image as readonly string[]).includes(extension ?? '')
   ) {
-    config.convertToExtension = 'png'
+    baseConfig.convertToExtension = 'png'
   }
+  const imageContract = getQueueContract(item, 'image')
+  if (imageContract) {
+    logInfo(`[drop-queue] Applying one-shot image contract to ${item.path}`)
+  }
+  const imagePreset = imageContract
+    ? (contractToPreset('cli-contract', imageContract) as ReturnType<
+        typeof getImagePreset
+      >)
+    : getImagePreset(getQueuePresetId(item, 'image'))
   return {
     ...base,
     type: 'image',
@@ -238,8 +295,8 @@ async function readQueueMedia(item: DropQueueItem): Promise<MediaFile> {
     ),
     dimensions,
     config: applyImagePresetToConfig(
-      config,
-      getImagePreset(getQueuePresetId(item, 'image')),
+      baseConfig,
+      imagePreset,
       { sourceExtension: extension, dimensions },
       { isBatchConfig: false },
     ),
@@ -323,6 +380,20 @@ async function compressQueueItem(item: DropQueueItem) {
       return false
     }
 
+    const itemMediaType: PresetMediaType =
+      media.type === 'image' ? 'image' : media.isAudioFile ? 'audio' : 'video'
+    const itemContract: MediaContract | null = getQueueContract(
+      item,
+      itemMediaType,
+    )
+    const contractOutput = itemContract
+      ? (contractOutputToPresetOutput(itemContract.output) ??
+        getPresetOutput(STANDARD_PRESET_ID))
+      : undefined
+    const contractName = itemContract
+      ? itemContract.name?.trim() || 'Custom contract'
+      : undefined
+
     const saved = await saveQueueOutput(
       {
         sourcePath: item.path,
@@ -330,6 +401,8 @@ async function compressQueueItem(item: DropQueueItem) {
         originalSize: media.sizeInBytes ?? 0,
         outputs: outputFiles,
         presetId: media.config?.presetId,
+        presetOutput: contractOutput,
+        presetName: contractName,
         settings: item.cliJob,
       },
       { groupKey: item.groupId, topFolders },
@@ -350,6 +423,7 @@ async function compressQueueItem(item: DropQueueItem) {
           outputSize: clip.sizeInBytes ?? null,
           mediaType: 'video',
           presetId: media.config?.presetId,
+          presetName: contractName,
         })
       })
     } else {
@@ -363,13 +437,9 @@ async function compressQueueItem(item: DropQueueItem) {
         originalSize: media.sizeInBytes ?? null,
         outputPath: savedPaths[0] ?? null,
         outputSize: outputMetadata.size,
-        mediaType:
-          media.type === 'image'
-            ? 'image'
-            : media.isAudioFile
-              ? 'audio'
-              : 'video',
+        mediaType: itemMediaType,
         presetId: media.config?.presetId,
+        presetName: contractName,
       })
     }
     if ('savedPaths' in saved) {

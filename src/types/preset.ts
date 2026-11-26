@@ -141,6 +141,8 @@ export type VideoPreset = {
   settings: VideoPresetSettings
   /** Its own output, or `null`/missing to follow the Standard preset's */
   output?: PresetOutput | null
+  revision?: number
+  updatedAt?: string
 }
 
 export type ImagePreset = {
@@ -150,6 +152,8 @@ export type ImagePreset = {
   settings: ImagePresetSettings
   /** See `VideoPreset['output']` */
   output?: PresetOutput | null
+  revision?: number
+  updatedAt?: string
 }
 
 export type AudioPreset = {
@@ -159,6 +163,8 @@ export type AudioPreset = {
   settings: AudioPresetSettings
   /** See `VideoPreset['output']` */
   output?: PresetOutput | null
+  revision?: number
+  updatedAt?: string
 }
 
 export type Preset = VideoPreset | ImagePreset | AudioPreset

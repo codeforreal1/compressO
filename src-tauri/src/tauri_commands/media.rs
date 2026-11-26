@@ -254,7 +254,8 @@ async fn compress_media_item(
             let mut ffmpeg_instance = FFMPEG::new(&task_app)
                 .map_err(|e| format!("Failed to create ffmpeg instance: {}", e))?
                 .with_owner_window(&owner_window)
-                .with_hardware_acceleration(config.use_hardware_acceleration);
+                .with_hardware_acceleration(config.use_hardware_acceleration)
+                .with_cpu_thread_limit(config.cpu_threads);
             ffmpeg_instance
                 .compress_video(
                     &config.video_path,
