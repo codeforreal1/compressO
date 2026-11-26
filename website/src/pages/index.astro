@@ -68,8 +68,8 @@ const highlights: {
     icon: "terminal",
     title: "CLI and AI agents",
     description:
-      "Compress from the terminal with the compresso command, using your presets, or let AI agents such as Claude do it for you through MCP. CompressO works in the background, without opening a window.",
-    image: "The compresso command and its MCP server",
+      "Compress with the compresso CLI or 22 MCP tools for AI agents. Use JSON contracts, manage presets and watch folders, cap CPU threads per run, and inspect files silently in the background.",
+    image: "The compresso command with JSON contracts and MCP server",
     src: "/features/cli.svg",
     span: "lg:col-span-4",
   },
@@ -84,9 +84,9 @@ const highlights: {
   },
   {
     icon: "presets",
-    title: "Presets",
+    title: "Presets & JSON contracts",
     description:
-      "Save the settings you use most, each with its own save location, and apply them to any video, image or audio file.",
+      "Save the settings you use most with custom save folders and naming templates, or export and import them as portable JSON contracts.",
     image: "The preset menu",
     src: "/features/presets.svg",
     span: "lg:col-span-4",
@@ -123,6 +123,7 @@ const highlights: {
 /** Everything else, as a compact list */
 const moreFeatures = [
   { title: "HDR", description: "Keep HDR photos and videos bright, boost standard ones up to 8×, or remove HDR." },
+  { title: "Clips", description: "Split compressed videos into equal or timed clips with stream copy." },
   { title: "Edit before you compress", description: "Trim, crop, straighten, rotate and flip, with a live preview." },
   { title: "See the difference", description: "Compare the original and the compressed file before saving it." },
   { title: "Compression history", description: "Every compression, and the space saved in total." },
@@ -131,7 +132,8 @@ const moreFeatures = [
   { title: "GIF tools", description: "Create GIFs from videos and compress existing GIFs." },
   { title: "SVG conversion", description: "Convert SVG to PNG, JPEG or WebP, and back." },
   { title: "Video controls", description: "Codec, quality, resolution, frame rate and speed." },
-  { title: "Audio controls", description: "Codec, volume, channels, bitrate and audio tracks." },
+  { title: "Audio controls", description: "Add external audio tracks, or adjust codec, volume, channels and bitrate." },
+  { title: "Maximum CPU cores", description: "Limit CPU encoding threads globally or per CLI/MCP job." },
   { title: "Subtitles", description: "Add, keep and extract subtitle tracks." },
   { title: "Metadata", description: "Edit, keep or remove titles, dates and other details." },
   { title: "Custom thumbnails", description: "Choose the thumbnail shown for a video." },
@@ -185,11 +187,11 @@ const privacyPoints: { icon: IconName; title: string; description: string }[] = 
           />
         </div>
         <div class="container hero-inner">
-          <a href="/blog/compresso-4/" class="announcement">
-            <span class="announcement-tag">New in 4.0</span>
+          <a href="/blog/compresso-4-3/" class="announcement">
+            <span class="announcement-tag">New in 4.3</span>
             <ShinyText
               client:load
-              text="Target size, watch folders and the drop zone"
+              text="JSON contracts, Clips, CPU thread limits & MCP parity"
               color="rgba(245, 244, 242, 0.62)"
               shineColor="#ffffff"
               speed={3}
@@ -1057,8 +1059,10 @@ const privacyPoints: { icon: IconName; title: string; description: string }[] = 
       }
       .brew code {
         flex: 1;
-        overflow-x: auto;
-        white-space: nowrap;
+        min-width: 0;
+        white-space: normal;
+        overflow-wrap: anywhere;
+        line-height: 1.45;
         font-size: 12px;
         color: var(--text-muted);
       }

@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720" role="img" aria-label="Stream-copied clips split from a single compressed video" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#090807"/><stop offset="1" stop-color="#030303"/></linearGradient>
+    <linearGradient id="panel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b1917"/><stop offset="1" stop-color="#11100f"/></linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ff7a00"/><stop offset="1" stop-color="#ffa94d"/></linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.45" r="0.55"><stop offset="0" stop-color="#ff8400" stop-opacity="0.28"/><stop offset="1" stop-color="#ff8400" stop-opacity="0"/></radialGradient>
+  </defs>
+  <rect width="1280" height="720" fill="url(#bg)"/>
+  <ellipse cx="640" cy="340" rx="500" ry="260" fill="url(#glow)"/>
+
+  <rect x="110" y="96" width="1060" height="528" rx="28" fill="url(#panel)" stroke="#ffffff" stroke-opacity="0.14"/>
+  <text x="158" y="160" font-size="28" font-weight="700" fill="#f5f3ef">Stream-copied Clips</text>
+  <text x="158" y="194" font-size="18" fill="#a8a29c">Encoded once with your trim, speed, HDR, audio, subtitles &amp; Target Size, then split without re-encoding</text>
+
+  <rect x="158" y="238" width="964" height="84" rx="16" fill="#0d0c0b" stroke="#ffffff" stroke-opacity="0.1"/>
+  <rect x="172" y="252" width="302" height="56" rx="10" fill="url(#accent)"/>
+  <text x="323" y="286" font-size="18" font-weight="700" fill="#121110" text-anchor="middle">Clip 1 · 00:00 – 00:30</text>
+  <rect x="488" y="252" width="302" height="56" rx="10" fill="#2a241e" stroke="#ff8400" stroke-opacity="0.6"/>
+  <text x="639" y="286" font-size="18" font-weight="600" fill="#f5f3ef" text-anchor="middle">Clip 2 · 00:30 – 01:00</text>
+  <rect x="804" y="252" width="304" height="56" rx="10" fill="#2a241e" stroke="#ff8400" stroke-opacity="0.6"/>
+  <text x="956" y="286" font-size="18" font-weight="600" fill="#f5f3ef" text-anchor="middle">Clip 3 · 01:00 – 01:30</text>
+
+  <rect x="158" y="360" width="300" height="216" rx="18" fill="#171513" stroke="#ff8400" stroke-opacity="0.45"/>
+  <text x="184" y="408" font-size="20" font-weight="700" fill="#f5f3ef">Clip 1</text>
+  <text x="184" y="440" font-size="15" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#ffa04a">clip_part1.mp4 · 4.1 MB</text>
+  <rect x="184" y="486" width="112" height="36" rx="10" fill="#272421"/>
+  <text x="240" y="509" font-size="14" fill="#d8d4ce" text-anchor="middle">Preview</text>
+  <rect x="308" y="486" width="124" height="36" rx="10" fill="url(#accent)"/>
+  <text x="370" y="509" font-size="14" font-weight="700" fill="#121110" text-anchor="middle">Save / Show</text>
+
+  <rect x="490" y="360" width="300" height="216" rx="18" fill="#171513" stroke="#ffffff" stroke-opacity="0.12"/>
+  <text x="516" y="408" font-size="20" font-weight="700" fill="#f5f3ef">Clip 2</text>
+  <text x="516" y="440" font-size="15" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#a8a29c">clip_part2.mp4 · 4.0 MB</text>
+  <rect x="516" y="486" width="112" height="36" rx="10" fill="#272421"/>
+  <text x="572" y="509" font-size="14" fill="#d8d4ce" text-anchor="middle">Preview</text>
+  <rect x="640" y="486" width="124" height="36" rx="10" fill="#272421"/>
+  <text x="702" y="509" font-size="14" fill="#d8d4ce" text-anchor="middle">Save / Show</text>
+
+  <rect x="822" y="360" width="300" height="216" rx="18" fill="#171513" stroke="#ffffff" stroke-opacity="0.12"/>
+  <text x="848" y="408" font-size="20" font-weight="700" fill="#f5f3ef">Clip 3</text>
+  <text x="848" y="440" font-size="15" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#a8a29c">clip_part3.mp4 · 3.8 MB</text>
+  <rect x="848" y="486" width="112" height="36" rx="10" fill="#272421"/>
+  <text x="904" y="509" font-size="14" fill="#d8d4ce" text-anchor="middle">Preview</text>
+  <rect x="972" y="486" width="124" height="36" rx="10" fill="#272421"/>
+  <text x="1034" y="509" font-size="14" fill="#d8d4ce" text-anchor="middle">Save / Show</text>
+</svg>

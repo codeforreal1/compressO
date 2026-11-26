@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" width="640" height="360" role="img" aria-label="Compressing a folder with the compresso command, and the MCP server for AI agents" font-family="Poppins, -apple-system, 'Segoe UI', 'Noto Sans', sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" width="640" height="360" role="img" aria-label="Compressing media with a JSON contract from the CLI and the MCP server for AI agents" font-family="Poppins, -apple-system, 'Segoe UI', 'Noto Sans', sans-serif">
 <defs>
   <linearGradient id="win" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1f1e1d"/><stop offset="1" stop-color="#141312"/></linearGradient>
   <linearGradient id="brand" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffa04a"/><stop offset="1" stop-color="#ff7a00"/></linearGradient>
@@ -7,20 +7,20 @@
 </defs>
 <rect width="640" height="360" fill="#000"/>
 <ellipse cx="300" cy="170" rx="260" ry="150" fill="url(#glow)" opacity="0.35"/>
-<rect x="60" y="58" width="470" height="210" rx="18" fill="url(#win)" stroke="#fff" stroke-opacity="0.12"/>
-<circle cx="84" cy="80" r="5.5" fill="#fff" fill-opacity="0.18"/>
-<circle cx="102" cy="80" r="5.5" fill="#fff" fill-opacity="0.18"/>
-<circle cx="120" cy="80" r="5.5" fill="#fff" fill-opacity="0.18"/>
-<g font-family="'SF Mono', ui-monospace, Menlo, Consolas, monospace" font-size="16" xml:space="preserve">
-  <text x="84" y="122" fill="#e9e7e4"><tspan fill="#ff8a1f">$</tspan> compresso Trip --output=Compressed</text>
-  <text x="84" y="158" fill="#a9a5a0"><tspan fill="#ff8a1f">✓</tspan> photo.jpg   4.2 MB → <tspan fill="#ff8a1f">480 KB</tspan></text>
-  <text x="84" y="188" fill="#a9a5a0"><tspan fill="#ff8a1f">✓</tspan> clip.mov    248 MB → <tspan fill="#ff8a1f">9.8 MB</tspan></text>
-  <text x="84" y="218" fill="#a9a5a0"><tspan fill="#ff8a1f">✓</tspan> song.wav    36 MB → <tspan fill="#ff8a1f">3.1 MB</tspan></text>
-  <text x="84" y="248" fill="#e9e7e4">3 saved. Saved 275 MB.</text>
+<rect x="52" y="54" width="496" height="216" rx="18" fill="url(#win)" stroke="#fff" stroke-opacity="0.12"/>
+<circle cx="76" cy="76" r="5.5" fill="#fff" fill-opacity="0.18"/>
+<circle cx="94" cy="76" r="5.5" fill="#fff" fill-opacity="0.18"/>
+<circle cx="112" cy="76" r="5.5" fill="#fff" fill-opacity="0.18"/>
+<g font-family="'SF Mono', ui-monospace, Menlo, Consolas, monospace" font-size="13.5" xml:space="preserve">
+  <text x="74" y="118" fill="#e9e7e4"><tspan fill="#ff8a1f">$</tspan> compresso clip.mov --contract=web.json</text>
+  <text x="74" y="154" fill="#a9a5a0"><tspan fill="#ff8a1f">✓</tspan> clip.mov    248 MB → <tspan fill="#ff8a1f">9.8 MB</tspan></text>
+  <text x="74" y="184" fill="#a9a5a0"><tspan fill="#ff8a1f">✓</tspan> photo.jpg   4.2 MB → <tspan fill="#ff8a1f">480 KB</tspan></text>
+  <text x="74" y="214" fill="#a9a5a0"><tspan fill="#ff8a1f">✓</tspan> preset "Web" synced · history updated</text>
+  <text x="74" y="246" fill="#e9e7e4">2 saved. CPU threads: 4.</text>
 </g>
-<rect x="352" y="258" width="232" height="54" rx="27" fill="#ff8400" opacity="0.35" filter="url(#soft)"/>
-<rect x="352" y="254" width="232" height="54" rx="27" fill="#1a1715" stroke="url(#brand)" stroke-width="2"/>
-<circle cx="381" cy="281" r="13" fill="url(#brand)"/>
-<path d="M375 281.5 l4 4 l8 -9" fill="none" stroke="#111" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="404" y="287" font-family="'SF Mono', ui-monospace, Menlo, Consolas, monospace" font-size="17" font-weight="600" fill="#f2f0ec">compresso mcp</text>
+<rect x="348" y="258" width="244" height="54" rx="27" fill="#ff8400" opacity="0.35" filter="url(#soft)"/>
+<rect x="348" y="254" width="244" height="54" rx="27" fill="#1a1715" stroke="url(#brand)" stroke-width="2"/>
+<circle cx="377" cy="281" r="13" fill="url(#brand)"/>
+<path d="M371 281.5 l4 4 l8 -9" fill="none" stroke="#111" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="400" y="287" font-family="'SF Mono', ui-monospace, Menlo, Consolas, monospace" font-size="16" font-weight="600" fill="#f2f0ec">compresso mcp</text>
 </svg>
