@@ -47,6 +47,7 @@ and an option changes it for this command only; a bare option means =1):
   --skip-larger-outputs=0|1
   --preserve-folder-structure=0|1
   --replace-original-files=0|1
+  --filename-template=<text>         Tokens: {name}, {date}, {time}, {preset} (empty keeps original)
   --filename-prefix=<text>           (--filename-prefix= keeps the original names)
   --hardware-acceleration=0|1
   --reach-target-sizes-without-acceleration=0|1
@@ -466,6 +467,7 @@ pub fn parse(args: Vec<String>) -> Result<Command, CliError> {
             "--audio-preset" => {
                 parsed.options.presets.insert("audio", take_value(&name)?);
             }
+            "--filename-template" => overrides.file_name_template = Some(take_value(&name)?),
             "--filename-prefix" => overrides.file_name_prefix = Some(take_value(&name)?),
             "--skip-larger-outputs" => {
                 overrides.skip_larger_outputs = Some(parse_switch(switch_name, value.as_deref())?)

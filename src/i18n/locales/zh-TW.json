@@ -145,7 +145,7 @@
       "empty_image": "尚無影像預設。調整某張影像的設定，然後選擇「預設」選單旁的加號按鈕，即可儲存為預設。",
       "empty_audio": "尚無音訊預設。調整某個音訊檔案的設定，然後選擇「預設」選單旁的加號按鈕，即可儲存為預設。",
       "mediaType": "媒體類型",
-      "standardOutput": "其儲存位置和檔名前綴在「<setting>輸出</setting>」中設定。",
+      "standardOutput": "其儲存位置和檔案命名方式在「<setting>輸出</setting>」中設定。",
       "cannotDeleteStandard": "無法刪除標準預設。"
     },
     "dropZone": {
@@ -228,9 +228,10 @@
           "description_windows": "當壓縮後的檔案以相同名稱儲存在原始檔案所在的資料夾中時，原始檔案將移至資源回收筒，僅保留壓縮後的檔案。"
         },
         "prefix": {
-          "title": "檔名前綴",
-          "placeholder": "無前綴",
-          "description": "加在儲存檔名開頭的文字。留空則保留原始檔名。"
+          "title": "檔案命名",
+          "placeholder": "保留原始檔名",
+          "description": "使用 {name}、{date}、{time} 或 {preset} 等預留位置的儲存檔名範本。留空則保留原始檔名。",
+          "preview": "範例：{{example}}"
         },
         "appliesTo": "這些設定僅適用於標準預設。"
       },
@@ -385,6 +386,7 @@
           "outputFile": "以此名稱儲存單一檔案。使用不同的副檔名會將其轉換為該格式。",
           "audioOnly": "僅保留影片的聲音，儲存為音訊檔案。",
           "flatten": "將所有檔案直接儲存到該資料夾，不保留其中的子資料夾。",
+          "template": "僅對此指令，使用範本（支援 {name}、{date}、{time} 和 {preset}）為儲存的檔案命名。",
           "prefix": "僅對此指令，在儲存的檔案名稱開頭加入文字。",
           "skipLarger": "不儲存比原始檔案更大的輸出。",
           "replace": "輸出與原始檔案名稱和格式相同時取代原始檔案。原始檔案會移到垃圾桶。",

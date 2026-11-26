@@ -146,7 +146,7 @@
       "empty_image": "Henüz görüntü ön ayarı yok. Bir görüntünün ayarlarını düzenleyin ve bunları ön ayar olarak kaydetmek için Ön ayar menüsünün yanındaki artı düğmesini seçin.",
       "empty_audio": "Henüz ses ön ayarı yok. Bir ses dosyasının ayarlarını düzenleyin ve bunları ön ayar olarak kaydetmek için Ön ayar menüsünün yanındaki artı düğmesini seçin.",
       "mediaType": "Medya türü",
-      "standardOutput": "Kaydetme konumu ve dosya adı öneki <setting>Çıktı</setting> bölümünde ayarlanır.",
+      "standardOutput": "Kaydetme konumu ve dosya adlandırma <setting>Çıktı</setting> bölümünde ayarlanır.",
       "cannotDeleteStandard": "Standart ön ayar silinemez."
     },
     "dropZone": {
@@ -229,9 +229,10 @@
           "description_windows": "Sıkıştırılan dosya, orijinaliyle aynı klasöre aynı adla kaydedildiğinde orijinal dosya Geri Dönüşüm Kutusu’na taşınır ve yalnızca sıkıştırılan dosya tutulur."
         },
         "prefix": {
-          "title": "Dosya adı öneki",
-          "placeholder": "Önek yok",
-          "description": "Kaydedilen dosya adlarının başına eklenen metin. Orijinal adları korumak için boş bırakın."
+          "title": "Dosya adlandırma",
+          "placeholder": "Orijinal adı koru",
+          "description": "Kaydedilen dosya adları için {name}, {date}, {time} veya {preset} gibi belirteçler kullanan şablon. Orijinal adları korumak için boş bırakın.",
+          "preview": "Örnek: {{example}}"
         },
         "appliesTo": "Bunlar yalnızca Standart ön ayar için geçerlidir."
       },
@@ -386,6 +387,7 @@
           "outputFile": "Tek bir dosyayı bu adla kaydedin. Farklı bir uzantı onu o biçime dönüştürür.",
           "audioOnly": "Bir videonun yalnızca sesini ses dosyası olarak saklayın.",
           "flatten": "Her dosyayı içindeki klasörler olmadan doğrudan klasöre kaydedin.",
+          "template": "Yalnızca bu komut için kaydedilen dosyaları bir şablonla adlandırın ({name}, {date}, {time} ve {preset} desteklenir).",
           "prefix": "Yalnızca bu komut için kaydedilen dosya adlarının başına metin ekleyin.",
           "skipLarger": "Orijinalinden büyük çıktıları kaydetmeyin.",
           "replace": "Çıktı aynı ada ve biçime sahipse orijinalin yerine koyun. Orijinal Çöp Sepeti’ne taşınır.",

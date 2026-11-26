@@ -146,7 +146,7 @@
       "empty_image": "There are no image presets yet. Adjust the settings of an image and select the plus button next to the Preset menu to save them as a preset.",
       "empty_audio": "There are no audio presets yet. Adjust the settings of an audio file and select the plus button next to the Preset menu to save them as a preset.",
       "mediaType": "Media type",
-      "standardOutput": "Its save location and file name prefix are set in <setting>Output</setting>.",
+      "standardOutput": "Its save location and file naming are set in <setting>Output</setting>.",
       "cannotDeleteStandard": "The Standard preset cannot be deleted."
     },
     "dropZone": {
@@ -229,9 +229,10 @@
           "description_windows": "When a compressed file is saved with the same name in the same folder as its original, the original is moved to the Recycle Bin and only the compressed file is kept."
         },
         "prefix": {
-          "title": "File name prefix",
-          "placeholder": "No prefix",
-          "description": "Text added to the start of saved file names. Leave empty to keep the original names."
+          "title": "File naming",
+          "placeholder": "Keep original name",
+          "description": "Template for saved file names using tokens like {name}, {date}, {time}, or {preset}. Leave empty to keep the original names.",
+          "preview": "Example: {{example}}"
         },
         "appliesTo": "These apply to the Standard preset only."
       },
@@ -386,6 +387,7 @@
           "outputFile": "Save a single file under this name. A different extension converts it to that format.",
           "audioOnly": "Keep only the sound of a video, as an audio file.",
           "flatten": "Save every file straight into the folder, without the folders inside it.",
+          "template": "Name saved files using a template (supports {name}, {date}, {time}, and {preset}), for this command only.",
           "prefix": "Add text to the start of the saved file names, for this command only.",
           "skipLarger": "Do not save outputs that are larger than their originals.",
           "replace": "Replace the original when the output has the same name and format. The original is moved to the Trash.",

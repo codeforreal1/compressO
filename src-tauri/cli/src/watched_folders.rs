@@ -305,6 +305,7 @@ mod tests {
         PresetOutput {
             save_location: "sameFolder".to_string(),
             save_folder: None,
+            file_name_template: None,
             file_prefix: String::new(),
         }
     }
@@ -313,6 +314,7 @@ mod tests {
         PresetOutput {
             save_location: "ask".to_string(),
             save_folder: None,
+            file_name_template: None,
             file_prefix: String::new(),
         }
     }

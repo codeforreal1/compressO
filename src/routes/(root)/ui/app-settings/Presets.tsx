@@ -249,6 +249,7 @@ function PresetCard({ preset, isFirst, isLast, isDefault }: PresetCardProps) {
         <div className="mt-3 max-w-[560px]">
           <PresetOutputFields
             value={preset.output}
+            presetName={preset.name}
             onChange={(output) => {
               const target = getPreset()
               if (target) target.output = output

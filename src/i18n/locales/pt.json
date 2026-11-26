@@ -147,7 +147,7 @@
       "empty_image": "Ainda não há predefinições de imagem. Ajuste as configurações de uma imagem e selecione o botão de adição ao lado do menu Predefinição para salvá-las como predefinição.",
       "empty_audio": "Ainda não há predefinições de áudio. Ajuste as configurações de um arquivo de áudio e selecione o botão de adição ao lado do menu Predefinição para salvá-las como predefinição.",
       "mediaType": "Tipo de mídia",
-      "standardOutput": "O seu local de salvamento e o prefixo do nome do arquivo são definidos em <setting>Saída</setting>.",
+      "standardOutput": "O seu local de salvamento e a nomenclatura dos arquivos são definidos em <setting>Saída</setting>.",
       "cannotDeleteStandard": "A predefinição Padrão não pode ser excluída."
     },
     "dropZone": {
@@ -230,9 +230,10 @@
           "description_windows": "Quando um arquivo comprimido é salvo com o mesmo nome na mesma pasta do original, o original é movido para a Lixeira e apenas o arquivo comprimido é mantido."
         },
         "prefix": {
-          "title": "Prefixo do nome do arquivo",
-          "placeholder": "Sem prefixo",
-          "description": "Texto adicionado ao início do nome dos arquivos salvos. Deixe vazio para manter os nomes originais."
+          "title": "Nomenclatura do arquivo",
+          "placeholder": "Manter nome original",
+          "description": "Modelo para os nomes dos arquivos salvos usando tokens como {name}, {date}, {time} ou {preset}. Deixe vazio para manter os nomes originais.",
+          "preview": "Exemplo: {{example}}"
         },
         "appliesTo": "Aplicam-se apenas à predefinição Padrão."
       },
@@ -387,6 +388,7 @@
           "outputFile": "Salvar um único arquivo com este nome. Uma extensão diferente o converte para esse formato.",
           "audioOnly": "Manter apenas o som de um vídeo, como arquivo de áudio.",
           "flatten": "Salvar cada arquivo diretamente na pasta, sem as pastas dentro dela.",
+          "template": "Nomear arquivos salvos usando um modelo (suporta {name}, {date}, {time} e {preset}), apenas neste comando.",
           "prefix": "Adicionar texto ao início dos nomes dos arquivos salvos, apenas neste comando.",
           "skipLarger": "Não salvar resultados maiores que os originais.",
           "replace": "Substituir o original quando o resultado tem o mesmo nome e formato. O original é movido para o Lixo.",

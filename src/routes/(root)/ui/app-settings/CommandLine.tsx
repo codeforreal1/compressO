@@ -43,6 +43,10 @@ const EXAMPLES = [
     id: 'flatten',
     code: 'compresso Trip --output="Compressed" --preserve-folder-structure=0',
   },
+  {
+    id: 'template',
+    code: 'compresso photo.jpg --filename-template="{name}_small"',
+  },
   { id: 'prefix', code: 'compresso photo.jpg --filename-prefix="small-"' },
   { id: 'skipLarger', code: 'compresso photo.jpg --skip-larger-outputs=1' },
   {

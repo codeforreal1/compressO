@@ -17,6 +17,7 @@ pub struct Overrides {
     pub preserve_folder_structure: Option<bool>,
     pub replace_original_files: Option<bool>,
     pub file_name_prefix: Option<String>,
+    pub file_name_template: Option<String>,
     pub use_hardware_acceleration: Option<bool>,
     pub reach_target_sizes_without_acceleration: Option<bool>,
 }
@@ -106,6 +107,9 @@ pub struct EffectiveSettings {
     /// Set when a prefix was chosen; otherwise each preset's prefix is used
     #[serde(rename = "filenamePrefix", skip_serializing_if = "Option::is_none")]
     pub file_name_prefix: Option<String>,
+    /// Set when a naming template was chosen; otherwise each preset's template is used
+    #[serde(rename = "filenameTemplate", skip_serializing_if = "Option::is_none")]
+    pub file_name_template: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub output_folder: Option<String>,
 }
@@ -477,6 +481,7 @@ pub async fn run(
                 .unwrap_or(settings.output.reach_target_sizes_without_acceleration),
         },
         file_name_prefix: overrides.file_name_prefix.clone(),
+        file_name_template: overrides.file_name_template.clone(),
         // The file's folder, for a file
         output_folder: match &output_file {
             Some(path) => path.parent().map(|folder| folder.display().to_string()),
@@ -559,6 +564,7 @@ pub async fn run(
             .map(|name| name.to_string_lossy().to_string()),
         "convertToExtension": convert_to_extension,
         "fileNamePrefix": overrides.file_name_prefix,
+        "fileNameTemplate": overrides.file_name_template,
     });
     for (key, value) in [
         ("skipLargerOutputs", overrides.skip_larger_outputs),

@@ -147,7 +147,7 @@
       "empty_image": "Il n’y a encore aucun préréglage d’image. Ajustez les réglages d’une image et sélectionnez le bouton plus à côté du menu Préréglage pour les enregistrer comme préréglage.",
       "empty_audio": "Il n’y a encore aucun préréglage audio. Ajustez les réglages d’un fichier audio et sélectionnez le bouton plus à côté du menu Préréglage pour les enregistrer comme préréglage.",
       "mediaType": "Type de média",
-      "standardOutput": "Son emplacement d’enregistrement et son préfixe de nom de fichier se règlent dans <setting>Sortie</setting>.",
+      "standardOutput": "Son emplacement d’enregistrement et le nommage des fichiers se règlent dans <setting>Sortie</setting>.",
       "cannotDeleteStandard": "Le préréglage Standard ne peut pas être supprimé."
     },
     "dropZone": {
@@ -230,9 +230,10 @@
           "description_windows": "Lorsqu’un fichier compressé est enregistré sous le même nom dans le même dossier que l’original, l’original est déplacé vers la Corbeille et seul le fichier compressé est conservé."
         },
         "prefix": {
-          "title": "Préfixe du nom de fichier",
-          "placeholder": "Aucun préfixe",
-          "description": "Texte ajouté au début du nom des fichiers enregistrés. Laissez vide pour conserver les noms d’origine."
+          "title": "Nommage des fichiers",
+          "placeholder": "Conserver le nom d’origine",
+          "description": "Modèle pour les noms des fichiers enregistrés avec des jetons comme {name}, {date}, {time} ou {preset}. Laissez vide pour conserver les noms d’origine.",
+          "preview": "Exemple : {{example}}"
         },
         "appliesTo": "Ces réglages s’appliquent uniquement au préréglage Standard."
       },
@@ -387,6 +388,7 @@
           "outputFile": "Enregistrer un seul fichier sous ce nom. Une autre extension le convertit dans ce format.",
           "audioOnly": "Ne garder que le son d’une vidéo, sous forme de fichier audio.",
           "flatten": "Enregistrer chaque fichier directement dans le dossier, sans les dossiers qu’il contient.",
+          "template": "Nommer les fichiers enregistrés à l’aide d’un modèle (prend en charge {name}, {date}, {time} et {preset}), pour cette commande uniquement.",
           "prefix": "Ajouter du texte au début des noms des fichiers enregistrés, pour cette commande uniquement.",
           "skipLarger": "Ne pas enregistrer les résultats plus volumineux que leurs originaux.",
           "replace": "Remplacer l’original lorsque le résultat a le même nom et le même format. L’original est placé dans la Corbeille.",

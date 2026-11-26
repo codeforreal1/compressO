@@ -135,6 +135,8 @@ pub struct CliJob {
     #[serde(default)]
     pub file_name_prefix: Option<String>,
     #[serde(default)]
+    pub file_name_template: Option<String>,
+    #[serde(default)]
     pub use_hardware_acceleration: Option<bool>,
     #[serde(default)]
     pub reach_target_sizes_without_acceleration: Option<bool>,

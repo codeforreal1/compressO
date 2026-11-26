@@ -8,6 +8,10 @@ import {
   type PresetOutput,
   STANDARD_PRESET_ID,
 } from '@/types/preset'
+import {
+  getLegacyPrefixFromTemplate,
+  migratePrefixToTemplate,
+} from '@/utils/fileNameTemplate'
 
 const PRESETS_SCHEMA_VERSION = 1
 
@@ -35,16 +39,29 @@ function isValidPreset(preset: unknown): preset is Preset {
   )
 }
 
-function isValidOutput(output: unknown): output is PresetOutput {
+function normalizeOutput(output: unknown): PresetOutput | null {
   const value = output as Partial<PresetOutput> | null
-  return (
-    !!value &&
-    (value.saveLocation === 'ask' ||
-      value.saveLocation === 'fixedFolder' ||
-      value.saveLocation === 'sameFolder') &&
-    (value.saveFolder === null || typeof value.saveFolder === 'string') &&
-    typeof value.filePrefix === 'string'
-  )
+  if (
+    !value ||
+    (value.saveLocation !== 'ask' &&
+      value.saveLocation !== 'fixedFolder' &&
+      value.saveLocation !== 'sameFolder') ||
+    (value.saveFolder !== null && typeof value.saveFolder !== 'string') ||
+    (typeof value.fileNameTemplate !== 'string' &&
+      typeof value.filePrefix !== 'string')
+  ) {
+    return null
+  }
+  const fileNameTemplate =
+    typeof value.fileNameTemplate === 'string'
+      ? value.fileNameTemplate
+      : migratePrefixToTemplate(value.filePrefix)
+  return {
+    saveLocation: value.saveLocation,
+    saveFolder: value.saveFolder,
+    fileNameTemplate,
+    filePrefix: getLegacyPrefixFromTemplate(fileNameTemplate),
+  }
 }
 
 /** Reads the stored presets, dropping anything that is not a valid preset */
@@ -68,8 +85,8 @@ function readPresets(): PresetsState {
       .filter(isValidPreset)
       // An output that is not valid is dropped (the preset follows the Standard preset's)
       .map((preset) =>
-        preset.output && !isValidOutput(preset.output)
-          ? { ...preset, output: null }
+        preset.output
+          ? { ...preset, output: normalizeOutput(preset.output) }
           : preset,
       )
     const getDefaultPresetId = (mediaType: PresetMediaType) => {

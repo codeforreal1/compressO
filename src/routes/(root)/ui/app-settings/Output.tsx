@@ -10,16 +10,15 @@ import Icon from '@/components/Icon'
 import InfoTooltip from '@/components/InfoTooltip'
 import Select from '@/components/Select'
 import Switch from '@/components/Switch'
-import TextInput from '@/components/TextInput'
 import { toast } from '@/components/Toast'
-import {
-  type SaveLocation,
-  sanitizeFileNamePart,
-  settingsStore,
-} from '@/stores/settingsStore'
+import { type SaveLocation, settingsStore } from '@/stores/settingsStore'
 import { deleteCache as invokeDeleteCache } from '@/tauri/commands/fs'
 import { getPlatform } from '@/utils/fs'
-import { pickSaveFolder, SAVE_LOCATION_OPTIONS } from './PresetOutputFields'
+import {
+  FileNameTemplateField,
+  pickSaveFolder,
+  SAVE_LOCATION_OPTIONS,
+} from './PresetOutputFields'
 import { SettingsRow, SettingsSection } from './SettingsLayout'
 import { appProxy } from '../../-state'
 
@@ -43,7 +42,7 @@ function Output() {
     copyOutputToClipboard,
     copyBatchOutputToClipboard,
   } = useSnapshot(settingsStore)
-  const { outputFilePrefix, saveLocation, saveFolder } =
+  const { outputFileNameTemplate, saveLocation, saveFolder } =
     useSnapshot(settingsStore)
 
   const handleSaveLocationChange = async (location: SaveLocation) => {
@@ -137,14 +136,13 @@ function Output() {
           title={t('settings.output.saving.prefix.title')}
           description={t('settings.output.saving.prefix.description')}
         >
-          <TextInput
-            aria-label={t('settings.output.saving.prefix.title')}
-            placeholder={t('settings.output.saving.prefix.placeholder')}
-            value={outputFilePrefix}
-            onValueChange={(value) => {
-              settingsStore.outputFilePrefix = sanitizeFileNamePart(value)
+          <FileNameTemplateField
+            ariaLabel={t('settings.output.saving.prefix.title')}
+            value={outputFileNameTemplate}
+            onChange={(value) => {
+              settingsStore.outputFileNameTemplate = value
             }}
-            className="w-[180px]"
+            className="w-[240px]"
           />
         </SettingsRow>
       </SettingsSection>

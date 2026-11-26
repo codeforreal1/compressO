@@ -8,6 +8,7 @@ Features:
 - **Add Audio to Videos**: Attach audio files to a video from its Audio settings, including videos without sound. Added audio starts at the beginning of the video, is cut when longer than the video, and a shorter file leaves the rest of the video silent. Added tracks count as kept tracks, so the video's original tracks can be unselected.
 - **Clips**: Split a compressed video into a chosen number of equal clips, the default, or by their length in seconds or minutes with the Total clips / Timed clips switch. Each clip is cut from the finished output with a stream copy, so trim, speed, Target Size, HDR, audio, subtitles and a custom thumbnail are kept, and nothing is encoded again. Finished clips appear as batch-style cards with copy and show-in-folder actions, and double-clicking a card plays that clip in a read-only preview. The result shows the original video size and the total size of all clips. Clips settings can be saved in video presets. No clip can be shorter than 1 second, and the clip length must be shorter than the video.
 - **Maximum CPU cores**: Limit how many CPU cores FFmpeg uses when it encodes on the CPU, in Settings → General. All available cores are used by default, and hardware acceleration is not affected.
+- **File naming templates**: Format saved file names with prefixes, suffixes, and tokens (`{name}`, `{date}`, `{time}`, `{preset}`) in Settings → Output, in preset outputs, and via `--filename-template` / `filenameTemplate` in the CLI and MCP server. Leave empty to keep the original name. Existing prefix settings migrate automatically.
 
 Enhancements:
 
@@ -25,6 +26,8 @@ Bug Fixes:
 - Fixed the update download percentage jumping back and forth. Progress now moves forward only, is emitted once per percentage point instead of for every downloaded chunk, and only one update can be downloaded at a time.
 - Fixed videos with embedded cover art failing to preview, compress, trim, or convert to GIF with **No output**. Some MP4s, such as those from X/Twitter, carry a 0×0 attached picture as the first video stream; CompressO now selects the actual video stream instead of the cover art.
 - Fixed clips from a preset being ignored by the drop zone and watched folders: the preset did split the video, but only the first clip was saved. Every clip is now saved, counted in the queue, recorded in History, and cleaned up when its item is cleared.
+- Fixed **Replace original files** not replacing the original when converting to a different format. Originals are now matched by folder and file name without the extension, and Reconfigure and queue retry stay disabled when the original was moved to the Trash.
+- Fixed file sizes on Windows appearing larger than in Windows Explorer. Sizes in the app and CLI now use 1024-based units on Windows to match Explorer, while keeping 1000-based units on macOS and Linux.
 
 ### 4.2.0
 

@@ -146,7 +146,7 @@
       "empty_image": "Es gibt noch keine Bild-Voreinstellungen. Passen Sie die Einstellungen eines Bildes an und wählen Sie die Plus-Schaltfläche neben dem Menü „Voreinstellung“, um sie als Voreinstellung zu speichern.",
       "empty_audio": "Es gibt noch keine Audio-Voreinstellungen. Passen Sie die Einstellungen einer Audiodatei an und wählen Sie die Plus-Schaltfläche neben dem Menü „Voreinstellung“, um sie als Voreinstellung zu speichern.",
       "mediaType": "Medientyp",
-      "standardOutput": "Speicherort und Dateinamenpräfix werden unter „<setting>Ausgabe</setting>“ festgelegt.",
+      "standardOutput": "Speicherort und Dateibenennung werden unter „<setting>Ausgabe</setting>“ festgelegt.",
       "cannotDeleteStandard": "Die Standard-Voreinstellung kann nicht gelöscht werden."
     },
     "dropZone": {
@@ -229,9 +229,10 @@
           "description_windows": "Wird eine komprimierte Datei mit demselben Namen im selben Ordner wie das Original gespeichert, wird das Original in den Papierkorb verschoben und nur die komprimierte Datei behalten."
         },
         "prefix": {
-          "title": "Dateinamenpräfix",
-          "placeholder": "Kein Präfix",
-          "description": "Text, der am Anfang gespeicherter Dateinamen eingefügt wird. Leer lassen, um die ursprünglichen Namen beizubehalten."
+          "title": "Dateibenennung",
+          "placeholder": "Originalnamen behalten",
+          "description": "Vorlage für gespeicherte Dateinamen mit Platzhaltern wie {name}, {date}, {time} oder {preset}. Leer lassen, um die ursprünglichen Namen beizubehalten.",
+          "preview": "Beispiel: {{example}}"
         },
         "appliesTo": "Gilt nur für die Standard-Voreinstellung."
       },
@@ -386,6 +387,7 @@
           "outputFile": "Eine einzelne Datei unter diesem Namen speichern. Eine andere Dateiendung wandelt sie in dieses Format um.",
           "audioOnly": "Nur den Ton eines Videos als Audiodatei behalten.",
           "flatten": "Jede Datei direkt in den Ordner speichern, ohne die Ordner darin.",
+          "template": "Gespeicherte Dateien über eine Vorlage benennen (unterstützt {name}, {date}, {time} und {preset}), nur für diesen Befehl.",
           "prefix": "Text an den Anfang der gespeicherten Dateinamen setzen, nur für diesen Befehl.",
           "skipLarger": "Ausgaben, die größer als ihre Originale sind, nicht speichern.",
           "replace": "Das Original ersetzen, wenn die Ausgabe denselben Namen und dasselbe Format hat. Das Original wird in den Papierkorb verschoben.",

@@ -96,6 +96,7 @@ export type CliJob = {
   preserveFolderStructure: boolean | null
   replaceOriginalFiles: boolean | null
   fileNamePrefix: string | null
+  fileNameTemplate: string | null
   useHardwareAcceleration: boolean | null
   reachTargetSizesWithoutAcceleration: boolean | null
 }

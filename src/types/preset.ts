@@ -118,14 +118,19 @@ export type AudioPresetSettings = Omit<
 export type AudioPresetKey = keyof AudioPresetSettings
 
 /**
- * Where a preset's outputs are saved, & the prefix of their file names. A preset without one
+ * Where a preset's outputs are saved, & their file name template. A preset without one
  * follows the Standard preset, whose output is the one of Settings -> Output (see `getPresetOutput`).
  */
 export type PresetOutput = {
   saveLocation: SaveLocation
   /** Folder used when `saveLocation` is `fixedFolder` */
   saveFolder: string | null
-  /** Added to the start of saved file names; empty keeps the original names */
+  /**
+   * Naming template for saved files (without extension), e.g. `compressO-{name}` or
+   * `{name}_compressed`. Empty keeps the original names.
+   */
+  fileNameTemplate: string
+  /** Legacy prefix kept in sync for backward compatibility with older stored presets & CLI */
   filePrefix: string
 }
 

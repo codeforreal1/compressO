@@ -5,15 +5,25 @@ import { snapshot } from 'valtio'
 
 import { toast } from '@/components/Toast'
 import { t } from '@/i18n'
-import { sanitizeFileNamePart, settingsStore } from '@/stores/settingsStore'
+import { settingsStore } from '@/stores/settingsStore'
 import {
   copyFilesToClipboard,
   getAvailablePath,
   moveFile,
 } from '@/tauri/commands/fs'
 import { Image, Video } from '@/types/app'
+import {
+  applyFileNameTemplate,
+  getLegacyPrefixFromTemplate,
+  migratePrefixToTemplate,
+  sanitizeFileNamePart,
+} from '@/utils/fileNameTemplate'
 import { formatBytes, getParentDirectory } from '@/utils/fs'
-import { getPresetOutput, savesAutomatically } from '@/utils/presetOutput'
+import {
+  getPresetNameForTemplate,
+  getPresetOutput,
+  savesAutomatically,
+} from '@/utils/presetOutput'
 import { recordSavedOutput } from './-history'
 import { appProxy } from './-state'
 
@@ -32,7 +42,8 @@ function getMediaOutput(media: Pick<Media, 'config'>) {
 async function saveVideoClips(
   mediaIndex: number,
   destinationDirectory: string,
-  prefix: string,
+  fileNameTemplate: string,
+  presetName: string,
 ) {
   const mediaFile = appProxy.state.media[mediaIndex]
   const file = mediaFile?.type === 'video' ? mediaFile.compressedFile : null
@@ -46,9 +57,14 @@ async function saveVideoClips(
     if (clip.isSaved || !clip.pathRaw) continue
     clip.isSaving = true
     try {
+      const targetName = applyFileNameTemplate(
+        clip.fileNameToDisplay || clip.fileName,
+        fileNameTemplate,
+        { presetName },
+      )
       const { path: savedPath } = await moveFile(
         clip.pathRaw,
-        `${destinationDirectory}/${prefix}${clip.fileNameToDisplay || clip.fileName}`,
+        `${destinationDirectory}/${targetName}`,
         {
           replaceOriginal: settingsStore.replaceOriginalFiles
             ? mediaFile?.pathRaw
@@ -129,7 +145,8 @@ async function saveCompressedMedia(
 
     const baseDirectory = getBaseDirectory(mediaFile)
     if (baseDirectory == null) continue
-    const prefix = getMediaOutput(mediaFile).filePrefix
+    const fileNameTemplate = getMediaOutput(mediaFile).fileNameTemplate
+    const presetName = getPresetNameForTemplate(mediaFile.config?.presetId)
     const shouldKeepFolderStructure =
       typeof keepFolderStructure === 'function'
         ? keepFolderStructure(mediaFile)
@@ -158,7 +175,12 @@ async function saveCompressedMedia(
       }
 
       if (clips?.length) {
-        const result = await saveVideoClips(i, destinationDirectory, prefix)
+        const result = await saveVideoClips(
+          i,
+          destinationDirectory,
+          fileNameTemplate,
+          presetName,
+        )
         if (result.savedCount > 0) {
           savedLocations.add(location)
           lastSavedPath = result.lastSavedPath ?? lastSavedPath
@@ -175,9 +197,14 @@ async function saveCompressedMedia(
       }
 
       if (!compressedFile.pathRaw) continue
+      const targetName = applyFileNameTemplate(
+        compressedFile.fileNameToDisplay || mediaFile.fileName || '',
+        fileNameTemplate,
+        { presetName },
+      )
       const { path: savedPath, replacedOriginal } = await moveFile(
         compressedFile.pathRaw,
-        `${destinationDirectory}/${prefix}${compressedFile.fileNameToDisplay || mediaFile.fileName}`,
+        `${destinationDirectory}/${targetName}`,
         {
           replaceOriginal: settingsStore.replaceOriginalFiles
             ? mediaFile.pathRaw
@@ -361,7 +388,8 @@ export async function saveCompressedMediaWithPrompt(mediaIndex?: number) {
     const result = await saveVideoClips(
       index,
       directory,
-      getMediaOutput(mediaFile).filePrefix,
+      getMediaOutput(mediaFile).fileNameTemplate,
+      getPresetNameForTemplate(mediaFile.config?.presetId),
     )
     if (result.failedCount > 0) {
       toast.error(
@@ -390,7 +418,11 @@ export async function saveCompressedMediaWithPrompt(mediaIndex?: number) {
 
   const pathToSave = await save({
     title: t('save.chooseLocation'),
-    defaultPath: `${getMediaOutput(mediaFile).filePrefix}${compressedFile.fileNameToDisplay ?? mediaFile.fileName ?? ''}`,
+    defaultPath: applyFileNameTemplate(
+      compressedFile.fileNameToDisplay ?? mediaFile.fileName ?? '',
+      getMediaOutput(mediaFile).fileNameTemplate,
+      { presetName: getPresetNameForTemplate(mediaFile.config?.presetId) },
+    ),
   })
   if (!pathToSave || !compressedFile.pathRaw) return
 
@@ -516,7 +548,8 @@ export function getOutputClipboardFiles(
   mediaFile: Pick<Media, 'type' | 'compressedFile' | 'fileName' | 'config'>,
 ): { path: string; fileName?: string }[] {
   const { compressedFile } = mediaFile
-  const prefix = getMediaOutput(mediaFile).filePrefix
+  const fileNameTemplate = getMediaOutput(mediaFile).fileNameTemplate
+  const presetName = getPresetNameForTemplate(mediaFile.config?.presetId)
   const clips = mediaFile.type === 'video' ? compressedFile?.clips : undefined
   if (clips?.length) {
     return clips.flatMap((clip) => {
@@ -525,7 +558,11 @@ export function getOutputClipboardFiles(
       return [
         {
           path: clip.pathRaw,
-          fileName: `${prefix}${clip.fileNameToDisplay || clip.fileName}`,
+          fileName: applyFileNameTemplate(
+            clip.fileNameToDisplay || clip.fileName,
+            fileNameTemplate,
+            { presetName },
+          ),
         },
       ]
     })
@@ -536,7 +573,7 @@ export function getOutputClipboardFiles(
 
 /**
  * One clip as it is copied to the clipboard: from where it was saved, or (not saved yet) pasted
- * under the name it would be saved with (prefix & clip name), not its generated cache name.
+ * under the name it would be saved with (template & clip name), not its generated cache name.
  */
 export function getClipClipboardFile(
   mediaFile: { config?: { presetId?: string | null } | null },
@@ -551,15 +588,17 @@ export function getClipClipboardFile(
   if (!clip.pathRaw) return null
   return {
     path: clip.pathRaw,
-    fileName: `${getPresetOutput(mediaFile.config?.presetId).filePrefix}${
-      clip.fileNameToDisplay || clip.fileName
-    }`,
+    fileName: applyFileNameTemplate(
+      clip.fileNameToDisplay || clip.fileName,
+      getPresetOutput(mediaFile.config?.presetId).fileNameTemplate,
+      { presetName: getPresetNameForTemplate(mediaFile.config?.presetId) },
+    ),
   }
 }
 
 /**
  * A media's output as it is copied to the clipboard: from where it was saved, or (not saved yet)
- * pasted under the name it would be saved with (prefix & original name), not its generated cache
+ * pasted under the name it would be saved with (template & original name), not its generated cache
  * name. `null` without an output.
  */
 export function getOutputClipboardFile(
@@ -572,7 +611,11 @@ export function getOutputClipboardFile(
   return {
     path: compressedFile.pathRaw,
     fileName: name
-      ? `${getMediaOutput(mediaFile).filePrefix}${name}`
+      ? applyFileNameTemplate(
+          name,
+          getMediaOutput(mediaFile).fileNameTemplate,
+          { presetName: getPresetNameForTemplate(mediaFile.config?.presetId) },
+        )
       : undefined,
   }
 }
@@ -642,6 +685,7 @@ export type QueueSaveSettings = {
   preserveFolderStructure?: boolean | null
   replaceOriginalFiles?: boolean | null
   fileNamePrefix?: string | null
+  fileNameTemplate?: string | null
 }
 
 /**
@@ -675,15 +719,18 @@ export async function saveQueueOutput(
     ? ('fixedFolder' as const)
     : presetOutput.saveLocation
   const saveFolder = settings.outputFolder ?? presetOutput.saveFolder
-  const outputFilePrefix =
-    settings.fileNamePrefix != null
-      ? sanitizeFileNamePart(settings.fileNamePrefix)
-      : presetOutput.filePrefix
+  const outputFileNameTemplate =
+    settings.fileNameTemplate != null
+      ? sanitizeFileNamePart(settings.fileNameTemplate)
+      : settings.fileNamePrefix != null
+        ? migratePrefixToTemplate(sanitizeFileNamePart(settings.fileNamePrefix))
+        : presetOutput.fileNameTemplate
   if (
     !savesAutomatically({
       saveLocation,
       saveFolder,
-      filePrefix: outputFilePrefix,
+      fileNameTemplate: outputFileNameTemplate,
+      filePrefix: getLegacyPrefixFromTemplate(outputFileNameTemplate),
     })
   ) {
     return { reason: 'no-save-location' }
@@ -743,10 +790,15 @@ export async function saveQueueOutput(
       output.outputs.length === 1
         ? settings.outputFileName
         : null
+    const presetName = getPresetNameForTemplate(output.presetId)
     const savedPaths: string[] = []
     let replacedOriginal = false
     for (const file of output.outputs) {
-      const fileName = exactFileName ?? `${outputFilePrefix}${file.fileName}`
+      const fileName =
+        exactFileName ??
+        applyFileNameTemplate(file.fileName, outputFileNameTemplate, {
+          presetName,
+        })
       try {
         const moved = await moveFile(
           file.path,

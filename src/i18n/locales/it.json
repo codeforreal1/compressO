@@ -147,7 +147,7 @@
       "empty_image": "Non ci sono ancora preset immagine. Regoli le impostazioni di un’immagine e selezioni il pulsante più accanto al menu Preset per salvarle come preset.",
       "empty_audio": "Non ci sono ancora preset audio. Regoli le impostazioni di un file audio e selezioni il pulsante più accanto al menu Preset per salvarle come preset.",
       "mediaType": "Tipo di file",
-      "standardOutput": "La posizione di salvataggio e il prefisso del nome del file si impostano in <setting>Output</setting>.",
+      "standardOutput": "La posizione di salvataggio e la denominazione dei file si impostano in <setting>Output</setting>.",
       "cannotDeleteStandard": "La preimpostazione Standard non può essere eliminata."
     },
     "dropZone": {
@@ -230,9 +230,10 @@
           "description_windows": "Quando un file compresso viene salvato con lo stesso nome nella stessa cartella dell’originale, l’originale viene spostato nel Cestino e viene conservato solo il file compresso."
         },
         "prefix": {
-          "title": "Prefisso del nome file",
-          "placeholder": "Nessun prefisso",
-          "description": "Testo aggiunto all’inizio dei nomi dei file salvati. Lasci vuoto per mantenere i nomi originali."
+          "title": "Nome file",
+          "placeholder": "Mantieni nome originale",
+          "description": "Modello per i nomi dei file salvati con segnaposto come {name}, {date}, {time} o {preset}. Lasci vuoto per mantenere i nomi originali.",
+          "preview": "Esempio: {{example}}"
         },
         "appliesTo": "Si applicano solo alla preimpostazione Standard."
       },
@@ -387,6 +388,7 @@
           "outputFile": "Salvi un singolo file con questo nome. Un’estensione diversa lo converte in quel formato.",
           "audioOnly": "Mantenga solo l’audio di un video, come file audio.",
           "flatten": "Salvi ogni file direttamente nella cartella, senza le cartelle al suo interno.",
+          "template": "Assegna un nome ai file salvati usando un modello (supporta {name}, {date}, {time} e {preset}), solo per questo comando.",
           "prefix": "Aggiunga del testo all’inizio dei nomi dei file salvati, solo per questo comando.",
           "skipLarger": "Non salvi i risultati più grandi dei loro originali.",
           "replace": "Sostituisca l’originale quando il risultato ha lo stesso nome e formato. L’originale viene spostato nel Cestino.",

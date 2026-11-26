@@ -91,6 +91,9 @@ pub struct PresetOutput {
     /// `sameFolder`, `fixedFolder` or `ask`
     pub save_location: String,
     pub save_folder: Option<String>,
+    #[serde(default)]
+    pub file_name_template: Option<String>,
+    #[serde(default)]
     pub file_prefix: String,
 }
 

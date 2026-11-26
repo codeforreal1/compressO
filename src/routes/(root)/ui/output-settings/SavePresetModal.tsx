@@ -83,7 +83,11 @@ function SavePresetModal({
               }}
             />
           </p>
-          <PresetOutputFields value={output} onChange={setOutput} />
+          <PresetOutputFields
+            value={output}
+            onChange={setOutput}
+            presetName={trimmedName || undefined}
+          />
         </ModalBody>
         <ModalFooter>
           <Button size="sm" onPress={onClose}>

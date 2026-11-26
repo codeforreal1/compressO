@@ -148,7 +148,7 @@
       "empty_image": "Nie ma jeszcze ustawień wstępnych obrazów. Dostosuj ustawienia obrazu i wybierz przycisk plusa obok menu Ustawienie wstępne, aby zapisać je jako ustawienie wstępne.",
       "empty_audio": "Nie ma jeszcze ustawień wstępnych audio. Dostosuj ustawienia pliku audio i wybierz przycisk plusa obok menu Ustawienie wstępne, aby zapisać je jako ustawienie wstępne.",
       "mediaType": "Typ multimediów",
-      "standardOutput": "Jego miejsce zapisu i prefiks nazwy pliku ustawia się w sekcji <setting>Wyjście</setting>.",
+      "standardOutput": "Jego miejsce zapisu i nazewnictwo plików ustawia się w sekcji <setting>Wyjście</setting>.",
       "cannotDeleteStandard": "Nie można usunąć ustawienia Standardowego."
     },
     "dropZone": {
@@ -231,9 +231,10 @@
           "description_windows": "Gdy skompresowany plik jest zapisywany pod tą samą nazwą w tym samym folderze co oryginał, oryginał zostaje przeniesiony do Kosza i zachowany zostaje tylko skompresowany plik."
         },
         "prefix": {
-          "title": "Prefiks nazwy pliku",
-          "placeholder": "Bez prefiksu",
-          "description": "Tekst dodawany na początku nazw zapisywanych plików. Pozostaw puste, aby zachować oryginalne nazwy."
+          "title": "Nazewnictwo plików",
+          "placeholder": "Zachowaj oryginalną nazwę",
+          "description": "Szablon nazw zapisywanych plików używający tokenów takich jak {name}, {date}, {time} lub {preset}. Pozostaw puste, aby zachować oryginalne nazwy.",
+          "preview": "Przykład: {{example}}"
         },
         "appliesTo": "Dotyczą tylko ustawienia Standardowego."
       },
@@ -388,6 +389,7 @@
           "outputFile": "Zapisz pojedynczy plik pod tą nazwą. Inne rozszerzenie konwertuje go do tego formatu.",
           "audioOnly": "Zachowaj tylko dźwięk filmu jako plik audio.",
           "flatten": "Zapisz każdy plik bezpośrednio w folderze, bez folderów wewnątrz.",
+          "template": "Nadaj nazwy zapisanym plikom za pomocą szablonu (obsługuje {name}, {date}, {time} i {preset}), tylko dla tego polecenia.",
           "prefix": "Dodaj tekst na początku nazw zapisanych plików, tylko dla tego polecenia.",
           "skipLarger": "Nie zapisuj wyników większych od oryginałów.",
           "replace": "Zastąp oryginał, gdy wynik ma tę samą nazwę i format. Oryginał zostanie przeniesiony do Kosza.",

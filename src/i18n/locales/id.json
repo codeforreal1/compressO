@@ -145,7 +145,7 @@
       "empty_image": "Belum ada preset gambar. Sesuaikan pengaturan sebuah gambar, lalu pilih tombol plus di samping menu Preset untuk menyimpannya sebagai preset.",
       "empty_audio": "Belum ada preset audio. Sesuaikan pengaturan sebuah file audio, lalu pilih tombol plus di samping menu Preset untuk menyimpannya sebagai preset.",
       "mediaType": "Jenis media",
-      "standardOutput": "Lokasi penyimpanan dan awalan nama filenya diatur di <setting>Keluaran</setting>.",
+      "standardOutput": "Lokasi penyimpanan dan penamaan filenya diatur di <setting>Keluaran</setting>.",
       "cannotDeleteStandard": "Preset Standar tidak dapat dihapus."
     },
     "dropZone": {
@@ -228,9 +228,10 @@
           "description_windows": "Jika file terkompresi disimpan dengan nama yang sama di folder yang sama dengan file aslinya, file asli dipindahkan ke Recycle Bin dan hanya file terkompresi yang disimpan."
         },
         "prefix": {
-          "title": "Awalan nama file",
-          "placeholder": "Tanpa awalan",
-          "description": "Teks yang ditambahkan di awal nama file yang disimpan. Biarkan kosong untuk mempertahankan nama asli."
+          "title": "Penamaan file",
+          "placeholder": "Pertahankan nama asli",
+          "description": "Templat untuk nama file yang disimpan menggunakan token seperti {name}, {date}, {time}, atau {preset}. Biarkan kosong untuk mempertahankan nama asli.",
+          "preview": "Contoh: {{example}}"
         },
         "appliesTo": "Berlaku hanya untuk preset Standar."
       },
@@ -385,6 +386,7 @@
           "outputFile": "Simpan satu file dengan nama ini. Ekstensi yang berbeda mengonversinya ke format tersebut.",
           "audioOnly": "Simpan hanya suara dari video sebagai file audio.",
           "flatten": "Simpan setiap file langsung ke folder, tanpa folder di dalamnya.",
+          "template": "Beri nama file yang disimpan menggunakan templat (mendukung {name}, {date}, {time}, dan {preset}), hanya untuk perintah ini.",
           "prefix": "Tambahkan teks di awal nama file yang disimpan, hanya untuk perintah ini.",
           "skipLarger": "Jangan simpan hasil yang lebih besar dari aslinya.",
           "replace": "Ganti file asli jika hasilnya memiliki nama dan format yang sama. File asli dipindahkan ke Sampah.",

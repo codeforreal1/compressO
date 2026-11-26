@@ -145,7 +145,7 @@
       "empty_image": "尚无图像预设。调整某个图像的设置，然后选择“预设”菜单旁的加号按钮，即可将其保存为预设。",
       "empty_audio": "尚无音频预设。调整某个音频文件的设置，然后选择“预设”菜单旁的加号按钮，即可将其保存为预设。",
       "mediaType": "媒体类型",
-      "standardOutput": "其保存位置和文件名前缀在“<setting>输出</setting>”中设置。",
+      "standardOutput": "其保存位置和文件命名方式在“<setting>输出</setting>”中设置。",
       "cannotDeleteStandard": "无法删除标准预设。"
     },
     "dropZone": {
@@ -228,9 +228,10 @@
           "description_windows": "当压缩后的文件以相同名称保存在原始文件所在的文件夹中时，原始文件将被移到回收站，仅保留压缩后的文件。"
         },
         "prefix": {
-          "title": "文件名前缀",
-          "placeholder": "无前缀",
-          "description": "添加到保存文件名开头的文字。留空则保留原文件名。"
+          "title": "文件命名",
+          "placeholder": "保留原文件名",
+          "description": "使用 {name}、{date}、{time} 或 {preset} 等占位符的保存文件名模板。留空则保留原文件名。",
+          "preview": "示例：{{example}}"
         },
         "appliesTo": "这些设置仅适用于标准预设。"
       },
@@ -385,6 +386,7 @@
           "outputFile": "以此名称保存单个文件。使用不同的扩展名会将其转换为该格式。",
           "audioOnly": "仅保留视频的声音，保存为音频文件。",
           "flatten": "将所有文件直接保存到该文件夹，不保留其中的子文件夹。",
+          "template": "仅对此命令，使用模板（支持 {name}、{date}、{time} 和 {preset}）命名保存的文件。",
           "prefix": "仅对此命令，在保存的文件名开头添加文字。",
           "skipLarger": "不保存比原始文件更大的输出。",
           "replace": "输出与原始文件名称和格式相同时替换原始文件。原始文件会被移到废纸篓。",

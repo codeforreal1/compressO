@@ -145,7 +145,7 @@
       "empty_image": "Chưa có cài đặt sẵn cho hình ảnh. Hãy điều chỉnh cài đặt của một hình ảnh và chọn nút dấu cộng bên cạnh menu Cài đặt sẵn để lưu thành cài đặt sẵn.",
       "empty_audio": "Chưa có cài đặt sẵn cho âm thanh. Hãy điều chỉnh cài đặt của một tệp âm thanh và chọn nút dấu cộng bên cạnh menu Cài đặt sẵn để lưu thành cài đặt sẵn.",
       "mediaType": "Loại phương tiện",
-      "standardOutput": "Vị trí lưu và tiền tố tên tệp của nó được đặt trong <setting>Đầu ra</setting>.",
+      "standardOutput": "Vị trí lưu và cách đặt tên tệp của nó được đặt trong <setting>Đầu ra</setting>.",
       "cannotDeleteStandard": "Không thể xóa cài đặt sẵn Tiêu chuẩn."
     },
     "dropZone": {
@@ -228,9 +228,10 @@
           "description_windows": "Khi tệp đã nén được lưu cùng tên trong cùng thư mục với tệp gốc, tệp gốc sẽ được chuyển vào Thùng rác và chỉ giữ lại tệp đã nén."
         },
         "prefix": {
-          "title": "Tiền tố tên tệp",
-          "placeholder": "Không có tiền tố",
-          "description": "Văn bản thêm vào đầu tên tệp được lưu. Để trống để giữ tên gốc."
+          "title": "Đặt tên tệp",
+          "placeholder": "Giữ tên gốc",
+          "description": "Mẫu đặt tên tệp được lưu bằng các mã như {name}, {date}, {time} hoặc {preset}. Để trống để giữ tên gốc.",
+          "preview": "Ví dụ: {{example}}"
         },
         "appliesTo": "Chỉ áp dụng cho cài đặt sẵn Tiêu chuẩn."
       },
@@ -385,6 +386,7 @@
           "outputFile": "Lưu một tệp với tên này. Phần mở rộng khác sẽ chuyển tệp sang định dạng đó.",
           "audioOnly": "Chỉ giữ âm thanh của video dưới dạng tệp âm thanh.",
           "flatten": "Lưu mọi tệp thẳng vào thư mục, không kèm các thư mục bên trong.",
+          "template": "Đặt tên tệp đã lưu bằng mẫu (hỗ trợ {name}, {date}, {time} và {preset}), chỉ cho lệnh này.",
           "prefix": "Thêm văn bản vào đầu tên tệp đã lưu, chỉ cho lệnh này.",
           "skipLarger": "Không lưu các kết quả lớn hơn bản gốc.",
           "replace": "Thay thế bản gốc khi kết quả có cùng tên và định dạng. Bản gốc được chuyển vào Thùng rác.",
