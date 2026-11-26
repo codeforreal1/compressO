@@ -34,6 +34,8 @@ export type DropQueueItem = {
   outputSize: number | null
   /** Where the output was saved; for a split video, the first clip's path */
   savedPath: string | null
+  /** Whether the original was moved to the Trash when saved ("Replace original files") */
+  replacedOriginal: boolean
   /**
    * The outputs in the app's cache, when they were not saved (a split video has several);
    * deleted when the item is cleared
@@ -106,6 +108,7 @@ export type DropQueueItemUpdate = Partial<
     | 'originalSize'
     | 'outputSize'
     | 'savedPath'
+    | 'replacedOriginal'
     | 'outputPaths'
     | 'clipCount'
     | 'message'

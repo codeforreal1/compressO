@@ -37,7 +37,10 @@ function getName(path: string) {
  */
 export function hasReplacedOriginal(item: DropQueueItem) {
   const normalize = (path: string) => path.replaceAll('\\', '/')
-  return !!item.savedPath && normalize(item.savedPath) === normalize(item.path)
+  return (
+    !!item.replacedOriginal ||
+    (!!item.savedPath && normalize(item.savedPath) === normalize(item.path))
+  )
 }
 
 /**

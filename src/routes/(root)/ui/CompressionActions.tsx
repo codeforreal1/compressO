@@ -20,9 +20,11 @@ function CompressionActions() {
   } = useSnapshot(appProxy)
 
   // Saved over their originals ("Replace original files"), which went to the Trash: compressing
-  // again would compress the compressed files, so it is not offered
-  const replacedOriginalCount = media.filter((mediaFile) =>
-    isSamePath(mediaFile.compressedFile?.savedPath, mediaFile.pathRaw),
+  // again would compress the compressed files (or fail when the extension changed), so it is not offered
+  const replacedOriginalCount = media.filter(
+    (mediaFile) =>
+      mediaFile.compressedFile?.replacedOriginal ||
+      isSamePath(mediaFile.compressedFile?.savedPath, mediaFile.pathRaw),
   ).length
   const canReconfigure = replacedOriginalCount === 0
 

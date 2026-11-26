@@ -79,6 +79,8 @@ pub struct DropQueueItem {
     pub output_size: Option<u64>,
     /// Where the outputs were saved (the first clip's path for a split video)
     pub saved_path: Option<String>,
+    /// Whether the original was moved to the Trash when saved ("Replace original files")
+    pub replaced_original: bool,
     /// The outputs in the app's cache, when they were not saved (a split video has several);
     /// deleted when the item is cleared
     pub output_paths: Vec<String>,
@@ -164,6 +166,7 @@ pub struct DropQueueItemUpdate {
     pub original_size: Option<u64>,
     pub output_size: Option<u64>,
     pub saved_path: Option<String>,
+    pub replaced_original: Option<bool>,
     pub output_paths: Option<Vec<String>>,
     pub clip_count: Option<usize>,
     pub message: Option<String>,
@@ -343,6 +346,7 @@ pub fn add_files_to_queue(
                 original_size: None,
                 output_size: None,
                 saved_path: None,
+                replaced_original: false,
                 output_paths: Vec::new(),
                 clip_count: 0,
                 message: None,
@@ -400,6 +404,9 @@ pub fn update_drop_queue_item(app_handle: AppHandle, id: String, update: DropQue
         if update.saved_path.is_some() {
             item.saved_path = update.saved_path;
         }
+        if let Some(replaced_original) = update.replaced_original {
+            item.replaced_original = replaced_original;
+        }
         if update.output_paths.is_some() {
             item.output_paths = update.output_paths.unwrap_or_default();
         }
@@ -439,6 +446,7 @@ pub fn retry_drop_queue_item(app_handle: AppHandle, id: String) {
         item.progress = 0.0;
         item.output_size = None;
         item.saved_path = None;
+        item.replaced_original = false;
         item.clip_count = 0;
         item.message = None;
         item.is_access_denied = false;

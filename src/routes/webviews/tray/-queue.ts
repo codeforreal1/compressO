@@ -379,6 +379,7 @@ async function compressQueueItem(item: DropQueueItem) {
         outputSize,
         clipCount: clips.length,
         savedPath: savedPaths[0] ?? null,
+        replacedOriginal: saved.replacedOriginal,
         outputPaths: [],
       })
       // Not for the command line, which is not at the app

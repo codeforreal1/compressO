@@ -46,7 +46,7 @@ async function saveVideoClips(
     if (clip.isSaved || !clip.pathRaw) continue
     clip.isSaving = true
     try {
-      const savedPath = await moveFile(
+      const { path: savedPath } = await moveFile(
         clip.pathRaw,
         `${destinationDirectory}/${prefix}${clip.fileNameToDisplay || clip.fileName}`,
         {
@@ -175,7 +175,7 @@ async function saveCompressedMedia(
       }
 
       if (!compressedFile.pathRaw) continue
-      const savedPath = await moveFile(
+      const { path: savedPath, replacedOriginal } = await moveFile(
         compressedFile.pathRaw,
         `${destinationDirectory}/${prefix}${compressedFile.fileNameToDisplay || mediaFile.fileName}`,
         {
@@ -190,6 +190,7 @@ async function saveCompressedMedia(
       appProxy.state.media[i].compressedFile = {
         ...(snapshot(appProxy).state.media[i].compressedFile ?? {}),
         savedPath,
+        replacedOriginal,
         isSaving: false,
         isSaved: true,
       }
@@ -269,7 +270,7 @@ export async function chooseOutputOption(
   try {
     await moveFile(savedPath, previousPath)
     try {
-      const newSavedPath = await moveFile(option.pathRaw, savedPath)
+      const { path: newSavedPath } = await moveFile(option.pathRaw, savedPath)
       Object.assign(file, chosen, { savedPath: newSavedPath })
       // The output saved is now this one (its size)
       recordSavedOutput(file, mediaFile.id)
@@ -400,14 +401,19 @@ export async function saveCompressedMediaWithPrompt(mediaIndex?: number) {
   if (isSingle) appProxy.state.isSaving = true
   compressedFile.isSaving = true
   try {
-    const savedPath = await moveFile(compressedFile.pathRaw, pathToSave, {
-      replaceOriginal: settingsStore.replaceOriginalFiles
-        ? mediaFile.pathRaw
-        : null,
-    })
+    const { path: savedPath, replacedOriginal } = await moveFile(
+      compressedFile.pathRaw,
+      pathToSave,
+      {
+        replaceOriginal: settingsStore.replaceOriginalFiles
+          ? mediaFile.pathRaw
+          : null,
+      },
+    )
     appProxy.state.media[index].compressedFile = {
       ...(snapshot(appProxy).state.media[index].compressedFile ?? {}),
       savedPath,
+      replacedOriginal,
       isSaved: true,
       isSaving: false,
     }
@@ -652,7 +658,7 @@ export async function saveQueueOutput(
     topFolders,
   }: { groupKey: string; topFolders: Map<string, Promise<string>> },
 ): Promise<
-  | { savedPaths: string[] }
+  | { savedPaths: string[]; replacedOriginal: boolean }
   | { reason: 'no-save-location' | 'larger' | 'failed' }
 > {
   const settings = output.settings ?? {}
@@ -738,28 +744,32 @@ export async function saveQueueOutput(
         ? settings.outputFileName
         : null
     const savedPaths: string[] = []
+    let replacedOriginal = false
     for (const file of output.outputs) {
       const fileName = exactFileName ?? `${outputFilePrefix}${file.fileName}`
       try {
-        savedPaths.push(
-          await moveFile(file.path, `${destinationDirectory}/${fileName}`, {
+        const moved = await moveFile(
+          file.path,
+          `${destinationDirectory}/${fileName}`,
+          {
             replaceOriginal: replaceOriginalFiles ? output.sourcePath : null,
-          }),
+          },
         )
+        savedPaths.push(moved.path)
+        if (moved.replacedOriginal) replacedOriginal = true
       } catch (error) {
         if (isFixedFolder) throw error
         // Next to an original in a folder the app cannot write to (e.g. a file copied from another
         // computer, kept in a shared folder): saved where images copied in a browser are, the app's
         // own folder (see `save_clipboard_image`), instead of not at all
-        savedPaths.push(
-          await moveFile(
-            file.path,
-            await join(await appDataDir(), 'assets', fileName),
-          ),
+        const moved = await moveFile(
+          file.path,
+          await join(await appDataDir(), 'assets', fileName),
         )
+        savedPaths.push(moved.path)
       }
     }
-    return { savedPaths }
+    return { savedPaths, replacedOriginal }
   } catch {
     return { reason: 'failed' }
   }

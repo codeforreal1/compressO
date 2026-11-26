@@ -219,6 +219,8 @@ export type Video = {
     isSaving?: boolean
     isSaved?: boolean
     savedPath?: string
+    /** The original was moved to the Trash when saved ("Replace original files") */
+    replacedOriginal?: boolean
     /** Its entry in the history (see `-history.ts`), updated when it is saved */
     historyId?: string
     /**
@@ -323,6 +325,8 @@ export type Image = {
     isSaving?: boolean
     isSaved?: boolean
     savedPath?: string
+    /** The original was moved to the Trash when saved ("Replace original files") */
+    replacedOriginal?: boolean
     /** Its entry in the history (see `-history.ts`), updated when it is saved */
     historyId?: string
     /** Videos only: the clips a video was split into */

@@ -656,7 +656,8 @@ fn apply_item(file: &mut FileResult, item: &Value) {
     file.status = match item["status"].as_str() {
         Some("done") => match text("savedPath") {
             Some(saved_path) => {
-                file.replaced_original = saved_path == file.input;
+                file.replaced_original = item["replacedOriginal"].as_bool().unwrap_or(false)
+                    || saved_path == file.input;
                 file.output = Some(saved_path);
                 file.error = None;
                 "saved"
