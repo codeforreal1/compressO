@@ -7,13 +7,14 @@ import {
   type PresetOutput,
   STANDARD_PRESET_ID,
 } from '@/types/preset'
+import { getLegacyPrefixFromTemplate } from '@/utils/fileNameTemplate'
 
 /** The stores outputs are read from (their snapshots, to re-render when they change) */
 type OutputSources = {
   presets: readonly Preset[]
   settings: Pick<
     typeof settingsStore,
-    'saveLocation' | 'saveFolder' | 'outputFilePrefix'
+    'saveLocation' | 'saveFolder' | 'outputFileNameTemplate'
   >
 }
 
@@ -69,12 +70,13 @@ export function getStandardOutput(
   return {
     saveLocation: settings.saveLocation,
     saveFolder: settings.saveFolder,
-    filePrefix: settings.outputFilePrefix,
+    fileNameTemplate: settings.outputFileNameTemplate,
+    filePrefix: getLegacyPrefixFromTemplate(settings.outputFileNameTemplate),
   }
 }
 
 /**
- * Where the outputs of media compressed with a preset are saved, & their file name prefix: the
+ * Where the outputs of media compressed with a preset are saved, & their file name template: the
  * preset's own, or the Standard preset's for it, presets following it & a deleted preset
  */
 export function getPresetOutput(
@@ -86,6 +88,15 @@ export function getPresetOutput(
 ): PresetOutput {
   const preset = presetId ? presets.find((p) => p.id === presetId) : null
   return preset?.output ?? getStandardOutput(settings)
+}
+
+/** Display name of a preset for `{preset}` file naming tokens (`Standard` for Standard/deleted) */
+export function getPresetNameForTemplate(
+  presetId: string | null | undefined,
+  presets: readonly Preset[] = presetsStore.presets,
+) {
+  if (!presetId || presetId === STANDARD_PRESET_ID) return 'Standard'
+  return presets.find((p) => p.id === presetId)?.name ?? 'Standard'
 }
 
 /** Whether outputs are saved without asking where (to a folder chosen, or next to the original) */

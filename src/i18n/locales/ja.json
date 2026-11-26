@@ -78,6 +78,24 @@
         },
         "restart": "再起動"
       },
+      "performance": {
+        "title": "パフォーマンス",
+        "hardwareAcceleration": {
+          "title": "ハードウェアアクセラレーションを使用",
+          "description": "ハードウェアアクセラレーションでビデオをより速く圧縮します（ファイルがやや大きくなる場合があります）",
+          "unavailable": "このコンピュータではハードウェアアクセラレーションを利用できません。"
+        },
+        "retryTargetSizeOnCpu": {
+          "title": "アクセラレーションなしで目標サイズに合わせる",
+          "description": "「目標サイズ」にのみ適用されます。動画が目標サイズに届かない場合、ハードウェアアクセラレーションなしで再圧縮します。時間はかかりますが、サイズにより近くなります。"
+        },
+        "cpuThreadLimit": {
+          "title": "CPUコアの上限",
+          "description": "CPUでのエンコード時にFFmpegが使用するCPUコア数を制限します。デフォルトではすべてのコアを使用します。",
+          "all": "すべて",
+          "cores_other": "{{count}}"
+        }
+      },
       "sleep": {
         "title": "スリープ",
         "preventSleep": {
@@ -127,8 +145,9 @@
       "empty_image": "画像のプリセットはまだありません。画像の設定を調整し、「プリセット」メニューの横にあるプラスボタンを選択すると、プリセットとして保存できます。",
       "empty_audio": "オーディオのプリセットはまだありません。オーディオファイルの設定を調整し、「プリセット」メニューの横にあるプラスボタンを選択すると、プリセットとして保存できます。",
       "mediaType": "メディアの種類",
-      "standardOutput": "保存場所とファイル名の接頭辞は「<setting>出力</setting>」で設定します。",
-      "cannotDeleteStandard": "標準プリセットは削除できません。"
+      "standardOutput": "保存場所とファイル名の付け方は「<setting>出力</setting>」で設定します。",
+      "cannotDeleteStandard": "標準プリセットは削除できません。",
+      "newFromContract": "コントラクトから作成"
     },
     "dropZone": {
       "turnOnTrayIcon_macos": "ドロップゾーンはメニューバーにあります。先に「一般」で「<setting>メニューバーにアイコンを表示</setting>」をオンにしてください。",
@@ -210,9 +229,10 @@
           "description_windows": "圧縮したファイルが元のファイルと同じフォルダに同じ名前で保存される場合、元のファイルをごみ箱に移動し、圧縮したファイルのみを残します。"
         },
         "prefix": {
-          "title": "ファイル名の接頭辞",
-          "placeholder": "接頭辞なし",
-          "description": "保存するファイル名の先頭に追加するテキストです。元の名前のままにする場合は空のままにしてください。"
+          "title": "ファイル名の付け方",
+          "placeholder": "元の名前を保持",
+          "description": "{name}、{date}、{time}、{preset} などのトークンを使った保存ファイル名のテンプレートです。元の名前のままにする場合は空のままにしてください。",
+          "preview": "例: {{example}}"
         },
         "appliesTo": "これらは標準プリセットにのみ適用されます。"
       },
@@ -225,18 +245,6 @@
         "includeBatch": {
           "title": "一括圧縮の出力も含める",
           "description": "複数のファイルをまとめて圧縮した場合もコピーします。"
-        }
-      },
-      "performance": {
-        "title": "パフォーマンス",
-        "hardwareAcceleration": {
-          "title": "ハードウェアアクセラレーションを使用",
-          "description": "ハードウェアアクセラレーションでビデオをより速く圧縮します（ファイルがやや大きくなる場合があります）",
-          "unavailable": "このコンピュータではハードウェアアクセラレーションを利用できません。"
-        },
-        "retryTargetSizeOnCpu": {
-          "title": "アクセラレーションなしで目標サイズに合わせる",
-          "description": "「目標サイズ」にのみ適用されます。動画が目標サイズに届かない場合、ハードウェアアクセラレーションなしで再圧縮します。時間はかかりますが、サイズにより近くなります。"
         }
       },
       "storage": {
@@ -273,7 +281,7 @@
       "credits": "クレジット",
       "watchedFolders": "フォルダ監視",
       "history": "履歴",
-      "commandLine": "CLI"
+      "commandLine": "CLI と AI エージェント"
     },
     "about": {
       "updateAvailable": "アップデートがあります",
@@ -379,6 +387,7 @@
           "outputFile": "1 つのファイルをこの名前で保存します。拡張子が異なる場合は、その形式に変換されます。",
           "audioOnly": "ビデオの音声だけをオーディオファイルとして残します。",
           "flatten": "中のフォルダを作らずに、すべてのファイルをフォルダに直接保存します。",
+          "template": "このコマンドに限り、テンプレート（{name}、{date}、{time}、{preset} に対応）を使って保存ファイル名を付けます。",
           "prefix": "このコマンドに限り、保存するファイル名の先頭に文字を追加します。",
           "skipLarger": "元のファイルより大きくなった出力は保存しません。",
           "replace": "出力の名前と形式が同じ場合に元のファイルを置き換えます。元のファイルはゴミ箱に移動します。",
@@ -389,7 +398,22 @@
           "json": "スクリプトや AI エージェント向けに、結果を JSON で出力します。",
           "quiet": "エラーだけを出力します。",
           "list": "プリセットを、メディアの種類ごとのデフォルトと合わせて一覧表示します。",
-          "help": "すべてのオプションと終了コードを表示します。"
+          "help": "すべてのオプションと終了コードを表示します。",
+          "contractFile": "ワンショットの CompressO JSON コントラクトファイルでメディアを圧縮します（metadata.set、thumbnail、subtitles に対応）。",
+          "contractStdin": "標準入力からワンショット JSON コントラクトを読み込みます。",
+          "contractSchema": "動画・画像・音声コントラクトの JSON スキーマを出力します。",
+          "contractValidate": "メディアの圧縮やプリセット保存を行わずに JSON コントラクトファイルを検証します。",
+          "presetGet": "保存済みプリセットを JSON コントラクトとして書き出します。",
+          "presetCreate": "JSON コントラクトファイルからアプリに新しいプリセットを作成します。",
+          "presetUpdate": "JSON コントラクトの部分的なフィールドで既存のプリセットを更新します。",
+          "cpuThreads": "この圧縮のみ CPU スレッド数を制限します（0 で利用可能な全スレッドを使用）。",
+          "capabilities": "アプリ版、利用可能な CPU スレッド、ハードウェアエンコーダ、ツール、ログパスを表示します。",
+          "inspect": "圧縮せずに解像度・コーデック・ストリーム・ダイナミックレンジ・EXIF を調査します。",
+          "cacheClear": "圧縮中や開いているメディアがないときに一時キャッシュを削除します。",
+          "history": "CompressO に記録された最近の圧縮履歴を表示します（history clear で消去）。",
+          "queue": "ドロップ／監視キューの状態確認や操作を行います（list, pause, resume, clear, cancel）。",
+          "logs": "現在のログファイルのパスと最近のログ行を表示します。",
+          "about": "CompressO のバージョン・ライセンス・作成者・Web/変更履歴/GitHub リンク・クレジットを表示します。"
         }
       },
       "agents": {
@@ -959,6 +983,12 @@
     "swapChannels": "左右のチャンネルを入れ替える",
     "tracks": "トラック",
     "track": "トラック #{{number}}",
+    "addTrack": "音声ファイルを追加",
+    "fileFilter": "音声ファイル",
+    "addTrackHint": "この動画には音声がありません。音声ファイルを追加して添付してください。",
+    "addedTrack": "追加した音声",
+    "addFailed": "音声ファイルを追加できませんでした",
+    "selectFile": "音声ファイルを選択",
     "channelCount_other": "{{count}} チャンネル",
     "volumeLabel": "音量：",
     "volume": "オーディオの音量",
@@ -1072,5 +1102,54 @@
     "videoBoostFormats": "HDRブーストは、H.265、VP9、AV1コーデックを使用するMP4、MOV、MKV、WebM、TS動画でのみ利用できます。",
     "videoBoostLossless": "ロスレス圧縮ではHDRブーストを利用できません。",
     "videoSdrOnly": "この形式またはコーデックはHDRを保存できないため、動画はSDRに変換されます。"
+  },
+  "clips": {
+    "title": "クリップ",
+    "length": "クリップの長さ",
+    "minutes": "分",
+    "willCreate_one": "{{count}} 個のクリップを作成します",
+    "willCreate_other": "{{count}} 個のクリップを作成します",
+    "clipName": "クリップ {{number}}",
+    "fromOriginal": "{{name}} のクリップ",
+    "count_one": "{{count}} 個のクリップ",
+    "count_other": "{{count}} 個のクリップ",
+    "notAvailable": "GIF または音声出力ではクリップを使用できません。",
+    "tooLong": "クリップの長さは動画より短くする必要があります（{{duration}}）。",
+    "invalidLength": "0 より長いクリップの長さを入力してください。",
+    "durationUnknown": "動画の長さはまだ取得できていません。",
+    "chooseFolder": "クリップの保存先フォルダーを選択",
+    "batchTooLong": "1 つ以上の動画がクリップの長さより短くなっています。",
+    "seconds": "秒",
+    "switchUnit": "{{unit}} に切り替え",
+    "mode": "クリップの分割方法",
+    "modes": {
+      "time": "時間指定クリップ",
+      "count": "クリップ総数"
+    },
+    "countUnit": "クリップ",
+    "invalidCount": "2 つ以上のクリップを入力してください。",
+    "tooMany": "クリップが多すぎます。各クリップは 1 秒以上必要です。",
+    "eachClip": "各 {{duration}}",
+    "batchInvalid": "このクリップ設定では分割できない動画があります。"
+  },
+  "contract": {
+    "exportTooltip": "JSON コントラクトを書き出す",
+    "saveFile": "コントラクトを .json として保存",
+    "copy": "コントラクト JSON をコピー",
+    "saveType": "{{type}} コントラクトを保存 (.json)",
+    "copyType": "{{type}} コントラクト JSON をコピー",
+    "copied": "JSON コントラクトをクリップボードにコピーしました。",
+    "copyFailed": "JSON コントラクトをコピーできませんでした。",
+    "exported": "JSON コントラクトを書き出しました。",
+    "exportFailed": "JSON コントラクトを書き出せませんでした。",
+    "import": {
+      "title": "JSON コントラクトから新規プリセット",
+      "loadFile": ".json ファイルを読み込む",
+      "jsonLabel": "CompressO JSON コントラクト",
+      "validate": "検証",
+      "create": "プリセットを作成",
+      "invalidJson": "無効な JSON: {{message}}",
+      "readFailed": "コントラクトファイルを読み込めませんでした。"
+    }
   }
 }

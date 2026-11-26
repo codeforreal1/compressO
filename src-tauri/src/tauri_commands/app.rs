@@ -44,6 +44,18 @@ pub fn set_keep_awake_settings(prevent_sleep: bool, keep_display_on: bool) {
     crate::sys::keep_awake::set_settings(prevent_sleep, keep_display_on);
 }
 
+/// The CPU threads available to FFmpeg (logical processors; "Maximum CPU cores" in the settings)
+#[tauri::command]
+pub fn get_cpu_thread_count() -> usize {
+    crate::core::cpu_limit::available_cpu_threads()
+}
+
+/// Limits FFmpeg's CPU encoding threads (Settings -> Output); `0` uses all available threads
+#[tauri::command]
+pub fn set_cpu_thread_limit(limit: usize) {
+    crate::core::cpu_limit::set_thread_limit(limit);
+}
+
 /// Passed to the app when the system opens it at login (see `tauri_plugin_autostart` in `main.rs`)
 pub const OPENED_AT_LOGIN_ARG: &str = "--autostart";
 
@@ -174,6 +186,12 @@ pub fn set_open_at_login(app: AppHandle, enabled: bool) -> Result<(), String> {
         autolaunch.disable()
     }
     .map_err(|err| err.to_string())
+}
+
+/// Writes a frontend diagnostic message to the log file
+#[tauri::command]
+pub fn log_info(message: String) {
+    log::info!("[frontend] {}", message);
 }
 
 /// Writes a failure the frontend handled to the log file (e.g. why a dropped media could not be

@@ -78,6 +78,25 @@
         },
         "restart": "Yeniden başlat"
       },
+      "performance": {
+        "title": "Performans",
+        "hardwareAcceleration": {
+          "title": "Donanım hızlandırmayı kullan",
+          "description": "Videoları donanım hızlandırmayla daha hızlı sıkıştırın (dosyalar biraz daha büyük olabilir)",
+          "unavailable": "Bu bilgisayarda donanım hızlandırma kullanılamıyor."
+        },
+        "retryTargetSizeOnCpu": {
+          "title": "Hedef boyutlara hızlandırma olmadan ulaş",
+          "description": "Yalnızca \"Hedef boyut\" için geçerlidir. Bir video hedef boyutunu tutturamazsa donanım hızlandırma olmadan yeniden sıkıştırılır; bu daha yavaştır ama boyuta daha yakındır."
+        },
+        "cpuThreadLimit": {
+          "title": "Maksimum CPU çekirdeği",
+          "description": "FFmpeg'in CPU'da kodlarken kullanacağı CPU çekirdeği sayısını sınırlar. Varsayılan olarak tüm çekirdekler kullanılır.",
+          "all": "Tümü",
+          "cores_one": "{{count}}",
+          "cores_other": "{{count}}"
+        }
+      },
       "sleep": {
         "title": "Uyku",
         "preventSleep": {
@@ -127,8 +146,9 @@
       "empty_image": "Henüz görüntü ön ayarı yok. Bir görüntünün ayarlarını düzenleyin ve bunları ön ayar olarak kaydetmek için Ön ayar menüsünün yanındaki artı düğmesini seçin.",
       "empty_audio": "Henüz ses ön ayarı yok. Bir ses dosyasının ayarlarını düzenleyin ve bunları ön ayar olarak kaydetmek için Ön ayar menüsünün yanındaki artı düğmesini seçin.",
       "mediaType": "Medya türü",
-      "standardOutput": "Kaydetme konumu ve dosya adı öneki <setting>Çıktı</setting> bölümünde ayarlanır.",
-      "cannotDeleteStandard": "Standart ön ayar silinemez."
+      "standardOutput": "Kaydetme konumu ve dosya adlandırma <setting>Çıktı</setting> bölümünde ayarlanır.",
+      "cannotDeleteStandard": "Standart ön ayar silinemez.",
+      "newFromContract": "Sözleşmeden yeni"
     },
     "dropZone": {
       "turnOnTrayIcon_macos": "Bırakma alanı menü çubuğundadır. Önce Genel’de “<setting>Menü çubuğu simgesini göster</setting>” seçeneğini açın.",
@@ -210,9 +230,10 @@
           "description_windows": "Sıkıştırılan dosya, orijinaliyle aynı klasöre aynı adla kaydedildiğinde orijinal dosya Geri Dönüşüm Kutusu’na taşınır ve yalnızca sıkıştırılan dosya tutulur."
         },
         "prefix": {
-          "title": "Dosya adı öneki",
-          "placeholder": "Önek yok",
-          "description": "Kaydedilen dosya adlarının başına eklenen metin. Orijinal adları korumak için boş bırakın."
+          "title": "Dosya adlandırma",
+          "placeholder": "Orijinal adı koru",
+          "description": "Kaydedilen dosya adları için {name}, {date}, {time} veya {preset} gibi belirteçler kullanan şablon. Orijinal adları korumak için boş bırakın.",
+          "preview": "Örnek: {{example}}"
         },
         "appliesTo": "Bunlar yalnızca Standart ön ayar için geçerlidir."
       },
@@ -225,18 +246,6 @@
         "includeBatch": {
           "title": "Toplu çıktıları dahil et",
           "description": "Birden fazla dosya aynı anda sıkıştırıldığında da dosyaları kopyalayın."
-        }
-      },
-      "performance": {
-        "title": "Performans",
-        "hardwareAcceleration": {
-          "title": "Donanım hızlandırmayı kullan",
-          "description": "Videoları donanım hızlandırmayla daha hızlı sıkıştırın (dosyalar biraz daha büyük olabilir)",
-          "unavailable": "Bu bilgisayarda donanım hızlandırma kullanılamıyor."
-        },
-        "retryTargetSizeOnCpu": {
-          "title": "Hedef boyutlara hızlandırma olmadan ulaş",
-          "description": "Yalnızca \"Hedef boyut\" için geçerlidir. Bir video hedef boyutunu tutturamazsa donanım hızlandırma olmadan yeniden sıkıştırılır; bu daha yavaştır ama boyuta daha yakındır."
         }
       },
       "storage": {
@@ -273,7 +282,7 @@
       "credits": "Teşekkürler",
       "watchedFolders": "Klasör izleme",
       "history": "Geçmiş",
-      "commandLine": "CLI"
+      "commandLine": "CLI ve AI ajanları"
     },
     "about": {
       "updateAvailable": "Güncelleme mevcut",
@@ -379,6 +388,7 @@
           "outputFile": "Tek bir dosyayı bu adla kaydedin. Farklı bir uzantı onu o biçime dönüştürür.",
           "audioOnly": "Bir videonun yalnızca sesini ses dosyası olarak saklayın.",
           "flatten": "Her dosyayı içindeki klasörler olmadan doğrudan klasöre kaydedin.",
+          "template": "Yalnızca bu komut için kaydedilen dosyaları bir şablonla adlandırın ({name}, {date}, {time} ve {preset} desteklenir).",
           "prefix": "Yalnızca bu komut için kaydedilen dosya adlarının başına metin ekleyin.",
           "skipLarger": "Orijinalinden büyük çıktıları kaydetmeyin.",
           "replace": "Çıktı aynı ada ve biçime sahipse orijinalin yerine koyun. Orijinal Çöp Sepeti’ne taşınır.",
@@ -389,7 +399,22 @@
           "json": "Sonuçları betikler ve yapay zekâ ajanları için JSON olarak yazdırın.",
           "quiet": "Yalnızca hataları yazdırın.",
           "list": "Ön ayarlarınızı, her medya türünün varsayılanıyla birlikte listeleyin.",
-          "help": "Tüm seçenekleri ve çıkış kodlarını gösterin."
+          "help": "Tüm seçenekleri ve çıkış kodlarını gösterin.",
+          "contractFile": "Tek seferlik CompressO JSON sözleşme dosyasıyla medyayı sıkıştırın (metadata.set, thumbnail ve subtitles desteklenir).",
+          "contractStdin": "Standart girdiden tek seferlik JSON sözleşmesi okuyun.",
+          "contractSchema": "Video, görsel veya ses sözleşmeleri için JSON Şemasını yazdırın.",
+          "contractValidate": "Medya sıkıştırmadan veya ön ayar kaydetmeden bir JSON sözleşme dosyasını doğrulayın.",
+          "presetGet": "Kayıtlı bir ön ayarı JSON sözleşmesi olarak dışa aktarın.",
+          "presetCreate": "Bir JSON sözleşme dosyasından uygulamada yeni ön ayar oluşturun.",
+          "presetUpdate": "Kısmi JSON sözleşme alanlarıyla mevcut bir ön ayarı güncelleyin.",
+          "cpuThreads": "Yalnızca bu sıkıştırma için CPU iş parçacıklarını sınırlayın (0 tüm çekirdekleri kullanır).",
+          "capabilities": "Uygulama sürümü, kullanılabilir CPU iş parçacıkları, donanım kodlayıcılar ve günlük yolunu gösterir.",
+          "inspect": "Sıkıştırmadan boyutları, kodekleri, akışları, dinamik aralığı ve EXIF verilerini inceler.",
+          "cacheClear": "Etkin sıkıştırma veya açık medya yokken geçici önbelleği temizler.",
+          "history": "CompressO tarafından kaydedilen son sıkıştırmaları listeler (temizlemek için history clear).",
+          "queue": "Bırakma/izleme kuyruğunu denetler veya yönetir (list, pause, resume, clear, cancel).",
+          "logs": "Geçerli günlük dosyası yolunu ve son günlük satırlarını gösterir.",
+          "about": "CompressO sürümünü, lisansını, yazarını, web/değişiklik günlüğü/GitHub bağlantılarını ve açık kaynak kredilerini gösterir."
         }
       },
       "agents": {
@@ -973,6 +998,12 @@
     "swapChannels": "Sol ve sağ kanalları değiştir",
     "tracks": "Parçalar",
     "track": "Parça #{{number}}",
+    "addTrack": "Ses dosyası ekle",
+    "fileFilter": "Ses dosyaları",
+    "addTrackHint": "Bu videoda ses yok. Ses eklemek için bir ses dosyası ekleyin.",
+    "addedTrack": "Eklenen ses",
+    "addFailed": "Ses dosyası eklenemedi",
+    "selectFile": "Bir ses dosyası seç",
     "channelCount_one": "{{count}} kanal",
     "channelCount_other": "{{count}} kanal",
     "volumeLabel": "Ses Düzeyi:",
@@ -1087,5 +1118,54 @@
     "videoBoostFormats": "HDR güçlendirme yalnızca H.265, VP9 veya AV1 codec’ini kullanan MP4, MOV, MKV, WebM ve TS videolarında kullanılabilir.",
     "videoBoostLossless": "HDR güçlendirme kayıpsız sıkıştırmayla kullanılamaz.",
     "videoSdrOnly": "Bu biçim veya codec HDR depolayamaz, bu nedenle video SDR’ye dönüştürülecektir."
+  },
+  "clips": {
+    "title": "Klipler",
+    "length": "Klip uzunluğu",
+    "minutes": "dk",
+    "willCreate_one": "{{count}} klip oluşturulacak",
+    "willCreate_other": "{{count}} klip oluşturulacak",
+    "clipName": "Klip {{number}}",
+    "fromOriginal": "{{name}} klipleri",
+    "count_one": "{{count}} klip",
+    "count_other": "{{count}} klip",
+    "notAvailable": "Klipler GIF veya ses çıktısı için kullanılamaz.",
+    "tooLong": "Klip uzunluğu videodan kısa olmalıdır ({{duration}}).",
+    "invalidLength": "0’dan büyük bir klip uzunluğu girin.",
+    "durationUnknown": "Videonun süresi henüz bilinmiyor.",
+    "chooseFolder": "Klipler için bir klasör seç",
+    "batchTooLong": "Bir veya daha fazla video klip uzunluğundan kısa.",
+    "seconds": "sn",
+    "switchUnit": "{{unit}} birimine geç",
+    "mode": "Klipleri böl",
+    "modes": {
+      "time": "Süreli klipler",
+      "count": "Toplam klip"
+    },
+    "countUnit": "klip",
+    "invalidCount": "En az 2 klip girin.",
+    "tooMany": "Çok fazla klip. Her klip en az 1 saniye olmalıdır.",
+    "eachClip": "her biri {{duration}}",
+    "batchInvalid": "Bazı videolar bu klip ayarlarıyla bölünemiyor."
+  },
+  "contract": {
+    "exportTooltip": "JSON sözleşmesini dışa aktar",
+    "saveFile": "Sözleşmeyi .json olarak kaydet",
+    "copy": "Sözleşme JSON’unu kopyala",
+    "saveType": "{{type}} sözleşmesini kaydet (.json)",
+    "copyType": "{{type}} sözleşme JSON’unu kopyala",
+    "copied": "JSON sözleşmesi panoya kopyalandı.",
+    "copyFailed": "JSON sözleşmesi kopyalanamadı.",
+    "exported": "JSON sözleşmesi dışa aktarıldı.",
+    "exportFailed": "JSON sözleşmesi dışa aktarılamadı.",
+    "import": {
+      "title": "JSON sözleşmesinden yeni ön ayar",
+      "loadFile": ".json dosyası yükle",
+      "jsonLabel": "CompressO JSON sözleşmesi",
+      "validate": "Doğrula",
+      "create": "Ön ayar oluştur",
+      "invalidJson": "Geçersiz JSON: {{message}}",
+      "readFailed": "Sözleşme dosyası okunamadı."
+    }
   }
 }

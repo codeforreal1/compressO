@@ -10,7 +10,10 @@ import {
   copyFilesToClipboard,
   showItemInFileManager,
 } from '@/tauri/commands/fs'
-import { getOutputClipboardFile, saveCompressedMediaWithPrompt } from '../-save'
+import {
+  getOutputClipboardFiles,
+  saveCompressedMediaWithPrompt,
+} from '../-save'
 import { appProxy } from '../-state'
 
 type SaveMediaProps = {
@@ -55,16 +58,12 @@ function SaveMedia({ mediaIndex }: SaveMediaProps) {
   }
 
   const copyToClipboard = async () => {
-    const savedPath = getSavedPath()
     const mediaFile = appProxy.state.media[index]
-    // Not saved yet: pasted under the name it would be saved with, not its cache name
-    const file = savedPath
-      ? { path: savedPath }
-      : mediaFile && getOutputClipboardFile(mediaFile)
-    if (!file) return
+    const files = mediaFile ? getOutputClipboardFiles(mediaFile) : []
+    if (!files.length) return
 
     try {
-      await copyFilesToClipboard([file])
+      await copyFilesToClipboard(files)
       toast.success(t('common.copied'))
     } catch {}
   }

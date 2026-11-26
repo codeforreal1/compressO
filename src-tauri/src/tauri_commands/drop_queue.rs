@@ -77,11 +77,15 @@ pub struct DropQueueItem {
     pub progress: f64,
     pub original_size: Option<u64>,
     pub output_size: Option<u64>,
-    /// Where the output was saved
+    /// Where the outputs were saved (the first clip's path for a split video)
     pub saved_path: Option<String>,
-    /// The output in the app's cache, when it was not saved (e.g. larger than the original);
+    /// Whether the original was moved to the Trash when saved ("Replace original files")
+    pub replaced_original: bool,
+    /// The outputs in the app's cache, when they were not saved (a split video has several);
     /// deleted when the item is cleared
-    pub output_path: Option<String>,
+    pub output_paths: Vec<String>,
+    /// Number of clips the video was split into; 0 or 1 when it was not split
+    pub clip_count: usize,
     /// Why it failed, or was not saved (e.g. larger than the original)
     pub message: Option<String>,
     /// It failed as the system did not allow opening it (e.g. macOS privacy settings)
@@ -131,9 +135,27 @@ pub struct CliJob {
     #[serde(default)]
     pub file_name_prefix: Option<String>,
     #[serde(default)]
+    pub file_name_template: Option<String>,
+    #[serde(default)]
     pub use_hardware_acceleration: Option<bool>,
     #[serde(default)]
     pub reach_target_sizes_without_acceleration: Option<bool>,
+    #[serde(default)]
+    pub cpu_threads: Option<usize>,
+    /// One-shot CompressO JSON contracts per media type (validated before queuing)
+    #[serde(default)]
+    pub contracts: CliContracts,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct CliContracts {
+    #[serde(default)]
+    pub video: Option<serde_json::Value>,
+    #[serde(default)]
+    pub image: Option<serde_json::Value>,
+    #[serde(default)]
+    pub audio: Option<serde_json::Value>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, Default)]
@@ -162,7 +184,9 @@ pub struct DropQueueItemUpdate {
     pub original_size: Option<u64>,
     pub output_size: Option<u64>,
     pub saved_path: Option<String>,
-    pub output_path: Option<String>,
+    pub replaced_original: Option<bool>,
+    pub output_paths: Option<Vec<String>>,
+    pub clip_count: Option<usize>,
     pub message: Option<String>,
     pub is_access_denied: Option<bool>,
     pub needs_save_location: Option<bool>,
@@ -340,7 +364,9 @@ pub fn add_files_to_queue(
                 original_size: None,
                 output_size: None,
                 saved_path: None,
-                output_path: None,
+                replaced_original: false,
+                output_paths: Vec::new(),
+                clip_count: 0,
                 message: None,
                 is_access_denied: false,
                 needs_save_location: false,
@@ -396,8 +422,14 @@ pub fn update_drop_queue_item(app_handle: AppHandle, id: String, update: DropQue
         if update.saved_path.is_some() {
             item.saved_path = update.saved_path;
         }
-        if update.output_path.is_some() {
-            item.output_path = update.output_path;
+        if let Some(replaced_original) = update.replaced_original {
+            item.replaced_original = replaced_original;
+        }
+        if update.output_paths.is_some() {
+            item.output_paths = update.output_paths.unwrap_or_default();
+        }
+        if update.clip_count.is_some() {
+            item.clip_count = update.clip_count.unwrap_or(0);
         }
         if update.message.is_some() {
             item.message = update.message;
@@ -432,6 +464,8 @@ pub fn retry_drop_queue_item(app_handle: AppHandle, id: String) {
         item.progress = 0.0;
         item.output_size = None;
         item.saved_path = None;
+        item.replaced_original = false;
+        item.clip_count = 0;
         item.message = None;
         item.is_access_denied = false;
         item.needs_save_location = false;
@@ -441,10 +475,10 @@ pub fn retry_drop_queue_item(app_handle: AppHandle, id: String) {
     });
 }
 
-/// Deletes the output an item left in the app's cache (not saved), if any. Only the queue's own
+/// Deletes the outputs an item left in the app's cache (not saved), if any. Only the queue's own
 /// outputs are deleted, never others (e.g. the main window's).
 fn delete_unsaved_output(item: &mut DropQueueItem) {
-    if let Some(output_path) = item.output_path.take() {
+    for output_path in item.output_paths.drain(..) {
         let _ = std::fs::remove_file(output_path);
     }
 }

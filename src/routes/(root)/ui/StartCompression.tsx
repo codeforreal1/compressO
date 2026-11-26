@@ -25,11 +25,13 @@ import PauseCompression from './PauseCompression'
 import SaveMedia from './SaveMedia'
 import {
   getAudioTargetSizePlan,
+  getClipsWarning,
   getMediaItemConfig,
   getOutputOptions,
   getQualitySizeEstimate,
   getTargetSizePlan,
   getTargetSizeWarning,
+  getVideoClipOutputs,
   type MediaFile,
   waitForDropZone,
 } from '../-compression'
@@ -82,6 +84,10 @@ function StartCompression() {
   const hasInvalidTargetSize = media.some(
     (item) => getTargetSizeWarning(item as MediaFile) != null,
   )
+  const hasInvalidClips = media.some(
+    (item) => getClipsWarning(item as MediaFile) != null,
+  )
+  const hasInvalidSettings = hasInvalidTargetSize || hasInvalidClips
 
   const handleCompression = useCallback(async () => {
     if (appProxy.state.isCompressing) return
@@ -99,7 +105,9 @@ function StartCompression() {
     // Recheck after flushing inputs, including keyboard activation and pending changes.
     if (
       appSnapshot.state.media.some(
-        (item) => getTargetSizeWarning(item as MediaFile) != null,
+        (item) =>
+          getTargetSizeWarning(item as MediaFile) != null ||
+          getClipsWarning(item as MediaFile) != null,
       )
     )
       return
@@ -276,22 +284,37 @@ function StartCompression() {
         if (appProxy.state.media[index].type === 'video') {
           const video = appProxy.state.media[index]
           const videoResult = results[video.id!] || null
+          const videoOnlyResult =
+            videoResult?.mediaType === 'video' ? videoResult : null
 
           appProxy.state.media[index].isProcessCompleted = true
+          const clips = getVideoClipOutputs(videoOnlyResult, video)
+          const outputSizeInBytes = clips.length
+            ? clips.reduce((sum, clip) => sum + (clip.sizeInBytes ?? 0), 0)
+            : videoResult?.fileMetadata?.size
           appProxy.state.media[index].compressedFile = {
             isSuccessful: !(videoResult == null),
-            fileName: videoResult?.fileMetadata?.fileName ?? video.fileName,
-            fileNameToDisplay: getOutputFileName(
+            fileName:
+              clips[0]?.fileName ??
+              videoResult?.fileMetadata?.fileName ??
               video.fileName,
-              video.extension,
-              videoResult?.fileMetadata?.extension,
-            ),
-            pathRaw: videoResult?.fileMetadata?.path,
-            path: core.convertFileSrc(videoResult?.fileMetadata?.path ?? ''),
-            mimeType: videoResult?.fileMetadata?.mimeType,
-            sizeInBytes: videoResult?.fileMetadata?.size,
-            size: formatBytes(videoResult?.fileMetadata?.size ?? 0),
-            extension: videoResult?.fileMetadata?.extension,
+            fileNameToDisplay:
+              clips[0]?.fileNameToDisplay ??
+              getOutputFileName(
+                video.fileName,
+                video.extension,
+                videoResult?.fileMetadata?.extension,
+              ),
+            pathRaw: clips[0]?.pathRaw ?? videoResult?.fileMetadata?.path,
+            path:
+              clips[0]?.path ??
+              core.convertFileSrc(videoResult?.fileMetadata?.path ?? ''),
+            mimeType: clips[0]?.mimeType ?? videoResult?.fileMetadata?.mimeType,
+            sizeInBytes: outputSizeInBytes,
+            size: formatBytes(outputSizeInBytes ?? 0),
+            extension:
+              clips[0]?.extension ?? videoResult?.fileMetadata?.extension,
+            clips: clips.length ? clips : undefined,
             ...getOutputOptions(videoResult, video.config?.targetSizeInMB),
           }
         } else if (appProxy.state.media[index].type === 'image') {
@@ -346,7 +369,7 @@ function StartCompression() {
     !isCompressing &&
     !isProcessCompleted &&
     !isLoadingMediaFiles &&
-    !hasInvalidTargetSize
+    !hasInvalidSettings
   useCommandEnterShortcut(isShortcutEnabled, handleCompression)
   // Holding ⌘ (Ctrl) reveals the shortcut on the button
   const isCommandKeyHeld = useCommandKeyHeld(isShortcutEnabled)
@@ -383,7 +406,7 @@ function StartCompression() {
           className="w-full"
           color="primary"
           variant="solid"
-          isDisabled={isLoadingMediaFiles || hasInvalidTargetSize}
+          isDisabled={isLoadingMediaFiles || hasInvalidSettings}
         >
           {t('compression.process')}
           <ShortcutHint isVisible={isCommandKeyHeld} />

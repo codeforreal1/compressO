@@ -13,10 +13,13 @@ import {
 } from '@/hooks/useAutoCompressSync'
 import { useClipboardWatchSync } from '@/hooks/useClipboardWatchSync'
 import { useCliSettingsSync } from '@/hooks/useCliSettingsSync'
+import { useCpuThreadLimitSync } from '@/hooks/useCpuThreadLimit'
 import { useHardwareEncodingSync } from '@/hooks/useHardwareEncoding'
 import { useKeepAwakeSync } from '@/hooks/useKeepAwakeSync'
+import { usePresetsCommand } from '@/hooks/usePresetsCommand'
 import { watchPrimaryColor } from '@/hooks/usePrimaryColor'
 import { useThemeSync } from '@/hooks/useTheme'
+import { useWatchedFoldersCommand } from '@/hooks/useWatchedFoldersCommand'
 import { useWindowTint } from '@/hooks/useWindowTint'
 import { settingsStore } from '@/stores/settingsStore'
 import { checkForUpdates, setupUpdateListeners } from '@/stores/updateStore'
@@ -60,7 +63,10 @@ function MainRoot() {
   // Also from the menu bar's window, which stays open while the main one is closed
   useWatchedFoldersSync()
   useHardwareEncodingSync()
+  useCpuThreadLimitSync()
   useKeepAwakeSync()
+  useWatchedFoldersCommand()
+  usePresetsCommand()
   useCliSettingsSync()
   const { showMenuBarIcon } = useSnapshot(settingsStore)
 
@@ -126,7 +132,10 @@ function TrayRoot() {
   // Also from the menu bar's window, which stays open while the main one is closed
   useWatchedFoldersSync()
   useHardwareEncodingSync()
+  useCpuThreadLimitSync()
   useKeepAwakeSync()
+  useWatchedFoldersCommand()
+  usePresetsCommand()
   useCliSettingsSync()
   // The menu bar's window compresses the drop zone's queue
   useDropQueueRunner()

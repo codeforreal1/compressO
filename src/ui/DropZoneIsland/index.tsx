@@ -147,7 +147,7 @@ function IslandTile({
       animate={{ opacity: 1 }}
       transition={{ duration: 0.15 }}
       style={style}
-      className="group absolute rounded-xl overflow-hidden bg-white/10"
+      className="group absolute rounded-xl overflow-hidden bg-zinc-100 dark:bg-white/10"
       title={
         item.status === 'done' && item.originalSize && item.outputSize != null
           ? `${name}: ${t('common.sizeChange', { from: formatBytes(item.originalSize), to: formatBytes(item.outputSize) })}`
@@ -169,7 +169,7 @@ function IslandTile({
         />
       ) : item.status === 'failed' ? null : (
         // Not under a failed one's label, which is in the same place
-        <div className="w-full h-full flex items-center justify-center text-white/50">
+        <div className="w-full h-full flex items-center justify-center text-zinc-400 dark:text-white/50">
           <Icon
             name={
               kind === 'video' ? 'video' : kind === 'audio' ? 'music' : 'image'
@@ -197,7 +197,7 @@ function IslandTile({
           />
         </div>
       ) : item.status === 'waiting' || item.status === 'cancelled' ? (
-        <div className="absolute bottom-1 left-1 right-1 text-[10px] text-white/70 truncate">
+        <div className="absolute bottom-1 left-1 right-1 text-[10px] text-zinc-800 dark:text-white/70 truncate">
           {item.status === 'waiting'
             ? t('queue.status.waiting')
             : t('queue.status.cancelled')}
@@ -208,9 +208,14 @@ function IslandTile({
           {reduction != null && reduction > 0
             ? t('queue.status.smaller', { value: reduction })
             : t('queue.status.done')}
+          {item.clipCount > 1 ? (
+            <span className="text-white/80">
+              · {t('clips.count', { count: item.clipCount })}
+            </span>
+          ) : null}
         </div>
       ) : (
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-danger/40 text-white text-[10px]">
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-danger/80 dark:bg-danger/40 text-white text-[10px]">
           <Icon name="warning" size={18} />
           {t('queue.status.failed')}
         </div>
@@ -507,7 +512,7 @@ function DropZoneIsland() {
             transition={ISLAND_SPRING}
             style={{ borderRadius: isExpanded ? 24 : 999 }}
             className={cn(
-              'pointer-events-auto overflow-hidden bg-black text-white border border-white/10 dark:bg-zinc-900',
+              'pointer-events-auto overflow-hidden bg-white text-zinc-900 border border-zinc-200 shadow-lg dark:bg-zinc-900 dark:text-white dark:border-white/10',
               // The grid's width (3 tiles) & the padding
               isExpanded ? 'w-[376px]' : 'w-auto',
             )}
@@ -529,7 +534,7 @@ function DropZoneIsland() {
                   <div className="flex items-center gap-1 pb-2">
                     <Icon name="dropzone" size={20} className="text-primary" />
                     <div className="min-w-0">
-                      <p className="text-[11px] text-white/60 truncate">
+                      <p className="text-[11px] text-zinc-500 dark:text-white/60 truncate">
                         {getSummary(items, isPaused)}
                       </p>
                     </div>
@@ -553,7 +558,7 @@ function DropZoneIsland() {
                             aria-label={
                               isPaused ? t('queue.resume') : t('queue.pause')
                             }
-                            className="min-w-6 w-6 h-6 text-white/80"
+                            className="min-w-6 w-6 h-6 text-zinc-600 dark:text-white/80"
                             onPress={() => {
                               setDropQueuePaused(!isPaused).catch(() => {})
                             }}
@@ -586,7 +591,9 @@ function DropZoneIsland() {
                           }
                           className={cn(
                             'min-w-6 w-6 h-6',
-                            pendingCount ? 'text-danger' : 'text-white/80',
+                            pendingCount
+                              ? 'text-danger'
+                              : 'text-zinc-600 dark:text-white/80',
                           )}
                           onPress={() => {
                             ;(pendingCount
@@ -607,7 +614,7 @@ function DropZoneIsland() {
                         variant="light"
                         radius="full"
                         aria-label={t('queue.collapse')}
-                        className="min-w-6 w-6 h-6 text-white/80"
+                        className="min-w-6 w-6 h-6 text-zinc-600 dark:text-white/80"
                         onPress={() => setIsExpanded(false)}
                       >
                         <Icon name="chevron" size={14} className="rotate-180" />
@@ -642,7 +649,7 @@ function DropZoneIsland() {
                   {pendingCount ? (
                     <span
                       aria-hidden
-                      className="w-10 h-1 rounded-full bg-white/20 overflow-hidden"
+                      className="w-10 h-1 rounded-full bg-zinc-200 dark:bg-white/20 overflow-hidden"
                     >
                       <motion.span
                         className="block h-full rounded-full bg-primary"
@@ -666,7 +673,7 @@ function DropZoneIsland() {
                         }}
                         aria-label={t('queue.clearFinished')}
                         title={t('queue.clearFinished')}
-                        className="absolute inset-0 flex items-center justify-center rounded-full text-white/80 opacity-0 pointer-events-none transition-opacity duration-150 group-hover:opacity-100 group-hover:pointer-events-auto hover:bg-white/15 hover:text-white"
+                        className="absolute inset-0 flex items-center justify-center rounded-full text-zinc-500 dark:text-white/80 opacity-0 pointer-events-none transition-opacity duration-150 group-hover:opacity-100 group-hover:pointer-events-auto hover:bg-black/10 hover:text-zinc-900 dark:hover:bg-white/15 dark:hover:text-white"
                       >
                         <Icon name="cross" size={12} />
                       </button>

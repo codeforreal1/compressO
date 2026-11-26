@@ -1,5 +1,11 @@
 import { core } from '@tauri-apps/api'
 
+import type {
+  AudioContract,
+  ImageContract,
+  VideoContract,
+} from '@/contract/types'
+
 /** Sent to every window with the whole queue when it changes */
 export const DROP_QUEUE_EVENT = 'drop-queue-changed'
 
@@ -32,13 +38,17 @@ export type DropQueueItem = {
   progress: number
   originalSize: number | null
   outputSize: number | null
-  /** Where the output was saved */
+  /** Where the output was saved; for a split video, the first clip's path */
   savedPath: string | null
+  /** Whether the original was moved to the Trash when saved ("Replace original files") */
+  replacedOriginal: boolean
   /**
-   * The output in the app's cache, when it was not saved (e.g. larger than the original); deleted
-   * when the item is cleared
+   * The outputs in the app's cache, when they were not saved (a split video has several);
+   * deleted when the item is cleared
    */
-  outputPath: string | null
+  outputPaths: string[]
+  /** Number of clips the video was split into; 0 or 1 when it was not split */
+  clipCount: number
   /** Why it failed, or was not saved (e.g. larger than the original) */
   message: string | null
   /** It failed as the system did not allow opening it (e.g. macOS privacy settings) */
@@ -92,8 +102,15 @@ export type CliJob = {
   preserveFolderStructure: boolean | null
   replaceOriginalFiles: boolean | null
   fileNamePrefix: string | null
+  fileNameTemplate: string | null
   useHardwareAcceleration: boolean | null
   reachTargetSizesWithoutAcceleration: boolean | null
+  cpuThreads: number | null
+  contracts?: {
+    video?: VideoContract | null
+    image?: ImageContract | null
+    audio?: AudioContract | null
+  } | null
 }
 
 export type DropQueueItemUpdate = Partial<
@@ -104,7 +121,9 @@ export type DropQueueItemUpdate = Partial<
     | 'originalSize'
     | 'outputSize'
     | 'savedPath'
-    | 'outputPath'
+    | 'replacedOriginal'
+    | 'outputPaths'
+    | 'clipCount'
     | 'message'
     | 'isAccessDenied'
     | 'needsSaveLocation'

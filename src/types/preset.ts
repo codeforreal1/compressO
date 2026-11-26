@@ -25,6 +25,10 @@ export const videoPresetFields = [
   'shouldEnableCustomBitrate',
   'audioConfig',
   'dynamicRange',
+  'shouldEnableClips',
+  'clipsMode',
+  'clipLengthInSeconds',
+  'clipCount',
 ] as const satisfies readonly (keyof VideoConfig)[]
 
 export type VideoPresetField = (typeof videoPresetFields)[number]
@@ -114,14 +118,19 @@ export type AudioPresetSettings = Omit<
 export type AudioPresetKey = keyof AudioPresetSettings
 
 /**
- * Where a preset's outputs are saved, & the prefix of their file names. A preset without one
+ * Where a preset's outputs are saved, & their file name template. A preset without one
  * follows the Standard preset, whose output is the one of Settings -> Output (see `getPresetOutput`).
  */
 export type PresetOutput = {
   saveLocation: SaveLocation
   /** Folder used when `saveLocation` is `fixedFolder` */
   saveFolder: string | null
-  /** Added to the start of saved file names; empty keeps the original names */
+  /**
+   * Naming template for saved files (without extension), e.g. `compressO-{name}` or
+   * `{name}_compressed`. Empty keeps the original names.
+   */
+  fileNameTemplate: string
+  /** Legacy prefix kept in sync for backward compatibility with older stored presets & CLI */
   filePrefix: string
 }
 
@@ -132,6 +141,8 @@ export type VideoPreset = {
   settings: VideoPresetSettings
   /** Its own output, or `null`/missing to follow the Standard preset's */
   output?: PresetOutput | null
+  revision?: number
+  updatedAt?: string
 }
 
 export type ImagePreset = {
@@ -141,6 +152,8 @@ export type ImagePreset = {
   settings: ImagePresetSettings
   /** See `VideoPreset['output']` */
   output?: PresetOutput | null
+  revision?: number
+  updatedAt?: string
 }
 
 export type AudioPreset = {
@@ -150,6 +163,8 @@ export type AudioPreset = {
   settings: AudioPresetSettings
   /** See `VideoPreset['output']` */
   output?: PresetOutput | null
+  revision?: number
+  updatedAt?: string
 }
 
 export type Preset = VideoPreset | ImagePreset | AudioPreset

@@ -1,6 +1,6 @@
 import { core } from '@tauri-apps/api'
 
-/** Turns hardware acceleration (the graphics card) on or off (Settings -> Output) */
+/** Turns hardware acceleration (the graphics card) on or off (Settings -> General) */
 export function setHardwareEncodingEnabled(enabled: boolean) {
   return core.invoke<void>('set_hardware_encoding_enabled', { enabled })
 }

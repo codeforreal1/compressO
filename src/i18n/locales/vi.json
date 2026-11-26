@@ -78,6 +78,24 @@
         },
         "restart": "Khởi động lại"
       },
+      "performance": {
+        "title": "Hiệu suất",
+        "hardwareAcceleration": {
+          "title": "Dùng tăng tốc phần cứng",
+          "description": "Nén video nhanh hơn bằng tăng tốc phần cứng (tệp có thể lớn hơn một chút)",
+          "unavailable": "Máy tính này không hỗ trợ tăng tốc phần cứng."
+        },
+        "retryTargetSizeOnCpu": {
+          "title": "Đạt kích thước mục tiêu không dùng tăng tốc",
+          "description": "Chỉ áp dụng cho \"Kích thước mục tiêu\". Khi video không đạt kích thước mục tiêu, nó được nén lại không dùng tăng tốc phần cứng, chậm hơn nhưng sát kích thước hơn."
+        },
+        "cpuThreadLimit": {
+          "title": "Số lõi CPU tối đa",
+          "description": "Giới hạn số lõi CPU mà FFmpeg sử dụng khi mã hóa trên CPU. Theo mặc định, tất cả các lõi đều được sử dụng.",
+          "all": "Tất cả",
+          "cores_other": "{{count}}"
+        }
+      },
       "sleep": {
         "title": "Ngủ",
         "preventSleep": {
@@ -127,8 +145,9 @@
       "empty_image": "Chưa có cài đặt sẵn cho hình ảnh. Hãy điều chỉnh cài đặt của một hình ảnh và chọn nút dấu cộng bên cạnh menu Cài đặt sẵn để lưu thành cài đặt sẵn.",
       "empty_audio": "Chưa có cài đặt sẵn cho âm thanh. Hãy điều chỉnh cài đặt của một tệp âm thanh và chọn nút dấu cộng bên cạnh menu Cài đặt sẵn để lưu thành cài đặt sẵn.",
       "mediaType": "Loại phương tiện",
-      "standardOutput": "Vị trí lưu và tiền tố tên tệp của nó được đặt trong <setting>Đầu ra</setting>.",
-      "cannotDeleteStandard": "Không thể xóa cài đặt sẵn Tiêu chuẩn."
+      "standardOutput": "Vị trí lưu và cách đặt tên tệp của nó được đặt trong <setting>Đầu ra</setting>.",
+      "cannotDeleteStandard": "Không thể xóa cài đặt sẵn Tiêu chuẩn.",
+      "newFromContract": "Tạo từ hợp đồng"
     },
     "dropZone": {
       "turnOnTrayIcon_macos": "Vùng thả nằm trên thanh menu. Trước tiên, hãy bật “<setting>Hiển thị biểu tượng trên thanh menu</setting>” trong Chung.",
@@ -210,9 +229,10 @@
           "description_windows": "Khi tệp đã nén được lưu cùng tên trong cùng thư mục với tệp gốc, tệp gốc sẽ được chuyển vào Thùng rác và chỉ giữ lại tệp đã nén."
         },
         "prefix": {
-          "title": "Tiền tố tên tệp",
-          "placeholder": "Không có tiền tố",
-          "description": "Văn bản thêm vào đầu tên tệp được lưu. Để trống để giữ tên gốc."
+          "title": "Đặt tên tệp",
+          "placeholder": "Giữ tên gốc",
+          "description": "Mẫu đặt tên tệp được lưu bằng các mã như {name}, {date}, {time} hoặc {preset}. Để trống để giữ tên gốc.",
+          "preview": "Ví dụ: {{example}}"
         },
         "appliesTo": "Chỉ áp dụng cho cài đặt sẵn Tiêu chuẩn."
       },
@@ -225,18 +245,6 @@
         "includeBatch": {
           "title": "Bao gồm đầu ra hàng loạt",
           "description": "Cũng sao chép các tệp khi nén nhiều tệp cùng lúc."
-        }
-      },
-      "performance": {
-        "title": "Hiệu suất",
-        "hardwareAcceleration": {
-          "title": "Dùng tăng tốc phần cứng",
-          "description": "Nén video nhanh hơn bằng tăng tốc phần cứng (tệp có thể lớn hơn một chút)",
-          "unavailable": "Máy tính này không hỗ trợ tăng tốc phần cứng."
-        },
-        "retryTargetSizeOnCpu": {
-          "title": "Đạt kích thước mục tiêu không dùng tăng tốc",
-          "description": "Chỉ áp dụng cho \"Kích thước mục tiêu\". Khi video không đạt kích thước mục tiêu, nó được nén lại không dùng tăng tốc phần cứng, chậm hơn nhưng sát kích thước hơn."
         }
       },
       "storage": {
@@ -273,7 +281,7 @@
       "credits": "Ghi công",
       "watchedFolders": "Theo dõi thư mục",
       "history": "Lịch sử",
-      "commandLine": "CLI"
+      "commandLine": "CLI và tác nhân AI"
     },
     "about": {
       "updateAvailable": "Có bản cập nhật",
@@ -379,6 +387,7 @@
           "outputFile": "Lưu một tệp với tên này. Phần mở rộng khác sẽ chuyển tệp sang định dạng đó.",
           "audioOnly": "Chỉ giữ âm thanh của video dưới dạng tệp âm thanh.",
           "flatten": "Lưu mọi tệp thẳng vào thư mục, không kèm các thư mục bên trong.",
+          "template": "Đặt tên tệp đã lưu bằng mẫu (hỗ trợ {name}, {date}, {time} và {preset}), chỉ cho lệnh này.",
           "prefix": "Thêm văn bản vào đầu tên tệp đã lưu, chỉ cho lệnh này.",
           "skipLarger": "Không lưu các kết quả lớn hơn bản gốc.",
           "replace": "Thay thế bản gốc khi kết quả có cùng tên và định dạng. Bản gốc được chuyển vào Thùng rác.",
@@ -389,7 +398,22 @@
           "json": "In kết quả dạng JSON, cho tập lệnh và tác tử AI.",
           "quiet": "Chỉ in lỗi.",
           "list": "Liệt kê các cài đặt sẵn của bạn, cùng cài đặt sẵn mặc định của mỗi loại phương tiện.",
-          "help": "Hiện mọi tùy chọn và mã thoát."
+          "help": "Hiện mọi tùy chọn và mã thoát.",
+          "contractFile": "Nén phương tiện bằng tệp hợp đồng JSON CompressO dùng một lần (hỗ trợ metadata.set, thumbnail và subtitles).",
+          "contractStdin": "Đọc hợp đồng JSON dùng một lần từ đầu vào chuẩn.",
+          "contractSchema": "In JSON Schema cho hợp đồng video, hình ảnh hoặc âm thanh.",
+          "contractValidate": "Kiểm tra tính hợp lệ của tệp hợp đồng JSON mà không nén tệp hay lưu cấu hình mẫu.",
+          "presetGet": "Xuất cấu hình mẫu đã lưu dưới dạng hợp đồng JSON.",
+          "presetCreate": "Tạo cấu hình mẫu mới trong ứng dụng từ tệp hợp đồng JSON.",
+          "presetUpdate": "Cập nhật cấu hình mẫu hiện có bằng các trường hợp đồng JSON một phần.",
+          "cpuThreads": "Giới hạn luồng CPU chỉ cho lần nén này (0 dùng tất cả luồng khả dụng).",
+          "capabilities": "Hiển thị phiên bản, số luồng CPU, bộ mã hóa phần cứng, công cụ và đường dẫn nhật ký.",
+          "inspect": "Kiểm tra kích thước, codec, luồng, dải tương phản động và EXIF mà không cần nén.",
+          "cacheClear": "Xóa bộ nhớ đệm tạm thời khi không có quá trình nén hoặc tệp đang mở.",
+          "history": "Liệt kê lịch sử nén gần đây của CompressO (dùng history clear để xóa).",
+          "queue": "Kiểm tra hoặc điều khiển hàng đợi nén (list, pause, resume, clear, cancel).",
+          "logs": "Hiển thị đường dẫn tệp nhật ký hiện tại và các dòng gần nhất.",
+          "about": "Hiển thị phiên bản CompressO, giấy phép, tác giả, liên kết trang web/nhật ký thay đổi/GitHub và ghi công."
         }
       },
       "agents": {
@@ -959,6 +983,12 @@
     "swapChannels": "Đổi kênh trái và phải",
     "tracks": "Rãnh",
     "track": "Rãnh #{{number}}",
+    "addTrack": "Thêm tệp âm thanh",
+    "fileFilter": "Tệp âm thanh",
+    "addTrackHint": "Video này không có âm thanh. Thêm tệp âm thanh để đính kèm.",
+    "addedTrack": "Âm thanh đã thêm",
+    "addFailed": "Không thể thêm tệp âm thanh",
+    "selectFile": "Chọn tệp âm thanh",
     "channelCount_other": "{{count}} kênh",
     "volumeLabel": "Âm lượng:",
     "volume": "Âm lượng",
@@ -1072,5 +1102,54 @@
     "videoBoostFormats": "Tăng cường HDR chỉ khả dụng cho video MP4, MOV, MKV, WebM và TS sử dụng codec H.265, VP9 hoặc AV1.",
     "videoBoostLossless": "Tăng cường HDR không khả dụng khi nén không mất dữ liệu.",
     "videoSdrOnly": "Định dạng hoặc codec này không thể lưu trữ HDR, vì vậy video sẽ được chuyển đổi sang SDR."
+  },
+  "clips": {
+    "title": "Clip",
+    "length": "Độ dài clip",
+    "minutes": "phút",
+    "willCreate_one": "Sẽ tạo {{count}} clip",
+    "willCreate_other": "Sẽ tạo {{count}} clip",
+    "clipName": "Clip {{number}}",
+    "fromOriginal": "Clip từ {{name}}",
+    "count_one": "{{count}} clip",
+    "count_other": "{{count}} clip",
+    "notAvailable": "Clip không khả dụng cho đầu ra GIF hoặc âm thanh.",
+    "tooLong": "Độ dài clip phải ngắn hơn video ({{duration}}).",
+    "invalidLength": "Nhập độ dài clip lớn hơn 0.",
+    "durationUnknown": "Chưa biết thời lượng của video.",
+    "chooseFolder": "Chọn thư mục cho các clip",
+    "batchTooLong": "Một hoặc nhiều video ngắn hơn độ dài clip.",
+    "seconds": "giây",
+    "switchUnit": "Chuyển sang {{unit}}",
+    "mode": "Chia clip theo",
+    "modes": {
+      "time": "Clip theo thời gian",
+      "count": "Tổng số clip"
+    },
+    "countUnit": "clip",
+    "invalidCount": "Nhập ít nhất 2 clip.",
+    "tooMany": "Quá nhiều clip. Mỗi clip phải dài ít nhất 1 giây.",
+    "eachClip": "{{duration}} mỗi clip",
+    "batchInvalid": "Một số video không thể chia với cài đặt clip này."
+  },
+  "contract": {
+    "exportTooltip": "Xuất hợp đồng JSON",
+    "saveFile": "Lưu hợp đồng dạng .json",
+    "copy": "Sao chép JSON hợp đồng",
+    "saveType": "Lưu hợp đồng {{type}} (.json)",
+    "copyType": "Sao chép JSON hợp đồng {{type}}",
+    "copied": "Đã sao chép hợp đồng JSON vào bảng tạm.",
+    "copyFailed": "Không thể sao chép hợp đồng JSON.",
+    "exported": "Đã xuất hợp đồng JSON.",
+    "exportFailed": "Không thể xuất hợp đồng JSON.",
+    "import": {
+      "title": "Cấu hình mới từ hợp đồng JSON",
+      "loadFile": "Tải tệp .json",
+      "jsonLabel": "Hợp đồng JSON CompressO",
+      "validate": "Kiểm tra",
+      "create": "Tạo cấu hình",
+      "invalidJson": "JSON không hợp lệ: {{message}}",
+      "readFailed": "Không thể đọc tệp hợp đồng."
+    }
   }
 }

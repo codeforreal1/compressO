@@ -254,7 +254,8 @@ async fn compress_media_item(
             let mut ffmpeg_instance = FFMPEG::new(&task_app)
                 .map_err(|e| format!("Failed to create ffmpeg instance: {}", e))?
                 .with_owner_window(&owner_window)
-                .with_hardware_acceleration(config.use_hardware_acceleration);
+                .with_hardware_acceleration(config.use_hardware_acceleration)
+                .with_cpu_thread_limit(config.cpu_threads);
             ffmpeg_instance
                 .compress_video(
                     &config.video_path,
@@ -274,6 +275,7 @@ async fn compress_media_item(
                     config.trim_segments.as_ref(),
                     config.subtitles_config.as_ref(),
                     config.speed,
+                    config.clips.as_ref(),
                     config.target_size.as_ref(),
                     config.dynamic_range.as_ref(),
                 )
@@ -296,6 +298,9 @@ async fn compress_media_item(
                 );
                 for other in result_other_outputs(&result) {
                     crate::sys::output_registry::remember(&app, std::path::Path::new(other));
+                }
+                for clip in &result.clips {
+                    crate::sys::output_registry::remember(&app, std::path::Path::new(&clip.file_path));
                 }
                 let media_id = result.video_id.clone();
                 results.lock().unwrap().insert(

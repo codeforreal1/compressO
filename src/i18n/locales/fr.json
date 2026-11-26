@@ -78,6 +78,26 @@
         },
         "restart": "Redémarrer"
       },
+      "performance": {
+        "title": "Performances",
+        "hardwareAcceleration": {
+          "title": "Utiliser l’accélération matérielle",
+          "description": "Compresser les vidéos plus rapidement grâce à l’accélération matérielle (les fichiers peuvent être légèrement plus volumineux)",
+          "unavailable": "L’accélération matérielle n’est pas disponible sur cet ordinateur."
+        },
+        "retryTargetSizeOnCpu": {
+          "title": "Atteindre les tailles cibles sans accélération",
+          "description": "S’applique uniquement à « Taille cible ». Lorsqu’une vidéo manque sa taille cible, elle est compressée à nouveau sans accélération matérielle, ce qui est plus lent mais plus proche de la taille."
+        },
+        "cpuThreadLimit": {
+          "title": "Nombre maximal de cœurs CPU",
+          "description": "Limite le nombre de cœurs CPU utilisés par FFmpeg lors de l’encodage sur le processeur. Tous les cœurs sont utilisés par défaut.",
+          "all": "Tous",
+          "cores_many": "{{count}}",
+          "cores_one": "{{count}}",
+          "cores_other": "{{count}}"
+        }
+      },
       "sleep": {
         "title": "Veille",
         "preventSleep": {
@@ -127,8 +147,9 @@
       "empty_image": "Il n’y a encore aucun préréglage d’image. Ajustez les réglages d’une image et sélectionnez le bouton plus à côté du menu Préréglage pour les enregistrer comme préréglage.",
       "empty_audio": "Il n’y a encore aucun préréglage audio. Ajustez les réglages d’un fichier audio et sélectionnez le bouton plus à côté du menu Préréglage pour les enregistrer comme préréglage.",
       "mediaType": "Type de média",
-      "standardOutput": "Son emplacement d’enregistrement et son préfixe de nom de fichier se règlent dans <setting>Sortie</setting>.",
-      "cannotDeleteStandard": "Le préréglage Standard ne peut pas être supprimé."
+      "standardOutput": "Son emplacement d’enregistrement et le nommage des fichiers se règlent dans <setting>Sortie</setting>.",
+      "cannotDeleteStandard": "Le préréglage Standard ne peut pas être supprimé.",
+      "newFromContract": "Nouveau depuis un contrat"
     },
     "dropZone": {
       "turnOnTrayIcon_macos": "La zone de dépôt se trouve dans la barre des menus. Activez d’abord « <setting>Afficher l’icône dans la barre des menus</setting> » dans Général.",
@@ -210,9 +231,10 @@
           "description_windows": "Lorsqu’un fichier compressé est enregistré sous le même nom dans le même dossier que l’original, l’original est déplacé vers la Corbeille et seul le fichier compressé est conservé."
         },
         "prefix": {
-          "title": "Préfixe du nom de fichier",
-          "placeholder": "Aucun préfixe",
-          "description": "Texte ajouté au début du nom des fichiers enregistrés. Laissez vide pour conserver les noms d’origine."
+          "title": "Nommage des fichiers",
+          "placeholder": "Conserver le nom d’origine",
+          "description": "Modèle pour les noms des fichiers enregistrés avec des jetons comme {name}, {date}, {time} ou {preset}. Laissez vide pour conserver les noms d’origine.",
+          "preview": "Exemple : {{example}}"
         },
         "appliesTo": "Ces réglages s’appliquent uniquement au préréglage Standard."
       },
@@ -225,18 +247,6 @@
         "includeBatch": {
           "title": "Inclure les sorties par lot",
           "description": "Copier également les fichiers lorsque plusieurs sont compressés à la fois."
-        }
-      },
-      "performance": {
-        "title": "Performances",
-        "hardwareAcceleration": {
-          "title": "Utiliser l’accélération matérielle",
-          "description": "Compresser les vidéos plus rapidement grâce à l’accélération matérielle (les fichiers peuvent être légèrement plus volumineux)",
-          "unavailable": "L’accélération matérielle n’est pas disponible sur cet ordinateur."
-        },
-        "retryTargetSizeOnCpu": {
-          "title": "Atteindre les tailles cibles sans accélération",
-          "description": "S’applique uniquement à « Taille cible ». Lorsqu’une vidéo manque sa taille cible, elle est compressée à nouveau sans accélération matérielle, ce qui est plus lent mais plus proche de la taille."
         }
       },
       "storage": {
@@ -273,7 +283,7 @@
       "credits": "Remerciements",
       "watchedFolders": "Surveillance de dossiers",
       "history": "Historique",
-      "commandLine": "CLI"
+      "commandLine": "CLI et agents IA"
     },
     "about": {
       "updateAvailable": "Mise à jour disponible",
@@ -379,6 +389,7 @@
           "outputFile": "Enregistrer un seul fichier sous ce nom. Une autre extension le convertit dans ce format.",
           "audioOnly": "Ne garder que le son d’une vidéo, sous forme de fichier audio.",
           "flatten": "Enregistrer chaque fichier directement dans le dossier, sans les dossiers qu’il contient.",
+          "template": "Nommer les fichiers enregistrés à l’aide d’un modèle (prend en charge {name}, {date}, {time} et {preset}), pour cette commande uniquement.",
           "prefix": "Ajouter du texte au début des noms des fichiers enregistrés, pour cette commande uniquement.",
           "skipLarger": "Ne pas enregistrer les résultats plus volumineux que leurs originaux.",
           "replace": "Remplacer l’original lorsque le résultat a le même nom et le même format. L’original est placé dans la Corbeille.",
@@ -389,7 +400,22 @@
           "json": "Afficher les résultats en JSON, pour les scripts et les agents d’IA.",
           "quiet": "N’afficher que les erreurs.",
           "list": "Lister vos préréglages, avec celui par défaut de chaque type de média.",
-          "help": "Afficher toutes les options et les codes de sortie."
+          "help": "Afficher toutes les options et les codes de sortie.",
+          "contractFile": "Compresser des médias avec un fichier contrat JSON CompressO ponctuel (prend en charge metadata.set, thumbnail et subtitles).",
+          "contractStdin": "Lire un contrat JSON ponctuel depuis l’entrée standard.",
+          "contractSchema": "Afficher le schéma JSON pour les contrats vidéo, image ou audio.",
+          "contractValidate": "Valider un fichier contrat JSON sans compresser de média ni enregistrer de préréglage.",
+          "presetGet": "Exporter un préréglage enregistré en contrat JSON.",
+          "presetCreate": "Créer un préréglage dans l’application depuis un fichier contrat JSON.",
+          "presetUpdate": "Mettre à jour un préréglage existant à l’aide de champs partiels de contrat JSON.",
+          "cpuThreads": "Limiter les threads CPU pour cette compression uniquement (0 utilise tous les threads).",
+          "capabilities": "Afficher la version, les threads CPU disponibles, encodeurs matériels, outils et fichier journal.",
+          "inspect": "Analyser dimensions, codecs, flux, plage dynamique et EXIF sans compresser.",
+          "cacheClear": "Vider le cache temporaire lorsqu’aucune compression ni média ouvert n’est actif.",
+          "history": "Lister les compressions récentes enregistrées par CompressO (history clear pour effacer).",
+          "queue": "Consulter ou contrôler la file d’attente (list, pause, resume, clear, cancel).",
+          "logs": "Afficher le chemin du fichier journal actuel et les dernières lignes.",
+          "about": "Afficher la version de CompressO, la licence, l’auteur, les liens et les crédits des outils open source."
         }
       },
       "agents": {
@@ -987,6 +1013,12 @@
     "swapChannels": "Inverser les canaux gauche et droit",
     "tracks": "Pistes",
     "track": "Piste {{number}}",
+    "addTrack": "Ajouter un fichier audio",
+    "fileFilter": "Fichiers audio",
+    "addTrackHint": "Cette vidéo n'a pas d'audio. Ajoutez un fichier audio pour en attacher un.",
+    "addedTrack": "Audio ajouté",
+    "addFailed": "Impossible d'ajouter le fichier audio",
+    "selectFile": "Sélectionner un fichier audio",
     "channelCount_one": "{{count}} canal",
     "channelCount_many": "{{count}} canaux",
     "channelCount_other": "{{count}} canaux",
@@ -1102,5 +1134,56 @@
     "videoBoostFormats": "L’amplification HDR est disponible uniquement pour les vidéos MP4, MOV, MKV, WebM et TS utilisant le codec H.265, VP9 ou AV1.",
     "videoBoostLossless": "L’amplification HDR n’est pas disponible avec la compression sans perte.",
     "videoSdrOnly": "Ce format ou ce codec ne peut pas stocker le HDR ; la vidéo sera donc convertie en SDR."
+  },
+  "clips": {
+    "title": "Clips",
+    "length": "Durée du clip",
+    "minutes": "min",
+    "willCreate_one": "Créera {{count}} clip",
+    "willCreate_other": "Créera {{count}} clips",
+    "clipName": "Clip {{number}}",
+    "fromOriginal": "Clips de {{name}}",
+    "count_one": "{{count}} clip",
+    "count_other": "{{count}} clips",
+    "notAvailable": "Les clips ne sont pas disponibles pour une sortie GIF ou audio.",
+    "tooLong": "La durée du clip doit être inférieure à celle de la vidéo ({{duration}}).",
+    "invalidLength": "Saisissez une durée de clip supérieure à 0.",
+    "durationUnknown": "La durée de la vidéo n'est pas encore connue.",
+    "chooseFolder": "Choisir un dossier pour les clips",
+    "willCreate_many": "Créera {{count}} clips",
+    "count_many": "{{count}} clips",
+    "batchTooLong": "Une ou plusieurs vidéos sont plus courtes que la durée du clip.",
+    "seconds": "s",
+    "switchUnit": "Passer à {{unit}}",
+    "mode": "Découper les clips par",
+    "modes": {
+      "time": "Clips par durée",
+      "count": "Nombre total de clips"
+    },
+    "countUnit": "clips",
+    "invalidCount": "Saisissez au moins 2 clips.",
+    "tooMany": "Trop de clips. Chaque clip doit durer au moins 1 seconde.",
+    "eachClip": "{{duration}} chacun",
+    "batchInvalid": "Certaines vidéos ne peuvent pas être découpées avec ces réglages de clips."
+  },
+  "contract": {
+    "exportTooltip": "Exporter le contrat JSON",
+    "saveFile": "Enregistrer le contrat en .json",
+    "copy": "Copier le contrat JSON",
+    "saveType": "Enregistrer le contrat {{type}} (.json)",
+    "copyType": "Copier le contrat JSON {{type}}",
+    "copied": "Contrat JSON copié dans le presse-papiers.",
+    "copyFailed": "Impossible de copier le contrat JSON.",
+    "exported": "Contrat JSON exporté.",
+    "exportFailed": "Impossible d’exporter le contrat JSON.",
+    "import": {
+      "title": "Nouveau préréglage depuis un contrat JSON",
+      "loadFile": "Charger un fichier .json",
+      "jsonLabel": "Contrat JSON CompressO",
+      "validate": "Valider",
+      "create": "Créer le préréglage",
+      "invalidJson": "JSON invalide : {{message}}",
+      "readFailed": "Impossible de lire le fichier du contrat."
+    }
   }
 }

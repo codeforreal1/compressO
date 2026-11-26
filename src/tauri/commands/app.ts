@@ -61,6 +61,11 @@ export function takeOpenedAtLogin() {
 }
 
 /** The current log file (Settings -> About -> Show log files) */
+/** Writes an informational event from the frontend to the log file */
+export function logInfo(message: string) {
+  core.invoke<void>('log_info', { message }).catch(() => {})
+}
+
 /** Writes a failure to the log file, without failing itself */
 export function logError(message: string, error?: unknown) {
   core

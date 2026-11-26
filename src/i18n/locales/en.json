@@ -78,6 +78,25 @@
         },
         "restart": "Restart"
       },
+      "performance": {
+        "title": "Performance",
+        "hardwareAcceleration": {
+          "title": "Use hardware acceleration",
+          "description": "Compress videos faster with hardware acceleration (Files can be slightly larger)",
+          "unavailable": "Hardware acceleration is not available on this computer."
+        },
+        "retryTargetSizeOnCpu": {
+          "title": "Reach target sizes without acceleration",
+          "description": "Applies only to Target Size. When a video misses its target size, it is compressed again without hardware acceleration, which is slower but closer to the size."
+        },
+        "cpuThreadLimit": {
+          "title": "Maximum CPU cores",
+          "description": "Limits how many CPU cores FFmpeg uses when encoding on the CPU. All cores are used by default.",
+          "all": "All",
+          "cores_one": "{{count}}",
+          "cores_other": "{{count}}"
+        }
+      },
       "sleep": {
         "title": "Sleep",
         "preventSleep": {
@@ -127,8 +146,9 @@
       "empty_image": "There are no image presets yet. Adjust the settings of an image and select the plus button next to the Preset menu to save them as a preset.",
       "empty_audio": "There are no audio presets yet. Adjust the settings of an audio file and select the plus button next to the Preset menu to save them as a preset.",
       "mediaType": "Media type",
-      "standardOutput": "Its save location and file name prefix are set in <setting>Output</setting>.",
-      "cannotDeleteStandard": "The Standard preset cannot be deleted."
+      "standardOutput": "Its save location and file naming are set in <setting>Output</setting>.",
+      "cannotDeleteStandard": "The Standard preset cannot be deleted.",
+      "newFromContract": "New from contract"
     },
     "dropZone": {
       "turnOnTrayIcon_macos": "The drop zone is in the menu bar. Turn on <setting>Show menu bar icon</setting> in General first.",
@@ -210,9 +230,10 @@
           "description_windows": "When a compressed file is saved with the same name in the same folder as its original, the original is moved to the Recycle Bin and only the compressed file is kept."
         },
         "prefix": {
-          "title": "File name prefix",
-          "placeholder": "No prefix",
-          "description": "Text added to the start of saved file names. Leave empty to keep the original names."
+          "title": "File naming",
+          "placeholder": "Keep original name",
+          "description": "Template for saved file names using tokens like {name}, {date}, {time}, or {preset}. Leave empty to keep the original names.",
+          "preview": "Example: {{example}}"
         },
         "appliesTo": "These apply to the Standard preset only."
       },
@@ -225,18 +246,6 @@
         "includeBatch": {
           "title": "Include batch outputs",
           "description": "Also copy the files when several are compressed at once."
-        }
-      },
-      "performance": {
-        "title": "Performance",
-        "hardwareAcceleration": {
-          "title": "Use hardware acceleration",
-          "description": "Compress videos faster with hardware acceleration (Files can be slightly larger)",
-          "unavailable": "Hardware acceleration is not available on this computer."
-        },
-        "retryTargetSizeOnCpu": {
-          "title": "Reach target sizes without acceleration",
-          "description": "Applies only to Target Size. When a video misses its target size, it is compressed again without hardware acceleration, which is slower but closer to the size."
         }
       },
       "storage": {
@@ -273,7 +282,7 @@
       "credits": "Credits",
       "watchedFolders": "Watch Folder",
       "history": "History",
-      "commandLine": "CLI"
+      "commandLine": "CLI & AI Agents"
     },
     "about": {
       "updateAvailable": "Update available",
@@ -379,6 +388,7 @@
           "outputFile": "Save a single file under this name. A different extension converts it to that format.",
           "audioOnly": "Keep only the sound of a video, as an audio file.",
           "flatten": "Save every file straight into the folder, without the folders inside it.",
+          "template": "Name saved files using a template (supports {name}, {date}, {time}, and {preset}), for this command only.",
           "prefix": "Add text to the start of the saved file names, for this command only.",
           "skipLarger": "Do not save outputs that are larger than their originals.",
           "replace": "Replace the original when the output has the same name and format. The original is moved to the Trash.",
@@ -389,7 +399,22 @@
           "quiet": "Print only errors.",
           "list": "List your presets, with the default one of each media type.",
           "help": "Show every option and the exit codes.",
-          "replaceWindows": "Replace the original when the output has the same name and format. The original is moved to the Recycle Bin."
+          "replaceWindows": "Replace the original when the output has the same name and format. The original is moved to the Recycle Bin.",
+          "contractFile": "Compress media with a one-shot CompressO JSON contract file (supports metadata.set, thumbnail, and subtitles).",
+          "contractStdin": "Read a one-shot JSON contract from standard input.",
+          "contractSchema": "Print the JSON Schema for video, image, or audio contracts.",
+          "contractValidate": "Validate a JSON contract file without compressing media or saving a preset.",
+          "presetGet": "Export a saved preset as a JSON contract.",
+          "presetCreate": "Create a new preset in the app from a JSON contract file.",
+          "presetUpdate": "Patch an existing preset using partial JSON contract fields.",
+          "cpuThreads": "Limit CPU encoding threads for this compression only (0 uses all available threads).",
+          "capabilities": "Show app version, available CPU threads, hardware encoders, bundled tools, and log path.",
+          "inspect": "Probe dimensions, codecs, streams, dynamic range, and EXIF metadata without compressing.",
+          "cacheClear": "Clear temporary cache files when no compression or open media is active.",
+          "history": "List recent compressions recorded by CompressO (use history clear to reset).",
+          "queue": "Inspect or control the drop/watch compression queue (list, pause, resume, clear, cancel).",
+          "logs": "Show the current log file path and recent log lines.",
+          "about": "Show CompressO version, license, author, website/changelog/GitHub links, and open-source tool credits."
         }
       },
       "agents": {
@@ -973,6 +998,12 @@
     "swapChannels": "Swap left and right channels",
     "tracks": "Tracks",
     "track": "Track #{{number}}",
+    "addTrack": "Add audio file",
+    "fileFilter": "Audio files",
+    "addTrackHint": "No audio in this video. Add an audio file to attach one.",
+    "addedTrack": "Added audio",
+    "addFailed": "Could not add the audio file",
+    "selectFile": "Select an audio file",
     "channelCount_one": "{{count}} channel",
     "channelCount_other": "{{count}} channels",
     "volumeLabel": "Volume:",
@@ -1087,5 +1118,54 @@
     "videoBoostFormats": "HDR Boost is only available for MP4, MOV, MKV, WebM, and TS videos that use the H.265, VP9, or AV1 codec.",
     "videoBoostLossless": "HDR Boost is not available with lossless compression.",
     "videoSdrOnly": "This format or codec cannot store HDR, so the video will be converted to SDR."
+  },
+  "clips": {
+    "title": "Clips",
+    "length": "Clip length",
+    "minutes": "min",
+    "willCreate_one": "Will create {{count}} clip",
+    "willCreate_other": "Will create {{count}} clips",
+    "clipName": "Clip {{number}}",
+    "fromOriginal": "Clips from {{name}}",
+    "count_one": "{{count}} clip",
+    "count_other": "{{count}} clips",
+    "notAvailable": "Clips are not available for GIF or audio output.",
+    "tooLong": "Clip length must be shorter than the video ({{duration}}).",
+    "invalidLength": "Enter a clip length above 0.",
+    "durationUnknown": "The video's duration is not known yet.",
+    "chooseFolder": "Choose a folder for the clips",
+    "batchTooLong": "One or more videos are shorter than the clip length.",
+    "seconds": "sec",
+    "switchUnit": "Switch to {{unit}}",
+    "mode": "Split clips by",
+    "modes": {
+      "time": "Timed clips",
+      "count": "Total clips"
+    },
+    "countUnit": "clips",
+    "invalidCount": "Enter at least 2 clips.",
+    "tooMany": "Too many clips. Each clip must be at least 1 second.",
+    "eachClip": "{{duration}} each",
+    "batchInvalid": "Some videos cannot be split with these clip settings."
+  },
+  "contract": {
+    "exportTooltip": "Export JSON contract",
+    "saveFile": "Save contract as .json",
+    "copy": "Copy contract JSON",
+    "saveType": "Save {{type}} contract (.json)",
+    "copyType": "Copy {{type}} contract JSON",
+    "copied": "JSON contract copied to clipboard.",
+    "copyFailed": "Could not copy JSON contract.",
+    "exported": "JSON contract exported.",
+    "exportFailed": "Could not export JSON contract.",
+    "import": {
+      "title": "New preset from JSON contract",
+      "loadFile": "Load .json file",
+      "jsonLabel": "CompressO JSON contract",
+      "validate": "Validate",
+      "create": "Create preset",
+      "invalidJson": "Invalid JSON: {{message}}",
+      "readFailed": "Could not read the contract file."
+    }
   }
 }

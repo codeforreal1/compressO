@@ -1,10 +1,11 @@
+import { core } from '@tauri-apps/api'
 import { TimelineAction } from '@xzdarcy/timeline-engine'
 import { proxy } from 'valtio'
 
 import { t } from '@/i18n'
 import { settingsStore } from '@/stores/settingsStore'
 import { getDropQueue } from '@/tauri/commands/dropQueue'
-import { Image, MediaMetadataConfig, Video } from '@/types/app'
+import { Image, MediaMetadataConfig, Video, VideoClipOutput } from '@/types/app'
 import {
   getAudioFileOutputExtension,
   ImageCompressionConfig,
@@ -14,6 +15,7 @@ import {
   MediaItem,
   MediaTransformHistory,
   VideoCompressionConfig,
+  VideoCompressionResult,
   VideoTrimSegment,
 } from '@/types/compression'
 import { getAudioBitrateForQuality } from '@/utils/audio'
@@ -21,6 +23,7 @@ import {
   planAudioTargetSize,
   supportsAudioTargetSize,
 } from '@/utils/audioTargetSize'
+import { formatBytes } from '@/utils/fs'
 import {
   getImageDynamicRangeOperation,
   isHdrJpegOutput,
@@ -55,12 +58,13 @@ export async function waitForDropZone(signal: AbortSignal) {
 }
 
 /**
- * Hardware acceleration settings chosen for one media instead of the app's (Settings -> Output),
+ * Hardware acceleration settings chosen for one media instead of the app's (Settings -> General),
  * e.g. on the command line
  */
 export type AccelerationSettings = {
   useHardwareAcceleration: boolean
   retryTargetSizeOnCpu: boolean
+  cpuThreads?: number | null
 }
 
 export type MediaFile =
@@ -221,13 +225,15 @@ export function getTargetSizePlan(
 
   const volume = config.audioConfig?.volume ?? 100
   const knownAudioTracks = media.videoInfoRaw?.audioStreams?.length
+  const externalAudioTrackCount = config.externalAudioTracks?.length ?? 0
   const audioTrackCount =
     volume === 0
       ? 0
-      : config.shouldEnableAudioTrackSelection && config.selectedAudioTracks
-        ? config.selectedAudioTracks.length
-        : // Unknown until the audio tracks are read: one is assumed, to keep room for it
-          (knownAudioTracks ?? 1)
+      : (config.shouldEnableAudioTrackSelection && config.selectedAudioTracks
+          ? config.selectedAudioTracks.length
+          : // Unknown until the audio tracks are read: one is assumed, to keep room for it
+            (knownAudioTracks ?? (externalAudioTrackCount > 0 ? 0 : 1))) +
+        externalAudioTrackCount
 
   const videoCodec =
     config.shouldEnableCustomVideoCodec &&
@@ -285,6 +291,66 @@ export function getAudioTargetSizePlan(media: MediaFile) {
       ? media.config.audioConfig?.audioCodec
       : null,
   })
+}
+
+/** How many clips a video of `durationInSeconds` makes with `lengthInSeconds` clips */
+export function getClipCount(
+  durationInSeconds: number,
+  lengthInSeconds: number,
+) {
+  if (!(lengthInSeconds > 0) || lengthInSeconds >= durationInSeconds) return 0
+  let count = Math.ceil(durationInSeconds / lengthInSeconds)
+  // Container timing can leave a few milliseconds over: they stay in the last clip
+  if (count > 2 && durationInSeconds - (count - 1) * lengthInSeconds < 1) {
+    count--
+  }
+  return count
+}
+
+/** Why a video's clips cannot be made (`null` when they can, or when clips are off) */
+export function getClipsWarning(media: MediaFile) {
+  if (
+    media.type !== 'video' ||
+    media.isAudioFile ||
+    !media.config?.shouldEnableClips
+  ) {
+    return null
+  }
+  const outputExtension =
+    media.config.convertToExtension === '-'
+      ? media.extension
+      : media.config.convertToExtension
+  // Clips are only made for video files: an audio output is left as it is; a GIF has no video
+  // stream to split, so clips must be turned off
+  if (isAudioExtension(outputExtension)) {
+    return null
+  }
+  if (outputExtension === 'gif') {
+    return 'clips.notAvailable' as const
+  }
+  const durationInSeconds = getOutputDuration(media) / 1000
+  if (!durationInSeconds) {
+    return 'clips.durationUnknown' as const
+  }
+  if ((media.config.clipsMode ?? 'count') === 'count') {
+    const count = media.config.clipCount ?? 2
+    if (!Number.isInteger(count) || count < 2) {
+      return 'clips.invalidCount' as const
+    }
+    // Each clip must be at least 1 second long
+    if (count > Math.floor(durationInSeconds)) {
+      return 'clips.tooMany' as const
+    }
+    return null
+  }
+  const lengthInSeconds = media.config.clipLengthInSeconds ?? 60
+  if (lengthInSeconds < 1) {
+    return 'clips.invalidLength' as const
+  }
+  if (lengthInSeconds >= durationInSeconds) {
+    return 'clips.tooLong' as const
+  }
+  return null
 }
 
 /** Shared validation for inline feedback, Process, keyboard shortcuts and the queue. */
@@ -446,6 +512,14 @@ export function getMediaItemConfig(
     ((v.config.isLossless &&
       !isHdrJpegOutput(imageOutput, imageOperation, v.dynamicRangeInfo)) ||
       isHdrPngOutput(imageOutput, imageOperation, v.dynamicRangeInfo))
+  const clipsDurationSeconds =
+    v.type === 'video'
+      ? (v.config?.clipsMode ?? 'count') === 'count'
+        ? getOutputDuration(v) /
+          1000 /
+          Math.max(2, Math.floor(v.config.clipCount ?? 2))
+        : (v.config?.clipLengthInSeconds ?? 60)
+      : 0
   return {
     videoConfig:
       v.type === 'video'
@@ -488,6 +562,10 @@ export function getMediaItemConfig(
                 (v.config?.audioConfig?.volume ?? 100) !== 0
                   ? (v.config?.selectedAudioTracks ?? null)
                   : null,
+              externalAudioPaths:
+                v.config?.externalAudioTracks
+                  ?.map((track) => track.path)
+                  .filter((path) => path.length > 0) ?? null,
             },
             dimensions: sizePlan?.isResolutionLowered
               ? sizePlan.dimensions
@@ -512,6 +590,20 @@ export function getMediaItemConfig(
             speed:
               v.config?.shouldEnableCustomSpeed && v.config.customSpeed !== 1
                 ? v.config.customSpeed
+                : null,
+            clips:
+              v.config?.shouldEnableClips &&
+              (v.config?.convertToExtension === '-'
+                ? v.extension
+                : v.config?.convertToExtension) !== 'gif' &&
+              !isAudioExtension(
+                v.config?.convertToExtension === '-'
+                  ? v.extension
+                  : v.config?.convertToExtension,
+              )
+                ? {
+                    durationSeconds: clipsDurationSeconds,
+                  }
                 : null,
             fps: sizePlan?.fps
               ? sizePlan.fps.toString()
@@ -598,6 +690,7 @@ export function getMediaItemConfig(
               : (v.config?.dynamicRange ?? null),
             useHardwareAcceleration:
               v.acceleration?.useHardwareAcceleration ?? null,
+            cpuThreads: v.acceleration?.cpuThreads ?? null,
           } satisfies VideoCompressionConfig)
         : undefined,
     imageConfig:
@@ -658,6 +751,39 @@ function getAudioFileForCompression(
       },
     },
   }
+}
+
+/**
+ * The clips of a video split into clips, as shown & saved: named after the original video
+ * (`Original - Clip 1.mp4`), with their own paths & sizes
+ */
+export function getVideoClipOutputs(
+  result: VideoCompressionResult | null,
+  video: { fileName?: string | null },
+): VideoClipOutput[] {
+  if (!result?.clips?.length) return []
+  const originalName = video.fileName?.replace(/\.[^.]+$/, '') ?? ''
+  return result.clips.map((clip) => {
+    const metadata = clip.fileMetadata
+    const extension = metadata?.extension
+    const clipName = t('clips.clipName', { number: clip.index })
+    const fileNameToDisplay = `${originalName ? `${originalName} - ` : ''}${clipName}${
+      extension ? `.${extension}` : ''
+    }`
+    return {
+      index: clip.index,
+      startSeconds: clip.startSeconds,
+      endSeconds: clip.endSeconds,
+      fileName: metadata?.fileName ?? clip.fileName,
+      fileNameToDisplay,
+      pathRaw: metadata?.path ?? clip.filePath,
+      path: core.convertFileSrc(metadata?.path ?? clip.filePath),
+      mimeType: metadata?.mimeType,
+      sizeInBytes: metadata?.size,
+      size: formatBytes(metadata?.size ?? 0),
+      extension,
+    }
+  })
 }
 
 /**

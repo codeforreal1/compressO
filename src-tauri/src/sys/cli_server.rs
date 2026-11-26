@@ -11,6 +11,8 @@
 //! - `{"type":"expand","inputs":[..]}`: the media of files & folders, without compressing them
 //! - `{"type":"compress","inputs":[..],"job":{..}}`: compresses them (see `CliJob`), answered with
 //!   `accepted`, then `progress` & `file` for each media, & `done`
+//! - `{"type":"addWatchedFolder"|"updateWatchedFolder"|"removeWatchedFolder",..}`: changes the
+//!   watched folders, through the window that keeps them (see `watch_folders_bridge`)
 //! - `{"type":"cancel"}`: cancels the compression of this connection
 //!
 //! Closing the connection cancels its media not compressed yet. An app started by the command line
@@ -26,6 +28,8 @@ use tauri::{AppHandle, Manager};
 use tokio::io::{AsyncBufReadExt, AsyncRead, AsyncWrite, AsyncWriteExt, BufReader};
 
 use crate::core::domain::CollectedFile;
+use crate::sys::presets_bridge::PresetCommand;
+use crate::sys::watch_folders_bridge::{PresetChanges, WatchFolderCommand};
 use crate::tauri_commands::drop_queue::{self, CliJob, DropQueueItem, DropQueueItemStatus};
 
 /// Passed by the command line when it starts the app: no window is shown (nor the Dock icon), &
@@ -33,7 +37,7 @@ use crate::tauri_commands::drop_queue::{self, CliJob, DropQueueItem, DropQueueIt
 pub const BACKGROUND_ARG: &str = "--background";
 
 /// Version of the messages, raised when they change in a way older command lines cannot follow
-const PROTOCOL_VERSION: u32 = 1;
+const PROTOCOL_VERSION: u32 = 3;
 
 /// Started by the command line, & not used by the user since: quits once the command line is done
 static IS_LAUNCHED_FOR_CLI: AtomicBool = AtomicBool::new(false);
@@ -151,8 +155,33 @@ async fn listen(app_handle: AppHandle) -> Result<(), String> {
 #[derive(Deserialize)]
 #[serde(tag = "type", rename_all = "camelCase")]
 enum Request {
-    Hello,
+    Hello {
+        #[serde(default)]
+        client: Option<String>,
+    },
+    Log {
+        level: String,
+        message: String,
+    },
     GetSettings,
+    GetCapabilities,
+    ClearCache,
+    GetHistory {
+        #[serde(default)]
+        limit: Option<usize>,
+    },
+    ClearHistory,
+    GetQueue,
+    QueueAction {
+        action: String,
+    },
+    GetLogs {
+        #[serde(default)]
+        tail: Option<usize>,
+    },
+    Inspect {
+        inputs: Vec<String>,
+    },
     Expand {
         inputs: Vec<String>,
     },
@@ -160,6 +189,79 @@ enum Request {
         inputs: Vec<String>,
         #[serde(default)]
         job: CliJob,
+    },
+    #[serde(rename = "addWatchedFolder")]
+    AddWatchedFolder {
+        path: String,
+        #[serde(default, rename = "isEnabled")]
+        is_enabled: Option<bool>,
+        #[serde(default, rename = "presetIds")]
+        preset_ids: Option<PresetChanges>,
+    },
+    #[serde(rename = "updateWatchedFolder")]
+    UpdateWatchedFolder {
+        #[serde(default)]
+        id: Option<String>,
+        #[serde(default)]
+        path: Option<String>,
+        #[serde(default, rename = "isEnabled")]
+        is_enabled: Option<bool>,
+        #[serde(default, rename = "presetIds")]
+        preset_ids: Option<PresetChanges>,
+    },
+    #[serde(rename = "removeWatchedFolder")]
+    RemoveWatchedFolder {
+        #[serde(default)]
+        id: Option<String>,
+        #[serde(default)]
+        path: Option<String>,
+    },
+    #[serde(rename = "getPreset")]
+    GetPreset {
+        #[serde(rename = "idOrName")]
+        id_or_name: String,
+        #[serde(default, rename = "mediaType")]
+        media_type: Option<String>,
+    },
+    #[serde(rename = "validateContract")]
+    ValidateContract {
+        contract: serde_json::Value,
+        #[serde(default)]
+        mode: Option<String>,
+        #[serde(default, rename = "requireName")]
+        require_name: Option<bool>,
+    },
+    #[serde(rename = "createPreset")]
+    CreatePreset {
+        contract: serde_json::Value,
+        #[serde(default, rename = "onConflict")]
+        on_conflict: Option<String>,
+    },
+    #[serde(rename = "updatePreset")]
+    UpdatePreset {
+        #[serde(rename = "idOrName")]
+        id_or_name: String,
+        patch: serde_json::Value,
+        #[serde(default, rename = "mediaType")]
+        media_type: Option<String>,
+        #[serde(default)]
+        replace: Option<bool>,
+        #[serde(default, rename = "ifRevision")]
+        if_revision: Option<u64>,
+    },
+    #[serde(rename = "deletePreset")]
+    DeletePreset {
+        #[serde(rename = "idOrName")]
+        id_or_name: String,
+        #[serde(default, rename = "mediaType")]
+        media_type: Option<String>,
+    },
+    #[serde(rename = "setDefaultPreset")]
+    SetDefaultPreset {
+        #[serde(rename = "idOrName")]
+        id_or_name: String,
+        #[serde(rename = "mediaType")]
+        media_type: String,
     },
     Cancel,
 }
@@ -200,6 +302,8 @@ where
     let (reader, writer) = tokio::io::split(stream);
     let writer: Writer<S> = Arc::new(tokio::sync::Mutex::new(writer));
     let mut lines = BufReader::new(reader).lines();
+    // Source reported in the initial `hello` handshake (`"cli"` or `"mcp"`)
+    let mut source: &'static str = "cli";
     // The compression of this connection, cancelled if it closes first
     let mut job: Option<(String, tokio::task::JoinHandle<()>)> = None;
 
@@ -208,23 +312,81 @@ where
             Ok(request) => request,
             Err(err) => {
                 let message = format!("Invalid request: {}", err);
+                log::warn!("[{source}] {message}");
                 let _ = send(&writer, error_message("invalidRequest", &message)).await;
                 continue;
             }
         };
         let result = match request {
-            Request::Hello => send(&writer, hello_message(&app_handle)).await,
+            Request::Hello { client } => {
+                if client.as_deref() == Some("mcp") {
+                    source = "mcp";
+                }
+                send(&writer, hello_message(&app_handle)).await
+            }
+            Request::Log { level, message } => {
+                match level.as_str() {
+                    "error" => log::error!("[{source}] {message}"),
+                    "warn" => log::warn!("[{source}] {message}"),
+                    _ => log::info!("[{source}] {message}"),
+                }
+                Ok(())
+            }
             Request::GetSettings => match crate::sys::cli_settings::get() {
                 Some(settings) => {
                     send(&writer, json!({ "type": "settings", "settings": settings })).await
                 }
                 None => {
                     let message = "The app is still starting. Try again in a moment.";
+                    log::warn!("[{source}] GetSettings refused: {message}");
                     send(&writer, error_message("notReady", message)).await
                 }
             },
+            Request::GetCapabilities => {
+                let message =
+                    crate::sys::cli_ops::capabilities(&app_handle, PROTOCOL_VERSION.into(), source)
+                        .await;
+                send(&writer, message).await
+            }
+            Request::ClearCache => match crate::sys::cli_ops::clear_cache(&app_handle, source).await {
+                Ok(message) => send(&writer, message).await,
+                Err((code, message)) => send(&writer, error_message(code, &message)).await,
+            },
+            Request::GetHistory { limit } => {
+                let message = crate::sys::cli_ops::history_list(&app_handle, limit, source);
+                send(&writer, message).await
+            }
+            Request::ClearHistory => {
+                let message = crate::sys::cli_ops::history_clear(&app_handle, source);
+                send(&writer, message).await
+            }
+            Request::GetQueue => {
+                let message = crate::sys::cli_ops::queue_status(&app_handle, source);
+                send(&writer, message).await
+            }
+            Request::QueueAction { action } => {
+                match crate::sys::cli_ops::queue_action(&app_handle, &action, source) {
+                    Ok(message) => send(&writer, message).await,
+                    Err((code, message)) => send(&writer, error_message(code, &message)).await,
+                }
+            }
+            Request::GetLogs { tail } => match crate::sys::cli_ops::logs(tail, source) {
+                Ok(message) => send(&writer, message).await,
+                Err((code, message)) => send(&writer, error_message(code, &message)).await,
+            },
+            Request::Inspect { inputs } => {
+                let message = crate::sys::cli_ops::inspect(&app_handle, &inputs, source).await;
+                send(&writer, message).await
+            }
             Request::Expand { inputs } => {
                 let expanded = expand(&app_handle, &inputs);
+                log::info!(
+                    "[{source}] Expanded {} input(s) -> {} supported, {} unsupported, {} unreadable",
+                    inputs.len(),
+                    expanded.files.len(),
+                    expanded.unsupported.len(),
+                    expanded.unreadable.len()
+                );
                 send(&writer, expanded.to_message()).await
             }
             Request::Compress {
@@ -233,9 +395,10 @@ where
             } => {
                 if job.is_some() {
                     let message = "A compression is already running on this connection.";
+                    log::warn!("[{source}] {message}");
                     send(&writer, error_message("invalidRequest", message)).await
                 } else {
-                    match start_job(&app_handle, &writer, &inputs, options).await {
+                    match start_job(&app_handle, &writer, &inputs, options, source).await {
                         Some(started) => {
                             job = Some(started);
                             Ok(())
@@ -244,8 +407,161 @@ where
                     }
                 }
             }
+            Request::AddWatchedFolder {
+                path,
+                is_enabled,
+                preset_ids,
+            } => {
+                send_watched_folders_command(
+                    &app_handle,
+                    &writer,
+                    WatchFolderCommand::Add {
+                        path,
+                        is_enabled,
+                        preset_ids,
+                    },
+                    source,
+                    "addWatchedFolder",
+                )
+                .await
+            }
+            Request::UpdateWatchedFolder {
+                id,
+                path,
+                is_enabled,
+                preset_ids,
+            } => {
+                send_watched_folders_command(
+                    &app_handle,
+                    &writer,
+                    WatchFolderCommand::Update {
+                        id,
+                        path,
+                        is_enabled,
+                        preset_ids,
+                    },
+                    source,
+                    "updateWatchedFolder",
+                )
+                .await
+            }
+            Request::RemoveWatchedFolder { id, path } => {
+                send_watched_folders_command(
+                    &app_handle,
+                    &writer,
+                    WatchFolderCommand::Remove { id, path },
+                    source,
+                    "removeWatchedFolder",
+                )
+                .await
+            }
+            Request::GetPreset {
+                id_or_name,
+                media_type,
+            } => {
+                send_presets_command(
+                    &app_handle,
+                    &writer,
+                    PresetCommand::GetPreset {
+                        id_or_name,
+                        media_type,
+                    },
+                    source,
+                    "getPreset",
+                )
+                .await
+            }
+            Request::ValidateContract {
+                contract,
+                mode,
+                require_name,
+            } => {
+                send_presets_command(
+                    &app_handle,
+                    &writer,
+                    PresetCommand::ValidateContract {
+                        contract,
+                        mode,
+                        require_name,
+                    },
+                    source,
+                    "validateContract",
+                )
+                .await
+            }
+            Request::CreatePreset {
+                contract,
+                on_conflict,
+            } => {
+                send_presets_command(
+                    &app_handle,
+                    &writer,
+                    PresetCommand::CreatePreset {
+                        contract,
+                        on_conflict,
+                    },
+                    source,
+                    "createPreset",
+                )
+                .await
+            }
+            Request::UpdatePreset {
+                id_or_name,
+                patch,
+                media_type,
+                replace,
+                if_revision,
+            } => {
+                send_presets_command(
+                    &app_handle,
+                    &writer,
+                    PresetCommand::UpdatePreset {
+                        id_or_name,
+                        patch,
+                        media_type,
+                        replace,
+                        if_revision,
+                    },
+                    source,
+                    "updatePreset",
+                )
+                .await
+            }
+            Request::DeletePreset {
+                id_or_name,
+                media_type,
+            } => {
+                send_presets_command(
+                    &app_handle,
+                    &writer,
+                    PresetCommand::DeletePreset {
+                        id_or_name,
+                        media_type,
+                    },
+                    source,
+                    "deletePreset",
+                )
+                .await
+            }
+            Request::SetDefaultPreset {
+                id_or_name,
+                media_type,
+            } => {
+                send_presets_command(
+                    &app_handle,
+                    &writer,
+                    PresetCommand::SetDefaultPreset {
+                        id_or_name,
+                        media_type,
+                    },
+                    source,
+                    "setDefaultPreset",
+                )
+                .await
+            }
             Request::Cancel => {
                 if let Some((job_id, _)) = &job {
+                    log::info!("[{source}] Explicit cancel requested for job {job_id}");
                     drop_queue::cancel_cli_job(&app_handle, job_id);
                 }
                 Ok(())
@@ -260,7 +576,7 @@ where
     if let Some((job_id, task)) = job {
         if !task.is_finished() {
             task.abort();
-            log::info!("[cli] The command line left, cancelling its compression");
+            log::info!("[{source}] Client disconnected, cancelling job {job_id}");
             drop_queue::cancel_cli_job(&app_handle, &job_id);
         }
     }
@@ -268,6 +584,205 @@ where
 
 fn error_message(code: &str, message: &str) -> serde_json::Value {
     json!({ "type": "error", "code": code, "message": message })
+}
+
+/// Asks the window that keeps the watched folders to change them, & sends its answer or the reason
+/// it could not (see `watch_folders_bridge`)
+async fn send_watched_folders_command<S>(
+    app_handle: &AppHandle,
+    writer: &Writer<S>,
+    command: WatchFolderCommand,
+    source: &str,
+    action: &str,
+) -> Result<(), ()>
+where
+    S: AsyncWrite + Send + 'static,
+{
+    match crate::sys::watch_folders_bridge::forward(app_handle, command).await {
+        Ok(result) if result["ok"].as_bool() == Some(true) => {
+            let mut message = result;
+            if let Some(object) = message.as_object_mut() {
+                object.remove("ok");
+                object.insert("type".to_string(), json!("watchedFolders"));
+            }
+            log::info!("[{source}] Watched folders command {action} succeeded");
+            send(writer, message).await
+        }
+        Ok(result) => {
+            let code = result["code"].as_str().unwrap_or("invalidRequest");
+            let text = result["message"]
+                .as_str()
+                .unwrap_or("CompressO could not change its watched folders.");
+            log::warn!("[{source}] Watched folders command {action} failed: {code} {text}");
+            send(writer, error_message(code, text)).await
+        }
+        Err(err) => {
+            log::warn!("[{source}] Watched folders command {action} failed: {err}");
+            send(writer, error_message("notReady", &err)).await
+        }
+    }
+}
+
+fn build_bridge_error(result: &serde_json::Value, fallback: &str) -> serde_json::Value {
+    let code = result["code"].as_str().unwrap_or("invalidRequest");
+    let text = result["message"].as_str().unwrap_or(fallback);
+    let mut err = error_message(code, text);
+    if let Some(errors) = result.get("errors").filter(|value| !value.is_null()) {
+        err["errors"] = errors.clone();
+    }
+    if let Some(warnings) = result.get("warnings").filter(|value| !value.is_null()) {
+        err["warnings"] = warnings.clone();
+    }
+    err
+}
+
+async fn send_presets_command<S>(
+    app_handle: &AppHandle,
+    writer: &Writer<S>,
+    command: PresetCommand,
+    source: &str,
+    action: &str,
+) -> Result<(), ()>
+where
+    S: AsyncWrite + Send + 'static,
+{
+    match crate::sys::presets_bridge::forward(app_handle, command).await {
+        Ok(result) if result["ok"].as_bool() == Some(true) => {
+            if let Some(folder) = result["preset"]["contract"]["output"]["folder"]
+                .as_str()
+                .filter(|folder| {
+                    result["preset"]["contract"]["output"]["saveTo"].as_str() == Some("folder")
+                        && !folder.is_empty()
+                })
+            {
+                allow_output_folder(app_handle, folder);
+            }
+            let mut message = result;
+            if let Some(object) = message.as_object_mut() {
+                object.remove("ok");
+                object.insert("type".to_string(), json!("presetResult"));
+            }
+            log::info!("[{source}] Preset command {action} succeeded");
+            send(writer, message).await
+        }
+        Ok(result) => {
+            let err = build_bridge_error(&result, "CompressO could not process the preset.");
+            log::warn!("[{source}] Preset command {action} failed: {err}");
+            send(writer, err).await
+        }
+        Err(err) => {
+            log::warn!("[{source}] Preset command {action} failed: {err}");
+            send(writer, error_message("notReady", &err)).await
+        }
+    }
+}
+
+/// Validates a one-shot contract through the frontend, checks any local asset paths, and scopes them
+async fn prepare_one_shot_contract<S>(
+    app_handle: &AppHandle,
+    writer: &Writer<S>,
+    expected_media_type: &str,
+    slot: &mut Option<serde_json::Value>,
+    has_cli_output_folder: bool,
+    source: &str,
+) -> Result<(), ()>
+where
+    S: AsyncWrite + Send + 'static,
+{
+    let Some(raw) = slot.take() else {
+        return Ok(());
+    };
+    let result = match crate::sys::presets_bridge::forward(
+        app_handle,
+        PresetCommand::ValidateContract {
+            contract: raw,
+            mode: Some("oneShot".to_string()),
+            require_name: Some(false),
+        },
+    )
+    .await
+    {
+        Ok(result) => result,
+        Err(err) => {
+            log::warn!("[{source}] Could not validate {expected_media_type} contract: {err}");
+            let _ = send(writer, error_message("notReady", &err)).await;
+            return Err(());
+        }
+    };
+    if result["ok"].as_bool() != Some(true) {
+        let err = build_bridge_error(&result, "Invalid CompressO JSON contract.");
+        log::warn!("[{source}] Rejected {expected_media_type} contract: {err}");
+        let _ = send(writer, err).await;
+        return Err(());
+    }
+    let normalized = result["contract"].clone();
+    if normalized["mediaType"].as_str() != Some(expected_media_type) {
+        let found = normalized["mediaType"].as_str().unwrap_or("unknown");
+        log::warn!(
+            "[{source}] Contract mediaType mismatch: expected {expected_media_type}, got {found}"
+        );
+        let _ = send(
+            writer,
+            error_message(
+                "mediaTypeMismatch",
+                &format!("Expected a {expected_media_type} contract, but got \"{found}\"."),
+            ),
+        )
+        .await;
+        return Err(());
+    }
+
+    // Verify and allow-list one-shot file paths (thumbnail, subtitles)
+    let mut asset_paths: Vec<String> = Vec::new();
+    if let Some(thumb) = normalized["settings"]["video"]["thumbnail"]
+        .as_str()
+        .filter(|path| !path.is_empty())
+    {
+        asset_paths.push(thumb.to_string());
+    }
+    if let Some(tracks) = normalized["settings"]["subtitles"]["tracks"].as_array() {
+        for track in tracks {
+            if let Some(path) = track["path"].as_str().filter(|path| !path.is_empty()) {
+                asset_paths.push(path.to_string());
+            }
+        }
+    }
+    for path in &asset_paths {
+        if !std::path::Path::new(path).is_file() {
+            log::warn!("[{source}] Contract asset file not found: {path}");
+            let _ = send(
+                writer,
+                error_message("missingInput", &format!("Contract file not found: {path}")),
+            )
+            .await;
+            return Err(());
+        }
+        use tauri_plugin_fs::FsExt;
+        if let Err(err) = app_handle.fs_scope().allow_file(path) {
+            log::warn!("[{source}] Could not add contract asset {path} to fs_scope: {err}");
+        }
+    }
+
+    if !has_cli_output_folder
+        && normalized["output"]["saveTo"].as_str() == Some("folder")
+    {
+        if let Some(folder) = normalized["output"]["folder"].as_str() {
+            if let Err(err) = std::fs::create_dir_all(folder) {
+                let message = format!("Could not create the output folder {}: {}", folder, err);
+                log::warn!("[{source}] {message}");
+                let _ = send(writer, error_message("outputFolder", &message)).await;
+                return Err(());
+            }
+            allow_output_folder(app_handle, folder);
+        }
+    }
+
+    log::info!(
+        "[{source}] Validated {expected_media_type} one-shot contract ({} asset paths)",
+        asset_paths.len()
+    );
+    *slot = Some(normalized);
+    Ok(())
 }
 
 fn hello_message(app_handle: &AppHandle) -> serde_json::Value {
@@ -338,12 +853,14 @@ async fn start_job<S>(
     writer: &Writer<S>,
     inputs: &[String],
     mut options: CliJob,
+    source: &'static str,
 ) -> Option<(String, tokio::task::JoinHandle<()>)>
 where
     S: AsyncWrite + Send + 'static,
 {
     if crate::sys::cli_settings::get().is_none() {
         let message = "The app is still starting. Try again in a moment.";
+        log::warn!("[{source}] Compress rejected: {message}");
         let _ = send(writer, error_message("notReady", message)).await;
         return None;
     }
@@ -351,15 +868,42 @@ where
         // Created if missing, & allowed for saving (see `move_file`)
         if let Err(err) = std::fs::create_dir_all(folder) {
             let message = format!("Could not create the output folder {}: {}", folder, err);
+            log::warn!("[{source}] {message}");
             let _ = send(writer, error_message("outputFolder", &message)).await;
             return None;
         }
         allow_output_folder(app_handle, folder);
     }
 
+    let has_cli_output_folder = options.output_folder.is_some();
+    for (expected_type, slot) in [
+        ("video", &mut options.contracts.video),
+        ("image", &mut options.contracts.image),
+        ("audio", &mut options.contracts.audio),
+    ] {
+        if prepare_one_shot_contract(
+            app_handle,
+            writer,
+            expected_type,
+            slot,
+            has_cli_output_folder,
+            source,
+        )
+        .await
+        .is_err()
+        {
+            return None;
+        }
+    }
+
     let expanded = expand(app_handle, inputs);
     if expanded.files.is_empty() {
         let message = "No supported media was found in the given files and folders.";
+        log::warn!(
+            "[{source}] No supported media found ({} unsupported, {} unreadable)",
+            expanded.unsupported.len(),
+            expanded.unreadable.len()
+        );
         let mut message = error_message("noMedia", message);
         message["files"] = expanded.to_message();
         let _ = send(writer, message).await;
@@ -368,6 +912,8 @@ where
 
     let job_id = nanoid::nanoid!();
     options.job_id = job_id.clone();
+    let cpu_threads_override = options.cpu_threads;
+    let hw_accel_override = options.use_hardware_acceleration;
     // Listening before the media is added, so no change is missed
     let receiver = drop_queue::subscribe();
     let media_types: HashMap<String, &'static str> = expanded
@@ -382,8 +928,11 @@ where
         .collect();
     let items = drop_queue::add_files_to_queue(app_handle, files, None, Some(options));
     log::info!(
-        "[cli] Compressing {} media from the command line",
-        items.len()
+        "[{source}] Compressing {} media (job {}, cpuThreads={:?}, hwAccel={:?})",
+        items.len(),
+        job_id,
+        cpu_threads_override,
+        hw_accel_override
     );
 
     let accepted = json!({
@@ -411,6 +960,8 @@ where
     let task = tokio::spawn(follow_job(
         app_handle.clone(),
         writer.clone(),
+        job_id.clone(),
+        source,
         ids,
         receiver,
     ));
@@ -427,6 +978,8 @@ fn allow_output_folder(app_handle: &AppHandle, folder: &str) {
 async fn follow_job<S>(
     app_handle: AppHandle,
     writer: Writer<S>,
+    job_id: String,
+    source: &'static str,
     ids: Vec<String>,
     mut receiver: tokio::sync::broadcast::Receiver<Vec<DropQueueItem>>,
 ) where
@@ -434,6 +987,9 @@ async fn follow_job<S>(
 {
     let mut progress: HashMap<String, i64> = HashMap::new();
     let mut finished: HashSet<String> = HashSet::new();
+    let mut done_count = 0usize;
+    let mut failed_count = 0usize;
+    let mut cancelled_count = 0usize;
     let mut is_paused = false;
     // The queue as it is now, then each change
     let mut items = Some(drop_queue::get_drop_queue(app_handle.clone()));
@@ -469,6 +1025,7 @@ async fn follow_job<S>(
                 // Removed from the queue by the user before it was compressed
                 None => {
                     finished.insert(id.clone());
+                    cancelled_count += 1;
                     json!({ "type": "file", "item": { "id": id, "status": "cancelled" } })
                 }
                 Some(item) => match item.status {
@@ -480,10 +1037,19 @@ async fn follow_job<S>(
                         }
                         json!({ "type": "progress", "id": id, "progress": percent })
                     }
-                    DropQueueItemStatus::Done
-                    | DropQueueItemStatus::Failed
-                    | DropQueueItemStatus::Cancelled => {
+                    DropQueueItemStatus::Done => {
                         finished.insert(id.clone());
+                        done_count += 1;
+                        json!({ "type": "file", "item": item })
+                    }
+                    DropQueueItemStatus::Failed => {
+                        finished.insert(id.clone());
+                        failed_count += 1;
+                        json!({ "type": "file", "item": item })
+                    }
+                    DropQueueItemStatus::Cancelled => {
+                        finished.insert(id.clone());
+                        cancelled_count += 1;
                         json!({ "type": "file", "item": item })
                     }
                 },
@@ -494,6 +1060,9 @@ async fn follow_job<S>(
         }
 
         if finished.len() == ids.len() {
+            log::info!(
+                "[{source}] Completed job {job_id}: {done_count} done, {failed_count} failed, {cancelled_count} cancelled"
+            );
             let _ = send(&writer, json!({ "type": "done" })).await;
             return;
         }

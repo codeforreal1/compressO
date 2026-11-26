@@ -78,6 +78,24 @@
         },
         "restart": "재시작"
       },
+      "performance": {
+        "title": "성능",
+        "hardwareAcceleration": {
+          "title": "하드웨어 가속 사용",
+          "description": "하드웨어 가속으로 비디오를 더 빠르게 압축합니다(파일이 약간 커질 수 있음)",
+          "unavailable": "이 컴퓨터에서는 하드웨어 가속을 사용할 수 없습니다."
+        },
+        "retryTargetSizeOnCpu": {
+          "title": "가속 없이 목표 크기에 맞추기",
+          "description": "\"목표 크기\"에만 적용됩니다. 동영상이 목표 크기에 맞지 않으면 하드웨어 가속 없이 다시 압축합니다. 더 느리지만 크기에 더 가깝습니다."
+        },
+        "cpuThreadLimit": {
+          "title": "최대 CPU 코어",
+          "description": "CPU에서 인코딩할 때 FFmpeg가 사용할 CPU 코어 수를 제한합니다. 기본적으로 모든 코어를 사용합니다.",
+          "all": "모두",
+          "cores_other": "{{count}}"
+        }
+      },
       "sleep": {
         "title": "잠자기",
         "preventSleep": {
@@ -127,8 +145,9 @@
       "empty_image": "아직 이미지 프리셋이 없습니다. 이미지의 설정을 조정한 다음 프리셋 메뉴 옆의 더하기 버튼을 선택하여 프리셋으로 저장하십시오.",
       "empty_audio": "아직 오디오 프리셋이 없습니다. 오디오 파일의 설정을 조정한 다음 프리셋 메뉴 옆의 더하기 버튼을 선택하여 프리셋으로 저장하십시오.",
       "mediaType": "미디어 유형",
-      "standardOutput": "저장 위치와 파일 이름 접두사는 [<setting>출력</setting>]에서 설정합니다.",
-      "cannotDeleteStandard": "표준 프리셋은 삭제할 수 없습니다."
+      "standardOutput": "저장 위치와 파일 이름 지정은 [<setting>출력</setting>]에서 설정합니다.",
+      "cannotDeleteStandard": "표준 프리셋은 삭제할 수 없습니다.",
+      "newFromContract": "계약에서 새로 만들기"
     },
     "dropZone": {
       "turnOnTrayIcon_macos": "드롭 영역은 메뉴 막대에 있습니다. 먼저 일반에서 '<setting>메뉴 막대 아이콘 표시</setting>'를 켜십시오.",
@@ -210,9 +229,10 @@
           "description_windows": "압축된 파일이 원본과 같은 폴더에 같은 이름으로 저장되면 원본은 휴지통으로 이동되고 압축된 파일만 남습니다."
         },
         "prefix": {
-          "title": "파일 이름 접두사",
-          "placeholder": "접두사 없음",
-          "description": "저장되는 파일 이름 앞에 추가되는 텍스트입니다. 원래 이름을 유지하려면 비워 두십시오."
+          "title": "파일 이름 지정",
+          "placeholder": "원래 이름 유지",
+          "description": "{name}, {date}, {time}, {preset} 같은 토큰을 사용하는 저장 파일 이름 템플릿입니다. 원래 이름을 유지하려면 비워 두십시오.",
+          "preview": "예: {{example}}"
         },
         "appliesTo": "이 설정은 표준 프리셋에만 적용됩니다."
       },
@@ -225,18 +245,6 @@
         "includeBatch": {
           "title": "일괄 출력 포함",
           "description": "여러 파일을 한 번에 압축할 때도 파일을 복사합니다."
-        }
-      },
-      "performance": {
-        "title": "성능",
-        "hardwareAcceleration": {
-          "title": "하드웨어 가속 사용",
-          "description": "하드웨어 가속으로 비디오를 더 빠르게 압축합니다(파일이 약간 커질 수 있음)",
-          "unavailable": "이 컴퓨터에서는 하드웨어 가속을 사용할 수 없습니다."
-        },
-        "retryTargetSizeOnCpu": {
-          "title": "가속 없이 목표 크기에 맞추기",
-          "description": "\"목표 크기\"에만 적용됩니다. 동영상이 목표 크기에 맞지 않으면 하드웨어 가속 없이 다시 압축합니다. 더 느리지만 크기에 더 가깝습니다."
         }
       },
       "storage": {
@@ -273,7 +281,7 @@
       "credits": "크레딧",
       "watchedFolders": "폴더 감시",
       "history": "기록",
-      "commandLine": "CLI"
+      "commandLine": "CLI 및 AI 에이전트"
     },
     "about": {
       "updateAvailable": "업데이트 사용 가능",
@@ -379,6 +387,7 @@
           "outputFile": "파일 하나를 이 이름으로 저장합니다. 확장자가 다르면 그 형식으로 변환합니다.",
           "audioOnly": "비디오의 소리만 오디오 파일로 남깁니다.",
           "flatten": "안의 폴더 없이 모든 파일을 폴더에 바로 저장합니다.",
+          "template": "이 명령에서만 템플릿({name}, {date}, {time}, {preset} 지원)으로 저장되는 파일 이름을 지정합니다.",
           "prefix": "이 명령에서만 저장되는 파일 이름 앞에 텍스트를 붙입니다.",
           "skipLarger": "원본보다 큰 출력은 저장하지 않습니다.",
           "replace": "출력의 이름과 형식이 같으면 원본을 대체합니다. 원본은 휴지통으로 이동합니다.",
@@ -389,7 +398,22 @@
           "json": "스크립트와 AI 에이전트를 위해 결과를 JSON으로 출력합니다.",
           "quiet": "오류만 출력합니다.",
           "list": "미디어 유형별 기본 프리셋과 함께 프리셋을 나열합니다.",
-          "help": "모든 옵션과 종료 코드를 표시합니다."
+          "help": "모든 옵션과 종료 코드를 표시합니다.",
+          "contractFile": "일회용 CompressO JSON 계약 파일로 미디어를 압축합니다(metadata.set, thumbnail, subtitles 지원).",
+          "contractStdin": "표준 입력에서 일회용 JSON 계약을 읽습니다.",
+          "contractSchema": "비디오, 이미지 또는 오디오 계약의 JSON 스키마를 출력합니다.",
+          "contractValidate": "미디어를 압축하거나 프리셋을 저장하지 않고 JSON 계약 파일을 검증합니다.",
+          "presetGet": "저장된 프리셋을 JSON 계약으로 내보냅니다.",
+          "presetCreate": "JSON 계약 파일에서 앱에 새 프리셋을 만듭니다.",
+          "presetUpdate": "일부 JSON 계약 필드로 기존 프리셋을 업데이트합니다.",
+          "cpuThreads": "이번 압축에만 CPU 스레드 수를 제한합니다(0은 사용 가능한 모든 스레드 사용).",
+          "capabilities": "앱 버전, 사용 가능한 CPU 스레드, 하드웨어 인코더, 도구 상태, 로그 경로를 표시합니다.",
+          "inspect": "압축하지 않고 해상도, 코덱, 스트림, 다이내믹 레인지, EXIF 메타데이터를 검사합니다.",
+          "cacheClear": "진행 중인 압축이나 열린 미디어가 없을 때 임시 캐시를 비웁니다.",
+          "history": "CompressO에 기록된 최근 압축 기록을 표시합니다(history clear로 초기화).",
+          "queue": "드롭/감시 대기열을 확인하거나 제어합니다(list, pause, resume, clear, cancel).",
+          "logs": "현재 로그 파일 경로와 최근 로그 줄을 표시합니다.",
+          "about": "CompressO 버전, 라이선스, 제작자, 웹사이트/변경 로그/GitHub 링크 및 오픈 소스 크레딧을 표시합니다."
         }
       },
       "agents": {
@@ -959,6 +983,12 @@
     "swapChannels": "왼쪽과 오른쪽 채널 바꾸기",
     "tracks": "트랙",
     "track": "트랙 #{{number}}",
+    "addTrack": "오디오 파일 추가",
+    "fileFilter": "오디오 파일",
+    "addTrackHint": "이 동영상에는 오디오가 없습니다. 오디오 파일을 추가하여 첨부하세요.",
+    "addedTrack": "추가된 오디오",
+    "addFailed": "오디오 파일을 추가할 수 없습니다",
+    "selectFile": "오디오 파일 선택",
     "channelCount_other": "{{count}}채널",
     "volumeLabel": "음량:",
     "volume": "오디오 음량",
@@ -1072,5 +1102,54 @@
     "videoBoostFormats": "HDR 부스트는 H.265, VP9 또는 AV1 코덱을 사용하는 MP4, MOV, MKV, WebM 및 TS 동영상에서만 사용할 수 있습니다.",
     "videoBoostLossless": "무손실 압축에서는 HDR 부스트를 사용할 수 없습니다.",
     "videoSdrOnly": "이 형식 또는 코덱은 HDR을 저장할 수 없으므로 동영상이 SDR로 변환됩니다."
+  },
+  "clips": {
+    "title": "클립",
+    "length": "클립 길이",
+    "minutes": "분",
+    "willCreate_one": "{{count}}개의 클립을 만듭니다",
+    "willCreate_other": "{{count}}개의 클립을 만듭니다",
+    "clipName": "클립 {{number}}",
+    "fromOriginal": "{{name}}의 클립",
+    "count_one": "클립 {{count}}개",
+    "count_other": "클립 {{count}}개",
+    "notAvailable": "GIF 또는 오디오 출력에서는 클립을 사용할 수 없습니다.",
+    "tooLong": "클립 길이는 동영상보다 짧아야 합니다 ({{duration}}).",
+    "invalidLength": "0보다 큰 클립 길이를 입력하세요.",
+    "durationUnknown": "동영상 길이를 아직 알 수 없습니다.",
+    "chooseFolder": "클립을 저장할 폴더 선택",
+    "batchTooLong": "하나 이상의 동영상이 클립 길이보다 짧습니다.",
+    "seconds": "초",
+    "switchUnit": "{{unit}}(으)로 전환",
+    "mode": "클립 분할 기준",
+    "modes": {
+      "time": "시간 기준 클립",
+      "count": "총 클립 수"
+    },
+    "countUnit": "개",
+    "invalidCount": "클립을 2개 이상 입력하세요.",
+    "tooMany": "클립이 너무 많습니다. 각 클립은 최소 1초여야 합니다.",
+    "eachClip": "각 {{duration}}",
+    "batchInvalid": "이 클립 설정으로 분할할 수 없는 동영상이 있습니다."
+  },
+  "contract": {
+    "exportTooltip": "JSON 계약 내보내기",
+    "saveFile": "계약을 .json으로 저장",
+    "copy": "계약 JSON 복사",
+    "saveType": "{{type}} 계약 저장 (.json)",
+    "copyType": "{{type}} 계약 JSON 복사",
+    "copied": "JSON 계약이 클립보드에 복사되었습니다.",
+    "copyFailed": "JSON 계약을 복사할 수 없습니다.",
+    "exported": "JSON 계약을 내보냈습니다.",
+    "exportFailed": "JSON 계약을 내보낼 수 없습니다.",
+    "import": {
+      "title": "JSON 계약으로 새 프리셋 만들기",
+      "loadFile": ".json 파일 불러오기",
+      "jsonLabel": "CompressO JSON 계약",
+      "validate": "검증",
+      "create": "프리셋 만들기",
+      "invalidJson": "잘못된 JSON: {{message}}",
+      "readFailed": "계약 파일을 읽을 수 없습니다."
+    }
   }
 }

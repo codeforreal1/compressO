@@ -78,7 +78,12 @@ export function setupUpdateListeners() {
       if (typeof payload === 'string') {
         const progressNum = Number.parseInt(payload, 10)
         if (!Number.isNaN(progressNum)) {
-          updateStore.installProgress = progressNum
+          const progress = Math.max(0, Math.min(100, progressNum))
+          // Progress can only move forward during a download, even if events arrive late or out
+          // of order; it is reset when a new download starts
+          updateStore.installProgress = updateStore.isInstalling
+            ? Math.max(updateStore.installProgress, progress)
+            : progress
         }
       }
     })

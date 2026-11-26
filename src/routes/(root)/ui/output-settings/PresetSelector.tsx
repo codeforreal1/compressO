@@ -198,6 +198,8 @@ function PresetSelector({ mediaType, mediaIndex }: PresetSelectorProps) {
     presetsStore.presets[index] = {
       ...createPresetFromConfig(targetConfig, storedPreset),
       output: storedPreset.output ?? null,
+      revision: (storedPreset.revision ?? 1) + 1,
+      updatedAt: new Date().toISOString(),
     }
     linkToPreset(storedPreset.id)
     toast.success(t('presets.updated', { name: storedPreset.name }))
@@ -210,6 +212,8 @@ function PresetSelector({ mediaType, mediaIndex }: PresetSelectorProps) {
     presetsStore.presets.push({
       ...createPresetFromConfig(targetConfig, { id, name }),
       output,
+      revision: 1,
+      updatedAt: new Date().toISOString(),
     })
     linkToPreset(id)
     setIsSaveModalOpen(false)

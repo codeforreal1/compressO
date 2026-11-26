@@ -1,5 +1,36 @@
 # Changelog
 
+### 4.3.0
+
+Features:
+
+- **CompressO JSON Contract (CLI, MCP & UI)**: Describe video, image, and audio compression settings with a typed, versioned JSON contract (`compresso contract schema <type>`, `compresso contract validate <file|->`). Create, inspect, merge-patch/replace, delete, and set default presets from the CLI (`compresso presets get|create|update|delete|default`) or MCP (`get_contract_schema`, `validate_contract`, `get_preset`, `create_preset`, `update_preset`, `delete_preset`, `set_default_preset`), or pass `--contract=<file|->` (`videoContract` / `imageContract` / `audioContract` in MCP `compress`) for one-shot compression of single files or batches (with optional one-shot-only `metadata.set`, `video.thumbnail`, and `subtitles`). Export any loaded media or batch configuration as a `.json` contract from Output / Batch Settings (with a toast button to show the saved file in Finder / File Explorer), copy/export any preset contract in Settings → Presets, and create presets directly with **New from contract**. Existing v1 presets migrate non-destructively while keeping legacy storage intact.
+- **Expanded CLI & MCP Parity**: Limit CPU encoding threads per job with `--cpu-threads=<n>` (`cpuThreads` in MCP `compress`), probe media (`compresso inspect` / `inspect_media`), check CPU/hardware-encoder/tool capabilities (`compresso capabilities` / `get_capabilities`), inspect/control the queue (`compresso queue` / `get_queue`, `manage_queue`), read or clear history (`compresso history` / `get_history`, `clear_history`), safely clear temporary cache when idle (`compresso cache clear` / `clear_cache`), read logs (`compresso logs` / `get_logs`), and view app version/links/credits (`compresso about` / `about`). All CLI and MCP calls and errors are logged with `[cli]` / `[mcp]` tags, and Settings → CLI & AI Agents → **View Examples** includes dividers and examples for all new commands.
+- **CLI & MCP watched folders**: List, add, update (enable/disable and choose the presets for videos, images and audio) and remove watched folders with `compresso watch ...`, or through the same tools in `compresso mcp`. Changes appear in Settings immediately, and new files in an enabled folder are compressed with its presets while CompressO runs. Removing a watched folder never deletes its files.
+- **Add Audio to Videos**: Attach audio files to a video from its Audio settings, including videos without sound. Added audio starts at the beginning of the video, is cut when longer than the video, and a shorter file leaves the rest of the video silent. Added tracks count as kept tracks, so the video's original tracks can be unselected.
+- **Clips**: Split a compressed video into a chosen number of equal clips, the default, or by their length in seconds or minutes with the Total clips / Timed clips switch. Each clip is cut from the finished output with a stream copy, so trim, speed, Target Size, HDR, audio, subtitles and a custom thumbnail are kept, and nothing is encoded again. Finished clips appear as batch-style cards with copy and show-in-folder actions, and double-clicking a card plays that clip in a read-only preview. The result shows the original video size and the total size of all clips. Clips settings can be saved in video presets. No clip can be shorter than 1 second, and the clip length must be shorter than the video.
+- **Maximum CPU cores**: Limit how many CPU cores FFmpeg uses when it encodes on the CPU, in Settings → General. All available cores are used by default, and hardware acceleration is not affected.
+- **File naming templates**: Format saved file names with prefixes, suffixes, and tokens (`{name}`, `{date}`, `{time}`, `{preset}`) in Settings → Output, in preset outputs, and via `--filename-template` / `filenameTemplate` in the CLI and MCP server. Leave empty to keep the original name. Existing prefix settings migrate automatically.
+
+Enhancements:
+
+- Double-clicking a video in a batch opens it: its settings before compression, like the pencil button, or its single-video preview once compressed.
+- The CLI settings section is now called **CLI & AI Agents**.
+- The **Clips** and **Custom Thumbnail** settings moved from the Video tab to the Others tab, keeping the Video tab focused on encoding and output.
+- Performance settings (hardware acceleration, the CPU core limit, and the target-size CPU fallback) moved from Settings → Output to Settings → General, above Sleep.
+- The maximum CPU cores slider now shows **All (14)** at the maximum and just the number for a limited value.
+- Video preset summaries now include the preset’s clip mode: **2 clips** for count-based clips, or **Timed clips** for time-based clips.
+- Portrait and vertical videos now preview at the correct size, centered in the player with the timeline and file details below them. The video also fills its frame in clip previews and before/after compares, and clip previews show the clip number with a copy button that matches the folder button.
+
+Bug Fixes:
+
+- Fixed watched folders added or changed through the CLI or MCP sometimes being added twice, or no longer receiving new files after a duplicate was removed. The command bridge now asks one window for the whole change, and the watcher keeps a single watch per folder path when the same folder is sent again.
+- Fixed the update download percentage jumping back and forth. Progress now moves forward only, is emitted once per percentage point instead of for every downloaded chunk, and only one update can be downloaded at a time.
+- Fixed videos with embedded cover art failing to preview, compress, trim, or convert to GIF with **No output**. Some MP4s, such as those from X/Twitter, carry a 0×0 attached picture as the first video stream; CompressO now selects the actual video stream instead of the cover art.
+- Fixed clips from a preset being ignored by the drop zone and watched folders: the preset did split the video, but only the first clip was saved. Every clip is now saved, counted in the queue, recorded in History, and cleaned up when its item is cleared.
+- Fixed **Replace original files** not replacing the original when converting to a different format. Originals are now matched by folder and file name without the extension, and Reconfigure and queue retry stay disabled when the original was moved to the Trash.
+- Fixed file sizes on Windows appearing larger than in Windows Explorer. Sizes in the app and CLI now use 1024-based units on Windows to match Explorer, while keeping 1000-based units on macOS and Linux.
+
 ### 4.2.0
 
 Bug Fixes:

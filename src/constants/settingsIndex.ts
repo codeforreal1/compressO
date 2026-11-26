@@ -186,17 +186,24 @@ export const SETTINGS_INDEX = {
     ],
   },
   hardwareAcceleration: {
-    page: 'output',
+    page: 'general',
     getText: (t) => [
-      t('settings.output.performance.hardwareAcceleration.title'),
-      t('settings.output.performance.hardwareAcceleration.description'),
+      t('settings.general.performance.hardwareAcceleration.title'),
+      t('settings.general.performance.hardwareAcceleration.description'),
     ],
   },
   retryTargetSizeOnCpu: {
-    page: 'output',
+    page: 'general',
     getText: (t) => [
-      t('settings.output.performance.retryTargetSizeOnCpu.title'),
-      t('settings.output.performance.retryTargetSizeOnCpu.description'),
+      t('settings.general.performance.retryTargetSizeOnCpu.title'),
+      t('settings.general.performance.retryTargetSizeOnCpu.description'),
+    ],
+  },
+  cpuThreadLimit: {
+    page: 'general',
+    getText: (t) => [
+      t('settings.general.performance.cpuThreadLimit.title'),
+      t('settings.general.performance.cpuThreadLimit.description'),
     ],
   },
   clearCache: {

@@ -78,6 +78,24 @@
         },
         "restart": "Mulai ulang"
       },
+      "performance": {
+        "title": "Performa",
+        "hardwareAcceleration": {
+          "title": "Gunakan akselerasi perangkat keras",
+          "description": "Kompresi video lebih cepat dengan akselerasi perangkat keras (ukuran file dapat sedikit lebih besar)",
+          "unavailable": "Akselerasi perangkat keras tidak tersedia di komputer ini."
+        },
+        "retryTargetSizeOnCpu": {
+          "title": "Capai ukuran target tanpa akselerasi",
+          "description": "Hanya berlaku untuk \"Ukuran target\". Jika video tidak mencapai ukuran targetnya, video dikompres ulang tanpa akselerasi perangkat keras, yang lebih lambat tetapi lebih mendekati ukurannya."
+        },
+        "cpuThreadLimit": {
+          "title": "Inti CPU maksimum",
+          "description": "Membatasi berapa banyak inti CPU yang digunakan FFmpeg saat mengodekan di CPU. Semua inti digunakan secara default.",
+          "all": "Semua",
+          "cores_other": "{{count}}"
+        }
+      },
       "sleep": {
         "title": "Tidur",
         "preventSleep": {
@@ -127,8 +145,9 @@
       "empty_image": "Belum ada preset gambar. Sesuaikan pengaturan sebuah gambar, lalu pilih tombol plus di samping menu Preset untuk menyimpannya sebagai preset.",
       "empty_audio": "Belum ada preset audio. Sesuaikan pengaturan sebuah file audio, lalu pilih tombol plus di samping menu Preset untuk menyimpannya sebagai preset.",
       "mediaType": "Jenis media",
-      "standardOutput": "Lokasi penyimpanan dan awalan nama filenya diatur di <setting>Keluaran</setting>.",
-      "cannotDeleteStandard": "Preset Standar tidak dapat dihapus."
+      "standardOutput": "Lokasi penyimpanan dan penamaan filenya diatur di <setting>Keluaran</setting>.",
+      "cannotDeleteStandard": "Preset Standar tidak dapat dihapus.",
+      "newFromContract": "Baru dari kontrak"
     },
     "dropZone": {
       "turnOnTrayIcon_macos": "Zona taruh berada di bar menu. Aktifkan terlebih dahulu “<setting>Tampilkan ikon bar menu</setting>” di Umum.",
@@ -210,9 +229,10 @@
           "description_windows": "Jika file terkompresi disimpan dengan nama yang sama di folder yang sama dengan file aslinya, file asli dipindahkan ke Recycle Bin dan hanya file terkompresi yang disimpan."
         },
         "prefix": {
-          "title": "Awalan nama file",
-          "placeholder": "Tanpa awalan",
-          "description": "Teks yang ditambahkan di awal nama file yang disimpan. Biarkan kosong untuk mempertahankan nama asli."
+          "title": "Penamaan file",
+          "placeholder": "Pertahankan nama asli",
+          "description": "Templat untuk nama file yang disimpan menggunakan token seperti {name}, {date}, {time}, atau {preset}. Biarkan kosong untuk mempertahankan nama asli.",
+          "preview": "Contoh: {{example}}"
         },
         "appliesTo": "Berlaku hanya untuk preset Standar."
       },
@@ -225,18 +245,6 @@
         "includeBatch": {
           "title": "Sertakan output batch",
           "description": "Salin juga file saat beberapa file dikompresi sekaligus."
-        }
-      },
-      "performance": {
-        "title": "Performa",
-        "hardwareAcceleration": {
-          "title": "Gunakan akselerasi perangkat keras",
-          "description": "Kompresi video lebih cepat dengan akselerasi perangkat keras (ukuran file dapat sedikit lebih besar)",
-          "unavailable": "Akselerasi perangkat keras tidak tersedia di komputer ini."
-        },
-        "retryTargetSizeOnCpu": {
-          "title": "Capai ukuran target tanpa akselerasi",
-          "description": "Hanya berlaku untuk \"Ukuran target\". Jika video tidak mencapai ukuran targetnya, video dikompres ulang tanpa akselerasi perangkat keras, yang lebih lambat tetapi lebih mendekati ukurannya."
         }
       },
       "storage": {
@@ -273,7 +281,7 @@
       "credits": "Kredit",
       "watchedFolders": "Pantau folder",
       "history": "Riwayat",
-      "commandLine": "CLI"
+      "commandLine": "CLI & Agen AI"
     },
     "about": {
       "updateAvailable": "Pembaruan tersedia",
@@ -379,6 +387,7 @@
           "outputFile": "Simpan satu file dengan nama ini. Ekstensi yang berbeda mengonversinya ke format tersebut.",
           "audioOnly": "Simpan hanya suara dari video sebagai file audio.",
           "flatten": "Simpan setiap file langsung ke folder, tanpa folder di dalamnya.",
+          "template": "Beri nama file yang disimpan menggunakan templat (mendukung {name}, {date}, {time}, dan {preset}), hanya untuk perintah ini.",
           "prefix": "Tambahkan teks di awal nama file yang disimpan, hanya untuk perintah ini.",
           "skipLarger": "Jangan simpan hasil yang lebih besar dari aslinya.",
           "replace": "Ganti file asli jika hasilnya memiliki nama dan format yang sama. File asli dipindahkan ke Sampah.",
@@ -389,7 +398,22 @@
           "json": "Cetak hasil dalam JSON, untuk skrip dan agen AI.",
           "quiet": "Cetak kesalahan saja.",
           "list": "Tampilkan daftar preset Anda, beserta preset default setiap jenis media.",
-          "help": "Tampilkan semua opsi dan kode keluar."
+          "help": "Tampilkan semua opsi dan kode keluar.",
+          "contractFile": "Kompres media menggunakan file kontrak JSON CompressO sekali pakai (mendukung metadata.set, thumbnail, dan subtitles).",
+          "contractStdin": "Baca kontrak JSON sekali pakai dari input standar.",
+          "contractSchema": "Tampilkan Skema JSON untuk kontrak video, gambar, atau audio.",
+          "contractValidate": "Validasi file kontrak JSON tanpa mengompres media atau menyimpan preset.",
+          "presetGet": "Ekspor preset tersimpan sebagai kontrak JSON.",
+          "presetCreate": "Buat preset baru di aplikasi dari file kontrak JSON.",
+          "presetUpdate": "Perbarui sebagian preset yang ada menggunakan bidang kontrak JSON parsial.",
+          "cpuThreads": "Batasi thread CPU hanya untuk kompresi ini (0 memakai semua thread yang tersedia).",
+          "capabilities": "Tampilkan versi aplikasi, thread CPU tersedia, encoder perangkat keras, alat, dan path log.",
+          "inspect": "Periksa dimensi, codec, stream, rentang dinamis, dan metadata EXIF tanpa mengompres.",
+          "cacheClear": "Bersihkan cache sementara saat tidak ada kompresi atau media terbuka yang aktif.",
+          "history": "Tampilkan riwayat kompresi terbaru CompressO (gunakan history clear untuk menghapus).",
+          "queue": "Periksa atau kendalikan antrean kompresi (list, pause, resume, clear, cancel).",
+          "logs": "Tampilkan path file log saat ini dan baris log terbaru.",
+          "about": "Tampilkan versi CompressO, lisensi, pembuat, tautan situs/changelog/GitHub, dan kredit alat sumber terbuka."
         }
       },
       "agents": {
@@ -959,6 +983,12 @@
     "swapChannels": "Tukar saluran kiri dan kanan",
     "tracks": "Trek",
     "track": "Trek #{{number}}",
+    "addTrack": "Tambah file audio",
+    "fileFilter": "File audio",
+    "addTrackHint": "Video ini tidak memiliki audio. Tambahkan file audio untuk melampirkan audio.",
+    "addedTrack": "Audio ditambahkan",
+    "addFailed": "Tidak dapat menambahkan file audio",
+    "selectFile": "Pilih file audio",
     "channelCount_other": "{{count}} saluran",
     "volumeLabel": "Volume:",
     "volume": "Volume Audio",
@@ -1072,5 +1102,54 @@
     "videoBoostFormats": "Peningkatan HDR hanya tersedia untuk video MP4, MOV, MKV, WebM, dan TS yang menggunakan codec H.265, VP9, atau AV1.",
     "videoBoostLossless": "Peningkatan HDR tidak tersedia dengan kompresi lossless.",
     "videoSdrOnly": "Format atau codec ini tidak dapat menyimpan HDR, sehingga video akan dikonversi ke SDR."
+  },
+  "clips": {
+    "title": "Klip",
+    "length": "Durasi klip",
+    "minutes": "mnt",
+    "willCreate_one": "Akan membuat {{count}} klip",
+    "willCreate_other": "Akan membuat {{count}} klip",
+    "clipName": "Klip {{number}}",
+    "fromOriginal": "Klip dari {{name}}",
+    "count_one": "{{count}} klip",
+    "count_other": "{{count}} klip",
+    "notAvailable": "Klip tidak tersedia untuk output GIF atau audio.",
+    "tooLong": "Durasi klip harus lebih pendek dari video ({{duration}}).",
+    "invalidLength": "Masukkan durasi klip di atas 0.",
+    "durationUnknown": "Durasi video belum diketahui.",
+    "chooseFolder": "Pilih folder untuk klip",
+    "batchTooLong": "Satu atau beberapa video lebih pendek dari durasi klip.",
+    "seconds": "dtk",
+    "switchUnit": "Beralih ke {{unit}}",
+    "mode": "Bagi klip berdasarkan",
+    "modes": {
+      "time": "Klip berdurasi",
+      "count": "Total klip"
+    },
+    "countUnit": "klip",
+    "invalidCount": "Masukkan minimal 2 klip.",
+    "tooMany": "Terlalu banyak klip. Setiap klip harus minimal 1 detik.",
+    "eachClip": "{{duration}} per klip",
+    "batchInvalid": "Beberapa video tidak dapat dibagi dengan pengaturan klip ini."
+  },
+  "contract": {
+    "exportTooltip": "Ekspor kontrak JSON",
+    "saveFile": "Simpan kontrak sebagai .json",
+    "copy": "Salin JSON kontrak",
+    "saveType": "Simpan kontrak {{type}} (.json)",
+    "copyType": "Salin JSON kontrak {{type}}",
+    "copied": "Kontrak JSON disalin ke papan klip.",
+    "copyFailed": "Tidak dapat menyalin kontrak JSON.",
+    "exported": "Kontrak JSON diekspor.",
+    "exportFailed": "Tidak dapat mengekspor kontrak JSON.",
+    "import": {
+      "title": "Preset baru dari kontrak JSON",
+      "loadFile": "Muat file .json",
+      "jsonLabel": "Kontrak JSON CompressO",
+      "validate": "Validasi",
+      "create": "Buat preset",
+      "invalidJson": "JSON tidak valid: {{message}}",
+      "readFailed": "Tidak dapat membaca file kontrak."
+    }
   }
 }

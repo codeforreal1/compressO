@@ -78,6 +78,25 @@
         },
         "restart": "Neu starten"
       },
+      "performance": {
+        "title": "Leistung",
+        "hardwareAcceleration": {
+          "title": "Hardwarebeschleunigung verwenden",
+          "description": "Videos mit Hardwarebeschleunigung schneller komprimieren (Dateien können etwas größer sein)",
+          "unavailable": "Hardwarebeschleunigung ist auf diesem Computer nicht verfügbar."
+        },
+        "retryTargetSizeOnCpu": {
+          "title": "Zielgrößen ohne Beschleunigung erreichen",
+          "description": "Gilt nur für „Zielgröße“. Wenn ein Video seine Zielgröße verfehlt, wird es ohne Hardwarebeschleunigung erneut komprimiert. Das ist langsamer, trifft die Größe aber genauer."
+        },
+        "cpuThreadLimit": {
+          "title": "Maximale CPU-Kerne",
+          "description": "Begrenzt, wie viele CPU-Kerne FFmpeg bei der Codierung auf der CPU verwendet. Standardmäßig werden alle Kerne verwendet.",
+          "all": "Alle",
+          "cores_one": "{{count}}",
+          "cores_other": "{{count}}"
+        }
+      },
       "sleep": {
         "title": "Ruhezustand",
         "preventSleep": {
@@ -127,8 +146,9 @@
       "empty_image": "Es gibt noch keine Bild-Voreinstellungen. Passen Sie die Einstellungen eines Bildes an und wählen Sie die Plus-Schaltfläche neben dem Menü „Voreinstellung“, um sie als Voreinstellung zu speichern.",
       "empty_audio": "Es gibt noch keine Audio-Voreinstellungen. Passen Sie die Einstellungen einer Audiodatei an und wählen Sie die Plus-Schaltfläche neben dem Menü „Voreinstellung“, um sie als Voreinstellung zu speichern.",
       "mediaType": "Medientyp",
-      "standardOutput": "Speicherort und Dateinamenpräfix werden unter „<setting>Ausgabe</setting>“ festgelegt.",
-      "cannotDeleteStandard": "Die Standard-Voreinstellung kann nicht gelöscht werden."
+      "standardOutput": "Speicherort und Dateibenennung werden unter „<setting>Ausgabe</setting>“ festgelegt.",
+      "cannotDeleteStandard": "Die Standard-Voreinstellung kann nicht gelöscht werden.",
+      "newFromContract": "Neu aus Vertrag"
     },
     "dropZone": {
       "turnOnTrayIcon_macos": "Die Ablagezone befindet sich in der Menüleiste. Aktivieren Sie zuerst „<setting>Symbol in der Menüleiste anzeigen</setting>“ unter „Allgemein“.",
@@ -210,9 +230,10 @@
           "description_windows": "Wird eine komprimierte Datei mit demselben Namen im selben Ordner wie das Original gespeichert, wird das Original in den Papierkorb verschoben und nur die komprimierte Datei behalten."
         },
         "prefix": {
-          "title": "Dateinamenpräfix",
-          "placeholder": "Kein Präfix",
-          "description": "Text, der am Anfang gespeicherter Dateinamen eingefügt wird. Leer lassen, um die ursprünglichen Namen beizubehalten."
+          "title": "Dateibenennung",
+          "placeholder": "Originalnamen behalten",
+          "description": "Vorlage für gespeicherte Dateinamen mit Platzhaltern wie {name}, {date}, {time} oder {preset}. Leer lassen, um die ursprünglichen Namen beizubehalten.",
+          "preview": "Beispiel: {{example}}"
         },
         "appliesTo": "Gilt nur für die Standard-Voreinstellung."
       },
@@ -225,18 +246,6 @@
         "includeBatch": {
           "title": "Stapelausgaben einbeziehen",
           "description": "Die Dateien auch kopieren, wenn mehrere gleichzeitig komprimiert werden."
-        }
-      },
-      "performance": {
-        "title": "Leistung",
-        "hardwareAcceleration": {
-          "title": "Hardwarebeschleunigung verwenden",
-          "description": "Videos mit Hardwarebeschleunigung schneller komprimieren (Dateien können etwas größer sein)",
-          "unavailable": "Hardwarebeschleunigung ist auf diesem Computer nicht verfügbar."
-        },
-        "retryTargetSizeOnCpu": {
-          "title": "Zielgrößen ohne Beschleunigung erreichen",
-          "description": "Gilt nur für „Zielgröße“. Wenn ein Video seine Zielgröße verfehlt, wird es ohne Hardwarebeschleunigung erneut komprimiert. Das ist langsamer, trifft die Größe aber genauer."
         }
       },
       "storage": {
@@ -273,7 +282,7 @@
       "credits": "Danksagungen",
       "watchedFolders": "Ordnerüberwachung",
       "history": "Verlauf",
-      "commandLine": "CLI"
+      "commandLine": "CLI & KI-Agenten"
     },
     "about": {
       "updateAvailable": "Update verfügbar",
@@ -379,6 +388,7 @@
           "outputFile": "Eine einzelne Datei unter diesem Namen speichern. Eine andere Dateiendung wandelt sie in dieses Format um.",
           "audioOnly": "Nur den Ton eines Videos als Audiodatei behalten.",
           "flatten": "Jede Datei direkt in den Ordner speichern, ohne die Ordner darin.",
+          "template": "Gespeicherte Dateien über eine Vorlage benennen (unterstützt {name}, {date}, {time} und {preset}), nur für diesen Befehl.",
           "prefix": "Text an den Anfang der gespeicherten Dateinamen setzen, nur für diesen Befehl.",
           "skipLarger": "Ausgaben, die größer als ihre Originale sind, nicht speichern.",
           "replace": "Das Original ersetzen, wenn die Ausgabe denselben Namen und dasselbe Format hat. Das Original wird in den Papierkorb verschoben.",
@@ -389,7 +399,22 @@
           "json": "Die Ergebnisse als JSON ausgeben, für Skripte und KI-Agenten.",
           "quiet": "Nur Fehler ausgeben.",
           "list": "Ihre Voreinstellungen auflisten, mit der Standard-Voreinstellung jedes Medientyps.",
-          "help": "Alle Optionen und die Exit-Codes anzeigen."
+          "help": "Alle Optionen und die Exit-Codes anzeigen.",
+          "contractFile": "Medien mit einer einmaligen CompressO-JSON-Contract-Datei komprimieren (unterstützt metadata.set, thumbnail und subtitles).",
+          "contractStdin": "Einen einmaligen JSON-Contract von der Standardeingabe lesen.",
+          "contractSchema": "Das JSON-Schema für Video-, Bild- oder Audio-Contracts ausgeben.",
+          "contractValidate": "Eine JSON-Contract-Datei prüfen, ohne Medien zu komprimieren oder ein Preset zu speichern.",
+          "presetGet": "Ein gespeichertes Preset als JSON-Contract exportieren.",
+          "presetCreate": "Ein neues Preset in der App aus einer JSON-Contract-Datei erstellen.",
+          "presetUpdate": "Ein vorhandenes Preset mit teilweisen JSON-Contract-Feldern aktualisieren.",
+          "cpuThreads": "CPU-Encoding-Threads nur für diese Komprimierung begrenzen (0 nutzt alle verfügbaren Threads).",
+          "capabilities": "App-Version, verfügbare CPU-Threads, Hardware-Encoder, Tools und Log-Pfad anzeigen.",
+          "inspect": "Abmessungen, Codecs, Streams, Dynamikumfang und EXIF-Metadaten ohne Komprimierung prüfen.",
+          "cacheClear": "Temporäre Cache-Dateien löschen, wenn keine Komprimierung oder Medien geöffnet sind.",
+          "history": "Zuletzt von CompressO erfasste Komprimierungen auflisten (history clear zum Zurücksetzen).",
+          "queue": "Drop-/Überwachungs-Warteschlange prüfen oder steuern (list, pause, resume, clear, cancel).",
+          "logs": "Aktuellen Log-Dateipfad und die letzten Log-Zeilen anzeigen.",
+          "about": "CompressO-Version, Lizenz, Autor, Website-/Changelog-/GitHub-Links und Open-Source-Credits anzeigen."
         }
       },
       "agents": {
@@ -973,6 +998,12 @@
     "swapChannels": "Linken und rechten Kanal tauschen",
     "tracks": "Spuren",
     "track": "Spur {{number}}",
+    "addTrack": "Audiodatei hinzufügen",
+    "fileFilter": "Audiodateien",
+    "addTrackHint": "Dieses Video hat kein Audio. Füge eine Audiodatei hinzu, um eine anzuhängen.",
+    "addedTrack": "Hinzugefügtes Audio",
+    "addFailed": "Die Audiodatei konnte nicht hinzugefügt werden",
+    "selectFile": "Audiodatei auswählen",
     "channelCount_one": "{{count}} Kanal",
     "channelCount_other": "{{count}} Kanäle",
     "volumeLabel": "Lautstärke:",
@@ -1087,5 +1118,54 @@
     "videoBoostFormats": "HDR-Verstärkung ist nur für MP4-, MOV-, MKV-, WebM- und TS-Videos mit dem Codec H.265, VP9 oder AV1 verfügbar.",
     "videoBoostLossless": "HDR-Verstärkung ist bei verlustfreier Komprimierung nicht verfügbar.",
     "videoSdrOnly": "Dieses Format oder dieser Codec kann kein HDR speichern, daher wird das Video in SDR umgewandelt."
+  },
+  "clips": {
+    "title": "Clips",
+    "length": "Clip-Länge",
+    "minutes": "Min.",
+    "willCreate_one": "Erstellt {{count}} Clip",
+    "willCreate_other": "Erstellt {{count}} Clips",
+    "clipName": "Clip {{number}}",
+    "fromOriginal": "Clips aus {{name}}",
+    "count_one": "{{count}} Clip",
+    "count_other": "{{count}} Clips",
+    "notAvailable": "Clips sind für GIF- oder Audioausgaben nicht verfügbar.",
+    "tooLong": "Die Clip-Länge muss kürzer als das Video sein ({{duration}}).",
+    "invalidLength": "Gib eine Clip-Länge über 0 ein.",
+    "durationUnknown": "Die Dauer des Videos ist noch nicht bekannt.",
+    "chooseFolder": "Ordner für die Clips auswählen",
+    "batchTooLong": "Mindestens ein Video ist kürzer als die Clip-Länge.",
+    "seconds": "Sek.",
+    "switchUnit": "Zu {{unit}} wechseln",
+    "mode": "Clips aufteilen nach",
+    "modes": {
+      "time": "Zeitclips",
+      "count": "Gesamtanzahl Clips"
+    },
+    "countUnit": "Clips",
+    "invalidCount": "Mindestens 2 Clips eingeben.",
+    "tooMany": "Zu viele Clips. Jeder Clip muss mindestens 1 Sekunde lang sein.",
+    "eachClip": "je {{duration}}",
+    "batchInvalid": "Einige Videos können mit diesen Clip-Einstellungen nicht aufgeteilt werden."
+  },
+  "contract": {
+    "exportTooltip": "JSON-Vertrag exportieren",
+    "saveFile": "Vertrag als .json speichern",
+    "copy": "Vertrags-JSON kopieren",
+    "saveType": "{{type}}-Vertrag speichern (.json)",
+    "copyType": "{{type}}-Vertrags-JSON kopieren",
+    "copied": "JSON-Vertrag in die Zwischenablage kopiert.",
+    "copyFailed": "JSON-Vertrag konnte nicht kopiert werden.",
+    "exported": "JSON-Vertrag exportiert.",
+    "exportFailed": "JSON-Vertrag konnte nicht exportiert werden.",
+    "import": {
+      "title": "Neue Vorgabe aus JSON-Vertrag",
+      "loadFile": ".json-Datei laden",
+      "jsonLabel": "CompressO-JSON-Vertrag",
+      "validate": "Prüfen",
+      "create": "Vorgabe erstellen",
+      "invalidJson": "Ungültiges JSON: {{message}}",
+      "readFailed": "Vertragsdatei konnte nicht gelesen werden."
+    }
   }
 }

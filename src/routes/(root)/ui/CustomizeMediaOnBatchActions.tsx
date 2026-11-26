@@ -8,6 +8,7 @@ import { snapshot, useSnapshot } from 'valtio'
 
 import { zoomInTransition } from '@/utils/animation'
 import { isOverlayOpen, isTextEntryElement } from '@/utils/keyboard'
+import PreviewClips from './PreviewClips'
 import PreviewSingleVideo from './PreviewSingleMedia'
 import {
   appProxy,
@@ -22,8 +23,15 @@ function CustomizeMediaOnBatchActions() {
       selectedMediaIndexForCustomization,
       isProcessCompleted,
       showMediaInfo,
+      media,
     },
   } = useSnapshot(appProxy)
+
+  const selectedMedia = media[selectedMediaIndexForCustomization]
+  const showsClips =
+    selectedMedia?.type === 'video' &&
+    isProcessCompleted &&
+    (selectedMedia.compressedFile?.clips?.length ?? 0) > 0
 
   const handleApplyVideoConfig = useCallback(() => {
     const selectedMediaIndexForCustomization =
@@ -170,12 +178,12 @@ function CustomizeMediaOnBatchActions() {
         className="w-full h-full flex flex-col justify-center items-center"
         {...zoomInTransition}
       >
-        <PreviewSingleVideo
-          mediaIndex={selectedMediaIndexForCustomization}
-          headerEnd={
-            // The full media info covers the media with its own close button in this corner
-            !showMediaInfo ? (
-              isProcessCompleted ? (
+        {showsClips ? (
+          <PreviewClips
+            mediaIndex={selectedMediaIndexForCustomization}
+            showExit={false}
+            headerEnd={
+              !showMediaInfo ? (
                 <Button
                   size="sm"
                   onPress={() => {
@@ -187,32 +195,54 @@ function CustomizeMediaOnBatchActions() {
                 >
                   {t('common.close')}
                 </Button>
-              ) : (
-                <>
+              ) : null
+            }
+          />
+        ) : (
+          <PreviewSingleVideo
+            mediaIndex={selectedMediaIndexForCustomization}
+            headerEnd={
+              // The full media info covers the media with its own close button in this corner
+              !showMediaInfo ? (
+                isProcessCompleted ? (
                   <Button
                     size="sm"
-                    onPress={handleResetMediaConfig}
-                    color="danger"
+                    onPress={() => {
+                      appProxy.state.selectedMediaIndexForCustomization = -1
+                    }}
                     variant="flat"
                     radius="md"
                     className="h-7"
                   >
-                    {t('common.reset')}
+                    {t('common.close')}
                   </Button>
-                  <Button
-                    size="sm"
-                    variant="flat"
-                    radius="md"
-                    onPress={handleApplyVideoConfig}
-                    className="h-7"
-                  >
-                    {t('common.apply')}
-                  </Button>
-                </>
-              )
-            ) : null
-          }
-        />
+                ) : (
+                  <>
+                    <Button
+                      size="sm"
+                      onPress={handleResetMediaConfig}
+                      color="danger"
+                      variant="flat"
+                      radius="md"
+                      className="h-7"
+                    >
+                      {t('common.reset')}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="flat"
+                      radius="md"
+                      onPress={handleApplyVideoConfig}
+                      className="h-7"
+                    >
+                      {t('common.apply')}
+                    </Button>
+                  </>
+                )
+              ) : null
+            }
+          />
+        )}
       </motion.div>
     </div>
   )

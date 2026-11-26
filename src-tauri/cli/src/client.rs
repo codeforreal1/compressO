@@ -1,4 +1,5 @@
 //! A connection to the app: one JSON message per line (see `cli_server.rs` in the app)
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::{Duration, Instant};
 
 use serde_json::{json, Value};
@@ -8,7 +9,33 @@ use crate::app::{self, Stream};
 use crate::error::CliError;
 
 /// The messages this command line speaks (the app's `PROTOCOL_VERSION`)
-const PROTOCOL_VERSION: u64 = 1;
+const PROTOCOL_VERSION: u64 = 3;
+
+static IS_MCP: AtomicBool = AtomicBool::new(false);
+
+pub fn set_mcp_mode() {
+    IS_MCP.store(true, Ordering::SeqCst);
+}
+
+fn client_name() -> &'static str {
+    if IS_MCP.load(Ordering::SeqCst) {
+        "mcp"
+    } else {
+        "cli"
+    }
+}
+
+/// Forwards a diagnostic log line to the running app's log file without starting the app if closed
+pub async fn log_if_running(level: &str, message: &str) {
+    let Some(mut stream) = app::connect().await else {
+        return;
+    };
+    let hello = json!({ "type": "hello", "client": client_name() }).to_string();
+    let entry = json!({ "type": "log", "level": level, "message": message }).to_string();
+    let payload = format!("{hello}\n{entry}\n");
+    let _ = stream.write_all(payload.as_bytes()).await;
+    let _ = stream.flush().await;
+}
 
 /// What happens while the app is reached, to tell the user
 pub enum StartupStatus {
@@ -44,7 +71,9 @@ impl Connection {
         let mut is_preparing = false;
         let mut ready_since: Option<Instant> = None;
         loop {
-            let hello = self.request(json!({ "type": "hello" })).await?;
+            let hello = self
+                .request(json!({ "type": "hello", "client": client_name() }))
+                .await?;
             if hello["protocol"].as_u64() != Some(PROTOCOL_VERSION) {
                 return Err(CliError::app(
                     "The running CompressO app is a different version. Quit CompressO, then try again.",
@@ -126,6 +155,43 @@ pub fn app_error(message: &Value) -> CliError {
     match message["code"].as_str() {
         Some("noMedia") => CliError::new(crate::error::exit_code::USAGE, "noMedia", text),
         Some("outputFolder") => CliError::new(crate::error::exit_code::USAGE, "outputFolder", text),
+        Some("unknownPreset") => {
+            CliError::new(crate::error::exit_code::USAGE, "unknownPreset", text)
+        }
+        Some("ambiguousPreset") => {
+            CliError::new(crate::error::exit_code::USAGE, "ambiguousPreset", text)
+        }
+        Some("presetExists") => {
+            CliError::new(crate::error::exit_code::USAGE, "presetExists", text)
+        }
+        Some("standardPresetReadOnly") => CliError::new(
+            crate::error::exit_code::USAGE,
+            "standardPresetReadOnly",
+            text,
+        ),
+        Some("mediaTypeMismatch") => {
+            CliError::new(crate::error::exit_code::USAGE, "mediaTypeMismatch", text)
+        }
+        Some("revisionConflict") => {
+            CliError::new(crate::error::exit_code::USAGE, "revisionConflict", text)
+        }
+        Some("invalidContract") => {
+            CliError::new(crate::error::exit_code::USAGE, "invalidContract", text)
+        }
+        Some("missingInput") => {
+            CliError::new(crate::error::exit_code::USAGE, "missingInput", text)
+        }
+        Some("unknownWatchedFolder") => {
+            CliError::new(crate::error::exit_code::USAGE, "unknownWatchedFolder", text)
+        }
+        Some("missingFolder") => {
+            CliError::new(crate::error::exit_code::USAGE, "missingFolder", text)
+        }
+        Some("rootFolder") => CliError::new(crate::error::exit_code::USAGE, "rootFolder", text),
+        Some("invalidRequest") => {
+            CliError::new(crate::error::exit_code::USAGE, "invalidRequest", text)
+        }
+        Some("accessDenied") => CliError::new(crate::error::exit_code::APP, "accessDenied", text),
         Some("notReady") => CliError::new(crate::error::exit_code::APP, "notReady", text),
         _ => CliError::app(text),
     }

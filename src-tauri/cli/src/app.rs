@@ -64,12 +64,12 @@ pub type Stream = tokio::net::windows::named_pipe::NamedPipeClient;
 
 /// A connection to the running app, if it is running
 #[cfg(unix)]
-async fn connect() -> Option<Stream> {
+pub async fn connect() -> Option<Stream> {
     tokio::net::UnixStream::connect(socket_path()?).await.ok()
 }
 
 #[cfg(windows)]
-async fn connect() -> Option<Stream> {
+pub async fn connect() -> Option<Stream> {
     let user = std::env::var("USERNAME").unwrap_or_default();
     let name = format!(r"\\.\pipe\{IDENTIFIER}-{user}");
     tokio::net::windows::named_pipe::ClientOptions::new()

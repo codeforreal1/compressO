@@ -3,12 +3,24 @@ import clamp from 'lodash/clamp'
 import cloneDeep from 'lodash/cloneDeep'
 import { useEffect } from 'react'
 
+import {
+  applyOneShotContractOverrides,
+  contractOutputToPresetOutput,
+  contractToPreset,
+} from '@/contract'
+import type {
+  AudioContract,
+  ImageContract,
+  MediaContract,
+  VideoContract,
+} from '@/contract/types'
 import { useDropQueue, useDropQueuePaused } from '@/hooks/useDropQueue'
 import { t } from '@/i18n'
 import {
   type AccelerationSettings,
   getMediaItemConfig,
   getOutputDuration,
+  getVideoClipOutputs,
   MediaFile,
 } from '@/routes/(root)/-compression'
 import { recordQueueHistory } from '@/routes/(root)/-history'
@@ -28,7 +40,7 @@ import {
   videoConfigInitialState,
 } from '@/routes/(root)/-state'
 import { settingsStore } from '@/stores/settingsStore'
-import { logError } from '@/tauri/commands/app'
+import { logError, logInfo } from '@/tauri/commands/app'
 import { getCompressionStatus } from '@/tauri/commands/compression'
 import {
   type DropQueueItem,
@@ -62,6 +74,7 @@ import { type PresetMediaType, STANDARD_PRESET_ID } from '@/types/preset'
 import { getOutputFileName } from '@/utils/fs'
 import {
   DROP_ZONE_PRESET_SETTINGS,
+  getPresetOutput,
   resolvePresetChoice,
 } from '@/utils/presetOutput'
 import { convertDurationToMilliseconds } from '@/utils/string'
@@ -90,6 +103,19 @@ async function waitForMainWindow() {
   }
 }
 
+function getQueueContract<T extends PresetMediaType>(
+  item: DropQueueItem,
+  mediaType: T,
+):
+  | (T extends 'video'
+      ? VideoContract
+      : T extends 'image'
+        ? ImageContract
+        : AudioContract)
+  | null {
+  return (item.cliJob?.contracts?.[mediaType] ?? null) as never
+}
+
 /**
  * The preset a queued media is compressed with: the one chosen on the command line, its watched
  * folder's, or the drop zone's (Settings -> Drop Zone), Default (the preset starred now) unless
@@ -116,7 +142,8 @@ function getQueueAcceleration(
   const job = item.cliJob
   if (
     job?.useHardwareAcceleration == null &&
-    job?.reachTargetSizesWithoutAcceleration == null
+    job?.reachTargetSizesWithoutAcceleration == null &&
+    job?.cpuThreads == null
   ) {
     return undefined
   }
@@ -126,6 +153,7 @@ function getQueueAcceleration(
     retryTargetSizeOnCpu:
       job.reachTargetSizesWithoutAcceleration ??
       settingsStore.retryTargetSizeOnCpu,
+    ...(job.cpuThreads != null ? { cpuThreads: job.cpuThreads } : {}),
   }
 }
 
@@ -162,23 +190,34 @@ async function readQueueMedia(item: DropQueueItem): Promise<MediaFile> {
     extension,
   }
 
-  // With the drop zone's audio preset (not the video one, made for videos)
+  // With the drop zone's audio preset (or inline contract)
   if (isAudioFileExtension(extension)) {
     const info = await getVideoBasicInfo(item.path).catch(() => null)
+    const contract = getQueueContract(item, 'audio')
+    const preset = contract
+      ? (contractToPreset('cli-contract', contract) as ReturnType<
+          typeof getAudioPreset
+        >)
+      : getAudioPreset(getQueuePresetId(item, 'audio'))
+    let config = applyAudioPresetToConfig(
+      {
+        ...cloneDeep(audioFileConfigInitialState),
+        convertToExtension: getAudioFileOutputExtension(extension),
+      },
+      preset,
+      { sourceExtension: extension },
+      { isBatchConfig: false },
+    )
+    if (contract) {
+      logInfo(`[drop-queue] Applying one-shot audio contract to ${item.path}`)
+      config = applyOneShotContractOverrides(config, contract)
+    }
     return {
       ...base,
       type: 'video',
       isAudioFile: true,
       videoDuration: info?.duration ?? null,
-      config: applyAudioPresetToConfig(
-        {
-          ...cloneDeep(audioFileConfigInitialState),
-          convertToExtension: getAudioFileOutputExtension(extension),
-        },
-        getAudioPreset(getQueuePresetId(item, 'audio')),
-        { sourceExtension: extension },
-        { isBatchConfig: false },
-      ),
+      config,
     }
   }
 
@@ -189,31 +228,41 @@ async function readQueueMedia(item: DropQueueItem): Promise<MediaFile> {
       width && height && !Number.isNaN(width) && !Number.isNaN(height)
         ? { width, height }
         : undefined
-    const preset = getVideoPreset(getQueuePresetId(item, 'video'))
+    const contract = getQueueContract(item, 'video')
+    const preset = contract
+      ? (contractToPreset('cli-contract', contract) as ReturnType<
+          typeof getVideoPreset
+        >)
+      : getVideoPreset(getQueuePresetId(item, 'video'))
     // Whether it has audio only matters for a preset's audio settings
     const audioStreams =
       preset.id !== STANDARD_PRESET_ID
         ? await getAudioStreams(item.path).catch(() => null)
         : null
-    const config = cloneDeep(videoConfigInitialState)
+    const baseConfig = cloneDeep(videoConfigInitialState)
     if (extension && extension in extensions.video) {
-      config.convertToExtension = extension as keyof typeof extensions.video
+      baseConfig.convertToExtension = extension as keyof typeof extensions.video
+    }
+    let config = applyVideoPresetToConfig(
+      baseConfig,
+      preset,
+      {
+        sourceExtension: extension,
+        hasAudio: audioStreams ? audioStreams.length > 0 : null,
+        dimensions,
+      },
+      { isBatchConfig: false },
+    )
+    if (contract) {
+      logInfo(`[drop-queue] Applying one-shot video contract to ${item.path}`)
+      config = applyOneShotContractOverrides(config, contract)
     }
     return {
       ...base,
       type: 'video',
       videoDuration: info?.duration ?? null,
       dimensions,
-      config: applyVideoPresetToConfig(
-        config,
-        preset,
-        {
-          sourceExtension: extension,
-          hasAudio: audioStreams ? audioStreams.length > 0 : null,
-          dimensions,
-        },
-        { isBatchConfig: false },
-      ),
+      config,
     }
   }
 
@@ -222,13 +271,22 @@ async function readQueueMedia(item: DropQueueItem): Promise<MediaFile> {
     : getImageDimension(item.path)
   ).catch(() => [0, 0])
   const dimensions = width && height ? { width, height } : undefined
-  const config = cloneDeep(imageConfigInitialState)
+  const baseConfig = cloneDeep(imageConfigInitialState)
   // Formats that can only be opened are converted to PNG by default
   if (
     (inputOnlyExtensions.image as readonly string[]).includes(extension ?? '')
   ) {
-    config.convertToExtension = 'png'
+    baseConfig.convertToExtension = 'png'
   }
+  const imageContract = getQueueContract(item, 'image')
+  if (imageContract) {
+    logInfo(`[drop-queue] Applying one-shot image contract to ${item.path}`)
+  }
+  const imagePreset = imageContract
+    ? (contractToPreset('cli-contract', imageContract) as ReturnType<
+        typeof getImagePreset
+      >)
+    : getImagePreset(getQueuePresetId(item, 'image'))
   return {
     ...base,
     type: 'image',
@@ -237,8 +295,8 @@ async function readQueueMedia(item: DropQueueItem): Promise<MediaFile> {
     ),
     dimensions,
     config: applyImagePresetToConfig(
-      config,
-      getImagePreset(getQueuePresetId(item, 'image')),
+      baseConfig,
+      imagePreset,
       { sourceExtension: extension, dimensions },
       { isBatchConfig: false },
     ),
@@ -291,76 +349,136 @@ async function compressQueueItem(item: DropQueueItem) {
         batchImageLongerSide: null,
       }),
     ])
-    const outputMetadata = results[media.id!]?.fileMetadata
+    const result = results[media.id!]
+    const outputMetadata = result?.fileMetadata
     if (!outputMetadata?.path) throw new Error('No output')
-    // Cancelled just as it finished: the output is not kept
+    const clips =
+      media.type === 'video' && result?.mediaType === 'video'
+        ? getVideoClipOutputs(result, media)
+        : []
+    const outputFiles = clips.length
+      ? clips.map((clip) => ({
+          path: clip.pathRaw,
+          size: clip.sizeInBytes ?? 0,
+          fileName: clip.fileNameToDisplay ?? clip.fileName,
+        }))
+      : [
+          {
+            path: outputMetadata.path,
+            size: outputMetadata.size,
+            fileName: getOutputFileName(
+              media.fileName,
+              media.extension,
+              outputMetadata.extension,
+            ),
+          },
+        ]
+    const outputSize = outputFiles.reduce((total, file) => total + file.size, 0)
+    // Cancelled just as it finished: the outputs are not kept
     if (!(await isStillCompressing(item.id))) {
-      deleteFile(outputMetadata.path).catch(() => {})
+      for (const file of outputFiles) deleteFile(file.path).catch(() => {})
       return false
     }
+
+    const itemMediaType: PresetMediaType =
+      media.type === 'image' ? 'image' : media.isAudioFile ? 'audio' : 'video'
+    const itemContract: MediaContract | null = getQueueContract(
+      item,
+      itemMediaType,
+    )
+    const contractOutput = itemContract
+      ? (contractOutputToPresetOutput(itemContract.output) ??
+        getPresetOutput(STANDARD_PRESET_ID))
+      : undefined
+    const contractName = itemContract
+      ? itemContract.name?.trim() || 'Custom contract'
+      : undefined
 
     const saved = await saveQueueOutput(
       {
         sourcePath: item.path,
         relativeDir: item.relativeDir,
         originalSize: media.sizeInBytes ?? 0,
-        outputPath: outputMetadata.path,
-        outputSize: outputMetadata.size,
-        outputFileName: getOutputFileName(
-          media.fileName,
-          media.extension,
-          outputMetadata.extension,
-        ),
+        outputs: outputFiles,
         presetId: media.config?.presetId,
+        presetOutput: contractOutput,
+        presetName: contractName,
         settings: item.cliJob,
       },
       { groupKey: item.groupId, topFolders },
     )
-    recordQueueHistory({
-      id: item.id,
-      groupId: item.groupId,
-      relativeDir: item.relativeDir,
-      watchFolderName: item.watchFolderName,
-      isFromCommandLine: !!item.cliJob,
-      originalPath: item.path,
-      originalSize: media.sizeInBytes ?? null,
-      outputPath: 'savedPath' in saved ? saved.savedPath : null,
-      outputSize: outputMetadata.size,
-      mediaType:
-        media.type === 'image'
-          ? 'image'
-          : media.isAudioFile
-            ? 'audio'
-            : 'video',
-      presetId: media.config?.presetId,
-    })
-    if ('savedPath' in saved) {
+    const savedPaths = 'savedPaths' in saved ? saved.savedPaths : []
+    if (clips.length) {
+      clips.forEach((clip, index) => {
+        recordQueueHistory({
+          id: `${item.id}:clip-${clip.index}`,
+          groupId: item.groupId,
+          relativeDir: item.relativeDir,
+          watchFolderName: item.watchFolderName,
+          isFromCommandLine: !!item.cliJob,
+          originalPath: item.path,
+          // The original is counted once, with its first clip
+          originalSize: clip.index === 1 ? (media.sizeInBytes ?? null) : null,
+          outputPath: savedPaths[index] ?? null,
+          outputSize: clip.sizeInBytes ?? null,
+          mediaType: 'video',
+          presetId: media.config?.presetId,
+          presetName: contractName,
+        })
+      })
+    } else {
+      recordQueueHistory({
+        id: item.id,
+        groupId: item.groupId,
+        relativeDir: item.relativeDir,
+        watchFolderName: item.watchFolderName,
+        isFromCommandLine: !!item.cliJob,
+        originalPath: item.path,
+        originalSize: media.sizeInBytes ?? null,
+        outputPath: savedPaths[0] ?? null,
+        outputSize: outputMetadata.size,
+        mediaType: itemMediaType,
+        presetId: media.config?.presetId,
+        presetName: contractName,
+      })
+    }
+    if ('savedPaths' in saved) {
       await update({
         status: 'done',
         progress: 100,
-        outputSize: outputMetadata.size,
-        savedPath: saved.savedPath,
+        outputSize,
+        clipCount: clips.length,
+        savedPath: savedPaths[0] ?? null,
+        replacedOriginal: saved.replacedOriginal,
+        outputPaths: [],
       })
       // Not for the command line, which is not at the app
       if (settingsStore.copyOutputToClipboard && !item.cliJob) {
-        copyFilesToClipboard([{ path: saved.savedPath }]).catch(() => {})
+        copyFilesToClipboard(savedPaths.map((path) => ({ path }))).catch(
+          () => {},
+        )
       }
     } else if (saved.reason === 'larger') {
       // Nothing can save it later from the command line, so it is not kept
-      if (item.cliJob) deleteFile(outputMetadata.path).catch(() => {})
+      if (item.cliJob) {
+        for (const file of outputFiles) deleteFile(file.path).catch(() => {})
+      }
       await update({
         status: 'done',
         progress: 100,
-        outputSize: outputMetadata.size,
-        // Kept until the item is cleared, which deletes it
-        outputPath: item.cliJob ? null : outputMetadata.path,
+        outputSize,
+        clipCount: clips.length,
+        // Kept until the item is cleared, which deletes them
+        outputPaths: item.cliJob ? [] : outputFiles.map((file) => file.path),
         message: t('queue.notSavedLarger'),
         reason: 'larger',
       })
     } else {
       await update({
         status: 'failed',
-        outputPath: outputMetadata.path,
+        outputSize,
+        clipCount: clips.length,
+        outputPaths: outputFiles.map((file) => file.path),
         message:
           saved.reason === 'no-save-location'
             ? t('queue.noSaveLocation')

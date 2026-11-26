@@ -46,6 +46,30 @@ export function recordMainWindowHistory(batchId: string) {
   for (const mediaFile of appProxy.state.media) {
     const file = mediaFile.compressedFile
     if (!file?.isSuccessful || !mediaFile.pathRaw) continue
+    const clips = mediaFile.type === 'video' ? file.clips : undefined
+    if (clips?.length) {
+      for (const clip of clips) {
+        const clipId = `${batchId}:${mediaFile.id}:clip-${clip.index}`
+        clip.historyId = clipId
+        entries.push({
+          id: clipId,
+          completedAt: now,
+          mediaType: 'video',
+          source: 'main',
+          groupId: batchId,
+          folderName: getFolderName(mediaFile.relativeDir),
+          relativeDir: mediaFile.relativeDir || null,
+          originalPath: mediaFile.pathRaw,
+          // The original is counted once, with its first clip
+          originalSize:
+            clip.index === 1 ? (mediaFile.sizeInBytes ?? null) : null,
+          outputPath: clip.isSaved ? (clip.savedPath ?? null) : null,
+          outputSize: clip.sizeInBytes ?? null,
+          presetName: getPresetName(mediaFile.config?.presetId),
+        })
+      }
+      continue
+    }
     const id = `${batchId}:${mediaFile.id}`
     file.historyId = id
     entries.push({
@@ -100,6 +124,7 @@ export function recordQueueHistory({
   outputSize,
   mediaType,
   presetId,
+  presetName,
 }: {
   /** Of the queue item (each compression of it gets its own entry) */
   id: string
@@ -114,6 +139,7 @@ export function recordQueueHistory({
   outputSize: number | null
   mediaType: HistoryEntry['mediaType']
   presetId: string | null | undefined
+  presetName?: string | null
 }) {
   const source: HistorySource = isFromCommandLine
     ? 'commandLine'
@@ -134,7 +160,7 @@ export function recordQueueHistory({
       originalSize,
       outputPath,
       outputSize,
-      presetName: getPresetName(presetId),
+      presetName: presetName ?? getPresetName(presetId),
     },
   ]).catch(() => {})
 }

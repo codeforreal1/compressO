@@ -78,6 +78,24 @@
         },
         "restart": "重新啟動"
       },
+      "performance": {
+        "title": "效能",
+        "hardwareAcceleration": {
+          "title": "使用硬體加速",
+          "description": "使用硬體加速更快速地壓縮影片（檔案可能稍大）",
+          "unavailable": "此電腦不支援硬體加速。"
+        },
+        "retryTargetSizeOnCpu": {
+          "title": "不使用加速來達到目標大小",
+          "description": "僅適用於「依目標大小」。影片未達到目標大小時，將不使用硬體加速重新壓縮，速度較慢但更接近目標大小。"
+        },
+        "cpuThreadLimit": {
+          "title": "CPU 核心上限",
+          "description": "限制 FFmpeg 在 CPU 上編碼時使用的 CPU 核心數。預設使用所有核心。",
+          "all": "全部",
+          "cores_other": "{{count}}"
+        }
+      },
       "sleep": {
         "title": "睡眠",
         "preventSleep": {
@@ -127,8 +145,9 @@
       "empty_image": "尚無影像預設。調整某張影像的設定，然後選擇「預設」選單旁的加號按鈕，即可儲存為預設。",
       "empty_audio": "尚無音訊預設。調整某個音訊檔案的設定，然後選擇「預設」選單旁的加號按鈕，即可儲存為預設。",
       "mediaType": "媒體類型",
-      "standardOutput": "其儲存位置和檔名前綴在「<setting>輸出</setting>」中設定。",
-      "cannotDeleteStandard": "無法刪除標準預設。"
+      "standardOutput": "其儲存位置和檔案命名方式在「<setting>輸出</setting>」中設定。",
+      "cannotDeleteStandard": "無法刪除標準預設。",
+      "newFromContract": "從契約新增"
     },
     "dropZone": {
       "turnOnTrayIcon_macos": "拖放區位於選單列中。請先在「一般」中開啟「<setting>顯示選單列圖示</setting>」。",
@@ -210,9 +229,10 @@
           "description_windows": "當壓縮後的檔案以相同名稱儲存在原始檔案所在的資料夾中時，原始檔案將移至資源回收筒，僅保留壓縮後的檔案。"
         },
         "prefix": {
-          "title": "檔名前綴",
-          "placeholder": "無前綴",
-          "description": "加在儲存檔名開頭的文字。留空則保留原始檔名。"
+          "title": "檔案命名",
+          "placeholder": "保留原始檔名",
+          "description": "使用 {name}、{date}、{time} 或 {preset} 等預留位置的儲存檔名範本。留空則保留原始檔名。",
+          "preview": "範例：{{example}}"
         },
         "appliesTo": "這些設定僅適用於標準預設。"
       },
@@ -225,18 +245,6 @@
         "includeBatch": {
           "title": "包含批次輸出",
           "description": "同時壓縮多個檔案時也複製這些檔案。"
-        }
-      },
-      "performance": {
-        "title": "效能",
-        "hardwareAcceleration": {
-          "title": "使用硬體加速",
-          "description": "使用硬體加速更快速地壓縮影片（檔案可能稍大）",
-          "unavailable": "此電腦不支援硬體加速。"
-        },
-        "retryTargetSizeOnCpu": {
-          "title": "不使用加速來達到目標大小",
-          "description": "僅適用於「依目標大小」。影片未達到目標大小時，將不使用硬體加速重新壓縮，速度較慢但更接近目標大小。"
         }
       },
       "storage": {
@@ -273,7 +281,7 @@
       "credits": "致謝",
       "watchedFolders": "監看資料夾",
       "history": "歷史記錄",
-      "commandLine": "CLI"
+      "commandLine": "CLI 與 AI 智慧代理"
     },
     "about": {
       "updateAvailable": "有可用的更新",
@@ -379,6 +387,7 @@
           "outputFile": "以此名稱儲存單一檔案。使用不同的副檔名會將其轉換為該格式。",
           "audioOnly": "僅保留影片的聲音，儲存為音訊檔案。",
           "flatten": "將所有檔案直接儲存到該資料夾，不保留其中的子資料夾。",
+          "template": "僅對此指令，使用範本（支援 {name}、{date}、{time} 和 {preset}）為儲存的檔案命名。",
           "prefix": "僅對此指令，在儲存的檔案名稱開頭加入文字。",
           "skipLarger": "不儲存比原始檔案更大的輸出。",
           "replace": "輸出與原始檔案名稱和格式相同時取代原始檔案。原始檔案會移到垃圾桶。",
@@ -389,7 +398,22 @@
           "json": "以 JSON 輸出結果，供指令碼與 AI 代理使用。",
           "quiet": "僅輸出錯誤。",
           "list": "列出您的預設，以及每種媒體類型的預設值預設。",
-          "help": "顯示所有選項與結束代碼。"
+          "help": "顯示所有選項與結束代碼。",
+          "contractFile": "使用一次性 CompressO JSON 契約檔案壓縮媒體（支援 metadata.set、thumbnail 與 subtitles）。",
+          "contractStdin": "從標準輸入讀取一次性 JSON 契約。",
+          "contractSchema": "輸出影片、圖片或音訊契約的 JSON Schema。",
+          "contractValidate": "驗證 JSON 契約檔案，不執行壓縮也不儲存預設。",
+          "presetGet": "將已儲存的預設匯出為 JSON 契約。",
+          "presetCreate": "從 JSON 契約檔案在應用程式中建立新預設。",
+          "presetUpdate": "使用部分 JSON 契約欄位更新現有預設。",
+          "cpuThreads": "僅針對本次壓縮限制 CPU 執行緒數（0 表示使用全部可用執行緒）。",
+          "capabilities": "檢視應用程式版本、可用 CPU 執行緒、硬體編碼器、工具狀態與日誌路徑。",
+          "inspect": "在不壓縮的情況下檢查尺寸、編解碼器、串流、動態範圍與 EXIF 中繼資料。",
+          "cacheClear": "在沒有進行中的壓縮或開啟中的媒體時清除暫存快取。",
+          "history": "列出 CompressO 記錄的近期壓縮歷史（使用 history clear 清除）。",
+          "queue": "檢視或控制拖放／監控壓縮佇列（list、pause、resume、clear、cancel）。",
+          "logs": "顯示目前日誌檔案路徑與近期日誌內容。",
+          "about": "顯示 CompressO 版本、授權條款、作者、網站／更新日誌／GitHub 連結與開源工具致謝。"
         }
       },
       "agents": {
@@ -959,6 +983,12 @@
     "swapChannels": "交換左右聲道",
     "tracks": "音軌",
     "track": "音軌 #{{number}}",
+    "addTrack": "新增音訊檔案",
+    "fileFilter": "音訊檔案",
+    "addTrackHint": "此影片沒有音訊。新增一個音訊檔案以附加音訊。",
+    "addedTrack": "已新增的音訊",
+    "addFailed": "無法新增音訊檔案",
+    "selectFile": "選擇音訊檔案",
     "channelCount_other": "{{count}} 個聲道",
     "volumeLabel": "音量：",
     "volume": "音訊音量",
@@ -1072,5 +1102,54 @@
     "videoBoostFormats": "HDR 增強僅適用於使用 H.265、VP9 或 AV1 編解碼器的 MP4、MOV、MKV、WebM 和 TS 影片。",
     "videoBoostLossless": "無損壓縮不支援 HDR 增強。",
     "videoSdrOnly": "此格式或編解碼器無法儲存 HDR，因此影片將轉換為 SDR。"
+  },
+  "clips": {
+    "title": "片段",
+    "length": "片段長度",
+    "minutes": "分鐘",
+    "willCreate_one": "將建立 {{count}} 個片段",
+    "willCreate_other": "將建立 {{count}} 個片段",
+    "clipName": "片段 {{number}}",
+    "fromOriginal": "來自 {{name}} 的片段",
+    "count_one": "{{count}} 個片段",
+    "count_other": "{{count}} 個片段",
+    "notAvailable": "GIF 或音訊輸出不支援片段。",
+    "tooLong": "片段長度必須短於影片（{{duration}}）。",
+    "invalidLength": "請輸入大於 0 的片段長度。",
+    "durationUnknown": "尚未取得影片長度。",
+    "chooseFolder": "選擇片段的資料夾",
+    "batchTooLong": "一個或多個影片短於片段長度。",
+    "seconds": "秒",
+    "switchUnit": "切換為{{unit}}",
+    "mode": "分割片段方式",
+    "modes": {
+      "time": "定時片段",
+      "count": "片段總數"
+    },
+    "countUnit": "個",
+    "invalidCount": "請至少輸入 2 個片段。",
+    "tooMany": "片段過多。每個片段至少需要 1 秒。",
+    "eachClip": "每個 {{duration}}",
+    "batchInvalid": "部分影片無法使用此片段設定進行分割。"
+  },
+  "contract": {
+    "exportTooltip": "匯出 JSON 契約",
+    "saveFile": "將契約儲存為 .json",
+    "copy": "複製契約 JSON",
+    "saveType": "儲存{{type}}契約 (.json)",
+    "copyType": "複製{{type}}契約 JSON",
+    "copied": "已將 JSON 契約複製到剪貼簿。",
+    "copyFailed": "無法複製 JSON 契約。",
+    "exported": "已匯出 JSON 契約。",
+    "exportFailed": "無法匯出 JSON 契約。",
+    "import": {
+      "title": "從 JSON 契約新增預設",
+      "loadFile": "載入 .json 檔案",
+      "jsonLabel": "CompressO JSON 契約",
+      "validate": "驗證",
+      "create": "建立預設",
+      "invalidJson": "無效的 JSON：{{message}}",
+      "readFailed": "無法讀取契約檔案。"
+    }
   }
 }

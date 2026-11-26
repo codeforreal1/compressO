@@ -27,8 +27,9 @@ use tauri_plugin_fs::FsExt;
 
 use tauri_commands::{
     app::{
-        get_log_file_path, get_open_at_login, log_error, open_files_access_settings, open_login_items_settings, restart_app, set_keep_awake_settings,
-        set_native_texts,
+        get_cpu_thread_count, get_log_file_path, get_open_at_login, log_error, log_info,
+        open_files_access_settings, open_login_items_settings, restart_app,
+        set_cpu_thread_limit, set_keep_awake_settings, set_native_texts,
         set_open_at_login, take_opened_at_login, OPENED_AT_LOGIN_ARG,
     },
     compression_status::{
@@ -43,8 +44,9 @@ use tauri_commands::{
     },
     file_manager::show_item_in_file_manager,
     fs::{
-        copy_file_to_clipboard, copy_files_to_clipboard, delete_cache, delete_file, get_file_metadata, get_image_dimension,
-        get_available_path, get_svg_dimension, move_file, read_files_from_clipboard, read_files_from_paths,
+        copy_file_to_clipboard, copy_files_to_clipboard, delete_cache, delete_file,
+        get_available_path, get_file_metadata, get_image_dimension, get_svg_dimension, move_file,
+        read_files_from_clipboard, read_files_from_paths, read_text_file, write_text_file,
     },
     image::{
         compress_images_batch, convert_svg_to_png, get_exif_info, get_image_basic_info,
@@ -530,6 +532,8 @@ async fn run() {
             core::tool_bundle::get_tool_status,
             sys::cli_settings::sync_cli_settings,
             sys::cli_server::take_background_launch,
+            sys::watch_folders_bridge::complete_watched_folders_command,
+            sys::presets_bridge::complete_presets_command,
             sys::cli_install::get_cli_install_status,
             sys::cli_install::install_cli,
             sys::cli_install::uninstall_cli,
@@ -550,6 +554,8 @@ async fn run() {
             set_batch_paused,
             set_hardware_encoding_enabled,
             get_hardware_encoders,
+            get_cpu_thread_count,
+            set_cpu_thread_limit,
             extract_subtitle,
             generate_video_thumbnail,
             core::waveform::get_audio_waveform,
@@ -566,6 +572,8 @@ async fn run() {
             copy_files_to_clipboard,
             read_files_from_clipboard,
             read_files_from_paths,
+            read_text_file,
+            write_text_file,
             get_audio_streams,
             get_chapters,
             get_container_info,
@@ -594,6 +602,7 @@ async fn run() {
             open_login_items_settings,
             open_files_access_settings,
             get_log_file_path,
+            log_info,
             log_error,
             set_native_texts,
             #[cfg(target_os = "linux")]

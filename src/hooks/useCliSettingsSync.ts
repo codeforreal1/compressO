@@ -1,6 +1,11 @@
 import { useEffect } from 'react'
 import { subscribe } from 'valtio'
 
+import {
+  getContractCapabilities,
+  getContractJsonSchema,
+  presetToContract,
+} from '@/contract'
 import i18n from '@/i18n'
 import {
   describeAudioPresetSettings,
@@ -22,6 +27,7 @@ import {
   STANDARD_PRESET_ID,
 } from '@/types/preset'
 import { getPresetOutput } from '@/utils/presetOutput'
+import { getWatchedFolderChoices } from '@/utils/watchedFolders'
 
 const MEDIA_TYPES: PresetMediaType[] = ['video', 'image', 'audio']
 
@@ -40,15 +46,20 @@ function describePreset(preset: Preset) {
 
 function getCliSettings(): CliSettings {
   const presets: CliPreset[] = MEDIA_TYPES.flatMap((mediaType) =>
-    getPresets(mediaType).map((preset) => ({
-      id: preset.id,
-      // The Standard preset's name, as the command line takes it
-      name: preset.id === STANDARD_PRESET_ID ? 'Standard' : preset.name,
-      mediaType,
-      isDefault: presetsStore.defaultPresetIds[mediaType] === preset.id,
-      output: getPresetOutput(preset.id),
-      summary: describePreset(preset),
-    })),
+    getPresets(mediaType).map((preset) => {
+      const name = preset.id === STANDARD_PRESET_ID ? 'Standard' : preset.name
+      return {
+        id: preset.id,
+        name,
+        mediaType,
+        isDefault: presetsStore.defaultPresetIds[mediaType] === preset.id,
+        revision: preset.revision ?? 1,
+        ...(preset.updatedAt ? { updatedAt: preset.updatedAt } : {}),
+        output: getPresetOutput(preset.id),
+        summary: describePreset(preset),
+        contract: presetToContract({ ...preset, name }),
+      }
+    }),
   )
   return {
     schemaVersion: 1,
@@ -74,6 +85,17 @@ function getCliSettings(): CliSettings {
       image: Object.keys(extensions.image),
       audio: Object.keys(extensions.audio),
     },
+    watchedFolders: getWatchedFolderChoices(
+      settingsStore.watchedFolders,
+      presetsStore.presets as Preset[],
+    ),
+    showMenuBarIcon: settingsStore.showMenuBarIcon,
+    contractSchemas: {
+      video: getContractJsonSchema('video', { mode: 'oneShot' }),
+      image: getContractJsonSchema('image', { mode: 'oneShot' }),
+      audio: getContractJsonSchema('audio', { mode: 'oneShot' }),
+    },
+    contractCapabilities: getContractCapabilities(),
   }
 }
 

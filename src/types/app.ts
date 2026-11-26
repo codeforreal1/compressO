@@ -50,6 +50,19 @@ export type AudioConfig = {
   bitrate?: number | null
   audioCodec?: string | null
   selectedAudioTracks?: readonly number[] | null
+  /**
+   * Audio files attached to the video, from its beginning (see
+   * `VideoConfig.externalAudioTracks`)
+   */
+  externalAudioPaths?: readonly string[] | null
+}
+
+/** An audio file attached to a video, played from the video's beginning */
+export type ExternalAudioTrack = {
+  path: string
+  fileName?: string | null
+  /** Its length, in seconds */
+  duration?: number | null
 }
 
 export type SubtitleConfig = {
@@ -112,6 +125,15 @@ export type VideoConfig = {
   shouldEnableCustomAudioCodec?: boolean
   shouldEnableAudioTrackSelection?: boolean
   selectedAudioTracks?: number[]
+  /** Audio files attached to the video, starting at its beginning */
+  externalAudioTracks?: ExternalAudioTrack[] | null
+  /** Split the compressed video into clips of `clipLengthInSeconds` (video output only) */
+  shouldEnableClips?: boolean
+  /** How clips are chosen: by their length, or by how many there are */
+  clipsMode?: 'time' | 'count'
+  clipLengthInSeconds?: number
+  /** Number of equal clips when `clipsMode` is `count` */
+  clipCount?: number
   subtitlesConfig?: SubtitlesConfig | null
   shouldEnableCustomSpeed?: boolean
   customSpeed?: number | null
@@ -126,6 +148,26 @@ export type VideoConfig = {
   presetId?: string
   /** Preset settings that could not be applied to this video (e.g. audio without an audio track) */
   presetSkippedFields?: string[]
+}
+
+export type VideoClipOutput = {
+  /** 1-based, in the order of the clips */
+  index: number
+  startSeconds: number
+  endSeconds: number
+  fileName: string
+  fileNameToDisplay?: string | null
+  pathRaw: string
+  path: string
+  mimeType?: string | null
+  sizeInBytes?: number | null
+  size?: string | null
+  extension?: string | null
+  isSaving?: boolean
+  isSaved?: boolean
+  savedPath?: string
+  /** Its entry in the history (see `-history.ts`), updated when it is saved */
+  historyId?: string
 }
 
 export type Video = {
@@ -177,19 +219,23 @@ export type Video = {
     isSaving?: boolean
     isSaved?: boolean
     savedPath?: string
+    /** The original was moved to the Trash when saved ("Replace original files") */
+    replacedOriginal?: boolean
     /** Its entry in the history (see `-history.ts`), updated when it is saved */
     historyId?: string
     /**
      * Compressed to a target size: every output made for it (by size, the one used among them),
      * any of which can be used instead (see `chooseOutputOption`)
      */
-    options?: { pathRaw: string; sizeInBytes: number }[] | null
+    options?: readonly { pathRaw: string; sizeInBytes: number }[] | null
     /**
      * Another of `options`, looked at while this output is saved: shown in its place, & saved
      * instead only with "Replace saved file" (see `previewOutputOption`)
      */
     previewOption?: { pathRaw: string; sizeInBytes: number } | null
     targetSizeInBytes?: number | null
+    /** The clips of a video split into clips, each saved on its own */
+    clips?: readonly VideoClipOutput[] | null
   } | null
   compressionProgress?: number
   config: VideoConfig
@@ -279,8 +325,12 @@ export type Image = {
     isSaving?: boolean
     isSaved?: boolean
     savedPath?: string
+    /** The original was moved to the Trash when saved ("Replace original files") */
+    replacedOriginal?: boolean
     /** Its entry in the history (see `-history.ts`), updated when it is saved */
     historyId?: string
+    /** Videos only: the clips a video was split into */
+    clips?: readonly VideoClipOutput[] | null
   } | null
   compressionProgress?: number
   config: ImageConfig
@@ -304,6 +354,8 @@ export type App = {
   totalSelectedMediaCount: number
   /** Media is being added to an existing selection (see `addMedia`) */
   isAppendingMedia: boolean
+  /** A clip is open in the read-only clip preview */
+  isPreviewingClip?: boolean
   /** The compression waits for the drop zone to finish the media it is compressing (macOS) */
   isWaitingForDropZone?: boolean
   /** Before compressing to a target size, the size at the quality settings is estimated */

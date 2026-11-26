@@ -20,7 +20,6 @@ import Others from './others/-index'
 import VideoOnlySection from './VideoOnlySection'
 import BatchResolution from './video/BatchResolution'
 import CompressionPreset from './video/CompressionPreset'
-import CustomThumbnail from './video/CustomThumbnail'
 import VideoDimensions from './video/Dimensions'
 import DynamicRange from './video/DynamicRange'
 import VideoExtension from './video/Extension'
@@ -69,7 +68,7 @@ function VideoSettings({
       : batchConfigKey === 'audioFileConfig'
   const settingsConfig =
     video?.config ?? commonConfigForBatchCompression[batchConfigKey]
-  const { dimensions, pathRaw: videoPathRaw, videoInfoRaw } = video ?? {}
+  const { dimensions, pathRaw: videoPathRaw } = video ?? {}
   // Extracting audio: only the trim, speed & audio settings apply
   const isAudioOutput = isAudioExtension(settingsConfig?.convertToExtension)
 
@@ -102,8 +101,6 @@ function VideoSettings({
         }
       })()
   }, [videoPathRaw, mediaIndex, tab])
-
-  const hasNoAudio = videoInfoRaw?.audioStreams?.length === 0
 
   return (
     <BatchVideoConfigKeyContext.Provider value={batchConfigKey}>
@@ -174,14 +171,11 @@ function VideoSettings({
               </>
               <VideoOnlySection isDisabled={isAudioOutput}>
                 <VideoFPS mediaIndex={mediaIndex} />
-                <Divider className="my-3" />
-                <CustomThumbnail mediaIndex={mediaIndex} />
               </VideoOnlySection>
-              <>
-                <div className="mt-8">
-                  <VideoExtension mediaIndex={mediaIndex} />
-                </div>
-              </>
+              <Divider className="mt-3" />
+              <div className="pt-5">
+                <VideoExtension mediaIndex={mediaIndex} />
+              </div>
             </div>
           ) : null}
           {tab === 'audio' && isAudioFileSettings ? (
@@ -213,46 +207,35 @@ function VideoSettings({
           ) : null}
           {tab === 'audio' && !isAudioFileSettings ? (
             <div className="relative">
-              {hasNoAudio ? (
-                <p className="text-sm text-center mb-4 text-zinc-600 dark:text-zinc-400 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                  {t('outputSettings.noAudio')}
-                </p>
-              ) : null}
-              {/* Without audio, the controls are dimmed & cannot be used */}
-              <div
-                className={
-                  hasNoAudio ? 'opacity-40 pointer-events-none' : undefined
-                }
-                aria-disabled={hasNoAudio || undefined}
-              >
-                <div className="mb-4">
-                  <AudioVolume mediaIndex={mediaIndex} />
-                  <Divider className="mt-8" />
-                </div>
-                <>
-                  <>
-                    <AudioCodec mediaIndex={mediaIndex} />
-                    <Divider className="my-3" />
-                  </>
-                  <AudioChannels mediaIndex={mediaIndex} />
-                  <Divider className="my-3" />
-                </>
-                <>
-                  <AudioBitrate mediaIndex={mediaIndex} />
-                  <Divider className="my-3" />
-                </>
-                <>
-                  <AudioTracks mediaIndex={mediaIndex} />
-                </>
+              {/* Without audio, the audio settings are disabled but tracks can still add an
+                  audio file, so the whole tab is not dimmed */}
+              <div className="mb-4">
+                <AudioVolume mediaIndex={mediaIndex} />
+                <Divider className="mt-8" />
               </div>
+              <>
+                <>
+                  <AudioCodec mediaIndex={mediaIndex} />
+                  <Divider className="my-3" />
+                </>
+                <AudioChannels mediaIndex={mediaIndex} />
+                <Divider className="my-3" />
+              </>
+              <>
+                <AudioBitrate mediaIndex={mediaIndex} />
+                <Divider className="my-3" />
+              </>
+              <>
+                <AudioTracks mediaIndex={mediaIndex} />
+              </>
             </div>
           ) : null}
           {tab === 'others' ? (
             <>
               <Others
                 mediaIndex={mediaIndex}
-                disableSubtitles={isAudioOutput}
-                hideSubtitles={isAudioFileSettings}
+                disableVideoOptions={isAudioOutput}
+                hideVideoOptions={isAudioFileSettings}
               />
             </>
           ) : null}

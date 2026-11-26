@@ -34,8 +34,12 @@ function AudioChannels({ mediaIndex }: AudioChannelsProps) {
       ? media[mediaIndex]
       : null
   const { config, videoInfoRaw } = video ?? {}
-  const { audioConfig, shouldEnableCustomChannel, convertToExtension } =
-    config ?? commonConfigForBatchCompression[batchConfigKey] ?? {}
+  const {
+    audioConfig,
+    shouldEnableCustomChannel,
+    convertToExtension,
+    externalAudioTracks,
+  } = config ?? commonConfigForBatchCompression[batchConfigKey] ?? {}
 
   const handleSwitchToggle = useCallback(() => {
     if (
@@ -300,7 +304,9 @@ function AudioChannels({ mediaIndex }: AudioChannelsProps) {
       })) ||
     convertToExtension === 'gif'
 
-  const hasNoAudio = videoInfoRaw?.audioStreams?.length === 0
+  const hasNoAudio =
+    videoInfoRaw?.audioStreams?.length === 0 &&
+    (externalAudioTracks?.length ?? 0) === 0
 
   return (
     <div>

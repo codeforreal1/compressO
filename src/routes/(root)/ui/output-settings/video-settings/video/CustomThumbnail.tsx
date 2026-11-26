@@ -7,7 +7,6 @@ import { toast } from 'sonner'
 import { useSnapshot } from 'valtio'
 
 import Button from '@/components/Button'
-import Divider from '@/components/Divider'
 import Icon from '@/components/Icon'
 import Image from '@/components/Image'
 import Switch from '@/components/Switch'
@@ -223,7 +222,6 @@ function CustomThumbnail({ mediaIndex }: CustomThumbnailProps) {
             </motion.div>
           ) : null}
         </AnimatePresence>
-        <Divider className="mt-3 mb-6" />
       </div>
     </>
   )

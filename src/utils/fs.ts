@@ -1,11 +1,48 @@
 import prettyBytes from 'pretty-bytes'
 
+const BINARY_SIZE_UNITS = [
+  'B',
+  'KB',
+  'MB',
+  'GB',
+  'TB',
+  'PB',
+  'EB',
+  'ZB',
+  'YB',
+] as const
+
 /**
- * Formats bytes to appropriate human readable format like KB, MB, GB, etc
- * @param {number} bytes: Bytes to format
+ * Formats bytes the way Windows Explorer (`StrFormatByteSize`) does: dividing by 1024, promoting
+ * to the next KB/MB/GB unit at 1000, and keeping up to 3 digits truncated (e.g. `1,055,668,335`
+ * bytes -> `0.98 GB`, `486,302,795` bytes -> `463 MB`).
+ */
+function formatWindowsBytes(bytes: number): string {
+  if (bytes < 0) return `-${formatWindowsBytes(-bytes)}`
+  if (bytes < 1000) return `${Math.round(bytes)} B`
+
+  let value = bytes
+  let unitIndex = 0
+  while (value >= 1000 && unitIndex < BINARY_SIZE_UNITS.length - 1) {
+    value /= 1024
+    unitIndex++
+  }
+
+  const decimals = value < 10 ? 2 : value < 100 ? 1 : 0
+  const factor = 10 ** decimals
+  const truncated = Math.floor(value * factor + 1e-9) / factor
+  return `${truncated} ${BINARY_SIZE_UNITS[unitIndex]}`
+}
+
+/**
+ * Formats bytes to a human-readable size (KB, MB, GB, etc.). Windows Explorer divides by 1024
+ * with KB/MB/GB labels, whereas macOS/Linux file managers use 1000.
  */
 export function formatBytes(bytes: number): string {
   if (!bytes) return '0'
+  if (getPlatform().isWindows) {
+    return formatWindowsBytes(bytes)
+  }
   return prettyBytes(bytes)
 }
 

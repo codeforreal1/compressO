@@ -1,3 +1,4 @@
+pub mod cpu_limit;
 pub mod domain;
 pub mod ffmpeg;
 pub mod ffprobe;

@@ -27,20 +27,22 @@ export function getSvgDimension(imagePath: string): Promise<[number, number]> {
   return core.invoke('get_svg_dimension', { imagePath })
 }
 
-/**
- * Moves a file without ever replacing an existing one (uses a numbered name like `clip (1).mp4`
- * instead). Resolves to the path the file was saved to.
- */
+export type MoveFileResult = {
+  path: string
+  replacedOriginal: boolean
+}
+
 /**
  * Moves a file, never replacing an existing one (a numbered name is used instead), except
- * `replaceOriginal`: when `to` is that original, it is moved to the Trash & the file takes its place
+ * `replaceOriginal`: when `to` is in the same folder with the same name (ignoring extension), the
+ * original is moved to the Trash & the file is saved in its place
  */
 export function moveFile(
   from: string,
   to: string,
   { replaceOriginal }: { replaceOriginal?: string | null } = {},
 ) {
-  return core.invoke<string>('move_file', {
+  return core.invoke<MoveFileResult>('move_file', {
     from,
     to,
     replaceOriginal: replaceOriginal ?? null,
@@ -88,4 +90,12 @@ export function readFilesFromClipboard() {
 
 export function readFilesFromPaths(paths: string[]) {
   return core.invoke<CollectedFile[]>('read_files_from_paths', { paths })
+}
+
+export function readTextFile(path: string): Promise<string> {
+  return core.invoke<string>('read_text_file', { path })
+}
+
+export function writeTextFile(path: string, contents: string): Promise<void> {
+  return core.invoke<void>('write_text_file', { path, contents })
 }

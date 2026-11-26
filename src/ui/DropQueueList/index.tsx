@@ -37,7 +37,10 @@ function getName(path: string) {
  */
 export function hasReplacedOriginal(item: DropQueueItem) {
   const normalize = (path: string) => path.replaceAll('\\', '/')
-  return !!item.savedPath && normalize(item.savedPath) === normalize(item.path)
+  return (
+    !!item.replacedOriginal ||
+    (!!item.savedPath && normalize(item.savedPath) === normalize(item.path))
+  )
 }
 
 /**
@@ -132,6 +135,11 @@ function QueueItem({
               }
             >
               {item.cliJob ? t('queue.commandLine') : item.watchFolderName}
+            </span>
+          ) : null}
+          {item.clipCount > 1 ? (
+            <span className="shrink-0 rounded px-1 text-[9px] leading-4 text-primary bg-primary/10">
+              {t('clips.count', { count: item.clipCount })}
             </span>
           ) : null}
         </div>

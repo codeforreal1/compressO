@@ -41,6 +41,11 @@ function ExitMedia({ className }: ExitMediaProps) {
           media.compressedFile?.pathRaw
             ? deleteFile(media.compressedFile.pathRaw)
             : null,
+          ...(media.type === 'video'
+            ? (media.compressedFile?.clips ?? []).map((clip) =>
+                clip.pathRaw ? deleteFile(clip.pathRaw) : null,
+              )
+            : []),
           media.type === 'video' && media.thumbnailPathRaw
             ? deleteFile(media.thumbnailPathRaw)
             : null,

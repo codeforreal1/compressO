@@ -3,7 +3,8 @@ import Icon from '@/components/Icon'
 import { toast } from '@/components/Toast'
 import Tooltip from '@/components/Tooltip'
 import { t } from '@/i18n'
-import { openFilesAccessSettings } from '@/tauri/commands/app'
+import { logError, openFilesAccessSettings } from '@/tauri/commands/app'
+import { showItemInFileManager } from '@/tauri/commands/fs'
 import { getPlatform } from '@/utils/fs'
 
 /**
@@ -34,5 +35,41 @@ export function showAccessDeniedToast(count: number) {
         </Button>
       </Tooltip>
     ) : undefined,
+  })
+}
+
+/**
+ * Confirms a JSON contract export with a file-manager action to reveal the saved `.json` file.
+ */
+export function showContractExportedToast(targetPath: string) {
+  toast.success(t('contract.exported'), {
+    duration: 5000,
+    action: (
+      <Tooltip
+        content={t('common.showInFileManager')}
+        aria-label={t('common.showInFileManager')}
+      >
+        <Button
+          size="sm"
+          variant="light"
+          color="success"
+          radius="full"
+          isIconOnly
+          className="shrink-0"
+          aria-label={t('common.showInFileManager')}
+          onPress={() => {
+            showItemInFileManager(targetPath).catch((error) => {
+              logError(
+                `[contract] Could not reveal exported contract ${targetPath}`,
+                error,
+              )
+              toast.error(t('preview.showFailed'))
+            })
+          }}
+        >
+          <Icon name="fileExplorer" size={16} />
+        </Button>
+      </Tooltip>
+    ),
   })
 }

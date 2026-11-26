@@ -27,7 +27,7 @@ function AudioVolume({ mediaIndex }: AudioVolumeProps) {
       ? media[mediaIndex]
       : null
   const { config, videoInfoRaw } = video ?? {}
-  const { audioConfig, convertToExtension } =
+  const { audioConfig, convertToExtension, externalAudioTracks } =
     config ?? commonConfigForBatchCompression[batchConfigKey] ?? {}
 
   const [volume, setVolume] = React.useState<number>(audioConfig?.volume ?? 100)
@@ -109,7 +109,9 @@ function AudioVolume({ mediaIndex }: AudioVolumeProps) {
     }
   }, [])
 
-  const hasNoAudio = videoInfoRaw?.audioStreams?.length === 0
+  const hasNoAudio =
+    videoInfoRaw?.audioStreams?.length === 0 &&
+    (externalAudioTracks?.length ?? 0) === 0
   const shouldDisableInput =
     media.length === 0 ||
     isCompressing ||

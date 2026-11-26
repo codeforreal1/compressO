@@ -8,109 +8,11 @@ import Icon from '@/components/Icon'
 import Select from '@/components/Select'
 import Switch from '@/components/Switch'
 import Tooltip from '@/components/Tooltip'
-import { t } from '@/i18n'
-import { extensions } from '@/types/compression'
+import { AUDIO_CODECS } from '@/types/compression'
 import { slideDownTransition } from '@/utils/animation'
 import { isAudioOutput } from '@/utils/audio'
 import { appProxy, normalizeBatchMediaConfig } from '../../../../-state'
 import { useBatchVideoConfigKey } from '../-batchConfig'
-
-type VideoExtension =
-  | keyof typeof extensions.video
-  | keyof typeof extensions.audio
-
-type AudioCodecOption = {
-  value: string
-  name: string
-  description: string
-  compatible_containers: VideoExtension[]
-}
-
-export const AUDIO_CODECS: readonly AudioCodecOption[] = [
-  {
-    value: 'aac',
-    name: 'AAC',
-    get description() {
-      return t('codecs.audio.aac')
-    },
-    compatible_containers: [
-      'mp4',
-      'mov',
-      'mkv',
-      'ts',
-      'm4a',
-    ] as VideoExtension[],
-  },
-  {
-    value: 'libmp3lame',
-    name: 'MP3',
-    get description() {
-      return t('codecs.audio.libmp3lame')
-    },
-    compatible_containers: [
-      'mp4',
-      'mov',
-      'mkv',
-      'avi',
-      'ts',
-      'mp3',
-    ] as VideoExtension[],
-  },
-  {
-    value: 'libopus',
-    name: 'Opus',
-    get description() {
-      return t('codecs.audio.libopus')
-    },
-    compatible_containers: ['webm', 'mkv', 'ogg', 'opus'] as VideoExtension[],
-  },
-  {
-    value: 'libvorbis',
-    name: 'Vorbis',
-    get description() {
-      return t('codecs.audio.libvorbis')
-    },
-    compatible_containers: ['webm', 'mkv', 'ogg'] as VideoExtension[],
-  },
-  {
-    value: 'ac3',
-    name: 'AC3',
-    get description() {
-      return t('codecs.audio.ac3')
-    },
-    compatible_containers: [
-      'mp4',
-      'mov',
-      'mkv',
-      'avi',
-      'ts',
-    ] as VideoExtension[],
-  },
-  {
-    value: 'alac',
-    name: 'ALAC',
-    get description() {
-      return t('codecs.audio.alac')
-    },
-    compatible_containers: ['mp4', 'mov', 'm4a'] as VideoExtension[],
-  },
-  {
-    value: 'flac',
-    name: 'FLAC',
-    get description() {
-      return t('codecs.audio.flac')
-    },
-    compatible_containers: ['mkv', 'flac', 'ogg'] as VideoExtension[],
-  },
-  {
-    value: 'pcm_s16le',
-    name: 'PCM',
-    get description() {
-      return t('codecs.audio.pcm_s16le')
-    },
-    compatible_containers: ['mov', 'avi', 'wav'] as VideoExtension[],
-  },
-]
 
 type AudioCodecProps = {
   mediaIndex: number
@@ -133,8 +35,12 @@ function AudioCodec({ mediaIndex }: AudioCodecProps) {
       ? media[mediaIndex]
       : null
   const { config, videoInfoRaw, extension: videoExtension } = video ?? {}
-  const { shouldEnableCustomAudioCodec, convertToExtension, audioConfig } =
-    config ?? commonConfigForBatchCompression[batchConfigKey] ?? {}
+  const {
+    shouldEnableCustomAudioCodec,
+    convertToExtension,
+    audioConfig,
+    externalAudioTracks,
+  } = config ?? commonConfigForBatchCompression[batchConfigKey] ?? {}
 
   const customAudioCodec = audioConfig?.audioCodec ?? '-'
 
@@ -218,7 +124,9 @@ function AudioCodec({ mediaIndex }: AudioCodecProps) {
     [mediaIndex, batchConfigKey],
   )
 
-  const hasNoAudio = videoInfoRaw?.audioStreams?.length === 0
+  const hasNoAudio =
+    videoInfoRaw?.audioStreams?.length === 0 &&
+    (externalAudioTracks?.length ?? 0) === 0
 
   const shouldDisableInput =
     media.length === 0 ||

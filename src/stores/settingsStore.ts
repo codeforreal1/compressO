@@ -4,8 +4,13 @@ import { proxy, subscribe } from 'valtio'
 import * as constants from '@/constants'
 import { isLanguageCode, type LanguageCode } from '@/i18n/languages'
 import { DEFAULT_PRESET_CHOICE, type PresetMediaType } from '@/types/preset'
+import {
+  DEFAULT_FILE_NAME_TEMPLATE,
+  migratePrefixToTemplate,
+  sanitizeFileNamePart,
+} from '@/utils/fileNameTemplate'
 
-export const DEFAULT_OUTPUT_FILE_PREFIX = 'compressO-'
+export { DEFAULT_FILE_NAME_TEMPLATE, sanitizeFileNamePart }
 
 export const saveLocations = {
   /** Save automatically next to the original (or next to the dropped folder) */
@@ -27,6 +32,14 @@ function readTintOpacity(key: string, fallback: number) {
     : fallback
 }
 
+/** The stored CPU thread limit, or `null` for all available threads */
+function readCpuThreadLimit() {
+  const stored = localStorage.getItem(constants.cpuThreadLimit)
+  if (stored == null) return null
+  const limit = Number(stored)
+  return Number.isInteger(limit) && limit > 0 ? limit : null
+}
+
 export type SaveLocation = keyof typeof saveLocations
 
 /**
@@ -42,8 +55,11 @@ export type WatchedFolder = {
 }
 
 export type SettingsState = {
-  /** Added to the start of saved file names (not folders). Empty keeps the original names. */
-  outputFilePrefix: string
+  /**
+   * Naming template for saved files (without extension), e.g. `compressO-{name}` or
+   * `{name}_compressed`. Empty keeps the original names.
+   */
+  outputFileNameTemplate: string
   saveLocation: SaveLocation
   /** Folder used when `saveLocation` is `fixedFolder` */
   saveFolder: string | null
@@ -101,6 +117,11 @@ export type SettingsState = {
    */
   useHardwareAcceleration: boolean
   /**
+   * The maximum CPU threads FFmpeg may use for CPU encoding, or `null` for all of them
+   * (see `cpu_limit.rs`)
+   */
+  cpuThreadLimit: number | null
+  /**
    * With hardware acceleration, a video that missed its target size is compressed again on the CPU
    * (on by default), which keeps to the size more closely (see `ffmpeg.rs`)
    */
@@ -130,10 +151,11 @@ localStorage.removeItem('skipLargerOutputs')
 /** Reads the settings from the storage, shared by all windows */
 function readSettings(): SettingsState {
   const storedSaveLocation = localStorage.getItem(constants.saveLocation)
+  const storedTemplate = localStorage.getItem(constants.outputFileNameTemplate)
   return {
-    outputFilePrefix:
-      localStorage.getItem(constants.outputFilePrefix) ??
-      DEFAULT_OUTPUT_FILE_PREFIX,
+    outputFileNameTemplate:
+      storedTemplate ??
+      migratePrefixToTemplate(localStorage.getItem(constants.outputFilePrefix)),
     saveLocation:
       storedSaveLocation && storedSaveLocation in saveLocations
         ? (storedSaveLocation as SaveLocation)
@@ -173,6 +195,7 @@ function readSettings(): SettingsState {
     watchedFolders: readWatchedFolders(),
     useHardwareAcceleration:
       localStorage.getItem(constants.useHardwareAcceleration) === 'true',
+    cpuThreadLimit: readCpuThreadLimit(),
     // Only an explicit opt-out turns it off
     retryTargetSizeOnCpu:
       localStorage.getItem(constants.retryTargetSizeOnCpu) !== 'false',
@@ -231,8 +254,8 @@ window.addEventListener('storage', (evt) => {
 subscribe(settingsStore, () => {
   localStorage.setItem(constants.language, settingsStore.language)
   localStorage.setItem(
-    constants.outputFilePrefix,
-    settingsStore.outputFilePrefix,
+    constants.outputFileNameTemplate,
+    settingsStore.outputFileNameTemplate,
   )
   localStorage.setItem(constants.saveLocation, settingsStore.saveLocation)
   localStorage.setItem(
@@ -300,6 +323,14 @@ subscribe(settingsStore, () => {
     constants.useHardwareAcceleration,
     String(settingsStore.useHardwareAcceleration),
   )
+  if (settingsStore.cpuThreadLimit == null) {
+    localStorage.removeItem(constants.cpuThreadLimit)
+  } else {
+    localStorage.setItem(
+      constants.cpuThreadLimit,
+      String(settingsStore.cpuThreadLimit),
+    )
+  }
   localStorage.setItem(
     constants.retryTargetSizeOnCpu,
     String(settingsStore.retryTargetSizeOnCpu),
@@ -326,8 +357,3 @@ subscribe(settingsStore, () => {
     localStorage.removeItem(constants.saveFolder)
   }
 })
-
-/** Removes characters that aren't allowed in file names */
-export function sanitizeFileNamePart(value: string) {
-  return value.replace(/[/\\:*?"<>|\u0000-\u001f]/g, '')
-}

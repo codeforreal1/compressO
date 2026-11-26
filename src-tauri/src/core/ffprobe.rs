@@ -42,8 +42,11 @@ impl FFPROBE {
         ffprobe_cmd.args([
             "-v",
             "error",
+            // `V` excludes attached pictures, which some MP4s (e.g. from X/Twitter) carry as a
+            // 0×0 MJPEG stream. Selecting `v:0` picked that cover art instead of the video and
+            // left the preview without dimensions.
             "-select_streams",
-            "v:0",
+            "V:0",
             "-show_entries",
             "stream=width,height,r_frame_rate,avg_frame_rate",
             "-show_entries",
@@ -90,14 +93,17 @@ impl FFPROBE {
                     stream.get("width").and_then(|v| v.as_u64()),
                     stream.get("height").and_then(|v| v.as_u64()),
                 ) {
-                    // Portrait videos from phones are often stored as landscape frames with a
-                    // rotation (which FFmpeg applies when compressing), so the size is reported
-                    // as displayed
-                    dimensions = Some(if is_quarter_turn(get_stream_rotation(stream)) {
-                        (h as f64, w as f64)
-                    } else {
-                        (w as f64, h as f64)
-                    });
+                    // A zero-size stream cannot describe the preview; keep it unknown instead.
+                    if w > 0 && h > 0 {
+                        // Portrait videos from phones are often stored as landscape frames with a
+                        // rotation (which FFmpeg applies when compressing), so the size is reported
+                        // as displayed
+                        dimensions = Some(if is_quarter_turn(get_stream_rotation(stream)) {
+                            (h as f64, w as f64)
+                        } else {
+                            (w as f64, h as f64)
+                        });
+                    }
                 }
 
                 // Parse FPS from r_frame_rate (e.g., "30000/1001" or "30/1")

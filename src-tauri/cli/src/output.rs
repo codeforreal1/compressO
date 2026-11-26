@@ -6,15 +6,41 @@ use crate::job::{Event, FileResult, Report};
 use crate::settings::{Settings, MEDIA_TYPES};
 
 pub fn format_bytes(bytes: u64) -> String {
+    format_bytes_for(bytes, cfg!(windows))
+}
+
+fn format_bytes_for(bytes: u64, windows: bool) -> String {
     const UNITS: [&str; 5] = ["B", "KB", "MB", "GB", "TB"];
+    let base = if windows { 1024.0 } else { 1000.0 };
     let mut value = bytes as f64;
     let mut unit = 0;
     while value >= 1000.0 && unit < UNITS.len() - 1 {
-        value /= 1000.0;
+        value /= base;
         unit += 1;
     }
     if unit == 0 {
-        format!("{bytes} B")
+        return format!("{bytes} B");
+    }
+    if windows {
+        let decimals = if value < 10.0 {
+            2usize
+        } else if value < 100.0 {
+            1
+        } else {
+            0
+        };
+        let factor = 10f64.powi(decimals as i32);
+        let truncated = (value * factor + 1e-9).floor() / factor;
+        let mut number = format!("{truncated:.decimals$}");
+        if decimals > 0 {
+            while number.ends_with('0') {
+                number.pop();
+            }
+            if number.ends_with('.') {
+                number.pop();
+            }
+        }
+        format!("{number} {}", UNITS[unit])
     } else {
         format!("{value:.1} {}", UNITS[unit])
     }
@@ -263,8 +289,11 @@ fn describe_file(file: &FileResult) -> String {
 }
 
 /// `compresso presets`
-pub fn print_presets(settings: &Settings) {
+pub fn print_presets(settings: &Settings, filter_media_type: Option<&str>) {
     for media_type in MEDIA_TYPES {
+        if filter_media_type.is_some_and(|mt| mt != media_type) {
+            continue;
+        }
         let title = match media_type {
             "video" => "Video presets",
             "image" => "Image presets",
@@ -303,4 +332,180 @@ pub fn print_presets(settings: &Settings) {
         println!();
     }
     println!("* The default preset of its media type, used without --video-preset=, --image-preset= or --audio-preset=.");
+}
+
+pub fn print_preset_change(value: &serde_json::Value, action: &str) {
+    match action {
+        "create" => {
+            let preset = &value["preset"];
+            let name = preset["name"].as_str().unwrap_or("?");
+            let mt = preset["mediaType"].as_str().unwrap_or("?");
+            if value["replaced"].as_bool() == Some(true) {
+                println!("Replaced {mt} preset \"{name}\".");
+            } else {
+                println!("Created {mt} preset \"{name}\".");
+            }
+        }
+        "update" => {
+            let preset = &value["preset"];
+            let name = preset["name"].as_str().unwrap_or("?");
+            let mt = preset["mediaType"].as_str().unwrap_or("?");
+            let rev = preset["revision"].as_u64().unwrap_or(1);
+            println!("Updated {mt} preset \"{name}\" (revision {rev}).");
+        }
+        "delete" => {
+            let name = value["deletedName"].as_str().unwrap_or("?");
+            let mt = value["mediaType"].as_str().unwrap_or("?");
+            println!("Deleted {mt} preset \"{name}\".");
+            if value["defaultResetToStandard"].as_bool() == Some(true) {
+                println!("Default {mt} preset reset to Standard.");
+            }
+            if let Some(folders) = value["affectedWatchedFolders"]
+                .as_array()
+                .filter(|list| !list.is_empty())
+            {
+                let paths: Vec<&str> = folders
+                    .iter()
+                    .filter_map(|f| f["path"].as_str())
+                    .collect();
+                println!(
+                    "Watched folders now falling back to default: {}",
+                    paths.join(", ")
+                );
+            }
+        }
+        "default" => {
+            let name = value["presetName"].as_str().unwrap_or("?");
+            let mt = value["mediaType"].as_str().unwrap_or("?");
+            println!("Default {mt} preset set to \"{name}\".");
+        }
+        _ => {}
+    }
+    if let Some(warnings) = value["warnings"].as_array() {
+        for warning in warnings {
+            if let Some(msg) = warning["message"].as_str() {
+                eprintln!("Warning: {msg}");
+            }
+        }
+    }
+}
+
+fn watched_folder_preset<'a>(folder: &'a serde_json::Value, media_type: &str) -> &'a str {
+    folder["presets"][media_type]["name"]
+        .as_str()
+        .unwrap_or("?")
+}
+
+fn watched_folder_warning(warning: &str) -> &str {
+    match warning {
+        "missingFolder" => "the folder is missing",
+        "saveLocation" => {
+            "its presets ask where to save, so it is not watched (choose presets that save automatically)"
+        }
+        "menuBarIconOff" => {
+            "the menu bar / tray icon is off, so it is not watched (Settings > General)"
+        }
+        _ => warning,
+    }
+}
+
+/// `compresso watch list`
+pub fn print_watched_folders(value: &serde_json::Value) {
+    let Some(folders) = value["watchedFolders"].as_array() else {
+        println!("No watched folders.");
+        return;
+    };
+    if folders.is_empty() {
+        println!("No watched folders.");
+        println!("Add one with: compresso watch add <folder>");
+        return;
+    }
+    for folder in folders {
+        let name = folder["name"].as_str().unwrap_or("?");
+        let path = folder["path"].as_str().unwrap_or("?");
+        let id = folder["id"].as_str().unwrap_or("?");
+        let is_enabled = folder["isEnabled"].as_bool().unwrap_or(false);
+        let is_watched = folder["isWatched"].as_bool().unwrap_or(false);
+        let state = if is_watched {
+            "watching"
+        } else if is_enabled {
+            "not watching"
+        } else {
+            "off"
+        };
+        let mark = if is_watched { "*" } else { " " };
+        println!("{mark} {name}  [{state}]");
+        println!("    {path}");
+        println!("    id: {id}");
+        println!(
+            "    video: {} · image: {} · audio: {}",
+            watched_folder_preset(folder, "video"),
+            watched_folder_preset(folder, "image"),
+            watched_folder_preset(folder, "audio"),
+        );
+        if let Some(warnings) = folder["warnings"].as_array() {
+            for warning in warnings.iter().filter_map(|warning| warning.as_str()) {
+                println!("    ! {}", watched_folder_warning(warning));
+            }
+        }
+    }
+    println!();
+    println!("Update or remove with: compresso watch update|remove <id or folder>");
+}
+
+/// `compresso watch add|update|remove`
+pub fn print_watch_change(value: &serde_json::Value, action: &str) {
+    let folder = &value["folder"];
+    let name = folder["name"].as_str();
+    match action {
+        "add" => {
+            if value["added"].as_bool() == Some(true) {
+                match name {
+                    Some(name) => println!("Added {name} to watched folders."),
+                    None => println!("Added the folder to watched folders."),
+                }
+            } else {
+                match name {
+                    Some(name) => println!("{name} is already watched."),
+                    None => println!("The folder is already watched."),
+                }
+            }
+        }
+        "update" => match name {
+            Some(name) => println!("Updated {name}."),
+            None => println!("Updated the watched folder."),
+        },
+        "remove" => {
+            if value["removed"].as_bool() == Some(true) {
+                println!("Removed the folder from watched folders.");
+            } else {
+                println!("No watched folder matched; nothing was removed.");
+            }
+        }
+        _ => {}
+    }
+    println!();
+    print_watched_folders(value);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::format_bytes_for;
+
+    #[test]
+    fn windows_formatting_matches_explorer() {
+        assert_eq!(format_bytes_for(500, true), "500 B");
+        assert_eq!(format_bytes_for(1024, true), "1 KB");
+        assert_eq!(format_bytes_for(1500, true), "1.46 KB");
+        assert_eq!(format_bytes_for(512_000, true), "500 KB");
+        assert_eq!(format_bytes_for(486_302_795, true), "463 MB");
+        assert_eq!(format_bytes_for(1_055_668_335, true), "0.98 GB");
+    }
+
+    #[test]
+    fn non_windows_formatting_uses_decimal_units() {
+        assert_eq!(format_bytes_for(512_000, false), "512.0 KB");
+        assert_eq!(format_bytes_for(486_302_795, false), "486.3 MB");
+        assert_eq!(format_bytes_for(1_055_668_335, false), "1.1 GB");
+    }
 }
