@@ -17,7 +17,7 @@ Enhancements:
 - **Faster Batch Import, Encoding & Target Size**:
   - Consolidated video/audio import probing into a single `ffprobe` pass (`inspect_video_for_import`) paired with bounded-concurrency batch loading (`4` workers), cached parallel hardware-encoder probing (`hardware-encoders-cache.json`), and debounced atomic `history.json` background writes.
   - Added parallel image compression (`Lane::Image`) for batches and the background drop queue (bounded by the CPU thread limit).
-  - Sped up CPU Target Size encoding with 2-pass VBR (`libx264`, `libx265`, `libvpx-vp9`, `mpeg4`) and automatic single-pass fallback, plus per-scale image source reuse and byte-ratio interpolated search.
+  - Sped up Target Size pre-estimation (single parallel `ffprobe` pre-probe across samples, skipped throwaway `+faststart`, and tighter sample budgets) and CPU Target Size encoding with 2-pass VBR (`libx264`, `libx265`, `libvpx-vp9`, `mpeg4`), indeterminate progress while estimating, and automatic single-pass fallback, plus per-scale image source reuse and byte-ratio interpolated search.
   - Isolated per-card state subscriptions and virtualized batch grid rows (`> 24` items) to keep large drops responsive while compressing or scrolling.
 - **Reject Animated WebP Inputs**: Rejects animated `.webp` inputs on drop/import and in the background queue (while keeping static `.webp` support) to avoid grid lag and unsupported animated input processing.
 
@@ -25,7 +25,7 @@ Bug Fixes:
 
 - Fixed Linux video previews and WebKitGTK rendering by defaulting `WEBKIT_DISABLE_DMABUF_RENDERER=1` (overridable), routing Tauri v2 `asset.localhost` URLs through the local `VideoServer`, and surfacing clear GUI/no-display diagnostics when launched from headless SSH sessions.
 - Fixed CLI `--json` progress reporting so percentage progress emits consistently during headless compressions.
-- Fixed reattached batch compressions resetting back to the home page on cancellation (preserving partial completed outputs for **Save Media** when set to **Ask every time**), and ensured closing the main window prompts **Media not saved** (**Quit** / **Go Back**) whenever unsaved outputs exist across macOS, Windows, and Linux.
+- Fixed reattached batch compressions resetting back to the home page on cancellation (preserving partial completed outputs for **Save Media** when set to **Ask every time**), ensured closing the main window prompts **Media not saved** (**Quit** / **Go Back**) whenever unsaved outputs exist across macOS, Windows, and Linux, and enforced CPU thread limits cleanly across decoding, filters, `libx265` (`pools`), `libsvtav1` (`lp`), and Target Size retries.
 
 Upgrade note:
 

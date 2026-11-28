@@ -24,6 +24,18 @@ use std::{
 };
 use tauri::{AppHandle, Emitter, Listener, Manager};
 
+#[derive(Clone, Default)]
+struct PreProbedInput {
+    audio_streams: Option<Vec<crate::core::domain::AudioStream>>,
+    source_color: Option<
+        Option<(
+            video_dynamic_range::VideoColor,
+            video_dynamic_range::VideoDynamicRangeInfo,
+        )>,
+    >,
+    source_video_bitrate: Option<Option<u64>>,
+}
+
 pub struct FFMPEG {
     app: AppHandle,
     assets_dir: PathBuf,
@@ -34,6 +46,8 @@ pub struct FFMPEG {
     hardware_acceleration: Option<bool>,
     /// Overrides the global CPU thread limit (`Some(0)` = all threads), see `with_cpu_thread_limit`
     cpu_thread_limit: Option<usize>,
+    /// Cached probe data reused across estimation samples so each sample does not respawn ffprobe
+    pre_probed: Option<PreProbedInput>,
 }
 
 const EXTENSIONS: [&str; 10] = [
@@ -262,7 +276,13 @@ impl FFMPEG {
             input_range: None,
             hardware_acceleration: None,
             cpu_thread_limit: None,
+            pre_probed: None,
         })
+    }
+
+    fn with_pre_probed(mut self, pre_probed: Option<PreProbedInput>) -> Self {
+        self.pre_probed = pre_probed;
+        self
     }
 
     /// Encodes on the graphics card or not, whatever the setting is (`None` follows the setting),
@@ -401,7 +421,13 @@ impl FFMPEG {
         }
         let container = output_container(convert_to_extension);
 
-        let audio_streams = {
+        let audio_streams = if let Some(streams) = self
+            .pre_probed
+            .as_ref()
+            .and_then(|p| p.audio_streams.clone())
+        {
+            streams
+        } else {
             let mut ffprobe = FFPROBE::new(&self.app)?.with_owner_window_opt(self.owner_window.as_deref());
             ffprobe.get_audio_streams(video_path).await?
         };
@@ -579,6 +605,9 @@ impl FFMPEG {
         // pixel format & the conversion (see `video_dynamic_range`)
         let source_color = if is_audio_target {
             None
+        } else if let Some(cached) = self.pre_probed.as_ref().and_then(|p| p.source_color.clone())
+        {
+            cached
         } else {
             let mut ffprobe = FFPROBE::new(&self.app)?.with_owner_window_opt(self.owner_window.as_deref());
             ffprobe
@@ -710,7 +739,12 @@ impl FFMPEG {
             })
             .unwrap_or(DynamicRangeOperation::None);
         if dynamic_range_operation != DynamicRangeOperation::None {
-            log::info!("[ffmpeg] dynamic range: {:?}", dynamic_range_operation);
+            let level = if self.input_range.is_some() {
+                log::Level::Debug
+            } else {
+                log::Level::Info
+            };
+            log::log!(level, "[ffmpeg] dynamic range: {:?}", dynamic_range_operation);
         }
         let color_args: Vec<String> = source_color
             .as_ref()
@@ -806,7 +840,8 @@ impl FFMPEG {
             if matches!(output_codec.as_str(), "libx264" | "libx265") {
                 cmd_args.extend_from_slice(&["-preset", "slow"]);
             }
-            if matches!(container, "mp4" | "mov") {
+            // Sample runs are measured once and deleted immediately, so they skip moov relocation.
+            if self.input_range.is_none() && matches!(container, "mp4" | "mov") {
                 cmd_args.extend_from_slice(&["-movflags", "+faststart"]);
             }
         }
@@ -1480,15 +1515,22 @@ impl FFMPEG {
         // by quality its bitrate is kept under a part of the source's (faster playback packs more
         // of it in each second): the output never comes out larger than its original
         let quality_cap_kbps = match &hardware_encoder {
-            Some(encoder) if encoder.api == hardware_encoder::Api::VideoToolbox => self
-                .source_video_bitrate(video_path)
-                .await
-                .map(|bits_per_second| {
+            Some(encoder) if encoder.api == hardware_encoder::Api::VideoToolbox => {
+                let source_bitrate = match self
+                    .pre_probed
+                    .as_ref()
+                    .and_then(|p| p.source_video_bitrate)
+                {
+                    Some(cached) => cached,
+                    None => self.source_video_bitrate(video_path).await,
+                };
+                source_bitrate.map(|bits_per_second| {
                     let speed = f64::from(clamped_speed.unwrap_or(1.0).max(1.0));
                     (bits_per_second as f64 * HARDWARE_QUALITY_CAP_SHARE * speed / 1000.0)
                         .round()
                         .max(1.0) as u32
-                }),
+                })
+            }
             _ => None,
         };
         if let Some(encoder) = &hardware_encoder {
@@ -1986,6 +2028,48 @@ impl FFMPEG {
                 .collect()
         };
 
+        // Probe once across all samples so each sample encode does not respawn ffprobe 3x.
+        let pre_probed = if parts.len() > 1 {
+            let probe_audio = async {
+                let mut ffprobe =
+                    FFPROBE::new(&self.app).ok()?.with_owner_window_opt(self.owner_window.as_deref());
+                ffprobe.get_audio_streams(&config.video_path).await.ok()
+            };
+            let probe_color = async {
+                let is_audio = AUDIO_EXTENSIONS.contains(&config.convert_to_extension.as_str());
+                if is_audio {
+                    return Some(None);
+                }
+                let mut ffprobe =
+                    FFPROBE::new(&self.app).ok()?.with_owner_window_opt(self.owner_window.as_deref());
+                let color = ffprobe
+                    .get_video_color(&config.video_path)
+                    .await
+                    .ok()
+                    .flatten()
+                    .map(|color| {
+                        let info = video_dynamic_range::classify(&color);
+                        (color, info)
+                    });
+                Some(color)
+            };
+            let probe_bitrate = async {
+                if config.use_hardware_acceleration == Some(false) {
+                    return None;
+                }
+                Some(self.source_video_bitrate(&config.video_path).await)
+            };
+            let (audio_streams, source_color, source_video_bitrate) =
+                tokio::join!(probe_audio, probe_color, probe_bitrate);
+            Some(PreProbedInput {
+                audio_streams,
+                source_color,
+                source_video_bitrate,
+            })
+        } else {
+            None
+        };
+
         // A few parts at a time
         let mut size: u64 = 0;
         let mut encoded_length: f64 = 0.0;
@@ -2000,12 +2084,14 @@ impl FFMPEG {
                 let owner_window = self.owner_window.clone();
                 let config = config.clone();
                 let estimate_id = estimate_id.to_string();
+                let pre_probed = pre_probed.clone();
                 running.spawn(async move {
                     let result = FFMPEG::new(&app)?
                         .with_owner_window_opt(owner_window.as_deref())
                         .with_hardware_acceleration(config.use_hardware_acceleration)
                         .with_cpu_thread_limit(config.cpu_threads)
                         .with_input_range(range)
+                        .with_pre_probed(pre_probed)
                         .compress_video(
                             &config.video_path,
                             &config.convert_to_extension,
@@ -2641,14 +2727,14 @@ impl FFMPEG {
 
 /// Builds complete FFmpeg filter complex for video/image post-processing
 /// A video up to this long (seconds) is compressed whole for its estimated size
-const ESTIMATE_WHOLE_VIDEO_SECONDS: f64 = 30.0;
+const ESTIMATE_WHOLE_VIDEO_SECONDS: f64 = 15.0;
 
 /// A longer one is compressed in parts this long (seconds), one for about every this many
 /// seconds of it (within the fewest & the most), a few at a time, for its estimate
-const ESTIMATE_SAMPLE_SECONDS: f64 = 2.0;
-const ESTIMATE_SECONDS_PER_SAMPLE: f64 = 15.0;
-const ESTIMATE_MIN_SAMPLES: usize = 8;
-const ESTIMATE_MAX_SAMPLES: usize = 30;
+const ESTIMATE_SAMPLE_SECONDS: f64 = 1.5;
+const ESTIMATE_SECONDS_PER_SAMPLE: f64 = 20.0;
+const ESTIMATE_MIN_SAMPLES: usize = 6;
+const ESTIMATE_MAX_SAMPLES: usize = 16;
 const ESTIMATE_PARALLEL_SAMPLES: usize = 3;
 
 /// By quality on macOS, a graphics card's bitrate is kept under this part of the source's (see
