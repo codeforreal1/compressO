@@ -316,8 +316,15 @@ pub fn to_hardware_args(
             }
             // x264's speed preset
             ("-preset", Some(_)) => index += 2,
-            // The CPU encoder's thread limit does not apply to the graphics card
-            ("-threads", Some(_)) => index += 2,
+            // CPU thread limits do not apply to the graphics card
+            (
+                "-threads"
+                | "-filter_threads"
+                | "-filter_complex_threads"
+                | "-x265-params"
+                | "-svtav1-params",
+                Some(_),
+            ) => index += 2,
             ("-crf", Some(crf)) => {
                 let crf = crf.parse::<f32>().unwrap_or(28.0);
                 args.extend(quality_args(encoder, crf));
@@ -523,14 +530,37 @@ mod tests {
     #[test]
     fn cpu_thread_limit_is_not_passed_to_the_graphics_card() {
         let cpu_args = args(&[
-            "-i", "in.mp4", "-c:v:0", "libx264", "-threads", "4", "-y", "out.mp4",
+            "-filter_threads",
+            "4",
+            "-filter_complex_threads",
+            "4",
+            "-threads",
+            "4",
+            "-i",
+            "in.mp4",
+            "-c:v:0",
+            "libx265",
+            "-x265-params",
+            "pools=4",
+            "-threads",
+            "4",
+            "-y",
+            "out.mp4",
         ]);
         let hardware = to_hardware_args(
             &cpu_args,
-            &encoder("h264_videotoolbox", Codec::H264, Api::VideoToolbox),
+            &encoder("hevc_videotoolbox", Codec::Hevc, Api::VideoToolbox),
             None,
         );
-        assert!(!hardware.iter().any(|arg| arg == "-threads"));
+        for flag in [
+            "-threads",
+            "-filter_threads",
+            "-filter_complex_threads",
+            "-x265-params",
+            "-svtav1-params",
+        ] {
+            assert!(!hardware.iter().any(|arg| arg == flag));
+        }
     }
 
     #[test]

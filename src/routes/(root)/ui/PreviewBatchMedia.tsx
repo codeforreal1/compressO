@@ -419,6 +419,8 @@ const BatchSummaryFooter = memo(function BatchSummaryFooter() {
       totalSelectedMediaCount,
       isLoadingMediaFiles,
       isBatchCompressionCancelled,
+      isEstimatingSize,
+      isWaitingForDropZone,
     },
   } = useSnapshot(appProxy)
 
@@ -563,9 +565,10 @@ const BatchSummaryFooter = memo(function BatchSummaryFooter() {
             <Divider orientation="vertical" className="h-8" />
             <div className="flex-1">
               <CircularProgress
-                showValueLabel
+                {...(isEstimatingSize || isWaitingForDropZone
+                  ? { isIndeterminate: true }
+                  : { showValueLabel: true, value: stats.totalProgress ?? 0 })}
                 size="lg"
-                value={stats.totalProgress ?? 0}
                 strokeWidth={3}
               />
             </div>

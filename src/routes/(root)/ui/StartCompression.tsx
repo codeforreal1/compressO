@@ -63,6 +63,7 @@ function StartCompression() {
         (mediaFile) => mediaFile.id === payload?.videoId,
       )
       if (media?.type === 'video') {
+        media.compressionProgress = 0
         media.targetSizeRound = {
           round: payload.pass,
           isWithoutHardwareAcceleration: payload.onCpu,

@@ -515,7 +515,7 @@ function PreviewSingleMedia({
           />
         </div>
         <CircularProgress
-          {...(videoDuration == null
+          {...(videoDuration == null || isEstimatingSize || isWaitingForDropZone
             ? { isIndeterminate: true }
             : { value: compressionProgress })}
           classNames={{
@@ -552,7 +552,12 @@ function PreviewSingleMedia({
           </p>
           <p
             className={`text-2xl text-center font-bold my-2 opacity-${
-              compressionProgress && compressionProgress > 0 ? 1 : 0
+              !isEstimatingSize &&
+              !isWaitingForDropZone &&
+              compressionProgress &&
+              compressionProgress > 0
+                ? 1
+                : 0
             }`}
           >
             {compressionProgress?.toFixed(2)}%

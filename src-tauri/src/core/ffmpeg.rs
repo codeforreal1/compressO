@@ -71,12 +71,34 @@ fn audio_output_codec(extension: &str, requested_codec: Option<&str>) -> String 
 const MIN_PROGRESS_OUTPUT_BYTES: u64 = 1024;
 
 /// Parses FFmpeg `-progress -` key/value stdout lines across `\n`, `\r`, or `\r\n` boundaries.
-#[derive(Default)]
 struct FfmpegProgressTracker {
     last_total_size: Option<u64>,
+    scale: f64,
+    offset_secs: f64,
+    require_output_bytes: bool,
+}
+
+impl Default for FfmpegProgressTracker {
+    fn default() -> Self {
+        Self {
+            last_total_size: None,
+            scale: 1.0,
+            offset_secs: 0.0,
+            require_output_bytes: true,
+        }
+    }
 }
 
 impl FfmpegProgressTracker {
+    fn with_pass(scale: f64, offset_secs: f64, require_output_bytes: bool) -> Self {
+        Self {
+            last_total_size: None,
+            scale,
+            offset_secs,
+            require_output_bytes,
+        }
+    }
+
     fn feed_line(&mut self, line: &str) -> Option<String> {
         let trimmed = line.trim();
         if let Some(value) = trimmed.strip_prefix("total_size=") {
@@ -84,31 +106,44 @@ impl FfmpegProgressTracker {
             return None;
         }
         let duration = trimmed.strip_prefix("out_time=")?.trim();
-        if !has_positive_ffmpeg_duration(duration) {
+        let secs = parse_ffmpeg_duration_secs(duration)?;
+        if self.require_output_bytes
+            && matches!(self.last_total_size, Some(bytes) if bytes < MIN_PROGRESS_OUTPUT_BYTES)
+        {
             return None;
         }
-        if matches!(self.last_total_size, Some(bytes) if bytes < MIN_PROGRESS_OUTPUT_BYTES) {
-            return None;
+        if (self.scale - 1.0).abs() < f64::EPSILON && self.offset_secs == 0.0 {
+            Some(duration.to_string())
+        } else {
+            Some(format_ffmpeg_duration(self.offset_secs + secs * self.scale))
         }
-        Some(duration.to_string())
     }
 }
 
-fn has_positive_ffmpeg_duration(text: &str) -> bool {
+fn parse_ffmpeg_duration_secs(text: &str) -> Option<f64> {
     if text.is_empty() || text.eq_ignore_ascii_case("N/A") || text.starts_with('-') {
-        return false;
+        return None;
     }
     let mut seconds = 0.0;
     for part in text.split(':') {
-        let Ok(value) = part.parse::<f64>() else {
-            return false;
-        };
+        let value = part.parse::<f64>().ok()?;
         if !value.is_finite() || value < 0.0 {
-            return false;
+            return None;
         }
         seconds = seconds * 60.0 + value;
     }
-    seconds > 0.0
+    (seconds > 0.0).then_some(seconds)
+}
+
+fn format_ffmpeg_duration(seconds: f64) -> String {
+    let clamped = seconds.max(0.0);
+    let total_us = (clamped * 1_000_000.0).round() as u64;
+    let us = total_us % 1_000_000;
+    let total_secs = total_us / 1_000_000;
+    let s = total_secs % 60;
+    let m = (total_secs / 60) % 60;
+    let h = total_secs / 3600;
+    format!("{h:02}:{m:02}:{s:02}.{us:06}")
 }
 
 fn build_ffmpeg_progress_callback(
@@ -116,7 +151,22 @@ fn build_ffmpeg_progress_callback(
     video_id: String,
     batch_id: String,
 ) -> crate::core::media_process::StdoutCallback {
-    let tracker = std::sync::Mutex::new(FfmpegProgressTracker::default());
+    build_ffmpeg_progress_callback_with_pass(app, video_id, batch_id, 1.0, 0.0, true)
+}
+
+fn build_ffmpeg_progress_callback_with_pass(
+    app: AppHandle,
+    video_id: String,
+    batch_id: String,
+    scale: f64,
+    offset_secs: f64,
+    require_output_bytes: bool,
+) -> crate::core::media_process::StdoutCallback {
+    let tracker = std::sync::Mutex::new(FfmpegProgressTracker::with_pass(
+        scale,
+        offset_secs,
+        require_output_bytes,
+    ));
     Arc::new(move |_process_index: usize, stdout_line: String| {
         let duration = {
             let Ok(mut guard) = tracker.lock() else {
@@ -1538,6 +1588,7 @@ impl FFMPEG {
                 let mut effective_args = args.clone();
                 let mut use_assets_cwd = false;
                 let mut two_pass_prefix: Option<PathBuf> = None;
+                let mut two_pass_duration_secs: Option<f64> = None;
 
                 if hardware_encoder_name.is_none() && use_cpu_two_pass {
                     let prefix_name = format!("ffpass_{}_{}", video_id, size_attempt);
@@ -1545,6 +1596,37 @@ impl FFMPEG {
                     if let Some((pass1_args, pass2_args, needs_assets_cwd)) =
                         build_two_pass_args(&args, &output_codec, &prefix_path, &prefix_name)
                     {
+                        let base_duration = if let Some(segments) =
+                            trim_segments.filter(|segments| !segments.is_empty())
+                        {
+                            Some(
+                                segments
+                                    .iter()
+                                    .map(|segment| (segment.end - segment.start).max(0.0))
+                                    .sum(),
+                            )
+                        } else if let Ok(mut ffprobe) = FFPROBE::new(&self.app)
+                            .map(|p| p.with_owner_window_opt(self.owner_window.as_deref()))
+                        {
+                            ffprobe
+                                .get_video_basic_info(video_path)
+                                .await
+                                .ok()
+                                .and_then(|info| info.duration)
+                        } else {
+                            None
+                        };
+                        let pass_duration_secs = base_duration
+                            .map(|d| d / clamped_speed.unwrap_or(1.0) as f64)
+                            .filter(|d| *d > 0.0);
+                        let pass1_callback = build_ffmpeg_progress_callback_with_pass(
+                            app_clone.clone(),
+                            video_id_for_progress.clone(),
+                            batch_id_for_progress.clone(),
+                            0.5,
+                            0.0,
+                            false,
+                        );
                         let mut pass1_cmd = self.get_ffmpeg_command()?;
                         if needs_assets_cwd {
                             pass1_cmd.current_dir(&self.assets_dir);
@@ -1557,12 +1639,14 @@ impl FFMPEG {
                                 vec![video_id.to_string(), batch_id.clone()],
                                 Some(cancel_callback.clone()),
                             )
+                            .with_stdout_callback(pass1_callback)
                             .build()?;
                         match pass1_exec.spawn_and_wait().await {
                             Ok(res) if res.success() => {
                                 effective_args = pass2_args;
                                 use_assets_cwd = needs_assets_cwd;
                                 two_pass_prefix = Some(prefix_path);
+                                two_pass_duration_secs = pass_duration_secs;
                             }
                             Err(error) if error == "CANCELLED" => {
                                 cleanup_two_pass_logs(&prefix_path);
@@ -1586,11 +1670,21 @@ impl FFMPEG {
                 }
                 ffmpeg_cmd.args(effective_args);
 
-                let stdout_callback = build_ffmpeg_progress_callback(
-                    app_clone.clone(),
-                    video_id_for_progress.clone(),
-                    batch_id_for_progress.clone(),
-                );
+                let stdout_callback = match two_pass_duration_secs {
+                    Some(total_secs) => build_ffmpeg_progress_callback_with_pass(
+                        app_clone.clone(),
+                        video_id_for_progress.clone(),
+                        batch_id_for_progress.clone(),
+                        0.5,
+                        0.5 * total_secs,
+                        true,
+                    ),
+                    None => build_ffmpeg_progress_callback(
+                        app_clone.clone(),
+                        video_id_for_progress.clone(),
+                        batch_id_for_progress.clone(),
+                    ),
+                };
                 let executor = MediaProcessExecutorBuilder::new(self.app.clone())
                     .owner_window_opt(self.owner_window.as_deref())
                     .command(ffmpeg_cmd)
@@ -2626,22 +2720,7 @@ fn build_two_pass_args(
         }
     }
 
-    let log_str = log_prefix.to_string_lossy().into_owned();
-    let pass_flags = |pass: u8| -> Vec<String> {
-        if uses_x265 {
-            vec![
-                "-x265-params".to_string(),
-                format!("pass={}:stats={}.x265:log-level=error", pass, log_file_name),
-            ]
-        } else {
-            vec![
-                "-pass".to_string(),
-                pass.to_string(),
-                "-passlogfile".to_string(),
-                log_str.clone(),
-            ]
-        }
-    };
+    let mut existing_x265_params: Option<String> = None;
 
     // Pass 1 strips container faststart flags, subtitle streams, and attached cover-art maps so it
     // writes only stats to the null muxer cleanly.
@@ -2651,6 +2730,10 @@ fn build_two_pass_args(
         let arg = cpu_args[i].as_str();
         let next = cpu_args.get(i + 1).map(String::as_str);
         match (arg, next) {
+            ("-x265-params", Some(val)) if uses_x265 => {
+                existing_x265_params = Some(val.to_string());
+                i += 2;
+            }
             ("-movflags", Some(_))
             | ("-c:v:1", Some(_))
             | ("-disposition:v:1", Some(_))
@@ -2669,6 +2752,26 @@ fn build_two_pass_args(
             }
         }
     }
+
+    let log_str = log_prefix.to_string_lossy().into_owned();
+    let pass_flags = |pass: u8| -> Vec<String> {
+        if uses_x265 {
+            let mut combined = format!("pass={}:stats={}.x265:log-level=error", pass, log_file_name);
+            if let Some(extra) = existing_x265_params.as_deref().filter(|s| !s.is_empty()) {
+                combined.push(':');
+                combined.push_str(extra);
+            }
+            vec!["-x265-params".to_string(), combined]
+        } else {
+            vec![
+                "-pass".to_string(),
+                pass.to_string(),
+                "-passlogfile".to_string(),
+                log_str.clone(),
+            ]
+        }
+    };
+
     pass1.extend(pass_flags(1));
     pass1.extend([
         "-f".to_string(),
@@ -2681,7 +2784,15 @@ fn build_two_pass_args(
     ]);
 
     let mut pass2 = Vec::with_capacity(cpu_args.len() + 4);
-    pass2.extend_from_slice(&cpu_args[..y_idx]);
+    let mut j = 0;
+    while j < y_idx {
+        if uses_x265 && cpu_args[j] == "-x265-params" && j + 1 < y_idx {
+            j += 2;
+            continue;
+        }
+        pass2.push(cpu_args[j].clone());
+        j += 1;
+    }
     pass2.extend(pass_flags(2));
     pass2.extend_from_slice(&cpu_args[y_idx..]);
 
@@ -2718,16 +2829,44 @@ fn bitrate_args(video_bitrate: u32) -> Vec<String> {
     ]
 }
 
-/// Adds FFmpeg's encoder thread limit before the output file, so it applies to the output codec
-/// (see Settings -> Output -> Maximum CPU cores)
+/// Limits CPU decoding, filtergraph, and encoder threads (`x265`/`svtav1` need encoder-specific
+/// pool options because both ignore FFmpeg's `-threads` flag for their worker pools).
 fn with_thread_limit(args: &[String], limit: usize) -> Vec<String> {
-    let mut next = Vec::with_capacity(args.len() + 2);
     let Some(output_option) = args.iter().rposition(|arg| arg == "-y") else {
-        next.extend_from_slice(args);
-        return next;
+        return args.to_vec();
     };
-    next.extend_from_slice(&args[..output_option]);
-    next.extend(["-threads".to_string(), limit.to_string()]);
+    let limit_str = limit.to_string();
+    let video_codec = args
+        .windows(2)
+        .find_map(|pair| (pair[0] == "-c:v:0").then(|| pair[1].as_str()));
+
+    let mut next = Vec::with_capacity(args.len() + 12);
+    next.extend([
+        "-filter_threads".to_string(),
+        limit_str.clone(),
+        "-filter_complex_threads".to_string(),
+        limit_str.clone(),
+    ]);
+
+    let mut i = 0;
+    while i < output_option {
+        if args[i] == "-i" && i + 1 < output_option {
+            next.extend(["-threads".to_string(), limit_str.clone()]);
+            next.push(args[i].clone());
+            next.push(args[i + 1].clone());
+            i += 2;
+        } else {
+            next.push(args[i].clone());
+            i += 1;
+        }
+    }
+
+    match video_codec {
+        Some("libx265") => next.extend(["-x265-params".to_string(), format!("pools={}", limit)]),
+        Some("libsvtav1") => next.extend(["-svtav1-params".to_string(), format!("lp={}", limit)]),
+        _ => {}
+    }
+    next.extend(["-threads".to_string(), limit_str]);
     next.extend_from_slice(&args[output_option..]);
     next
 }
@@ -3044,6 +3183,12 @@ mod thread_limit_tests {
         assert_eq!(
             with_thread_limit(&args, 4),
             [
+                "-filter_threads",
+                "4",
+                "-filter_complex_threads",
+                "4",
+                "-threads",
+                "4",
                 "-i",
                 "in.mp4",
                 "-c:v:0",
@@ -3059,6 +3204,37 @@ mod thread_limit_tests {
             .map(String::from)
             .collect::<Vec<_>>()
         );
+    }
+
+    #[test]
+    fn cpu_thread_limit_sets_x265_pools_even_across_two_pass() {
+        let args: Vec<String> = [
+            "-i",
+            "/tmp/in.mov",
+            "-c:v:0",
+            "libx265",
+            "-b:v:0",
+            "1500k",
+            "-y",
+            "/tmp/out.mov",
+        ]
+        .into_iter()
+        .map(String::from)
+        .collect();
+        let limited = with_thread_limit(&args, 8);
+        assert!(limited.windows(2).any(|w| w == ["-x265-params", "pools=8"]));
+
+        let (pass1, pass2, needs_cwd) =
+            build_two_pass_args(&limited, "libx265", Path::new("/tmp/p"), "p").unwrap();
+        assert!(needs_cwd);
+        for cmd in [&pass1, &pass2] {
+            let x265_vals: Vec<&str> = cmd
+                .windows(2)
+                .filter_map(|w| (w[0] == "-x265-params").then_some(w[1].as_str()))
+                .collect();
+            assert_eq!(x265_vals.len(), 1);
+            assert!(x265_vals[0].contains("pools=8"));
+        }
     }
 }
 
@@ -3499,6 +3675,23 @@ mod progress_tests {
         assert_eq!(
             tracker.feed_line("out_time=00:00:01.920000\r").as_deref(),
             Some("00:00:01.920000")
+        );
+    }
+
+    #[test]
+    fn two_pass_tracker_splits_progress_across_analysis_and_encode() {
+        let mut pass1 = FfmpegProgressTracker::with_pass(0.5, 0.0, false);
+        assert_eq!(pass1.feed_line("total_size=0\n"), None);
+        assert_eq!(
+            pass1.feed_line("out_time=00:00:10.000000\n").as_deref(),
+            Some("00:00:05.000000")
+        );
+
+        let mut pass2 = FfmpegProgressTracker::with_pass(0.5, 5.0, true);
+        assert_eq!(pass2.feed_line("total_size=4096\n"), None);
+        assert_eq!(
+            pass2.feed_line("out_time=00:00:10.000000\n").as_deref(),
+            Some("00:00:10.000000")
         );
     }
 }
