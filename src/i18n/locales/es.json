@@ -889,6 +889,8 @@
     "alreadyAdded": "Los archivos seleccionados ya se han añadido.",
     "someCorrupted": "Algunos archivos parecen estar dañados o no ser válidos y no se han añadido.",
     "corrupted": "El archivo parece estar dañado o no ser válido.",
+    "animatedWebp": "No se admiten imágenes WebP animadas.",
+    "someAnimatedWebp": "Algunas imágenes WebP animadas no se añadieron porque no se admiten.",
     "selectTitle": "Seleccione imágenes, vídeos o audio para comprimir.",
     "selectFailed": "No se pudieron seleccionar los archivos.",
     "invalidFiles": "Archivos o carpetas no válidos",
@@ -1006,6 +1008,7 @@
     "controls": "Controles de la línea de tiempo:",
     "select": "Haga clic para seleccionar una pista",
     "split": "Haga doble clic en la pista para dividirla",
+    "splitAtCursor": "Pulse <key>C</key> para dividir en el cursor",
     "add": "Haga doble clic en un área libre para añadir una pista nueva",
     "delete": "Seleccione y pulse <key>Supr</key> para eliminar una pista",
     "hideInstructions": "Ocultar instrucciones"

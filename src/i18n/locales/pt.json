@@ -889,6 +889,8 @@
     "alreadyAdded": "As mídias selecionadas já foram adicionadas.",
     "someCorrupted": "Alguns arquivos parecem estar corrompidos ou inválidos e não foram adicionados.",
     "corrupted": "O arquivo parece estar corrompido ou inválido.",
+    "animatedWebp": "Imagens WebP animadas não são suportadas.",
+    "someAnimatedWebp": "Algumas imagens WebP animadas não foram adicionadas porque não são suportadas.",
     "selectTitle": "Selecione imagens, vídeos ou áudios para comprimir.",
     "selectFailed": "Não foi possível selecionar as mídias.",
     "invalidFiles": "Arquivos ou pastas inválidos",
@@ -1006,6 +1008,7 @@
     "controls": "Controles da linha do tempo:",
     "select": "Clique para selecionar uma faixa",
     "split": "Clique duas vezes na faixa para dividi-la",
+    "splitAtCursor": "Pressione <key>C</key> para dividir no cursor",
     "add": "Clique duas vezes em uma área livre para adicionar uma nova faixa",
     "delete": "Selecione e pressione <key>Delete</key> para apagar uma faixa",
     "hideInstructions": "Ocultar instruções"

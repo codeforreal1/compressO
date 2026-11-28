@@ -134,7 +134,7 @@ pub enum TauriEvents {
 pub struct CancelInProgressCompressionPayload {
     pub ids: Vec<String>,
 }
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct VideoInfo {
     pub duration: Option<f64>,

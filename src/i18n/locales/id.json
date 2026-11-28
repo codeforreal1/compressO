@@ -871,6 +871,8 @@
     "alreadyAdded": "Media yang dipilih sudah ditambahkan.",
     "someCorrupted": "Beberapa file tampaknya rusak atau tidak valid dan tidak ditambahkan.",
     "corrupted": "File tampaknya rusak atau tidak valid.",
+    "animatedWebp": "Gambar WebP animasi tidak didukung.",
+    "someAnimatedWebp": "Beberapa gambar WebP animasi tidak ditambahkan karena tidak didukung.",
     "selectTitle": "Pilih gambar, video, atau audio untuk dikompresi.",
     "selectFailed": "Media tidak dapat dipilih.",
     "invalidFiles": "File atau folder tidak valid",
@@ -976,6 +978,7 @@
     "controls": "Kontrol Linimasa:",
     "select": "Klik untuk memilih trek",
     "split": "Klik dua kali pada trek untuk membaginya",
+    "splitAtCursor": "Tekan <key>C</key> untuk membagi di posisi kursor",
     "add": "Klik dua kali pada area kosong untuk menambahkan trek baru",
     "delete": "Pilih trek lalu tekan <key>Delete</key> untuk menghapusnya",
     "hideInstructions": "Sembunyikan Petunjuk"

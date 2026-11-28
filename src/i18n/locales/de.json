@@ -880,6 +880,8 @@
     "alreadyAdded": "Die ausgewählten Medien wurden bereits hinzugefügt.",
     "someCorrupted": "Einige Dateien scheinen beschädigt oder ungültig zu sein und wurden nicht hinzugefügt.",
     "corrupted": "Die Datei scheint beschädigt oder ungültig zu sein.",
+    "animatedWebp": "Animierte WebP-Bilder werden nicht unterstützt.",
+    "someAnimatedWebp": "Einige animierte WebP-Bilder wurden nicht hinzugefügt, da sie nicht unterstützt werden.",
     "selectTitle": "Bilder, Videos oder Audiodateien zum Komprimieren auswählen.",
     "selectFailed": "Die Medien konnten nicht ausgewählt werden.",
     "invalidFiles": "Ungültige Dateien oder Ordner",
@@ -991,6 +993,7 @@
     "controls": "Steuerung der Zeitleiste:",
     "select": "Klicken, um eine Spur auszuwählen",
     "split": "Doppelklicken Sie auf die Spur, um sie zu teilen",
+    "splitAtCursor": "<key>C</key> drücken, um am Cursor zu teilen",
     "add": "Doppelklicken Sie auf einen freien Bereich, um eine neue Spur hinzuzufügen",
     "delete": "Auswählen und <key>Entf</key> drücken, um eine Spur zu löschen",
     "hideInstructions": "Anleitung ausblenden"

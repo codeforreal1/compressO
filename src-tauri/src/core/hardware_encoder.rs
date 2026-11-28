@@ -6,10 +6,14 @@
 //! ffmpeg build all have to support it), once per run of the app. If an encode on the graphics card
 //! fails anyway, the video is compressed on the CPU instead (see `FFMPEG::compress_video`).
 
+use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::time::UNIX_EPOCH;
 
-use tauri::AppHandle;
+use serde::{Deserialize, Serialize};
+use tauri::{AppHandle, Manager};
 use tokio::sync::OnceCell;
+use tokio::task::JoinSet;
 
 /// Whether to use the graphics card, as set in the settings (off by default)
 static IS_ENABLED: AtomicBool = AtomicBool::new(false);
@@ -89,17 +93,122 @@ pub fn is_enabled() -> bool {
     IS_ENABLED.load(Ordering::SeqCst)
 }
 
-/// The encoders that work on this computer. Found on first use (call it at startup, so the first
-/// compression does not wait), then remembered.
+const CACHE_FILE_NAME: &str = "hardware-encoders-cache.json";
+
+#[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct EncoderCache {
+    cache_key: String,
+    encoders: Vec<String>,
+}
+
+fn cache_path(app: &AppHandle) -> Option<PathBuf> {
+    app.path()
+        .app_data_dir()
+        .ok()
+        .map(|dir| dir.join(CACHE_FILE_NAME))
+}
+
+fn current_cache_key(app: &AppHandle, candidate_list: &[HardwareEncoder]) -> String {
+    let ffmpeg_stamp = super::tool_bundle::command(app, "ffmpeg")
+        .ok()
+        .and_then(|cmd| std::fs::metadata(cmd.get_program()).ok())
+        .map(|meta| {
+            let modified = meta
+                .modified()
+                .ok()
+                .and_then(|time| time.duration_since(UNIX_EPOCH).ok())
+                .map(|dur| dur.as_secs())
+                .unwrap_or(0);
+            format!("{}:{}", meta.len(), modified)
+        })
+        .unwrap_or_else(|| "unknown".to_string());
+    let candidate_names: Vec<&str> = candidate_list.iter().map(|c| c.name).collect();
+    format!(
+        "v1:{}:{}:{}:{}",
+        app.package_info().version,
+        std::env::consts::OS,
+        ffmpeg_stamp,
+        candidate_names.join(",")
+    )
+}
+
+fn read_cached_encoders(
+    app: &AppHandle,
+    cache_key: &str,
+    candidate_list: &[HardwareEncoder],
+) -> Option<Vec<HardwareEncoder>> {
+    let path = cache_path(app)?;
+    let text = std::fs::read_to_string(path).ok()?;
+    let cached: EncoderCache = serde_json::from_str(&text).ok()?;
+    if cached.cache_key != cache_key {
+        return None;
+    }
+    let available = candidate_list
+        .iter()
+        .filter(|candidate| cached.encoders.iter().any(|name| name == candidate.name))
+        .cloned()
+        .collect();
+    Some(available)
+}
+
+fn write_cached_encoders(app: &AppHandle, cache_key: &str, available: &[HardwareEncoder]) {
+    let Some(path) = cache_path(app) else {
+        return;
+    };
+    if let Some(parent) = path.parent() {
+        let _ = std::fs::create_dir_all(parent);
+    }
+    let payload = EncoderCache {
+        cache_key: cache_key.to_string(),
+        encoders: available.iter().map(|e| e.name.to_string()).collect(),
+    };
+    if let Ok(text) = serde_json::to_string(&payload) {
+        let _ = std::fs::write(path, text);
+    }
+}
+
+/// Probes all platform encoder candidates concurrently and preserves priority order.
+async fn probe_candidates_parallel(
+    app: &AppHandle,
+    candidate_list: Vec<HardwareEncoder>,
+) -> Vec<HardwareEncoder> {
+    let mut set = JoinSet::new();
+    for (index, candidate) in candidate_list.iter().cloned().enumerate() {
+        let app = app.clone();
+        set.spawn(async move { (index, works(&app, &candidate).await) });
+    }
+    let mut ok_flags = vec![false; candidate_list.len()];
+    while let Some(joined) = set.join_next().await {
+        if let Ok((index, supported)) = joined {
+            if index < ok_flags.len() {
+                ok_flags[index] = supported;
+            }
+        }
+    }
+    candidate_list
+        .into_iter()
+        .zip(ok_flags)
+        .filter_map(|(candidate, ok)| ok.then_some(candidate))
+        .collect()
+}
+
+/// The encoders that work on this computer. Read from the disk cache when valid, otherwise probed
+/// in parallel on first use (call at startup so the first compression does not wait).
 pub async fn available_encoders(app: &AppHandle) -> &'static [HardwareEncoder] {
     AVAILABLE_ENCODERS
         .get_or_init(|| async {
-            let mut available = Vec::new();
-            for candidate in candidates() {
-                if works(app, &candidate).await {
-                    available.push(candidate);
-                }
+            let candidate_list = candidates();
+            let cache_key = current_cache_key(app, &candidate_list);
+            if let Some(cached) = read_cached_encoders(app, &cache_key, &candidate_list) {
+                log::info!(
+                    "[hardware encoder] cached: {:?}",
+                    cached.iter().map(|e| e.name).collect::<Vec<_>>()
+                );
+                return cached;
             }
+            let available = probe_candidates_parallel(app, candidate_list).await;
+            write_cached_encoders(app, &cache_key, &available);
             log::info!(
                 "[hardware encoder] available: {:?}",
                 available.iter().map(|e| e.name).collect::<Vec<_>>()

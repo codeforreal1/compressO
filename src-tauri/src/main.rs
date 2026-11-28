@@ -41,6 +41,7 @@ use tauri_commands::{
     ffprobe::{
         get_audio_streams, get_chapters, get_container_info, get_subtitle_streams,
         get_video_basic_info, get_video_dynamic_range, get_video_streams,
+        inspect_video_for_import,
     },
     file_manager::show_item_in_file_manager,
     fs::{
@@ -587,6 +588,7 @@ async fn run() {
             generate_video_thumbnail,
             core::waveform::get_audio_waveform,
             get_video_basic_info,
+            inspect_video_for_import,
             get_image_dimension,
             get_svg_dimension,
             get_file_metadata,
@@ -617,6 +619,7 @@ async fn run() {
             prepare_image_preview,
             get_image_color_info,
             tauri_commands::image::get_image_dynamic_range,
+            tauri_commands::image::is_animated_webp,
             get_exif_info,
             set_window_tint,
             get_system_dark_mode,
@@ -750,6 +753,7 @@ async fn run() {
                 // with the app
                 if let tauri::RunEvent::Exit = event {
                     core::media_process::kill_running_processes();
+                    sys::history::flush_blocking(app_handle);
                     sys::logging::finish_crash_reporting();
                 }
 

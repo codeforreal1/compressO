@@ -889,6 +889,8 @@
     "alreadyAdded": "I contenuti selezionati sono già stati aggiunti.",
     "someCorrupted": "Alcuni file sembrano danneggiati o non validi e non sono stati aggiunti.",
     "corrupted": "Il file sembra danneggiato o non valido.",
+    "animatedWebp": "Le immagini WebP animate non sono supportate.",
+    "someAnimatedWebp": "Alcune immagini WebP animate non sono state aggiunte perché non supportate.",
     "selectTitle": "Selezioni immagini, video o audio da comprimere.",
     "selectFailed": "Non è stato possibile selezionare i contenuti.",
     "invalidFiles": "File o cartelle non validi",
@@ -1006,6 +1008,7 @@
     "controls": "Comandi della timeline:",
     "select": "Faccia clic per selezionare una traccia",
     "split": "Faccia doppio clic sulla traccia per dividerla",
+    "splitAtCursor": "Prema <key>C</key> per dividere al cursore",
     "add": "Faccia doppio clic su un’area libera per aggiungere una nuova traccia",
     "delete": "Selezioni e prema <key>Canc</key> per eliminare una traccia",
     "hideInstructions": "Nascondi istruzioni"

@@ -250,6 +250,63 @@ struct SizeAttempt {
     scale: f64,
 }
 
+/// Preprocessed (EXIF-oriented and/or transformed/scaled) raster inputs reused across all quality
+/// attempts of a single scale round in `compress_image_to_size`.
+enum PreparedScaleSource {
+    None,
+    Raster {
+        _work: super::image_codecs::Workspace,
+        path: String,
+    },
+    HdrJpeg {
+        _work: super::image_codecs::Workspace,
+        base: String,
+        hdr: String,
+    },
+}
+
+fn dimensions_for_scale(
+    config: &ImageCompressionConfig,
+    scale: f64,
+) -> Result<Option<(f64, f64)>, String> {
+    if scale < 1.0 {
+        let (width, height) = config
+            .target_size
+            .as_ref()
+            .and_then(|target| target.dimensions)
+            .ok_or("The image has no dimensions to lower")?;
+        Ok(Some((
+            (width * scale).round().max(1.0),
+            (height * scale).round().max(1.0),
+        )))
+    } else {
+        Ok(config.dimensions)
+    }
+}
+
+/// Estimates the next quality inside `(fits, too_large)` from measured sizes at both bounds,
+/// clamped to `[0.25, 0.75]` of the interval so worst-case shrinkage remains logarithmic.
+fn interpolated_quality(
+    fits: u8,
+    fits_size: u64,
+    too_large: u8,
+    too_large_size: u64,
+    limit: u64,
+) -> u8 {
+    let span = too_large.saturating_sub(fits);
+    if span <= 1 {
+        return fits;
+    }
+    let ratio = if too_large_size > fits_size {
+        let goal = (limit as f64) * 0.96;
+        ((goal - fits_size as f64) / (too_large_size - fits_size) as f64).clamp(0.25, 0.75)
+    } else {
+        0.5
+    };
+    let step = ((span as f64) * ratio).round() as u8;
+    (fits + step.clamp(1, span - 1)).clamp(fits + 1, too_large - 1)
+}
+
 pub struct ImageCompressor {
     app: AppHandle,
     assets_dir: PathBuf,
@@ -311,9 +368,45 @@ impl ImageCompressor {
         dimensions: Option<(f64, f64)>,
         transform_history: Option<&MediaTransformHistory>,
     ) -> Result<ImageCompressionResult, String> {
+        self.compress_image_with_prepared_source(
+            input_path,
+            None,
+            convert_to_extension,
+            svg_scale_factor,
+            is_lossless,
+            quality,
+            image_id,
+            batch_id,
+            strip_metadata,
+            svg_config,
+            dimensions,
+            transform_history,
+        )
+        .await
+    }
+
+    async fn compress_image_with_prepared_source(
+        &mut self,
+        input_path: &str,
+        prepared_source: Option<&str>,
+        convert_to_extension: &str,
+        svg_scale_factor: Option<f32>,
+        is_lossless: Option<bool>,
+        quality: u8,
+        image_id: &str,
+        batch_id: Option<&str>,
+        strip_metadata: Option<bool>,
+        svg_config: Option<SvgConfig>,
+        dimensions: Option<(f64, f64)>,
+        transform_history: Option<&MediaTransformHistory>,
+    ) -> Result<ImageCompressionResult, String> {
         let original_path = Path::new(input_path);
         if !original_path.exists() {
             return Err(String::from("Image file does not exist."));
+        }
+        if prepared_source.is_none() && super::image_info::ImageInfo::is_animated_webp(input_path)
+        {
+            return Err(String::from("Animated WebP images are not supported."));
         }
 
         let original_metadata = get_file_metadata(input_path)?;
@@ -456,36 +549,45 @@ impl ImageCompressor {
         // Photos stored sideways with an EXIF orientation (e.g. portrait photos from phones) are made
         // upright first: the transforms, the dimensions & the crop are all for the image as it is
         // displayed, and the compressors drop the orientation
-        let orientation = if matches!(
-            original_extension.as_str(),
-            "jpg" | "jpeg" | "png" | "webp" | "tiff" | "tif"
-        ) {
+        let orientation = if prepared_source.is_none()
+            && matches!(
+                original_extension.as_str(),
+                "jpg" | "jpeg" | "png" | "webp" | "tiff" | "tif"
+            ) {
             get_image_orientation(input_path)
         } else {
             None
         };
-        let upright_path: Option<PathBuf> = match orientation {
-            Some(orientation) => {
-                let upright_path: PathBuf = [
-                    self.assets_dir.clone(),
-                    PathBuf::from(format!("{}_upright.{}", image_id, working_extension)),
-                ]
-                .iter()
-                .collect();
-                write_upright_copy(source_path, upright_path.to_str().unwrap(), orientation)?;
-                Some(upright_path)
+        let upright_path: Option<PathBuf> = if let Some(prepared) = prepared_source {
+            let _ = prepared;
+            None
+        } else {
+            match orientation {
+                Some(orientation) => {
+                    let upright_path: PathBuf = [
+                        self.assets_dir.clone(),
+                        PathBuf::from(format!("{}_upright.{}", image_id, working_extension)),
+                    ]
+                    .iter()
+                    .collect();
+                    write_upright_copy(source_path, upright_path.to_str().unwrap(), orientation)?;
+                    Some(upright_path)
+                }
+                None => None,
             }
-            None => None,
         };
-        let source_path = upright_path
-            .as_ref()
-            .and_then(|p| p.to_str())
-            .unwrap_or(source_path);
+        let source_path = prepared_source.unwrap_or_else(|| {
+            upright_path
+                .as_ref()
+                .and_then(|p| p.to_str())
+                .unwrap_or(source_path)
+        });
 
         // Removed once the image is done (not on a timer: an image compressed again right away, e.g.
         // to reach a target size, writes the same file)
         let mut transform_temp_to_remove: Option<PathBuf> = None;
-        let transform_input_path = if !original_extension.eq("svg")
+        let transform_input_path = if prepared_source.is_none()
+            && !original_extension.eq("svg")
             && (dimensions.is_some() || transform_history.is_some())
         {
             let transform_temp_filename = format!("{}_transformed.{}", image_id, working_extension);
@@ -919,28 +1021,52 @@ impl ImageCompressor {
         lossless: Option<bool>,
         quality: u8,
     ) -> Result<ImageCompressionResult, String> {
+        self.compress_image_attempt_prepared(
+            config, batch_id, dimensions, lossless, quality, None, None,
+        )
+        .await
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    async fn compress_image_attempt_prepared(
+        &mut self,
+        config: &ImageCompressionConfig,
+        batch_id: Option<&str>,
+        dimensions: Option<(f64, f64)>,
+        lossless: Option<bool>,
+        quality: u8,
+        prepared_raster: Option<&str>,
+        prepared_hdr_pair: Option<(&str, &str)>,
+    ) -> Result<ImageCompressionResult, String> {
         if let Some(base) = &config.hdr_jpeg_base_path {
             if lossless.unwrap_or(false) {
                 return Err(
                     "HDR JPEG encoding is lossy; choose PNG or JPEG XL for lossless output".into(),
                 );
             }
-            let work = super::image_codecs::Workspace::new(&self.app)?;
-            let mut inputs = [base.clone(), config.image_path.clone()];
-            if dimensions.is_some() || config.transform_history.is_some() {
-                for (index, input) in inputs.iter_mut().enumerate() {
-                    let transformed = work.0.join(format!("rendition{index}.png"));
-                    self.apply_spatial_transformations(
-                        input,
-                        transformed.to_str().ok_or("Invalid image path")?,
-                        dimensions,
-                        config.transform_history.as_ref(),
-                    )
-                    .await?;
-                    super::image_codecs::preserve_png_color(Path::new(input), &transformed)?;
-                    *input = transformed.to_string_lossy().into_owned();
+            let _work;
+            let (base_input, hdr_input) = if let Some((b, h)) = prepared_hdr_pair {
+                (b.to_string(), h.to_string())
+            } else {
+                let work = super::image_codecs::Workspace::new(&self.app)?;
+                let mut inputs = [base.clone(), config.image_path.clone()];
+                if dimensions.is_some() || config.transform_history.is_some() {
+                    for (index, input) in inputs.iter_mut().enumerate() {
+                        let transformed = work.0.join(format!("rendition{index}.png"));
+                        self.apply_spatial_transformations(
+                            input,
+                            transformed.to_str().ok_or("Invalid image path")?,
+                            dimensions,
+                            config.transform_history.as_ref(),
+                        )
+                        .await?;
+                        super::image_codecs::preserve_png_color(Path::new(input), &transformed)?;
+                        *input = transformed.to_string_lossy().into_owned();
+                    }
                 }
-            }
+                _work = work;
+                (inputs[0].clone(), inputs[1].clone())
+            };
             let file_name = format!("{}.{}", config.image_id, config.convert_to_extension);
             let output = self.assets_dir.join(&file_name);
             let output_path = output.to_string_lossy().into_owned();
@@ -948,8 +1074,8 @@ impl ImageCompressor {
             let strip_metadata = config.strip_metadata.unwrap_or(true);
             tauri::async_runtime::spawn_blocking(move || {
                 super::image_dynamic_range::encode_hdr_jpeg(
-                    &inputs[0],
-                    &inputs[1],
+                    &base_input,
+                    &hdr_input,
                     &destination,
                     quality,
                     strip_metadata,
@@ -965,8 +1091,9 @@ impl ImageCompressor {
                 is_target_size_reached: None,
             });
         }
-        self.compress_image(
+        self.compress_image_with_prepared_source(
             &config.image_path,
+            prepared_raster,
             config.convert_to_extension.as_str(),
             config.svg_scale_factor,
             lossless,
@@ -979,6 +1106,104 @@ impl ImageCompressor {
             config.transform_history.as_ref(),
         )
         .await
+    }
+
+    async fn prepare_scale_source(
+        &self,
+        config: &ImageCompressionConfig,
+        dimensions: Option<(f64, f64)>,
+    ) -> Result<PreparedScaleSource, String> {
+        if let Some(base) = &config.hdr_jpeg_base_path {
+            if dimensions.is_none() && config.transform_history.is_none() {
+                return Ok(PreparedScaleSource::None);
+            }
+            let work = super::image_codecs::Workspace::new(&self.app)?;
+            let mut inputs = [base.clone(), config.image_path.clone()];
+            for (index, input) in inputs.iter_mut().enumerate() {
+                let transformed = work.0.join(format!("rendition{index}.png"));
+                self.apply_spatial_transformations(
+                    input,
+                    transformed.to_str().ok_or("Invalid image path")?,
+                    dimensions,
+                    config.transform_history.as_ref(),
+                )
+                .await?;
+                super::image_codecs::preserve_png_color(Path::new(input), &transformed)?;
+                *input = transformed.to_string_lossy().into_owned();
+            }
+            return Ok(PreparedScaleSource::HdrJpeg {
+                _work: work,
+                base: inputs[0].clone(),
+                hdr: inputs[1].clone(),
+            });
+        }
+
+        let original_extension = super::image_codecs::extension(&config.image_path);
+        let convert_to_extension = if INPUT_ONLY_EXTENSIONS.contains(&config.convert_to_extension.as_str()) {
+            "png"
+        } else {
+            config.convert_to_extension.as_str()
+        };
+        if original_extension == "avif"
+            || original_extension == "svg"
+            || original_extension == "gif"
+            || super::image_codecs::is_modern(&original_extension)
+            || super::image_codecs::is_modern(convert_to_extension)
+        {
+            return Ok(PreparedScaleSource::None);
+        }
+        if original_extension == "png"
+            && convert_to_extension == "png"
+            && super::image_codecs::png_is_hdr(Path::new(&config.image_path)).unwrap_or(false)
+        {
+            return Ok(PreparedScaleSource::None);
+        }
+
+        let orientation = if matches!(
+            original_extension.as_str(),
+            "jpg" | "jpeg" | "png" | "webp" | "tiff" | "tif"
+        ) {
+            get_image_orientation(&config.image_path)
+        } else {
+            None
+        };
+        if orientation.is_none() && dimensions.is_none() && config.transform_history.is_none() {
+            return Ok(PreparedScaleSource::None);
+        }
+
+        let work = super::image_codecs::Workspace::new(&self.app)?;
+        let upright_source = if let Some(orientation) = orientation {
+            let upright_path = work.0.join(format!("upright.{original_extension}"));
+            write_upright_copy(
+                &config.image_path,
+                upright_path.to_str().ok_or("Invalid image path")?,
+                orientation,
+            )?;
+            upright_path.to_string_lossy().into_owned()
+        } else {
+            config.image_path.clone()
+        };
+
+        if dimensions.is_some() || config.transform_history.is_some() {
+            let transformed_path = work.0.join(format!("transformed.{original_extension}"));
+            let transformed_str = transformed_path.to_str().ok_or("Invalid image path")?;
+            self.apply_spatial_transformations(
+                &upright_source,
+                transformed_str,
+                dimensions,
+                config.transform_history.as_ref(),
+            )
+            .await?;
+            Ok(PreparedScaleSource::Raster {
+                _work: work,
+                path: transformed_path.to_string_lossy().into_owned(),
+            })
+        } else {
+            Ok(PreparedScaleSource::Raster {
+                _work: work,
+                path: upright_source,
+            })
+        }
     }
 
     /// Compresses an image to fit within a size (see `ImageTargetSize`). The output's size is never
@@ -1013,11 +1238,15 @@ impl ImageCompressor {
         let result = async {
             let mut scale = 1.0_f64;
             for round in 0..TARGET_SIZE_SCALE_ROUNDS {
+                let scale_dims = dimensions_for_scale(config, scale)?;
+                let prepared = self.prepare_scale_source(config, scale_dims).await?;
                 let highest = self
-                    .size_attempt(
+                    .size_attempt_prepared(
                         config,
                         batch_id,
                         scale,
+                        scale_dims,
+                        &prepared,
                         TARGET_SIZE_MAX_QUALITY,
                         &mut attempts,
                     )
@@ -1026,10 +1255,12 @@ impl ImageCompressor {
                     break;
                 }
                 let at_floor = self
-                    .size_attempt(
+                    .size_attempt_prepared(
                         config,
                         batch_id,
                         scale,
+                        scale_dims,
+                        &prepared,
                         TARGET_SIZE_FLOOR_QUALITY,
                         &mut attempts,
                     )
@@ -1039,8 +1270,11 @@ impl ImageCompressor {
                         config,
                         batch_id,
                         scale,
+                        scale_dims,
+                        &prepared,
                         limit,
-                        (TARGET_SIZE_FLOOR_QUALITY, TARGET_SIZE_MAX_QUALITY),
+                        (TARGET_SIZE_FLOOR_QUALITY, at_floor),
+                        (TARGET_SIZE_MAX_QUALITY, highest),
                         &mut attempts,
                     )
                     .await?;
@@ -1051,10 +1285,12 @@ impl ImageCompressor {
                 if is_smallest {
                     // At the smallest dimensions, a lower quality is the only way left
                     let lowest = self
-                        .size_attempt(
+                        .size_attempt_prepared(
                             config,
                             batch_id,
                             scale,
+                            scale_dims,
+                            &prepared,
                             TARGET_SIZE_MIN_QUALITY,
                             &mut attempts,
                         )
@@ -1064,8 +1300,11 @@ impl ImageCompressor {
                             config,
                             batch_id,
                             scale,
+                            scale_dims,
+                            &prepared,
                             limit,
-                            (TARGET_SIZE_MIN_QUALITY, TARGET_SIZE_FLOOR_QUALITY),
+                            (TARGET_SIZE_MIN_QUALITY, lowest),
+                            (TARGET_SIZE_FLOOR_QUALITY, at_floor),
                             &mut attempts,
                         )
                         .await?;
@@ -1103,8 +1342,18 @@ impl ImageCompressor {
                             .min(too_large - 0.01)
                             .min(1.0);
                     if larger > fitting.scale * 1.03 {
-                        self.size_attempt(config, batch_id, larger, fitting.quality, &mut attempts)
-                            .await?;
+                        let scale_dims = dimensions_for_scale(config, larger)?;
+                        let prepared = self.prepare_scale_source(config, scale_dims).await?;
+                        self.size_attempt_prepared(
+                            config,
+                            batch_id,
+                            larger,
+                            scale_dims,
+                            &prepared,
+                            fitting.quality,
+                            &mut attempts,
+                        )
+                        .await?;
                     }
                 }
             }
@@ -1160,64 +1409,78 @@ impl ImageCompressor {
     }
 
     /// The highest quality in `(fits, too_large)` whose output is within `limit`, at a part of the
-    /// image's size, by halving the range (see `compress_image_to_size`)
+    /// image's size, using byte-ratio interpolation bounded away from the ends so convergence takes
+    /// fewer encoder runs while preserving worst-case logarithmic shrink (see `compress_image_to_size`).
+    #[allow(clippy::too_many_arguments)]
     async fn search_quality(
         &mut self,
         config: &ImageCompressionConfig,
         batch_id: Option<&str>,
         scale: f64,
+        dimensions: Option<(f64, f64)>,
+        prepared: &PreparedScaleSource,
         limit: u64,
-        (mut fits, mut too_large): (u8, u8),
+        (mut fits, mut fits_size): (u8, u64),
+        (mut too_large, mut too_large_size): (u8, u64),
         attempts: &mut Vec<SizeAttempt>,
     ) -> Result<(), String> {
-        while too_large - fits > TARGET_SIZE_QUALITY_PRECISION {
-            let quality = fits + (too_large - fits) / 2;
+        while too_large.saturating_sub(fits) > TARGET_SIZE_QUALITY_PRECISION {
+            let quality = interpolated_quality(fits, fits_size, too_large, too_large_size, limit);
             let size = self
-                .size_attempt(config, batch_id, scale, quality, attempts)
+                .size_attempt_prepared(
+                    config,
+                    batch_id,
+                    scale,
+                    dimensions,
+                    prepared,
+                    quality,
+                    attempts,
+                )
                 .await?;
             if size <= limit {
                 fits = quality;
+                fits_size = size;
                 if size as f64 >= limit as f64 * TARGET_SIZE_CLOSE_ENOUGH {
                     break;
                 }
             } else {
                 too_large = quality;
+                too_large_size = size;
             }
         }
         Ok(())
     }
 
-    /// One attempt to reach a target size (see `compress_image_to_size`): the image compressed at a
-    /// quality & a part of its size, moved aside; its size in bytes
-    async fn size_attempt(
+    /// One attempt to reach a target size (see `compress_image_to_size`), reusing the preprocessed
+    /// oriented/transformed source for this `scale`.
+    #[allow(clippy::too_many_arguments)]
+    async fn size_attempt_prepared(
         &mut self,
         config: &ImageCompressionConfig,
         batch_id: Option<&str>,
         scale: f64,
+        dimensions: Option<(f64, f64)>,
+        prepared: &PreparedScaleSource,
         quality: u8,
         attempts: &mut Vec<SizeAttempt>,
     ) -> Result<u64, String> {
-        let dimensions = if scale < 1.0 {
-            let (width, height) = config
-                .target_size
-                .as_ref()
-                .and_then(|target| target.dimensions)
-                .ok_or("The image has no dimensions to lower")?;
-            Some((
-                (width * scale).round().max(1.0),
-                (height * scale).round().max(1.0),
-            ))
-        } else {
-            config.dimensions
+        let (prepared_raster, prepared_hdr_pair) = match prepared {
+            PreparedScaleSource::None => (None, None),
+            PreparedScaleSource::Raster { path, .. } => (Some(path.as_str()), None),
+            PreparedScaleSource::HdrJpeg { base, hdr, .. } => {
+                (None, Some((base.as_str(), hdr.as_str())))
+            }
         };
         let result = self
-            .compress_image_attempt(
+            .compress_image_attempt_prepared(
                 config,
                 batch_id,
                 dimensions,
                 // A lossless output cannot be made smaller by its quality
                 Some(false),
                 quality,
+                prepared_raster,
+                prepared_hdr_pair,
             )
             .await?;
         let output = PathBuf::from(&result.file_path);
@@ -2240,5 +2503,24 @@ impl ImageCompressor {
         }
 
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod target_size_tests {
+    use super::interpolated_quality;
+
+    #[test]
+    fn interpolated_quality_aims_near_limit_and_stays_strictly_inside_bounds() {
+        let q = interpolated_quality(40, 200_000, 95, 1_200_000, 500_000);
+        assert!(q > 40 && q < 95);
+        // Linear target 480k between 200k..1.2M (~28% into 55 -> ~55)
+        assert!(q < 65);
+
+        let high = interpolated_quality(40, 200_000, 95, 600_000, 500_000);
+        assert!(high > 65 && high < 95);
+
+        let degenerate = interpolated_quality(50, 400_000, 55, 300_000, 500_000);
+        assert!(degenerate > 50 && degenerate < 55);
     }
 }

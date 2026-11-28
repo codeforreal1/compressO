@@ -871,6 +871,8 @@
     "alreadyAdded": "Tệp phương tiện đã chọn đã được thêm.",
     "someCorrupted": "Một số tệp có vẻ bị hỏng hoặc không hợp lệ nên chưa được thêm.",
     "corrupted": "Tệp có vẻ bị hỏng hoặc không hợp lệ.",
+    "animatedWebp": "Hình ảnh WebP động không được hỗ trợ.",
+    "someAnimatedWebp": "Một số hình ảnh WebP động chưa được thêm vì không được hỗ trợ.",
     "selectTitle": "Chọn hình ảnh, video hoặc âm thanh để nén.",
     "selectFailed": "Không thể chọn tệp phương tiện.",
     "invalidFiles": "Tệp hoặc thư mục không hợp lệ",
@@ -976,6 +978,7 @@
     "controls": "Điều khiển dòng thời gian:",
     "select": "Nhấp để chọn một đoạn",
     "split": "Nhấp đúp vào đoạn để chia tách",
+    "splitAtCursor": "Nhấn <key>C</key> để chia tại vị trí con trỏ",
     "add": "Nhấp đúp vào vùng trống để thêm đoạn mới",
     "delete": "Chọn đoạn rồi nhấn <key>Delete</key> để xóa",
     "hideInstructions": "Ẩn hướng dẫn"

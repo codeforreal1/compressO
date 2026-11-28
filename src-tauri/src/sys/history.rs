@@ -3,8 +3,9 @@
 //! paths are kept as they were (files may be moved or deleted later; see `paths_exist`). Kept in the
 //! app's data folder, the latest ones up to a limit, & sent to every window when it changes.
 
-use std::collections::VecDeque;
+use std::collections::{HashSet, VecDeque};
 use std::path::PathBuf;
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::Mutex;
 
 use serde::{Deserialize, Serialize};
@@ -56,6 +57,11 @@ pub struct HistoryEntry {
 
 /// The entries, newest last (loaded from the data folder the first time they are used)
 static ENTRIES: Mutex<Option<VecDeque<HistoryEntry>>> = Mutex::new(None);
+/// Monotonic counter incremented on every mutation so coalesced background writes never skip newer edits
+static DIRTY_GENERATION: AtomicU64 = AtomicU64::new(0);
+static FLUSHED_GENERATION: AtomicU64 = AtomicU64::new(0);
+static FLUSH_SCHEDULED: AtomicBool = AtomicBool::new(false);
+static WRITE_LOCK: Mutex<()> = Mutex::new(());
 
 fn store_path(app_handle: &AppHandle) -> Option<PathBuf> {
     app_handle
@@ -65,9 +71,91 @@ fn store_path(app_handle: &AppHandle) -> Option<PathBuf> {
         .map(|dir| dir.join(FILE_NAME))
 }
 
-/// Changes the entries (loaded first if needed), then saves them & tells every window
+fn write_snapshot_atomic(app_handle: &AppHandle) {
+    let _write_guard = match WRITE_LOCK.lock() {
+        Ok(guard) => guard,
+        Err(_) => return,
+    };
+    let (generation, text) = {
+        let dirty = DIRTY_GENERATION.load(Ordering::SeqCst);
+        let flushed = FLUSHED_GENERATION.load(Ordering::SeqCst);
+        if dirty == flushed {
+            return;
+        }
+        let Ok(mut entries) = ENTRIES.lock() else {
+            return;
+        };
+        let entries = entries.get_or_insert_with(|| load(app_handle));
+        let Ok(serialized) = serde_json::to_string(entries) else {
+            return;
+        };
+        (DIRTY_GENERATION.load(Ordering::SeqCst), serialized)
+    };
+    let Some(path) = store_path(app_handle) else {
+        return;
+    };
+    if let Some(parent) = path.parent() {
+        let _ = std::fs::create_dir_all(parent);
+    }
+    let tmp_path = path.with_extension("json.tmp");
+    if let Err(err) = std::fs::write(&tmp_path, text) {
+        log::warn!("[history] Could not write history temp file: {}", err);
+        return;
+    }
+    if let Err(err) = std::fs::rename(&tmp_path, &path) {
+        if let Err(fallback_err) = std::fs::write(&path, std::fs::read(&tmp_path).unwrap_or_default()) {
+            log::warn!("[history] Could not save the history: {} ({})", err, fallback_err);
+            let _ = std::fs::remove_file(&tmp_path);
+            return;
+        }
+        let _ = std::fs::remove_file(&tmp_path);
+    }
+    FLUSHED_GENERATION.store(generation, Ordering::SeqCst);
+}
+
+fn schedule_flush(app_handle: &AppHandle) {
+    if FLUSH_SCHEDULED
+        .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
+        .is_err()
+    {
+        return;
+    }
+    let app = app_handle.clone();
+    tauri::async_runtime::spawn(async move {
+        loop {
+            tokio::time::sleep(std::time::Duration::from_millis(250)).await;
+            let app_for_write = app.clone();
+            let _ = tauri::async_runtime::spawn_blocking(move || {
+                write_snapshot_atomic(&app_for_write);
+            })
+            .await;
+            if DIRTY_GENERATION.load(Ordering::SeqCst) == FLUSHED_GENERATION.load(Ordering::SeqCst)
+            {
+                FLUSH_SCHEDULED.store(false, Ordering::SeqCst);
+                if DIRTY_GENERATION.load(Ordering::SeqCst)
+                    == FLUSHED_GENERATION.load(Ordering::SeqCst)
+                    || FLUSH_SCHEDULED
+                        .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
+                        .is_err()
+                {
+                    break;
+                }
+            }
+        }
+    });
+}
+
+/// Flushes any pending history mutations synchronously (called on app exit).
+pub fn flush_blocking(app_handle: &AppHandle) {
+    if DIRTY_GENERATION.load(Ordering::SeqCst) != FLUSHED_GENERATION.load(Ordering::SeqCst) {
+        write_snapshot_atomic(app_handle);
+    }
+}
+
+/// Changes the entries (loaded first if needed), then schedules a coalesced background write &
+/// notifies windows immediately.
 fn update(app_handle: &AppHandle, change: impl FnOnce(&mut VecDeque<HistoryEntry>)) {
-    let saved = {
+    {
         let Ok(mut entries) = ENTRIES.lock() else {
             return;
         };
@@ -76,14 +164,10 @@ fn update(app_handle: &AppHandle, change: impl FnOnce(&mut VecDeque<HistoryEntry
         while entries.len() > MAX_ENTRIES {
             entries.pop_front();
         }
-        serde_json::to_string(entries).ok()
-    };
-    if let (Some(text), Some(path)) = (saved, store_path(app_handle)) {
-        if let Err(err) = std::fs::write(&path, text) {
-            log::warn!("[history] Could not save the history: {}", err);
-        }
+        DIRTY_GENERATION.fetch_add(1, Ordering::SeqCst);
     }
     let _ = app_handle.emit(HISTORY_EVENT, ());
+    schedule_flush(app_handle);
 }
 
 fn load(app_handle: &AppHandle) -> VecDeque<HistoryEntry> {
@@ -111,8 +195,14 @@ pub fn get_history(app_handle: AppHandle) -> Vec<HistoryEntry> {
 /// Records compressions directly from Rust (`queue_runner`), replacing any entry with the same id.
 pub fn add_entries(app_handle: &AppHandle, entries: Vec<HistoryEntry>) {
     update(app_handle, |stored| {
+        if entries.len() == 1 {
+            let target_id = &entries[0].id;
+            stored.retain(|existing| &existing.id != target_id);
+        } else if entries.len() > 1 {
+            let incoming_ids: HashSet<&str> = entries.iter().map(|e| e.id.as_str()).collect();
+            stored.retain(|existing| !incoming_ids.contains(existing.id.as_str()));
+        }
         for entry in entries {
-            stored.retain(|existing| existing.id != entry.id);
             stored.push_back(entry);
         }
     });

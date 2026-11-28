@@ -1526,11 +1526,65 @@ impl FFMPEG {
             // Whether the output was encoded on the graphics card (it falls back to the CPU)
             let mut on_graphics_card = false;
             let attempt_count = round_attempts.len();
+            let use_cpu_two_pass = target_size.is_some()
+                && !is_quality_round
+                && !is_audio_target
+                && !is_gif_target
+                && self.input_range.is_none()
+                && supports_cpu_two_pass(&output_codec);
             for (attempt, (hardware_encoder_name, args)) in round_attempts.into_iter().enumerate() {
                 let is_last_attempt = attempt + 1 == attempt_count;
 
+                let mut effective_args = args.clone();
+                let mut use_assets_cwd = false;
+                let mut two_pass_prefix: Option<PathBuf> = None;
+
+                if hardware_encoder_name.is_none() && use_cpu_two_pass {
+                    let prefix_name = format!("ffpass_{}_{}", video_id, size_attempt);
+                    let prefix_path = self.assets_dir.join(&prefix_name);
+                    if let Some((pass1_args, pass2_args, needs_assets_cwd)) =
+                        build_two_pass_args(&args, &output_codec, &prefix_path, &prefix_name)
+                    {
+                        let mut pass1_cmd = self.get_ffmpeg_command()?;
+                        if needs_assets_cwd {
+                            pass1_cmd.current_dir(&self.assets_dir);
+                        }
+                        pass1_cmd.args(pass1_args);
+                        let pass1_exec = MediaProcessExecutorBuilder::new(self.app.clone())
+                            .owner_window_opt(self.owner_window.as_deref())
+                            .command(pass1_cmd)
+                            .with_cancel_support(
+                                vec![video_id.to_string(), batch_id.clone()],
+                                Some(cancel_callback.clone()),
+                            )
+                            .build()?;
+                        match pass1_exec.spawn_and_wait().await {
+                            Ok(res) if res.success() => {
+                                effective_args = pass2_args;
+                                use_assets_cwd = needs_assets_cwd;
+                                two_pass_prefix = Some(prefix_path);
+                            }
+                            Err(error) if error == "CANCELLED" => {
+                                cleanup_two_pass_logs(&prefix_path);
+                                remove_candidates(&candidates);
+                                return Err(error);
+                            }
+                            _ => {
+                                log::warn!(
+                                    "[ffmpeg] 2-pass analysis failed for {}, falling back to single-pass",
+                                    output_codec
+                                );
+                                cleanup_two_pass_logs(&prefix_path);
+                            }
+                        }
+                    }
+                }
+
                 let mut ffmpeg_cmd = self.get_ffmpeg_command()?;
-                ffmpeg_cmd.args(args);
+                if use_assets_cwd {
+                    ffmpeg_cmd.current_dir(&self.assets_dir);
+                }
+                ffmpeg_cmd.args(effective_args);
 
                 let stdout_callback = build_ffmpeg_progress_callback(
                     app_clone.clone(),
@@ -1547,7 +1601,12 @@ impl FFMPEG {
                     .with_stdout_callback(stdout_callback)
                     .build()?;
 
-                let error = match executor.spawn_and_wait().await {
+                let wait_result = executor.spawn_and_wait().await;
+                if let Some(ref prefix) = two_pass_prefix {
+                    cleanup_two_pass_logs(prefix);
+                }
+
+                let error = match wait_result {
                     Ok(result) if result.success() => {
                         on_graphics_card = hardware_encoder_name.is_some();
                         break;
@@ -2191,6 +2250,21 @@ impl FFMPEG {
                 video_dynamic_range::classify(color).dynamic_range == DynamicRange::Hdr
             })
             .and_then(|color| video_dynamic_range::filter(DynamicRangeOperation::ToSdr, &color));
+        self.generate_video_thumbnail_with_filter(video_path, timestamp, hdr_to_sdr.as_deref())
+            .await
+    }
+
+    /// Generates a `.jpeg` thumbnail using a pre-probed HDR-to-SDR filter so batch import does
+    /// not need a second `ffprobe` invocation.
+    pub async fn generate_video_thumbnail_with_filter(
+        &mut self,
+        video_path: &str,
+        timestamp: Option<&str>,
+        hdr_to_sdr: Option<&str>,
+    ) -> Result<VideoThumbnail, String> {
+        if !Path::exists(Path::new(video_path)) {
+            return Err(String::from("File does not exist in given path."));
+        }
         let thumbnail_filter = match hdr_to_sdr {
             Some(filter) => format!("scale=trunc(iw*sar/2)*2:ih,setsar=1,{filter}"),
             None => "scale=trunc(iw*sar/2)*2:ih,setsar=1".to_string(),
@@ -2510,6 +2584,126 @@ struct TargetSizeRetry {
     pass: u32,
     /// Encoded again on the CPU (instead of the graphics card)
     on_cpu: bool,
+}
+
+/// Whether this CPU video codec benefits cleanly from 2-pass VBR in target-size mode.
+fn supports_cpu_two_pass(codec: &str) -> bool {
+    matches!(codec, "libx264" | "libx265" | "libvpx-vp9" | "mpeg4")
+}
+
+/// Inserts `-pass`/`-passlogfile` (or `x265-params` for `libx265`) into a CPU bitrate command to
+/// produce `(pass1_args, pass2_args, needs_assets_cwd)`.
+fn build_two_pass_args(
+    cpu_args: &[String],
+    codec: &str,
+    log_prefix: &Path,
+    log_file_name: &str,
+) -> Option<(Vec<String>, Vec<String>, bool)> {
+    let y_idx = cpu_args.iter().rposition(|arg| arg == "-y")?;
+    if y_idx + 1 >= cpu_args.len() {
+        return None;
+    }
+
+    // `libx265` reads pass/stats via `-x265-params`; a relative stats filename avoids Windows drive
+    // colons breaking `:stats=...`, provided input/output arguments are absolute.
+    let uses_x265 = codec == "libx265";
+    if uses_x265 {
+        let mut idx = 0;
+        while idx < cpu_args.len() {
+            if cpu_args[idx] == "-i" {
+                if let Some(p) = cpu_args.get(idx + 1) {
+                    if !Path::new(p).is_absolute() {
+                        return None;
+                    }
+                }
+                idx += 2;
+                continue;
+            }
+            idx += 1;
+        }
+        if !Path::new(&cpu_args[y_idx + 1]).is_absolute() {
+            return None;
+        }
+    }
+
+    let log_str = log_prefix.to_string_lossy().into_owned();
+    let pass_flags = |pass: u8| -> Vec<String> {
+        if uses_x265 {
+            vec![
+                "-x265-params".to_string(),
+                format!("pass={}:stats={}.x265:log-level=error", pass, log_file_name),
+            ]
+        } else {
+            vec![
+                "-pass".to_string(),
+                pass.to_string(),
+                "-passlogfile".to_string(),
+                log_str.clone(),
+            ]
+        }
+    };
+
+    // Pass 1 strips container faststart flags, subtitle streams, and attached cover-art maps so it
+    // writes only stats to the null muxer cleanly.
+    let mut pass1: Vec<String> = Vec::with_capacity(cpu_args.len() + 6);
+    let mut i = 0;
+    while i < y_idx {
+        let arg = cpu_args[i].as_str();
+        let next = cpu_args.get(i + 1).map(String::as_str);
+        match (arg, next) {
+            ("-movflags", Some(_))
+            | ("-c:v:1", Some(_))
+            | ("-disposition:v:1", Some(_))
+            | ("-map", Some("1")) => {
+                i += 2;
+            }
+            (k, Some(_)) if k.starts_with("-c:s:") || k.starts_with("-metadata:s:s:") => {
+                i += 2;
+            }
+            ("-map", Some(target)) if target.contains(":s") => {
+                i += 2;
+            }
+            _ => {
+                pass1.push(cpu_args[i].clone());
+                i += 1;
+            }
+        }
+    }
+    pass1.extend(pass_flags(1));
+    pass1.extend([
+        "-f".to_string(),
+        "null".to_string(),
+        if cfg!(windows) {
+            "NUL".to_string()
+        } else {
+            "/dev/null".to_string()
+        },
+    ]);
+
+    let mut pass2 = Vec::with_capacity(cpu_args.len() + 4);
+    pass2.extend_from_slice(&cpu_args[..y_idx]);
+    pass2.extend(pass_flags(2));
+    pass2.extend_from_slice(&cpu_args[y_idx..]);
+
+    Some((pass1, pass2, uses_x265))
+}
+
+fn cleanup_two_pass_logs(prefix: &Path) {
+    let Some(dir) = prefix.parent() else {
+        return;
+    };
+    let Some(stem) = prefix.file_name().and_then(|s| s.to_str()) else {
+        return;
+    };
+    if let Ok(entries) = std::fs::read_dir(dir) {
+        for entry in entries.flatten() {
+            if let Some(name) = entry.file_name().to_str() {
+                if name.starts_with(stem) {
+                    let _ = std::fs::remove_file(entry.path());
+                }
+            }
+        }
+    }
 }
 
 /// The options encoding a video at an average bitrate (in kbit/s), with its peaks kept near it

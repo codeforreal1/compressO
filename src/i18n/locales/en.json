@@ -880,6 +880,8 @@
     "alreadyAdded": "The selected media has already been added.",
     "someCorrupted": "Some files appear to be corrupted or invalid and were not added.",
     "corrupted": "The file appears to be corrupted or invalid.",
+    "animatedWebp": "Animated WebP images are not supported.",
+    "someAnimatedWebp": "Some animated WebP images were not added because they are not supported.",
     "selectTitle": "Select images, videos or audio to compress.",
     "selectFailed": "Could not select media.",
     "invalidFiles": "Invalid files/folders",
@@ -991,6 +993,7 @@
     "controls": "Timeline Controls:",
     "select": "Click to select a track",
     "split": "Double click on the track to split",
+    "splitAtCursor": "Press <key>C</key> to split at the cursor",
     "add": "Double click on a free area to add a new track",
     "delete": "Select and press <key>Delete</key> to delete a track",
     "hideInstructions": "Hide Instructions"

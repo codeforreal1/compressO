@@ -898,6 +898,8 @@
     "alreadyAdded": "Wybrane multimedia zostały już dodane.",
     "someCorrupted": "Niektóre pliki wydają się uszkodzone lub nieprawidłowe i nie zostały dodane.",
     "corrupted": "Plik wydaje się uszkodzony lub nieprawidłowy.",
+    "animatedWebp": "Animowane obrazy WebP nie są obsługiwane.",
+    "someAnimatedWebp": "Niektóre animowane obrazy WebP nie zostały dodane, ponieważ nie są obsługiwane.",
     "selectTitle": "Wybierz obrazy, filmy lub audio do kompresji.",
     "selectFailed": "Nie udało się wybrać multimediów.",
     "invalidFiles": "Nieprawidłowe pliki lub foldery",
@@ -1021,6 +1023,7 @@
     "controls": "Sterowanie osią czasu:",
     "select": "Kliknij, aby wybrać ścieżkę",
     "split": "Kliknij dwukrotnie ścieżkę, aby ją podzielić",
+    "splitAtCursor": "Naciśnij <key>C</key>, aby podzielić w miejscu kursora",
     "add": "Kliknij dwukrotnie wolny obszar, aby dodać nową ścieżkę",
     "delete": "Wybierz ścieżkę i naciśnij <key>Delete</key>, aby ją usunąć",
     "hideInstructions": "Ukryj instrukcję"

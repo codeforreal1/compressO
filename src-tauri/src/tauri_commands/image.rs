@@ -125,6 +125,11 @@ pub async fn get_image_color_info(
 }
 
 #[tauri::command]
+pub fn is_animated_webp(image_path: &str) -> bool {
+    ImageInfo::is_animated_webp(image_path)
+}
+
+#[tauri::command]
 pub async fn prepare_image_preview(
     app: tauri::AppHandle,
     image_path: &str,

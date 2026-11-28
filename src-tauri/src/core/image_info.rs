@@ -1,7 +1,7 @@
 use crate::core::domain::{ExifInfo, ExifTag, ImageBasicInfo, ImageColorInfo, ImageDimensions};
 use exiftool_rs::ExifTool;
 use std::fs::File;
-use std::io::BufReader;
+use std::io::{BufReader, Read};
 use std::path::Path;
 
 pub struct ImageInfo;
@@ -302,5 +302,84 @@ impl ImageInfo {
             image::ColorType::La16 | image::ColorType::Rgb16 | image::ColorType::Rgba16 => 16,
             _ => 8,
         }
+    }
+
+    /// Returns `true` only when `path` is an animated WebP (`VP8X` animation bit or `ANIM`/`ANMF`
+    /// chunks); static WebPs and other image formats return `false`.
+    pub fn is_animated_webp(path: &str) -> bool {
+        let Ok(mut file) = File::open(path) else {
+            return false;
+        };
+        let mut header = [0u8; 256];
+        let Ok(len) = file.read(&mut header) else {
+            return false;
+        };
+        is_animated_webp_bytes(&header[..len])
+    }
+}
+
+fn is_animated_webp_bytes(bytes: &[u8]) -> bool {
+    if bytes.len() < 20 || &bytes[0..4] != b"RIFF" || &bytes[8..12] != b"WEBP" {
+        return false;
+    }
+    let mut pos = 12usize;
+    while pos + 8 <= bytes.len() {
+        let fourcc = &bytes[pos..pos + 4];
+        let chunk_size = u32::from_le_bytes([
+            bytes[pos + 4],
+            bytes[pos + 5],
+            bytes[pos + 6],
+            bytes[pos + 7],
+        ]) as usize;
+        if fourcc == b"VP8X" {
+            return bytes.get(pos + 8).is_some_and(|flags| (flags & 0x02) != 0);
+        }
+        if fourcc == b"ANIM" || fourcc == b"ANMF" {
+            return true;
+        }
+        if fourcc == b"VP8 " || fourcc == b"VP8L" {
+            return false;
+        }
+        // RIFF chunks are padded to an even byte boundary.
+        pos = pos.saturating_add(8).saturating_add(chunk_size + (chunk_size & 1));
+    }
+    false
+}
+
+#[cfg(test)]
+mod webp_animation_tests {
+    use super::is_animated_webp_bytes;
+
+    fn make_webp(chunks: &[(&[u8; 4], &[u8])]) -> Vec<u8> {
+        let mut out = b"RIFF\x00\x00\x00\x00WEBP".to_vec();
+        for (id, payload) in chunks {
+            out.extend_from_slice(*id);
+            out.extend_from_slice(&(payload.len() as u32).to_le_bytes());
+            out.extend_from_slice(payload);
+            if payload.len() % 2 == 1 {
+                out.push(0);
+            }
+        }
+        out
+    }
+
+    #[test]
+    fn detects_animated_and_static_webp_accurately() {
+        let static_vp8 = make_webp(&[(b"VP8 ", &[0; 12])]);
+        assert!(!is_animated_webp_bytes(&static_vp8));
+
+        let static_vp8l = make_webp(&[(b"VP8L", &[0; 12])]);
+        assert!(!is_animated_webp_bytes(&static_vp8l));
+
+        // VP8X with alpha (0x10) and ICC (0x20), animation bit (0x02) clear
+        let static_vp8x = make_webp(&[(b"VP8X", &[0x30, 0, 0, 0, 10, 0, 0, 10, 0, 0])]);
+        assert!(!is_animated_webp_bytes(&static_vp8x));
+
+        // VP8X with animation bit set (0x02)
+        let animated_vp8x = make_webp(&[(b"VP8X", &[0x02, 0, 0, 0, 10, 0, 0, 10, 0, 0])]);
+        assert!(is_animated_webp_bytes(&animated_vp8x));
+
+        // Non-WebP bytes
+        assert!(!is_animated_webp_bytes(b"\x89PNG\r\n\x1a\n000000000000"));
     }
 }

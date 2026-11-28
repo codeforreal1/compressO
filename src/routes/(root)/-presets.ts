@@ -1163,16 +1163,21 @@ export async function getInitialVideoConfig(
     sourceExtension,
     path,
     dimensions,
+    audioStreams: preloadedAudioStreams,
   }: {
     sourceExtension: string | null | undefined
     path: string
     dimensions: PresetTarget['dimensions']
+    audioStreams?: Awaited<ReturnType<typeof getAudioStreams>> | null
   },
 ) {
   const preset = getVideoPreset(presetsStore.defaultPresetIds.video)
   let hasAudio: boolean | null = null
-  let audioStreams: Awaited<ReturnType<typeof getAudioStreams>> | null = null
-  if (preset.id !== STANDARD_PRESET_ID) {
+  let audioStreams: Awaited<ReturnType<typeof getAudioStreams>> | null =
+    preloadedAudioStreams ?? null
+  if (audioStreams != null) {
+    hasAudio = audioStreams.length > 0
+  } else if (preset.id !== STANDARD_PRESET_ID) {
     audioStreams = await getAudioStreams(path).catch(() => null)
     hasAudio = audioStreams ? audioStreams.length > 0 : null
   }

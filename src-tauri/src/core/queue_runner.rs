@@ -219,6 +219,13 @@ async fn run_queue_loop(app_handle: AppHandle) {
         let compressed_ids = compressed_ids.clone();
         let active_lanes = active_lanes.clone();
         async move {
+            let max_concurrent = if lane == Lane::Image {
+                crate::core::cpu_limit::image_lane_concurrency()
+            } else {
+                1
+            };
+            let mut in_flight = tokio::task::JoinSet::new();
+
             loop {
                 active_lanes.fetch_add(1, Ordering::SeqCst);
                 let mut processed = false;
@@ -235,35 +242,60 @@ async fn run_queue_loop(app_handle: AppHandle) {
                         is_paused.store(true, Ordering::SeqCst);
                         exit_lane = true;
                     } else {
-                        let mut candidates: Vec<DropQueueItem> =
-                            drop_queue::get_drop_queue(app_handle.clone())
-                                .into_iter()
-                                .filter(|item| {
-                                    item.status == DropQueueItemStatus::Waiting
-                                        && lane_for_path(&item.path) == lane
-                                })
-                                .collect();
-                        candidates.sort_by_key(|item| {
-                            (item.watch_folder_id.is_some(), item.queue_order)
-                        });
+                        while in_flight.len() < max_concurrent && !drop_queue::is_drop_queue_paused()
+                        {
+                            let mut candidates: Vec<DropQueueItem> =
+                                drop_queue::get_drop_queue(app_handle.clone())
+                                    .into_iter()
+                                    .filter(|item| {
+                                        item.status == DropQueueItemStatus::Waiting
+                                            && lane_for_path(&item.path) == lane
+                                    })
+                                    .collect();
+                            candidates.sort_by_key(|item| {
+                                (item.watch_folder_id.is_some(), item.queue_order)
+                            });
 
-                        if let Some(next) = candidates.into_iter().next() {
+                            let Some(next) = candidates.into_iter().next() else {
+                                break;
+                            };
                             processed = true;
+                            // Claim immediately before spawning so concurrent workers pick distinct items.
+                            drop_queue::update_item(
+                                &app_handle,
+                                &next.id,
+                                DropQueueItemUpdate {
+                                    status: Some(DropQueueItemStatus::Compressing),
+                                    progress: Some(0.0),
+                                    ..Default::default()
+                                },
+                            );
                             if let Ok(mut ids) = compressed_ids.lock() {
                                 ids.push(next.id.clone());
                             }
-                            if compress_queue_item(&app_handle, &next).await {
-                                has_compressed.store(true, Ordering::SeqCst);
-                            }
+                            let app = app_handle.clone();
+                            in_flight.spawn(async move { compress_queue_item(&app, &next).await });
                         }
+                    }
+                }
+
+                if let Some(joined) = in_flight.join_next().await {
+                    processed = true;
+                    if joined.unwrap_or(false) {
+                        has_compressed.store(true, Ordering::SeqCst);
                     }
                 }
 
                 let remaining_active = active_lanes.fetch_sub(1, Ordering::SeqCst) - 1;
                 if exit_lane {
+                    while let Some(joined) = in_flight.join_next().await {
+                        if joined.unwrap_or(false) {
+                            has_compressed.store(true, Ordering::SeqCst);
+                        }
+                    }
                     return;
                 }
-                if !processed {
+                if !processed && in_flight.is_empty() {
                     if remaining_active == 0 || is_paused.load(Ordering::SeqCst) {
                         return;
                     }
@@ -1369,6 +1401,9 @@ async fn prepare_image_item(
     source_ext: &str,
     cli_ext: Option<&str>,
 ) -> Result<PreparedQueueItem, String> {
+    if crate::core::image_info::ImageInfo::is_animated_webp(&item.path) {
+        return Err(String::from("Animated WebP images are not supported."));
+    }
     let contract = queue_contract(item, "image").cloned();
     let preset_id = if contract.is_some() {
         String::from("cli-contract")

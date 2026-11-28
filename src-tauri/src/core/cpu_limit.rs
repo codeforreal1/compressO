@@ -27,6 +27,11 @@ pub fn thread_limit() -> Option<usize> {
     }
 }
 
+/// Maximum concurrent image compressions in batch and background queues.
+pub fn image_lane_concurrency() -> usize {
+    thread_limit().unwrap_or_else(available_cpu_threads).clamp(1, 4)
+}
+
 /// Resolves an optional per-job CPU thread override against the global limit:
 /// `None` follows `thread_limit()`, `Some(0)` uses all available threads, and `Some(n)` clamps to
 /// the available hardware threads.

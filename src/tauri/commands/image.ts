@@ -43,6 +43,10 @@ export function needsImagePreview(path: string) {
   return /\.(jxl|heic|heif)$/i.test(path)
 }
 
+export function isAnimatedWebp(imagePath: string): Promise<boolean> {
+  return core.invoke('is_animated_webp', { imagePath })
+}
+
 export function prepareImagePreview(imagePath: string): Promise<string> {
   return core.invoke('prepare_image_preview', { imagePath })
 }

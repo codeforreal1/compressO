@@ -880,6 +880,8 @@
     "alreadyAdded": "Seçilen medya zaten eklendi.",
     "someCorrupted": "Bazı dosyalar bozuk veya geçersiz görünüyor ve eklenmedi.",
     "corrupted": "Dosya bozuk veya geçersiz görünüyor.",
+    "animatedWebp": "Animasyonlu WebP görselleri desteklenmiyor.",
+    "someAnimatedWebp": "Bazı animasyonlu WebP görselleri desteklenmediği için eklenmedi.",
     "selectTitle": "Sıkıştırılacak görüntüleri, videoları veya sesleri seçin.",
     "selectFailed": "Medya seçilemedi.",
     "invalidFiles": "Geçersiz dosyalar veya klasörler",
@@ -991,6 +993,7 @@
     "controls": "Zaman Çizelgesi Denetimleri:",
     "select": "Bir parça seçmek için tıklayın",
     "split": "Bölmek için parçaya çift tıklayın",
+    "splitAtCursor": "İmleç konumundan bölmek için <key>C</key> tuşuna basın",
     "add": "Yeni bir parça eklemek için boş bir alana çift tıklayın",
     "delete": "Bir parçayı silmek için seçip <key>Delete</key> tuşuna basın",
     "hideInstructions": "Talimatları Gizle"

@@ -871,6 +871,8 @@
     "alreadyAdded": "선택한 미디어가 이미 추가되어 있습니다.",
     "someCorrupted": "일부 파일이 손상되었거나 유효하지 않아 추가되지 않았습니다.",
     "corrupted": "파일이 손상되었거나 유효하지 않습니다.",
+    "animatedWebp": "애니메이션 WebP 이미지는 지원되지 않습니다.",
+    "someAnimatedWebp": "지원되지 않는 일부 애니메이션 WebP 이미지는 추가되지 않았습니다.",
     "selectTitle": "압축할 이미지, 비디오 또는 오디오를 선택하십시오.",
     "selectFailed": "미디어를 선택할 수 없습니다.",
     "invalidFiles": "유효하지 않은 파일 또는 폴더",
@@ -976,6 +978,7 @@
     "controls": "타임라인 조작:",
     "select": "클릭하여 트랙 선택",
     "split": "트랙을 더블 클릭하여 분할",
+    "splitAtCursor": "<key>C</key> 키를 눌러 커서 위치에서 분할",
     "add": "빈 영역을 더블 클릭하여 새 트랙 추가",
     "delete": "트랙을 선택하고 <key>Delete</key> 키를 눌러 삭제",
     "hideInstructions": "사용 방법 숨기기"

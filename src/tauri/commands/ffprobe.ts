@@ -7,8 +7,28 @@ import {
   SubtitleStream,
   VideoInfo,
   VideoStream,
+  VideoThumbnail,
 } from '@/types/compression'
 import type { VideoDynamicRangeInfo } from '@/types/videoDynamicRange'
+
+export type VideoImportResult = {
+  basicInfo: VideoInfo
+  audioStreams: AudioStream[]
+  dynamicRange: VideoDynamicRangeInfo
+  thumbnail: VideoThumbnail | null
+}
+
+export function inspectVideoForImport(
+  videoPath: string,
+  generateThumbnail = true,
+  timestamp?: string,
+): Promise<VideoImportResult> {
+  return core.invoke('inspect_video_for_import', {
+    videoPath,
+    generateThumbnail,
+    timestamp,
+  })
+}
 
 export function getVideoBasicInfo(
   videoPath: string,

@@ -871,6 +871,8 @@
     "alreadyAdded": "所选媒体已添加。",
     "someCorrupted": "部分文件似乎已损坏或无效，未被添加。",
     "corrupted": "该文件似乎已损坏或无效。",
+    "animatedWebp": "不支持动态 WebP 图像。",
+    "someAnimatedWebp": "部分动态 WebP 图像因不受支持而未被添加。",
     "selectTitle": "选择要压缩的图像、视频或音频。",
     "selectFailed": "无法选择媒体。",
     "invalidFiles": "无效的文件或文件夹",
@@ -976,6 +978,7 @@
     "controls": "时间轴操作：",
     "select": "点按以选择片段",
     "split": "双击片段以拆分",
+    "splitAtCursor": "按 <key>C</key> 在光标处拆分",
     "add": "双击空白区域以添加新片段",
     "delete": "选择片段后按 <key>Delete</key> 删除",
     "hideInstructions": "隐藏说明"

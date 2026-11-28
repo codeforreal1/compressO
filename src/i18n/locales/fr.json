@@ -889,6 +889,8 @@
     "alreadyAdded": "Les médias sélectionnés ont déjà été ajoutés.",
     "someCorrupted": "Certains fichiers semblent endommagés ou invalides et n’ont pas été ajoutés.",
     "corrupted": "Le fichier semble endommagé ou invalide.",
+    "animatedWebp": "Les images WebP animées ne sont pas prises en charge.",
+    "someAnimatedWebp": "Certaines images WebP animées n’ont pas été ajoutées car elles ne sont pas prises en charge.",
     "selectTitle": "Sélectionnez des images, des vidéos ou de l’audio à compresser.",
     "selectFailed": "Les médias n’ont pas pu être sélectionnés.",
     "invalidFiles": "Fichiers ou dossiers non valides",
@@ -1006,6 +1008,7 @@
     "controls": "Commandes de la timeline :",
     "select": "Cliquez pour sélectionner une piste",
     "split": "Double-cliquez sur la piste pour la diviser",
+    "splitAtCursor": "Appuyez sur <key>C</key> pour couper au curseur",
     "add": "Double-cliquez sur une zone libre pour ajouter une piste",
     "delete": "Sélectionnez une piste et appuyez sur <key>Suppr</key> pour la supprimer",
     "hideInstructions": "Masquer les instructions"

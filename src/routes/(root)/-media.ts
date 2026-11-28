@@ -5,10 +5,7 @@ import cloneDeep from 'lodash/cloneDeep'
 import { toast } from '@/components/Toast'
 import { t } from '@/i18n'
 import { generateVideoThumbnail } from '@/tauri/commands/ffmpeg'
-import {
-  getVideoBasicInfo,
-  getVideoDynamicRange,
-} from '@/tauri/commands/ffprobe'
+import { inspectVideoForImport } from '@/tauri/commands/ffprobe'
 import {
   getFileMetadata,
   getImageDimension,
@@ -20,6 +17,7 @@ import {
   convertSvgToPng,
   getImageDynamicRange,
   getWebImageDimensions,
+  isAnimatedWebp,
   needsImagePreview,
   prepareImagePreview,
 } from '@/tauri/commands/image'
@@ -57,6 +55,12 @@ type MediaFile = (Video & { type: 'video' }) | (Image & { type: 'image' })
  * the system never answers for cannot keep the loading screen up
  */
 const FILE_LOAD_TIMEOUT = 60_000
+
+class AnimatedWebpError extends Error {
+  constructor() {
+    super('ANIMATED_WEBP')
+  }
+}
 
 /**
  * A random id for a media, which its cached output (and thumbnail) is named after, so outputs never
@@ -170,11 +174,9 @@ export async function addMedia(selection: MediaSelection | MediaSelection[]) {
 
     if (mediaType === 'audio') {
       const extension = fileMetadata?.extension?.toLowerCase?.()
-      const [audioInfo, coverArt] = await Promise.all([
-        getVideoBasicInfo(path),
-        // Its cover art, when it has one (a picture stored in the file)
-        generateVideoThumbnail(path, '00:00:00.00').catch(() => null),
-      ])
+      const importProbe = await inspectVideoForImport(path, true, '00:00:00.00')
+      const audioInfo = importProbe.basicInfo
+      const coverArt = importProbe.thumbnail
 
       const audioState: Video & { type: 'video' } = {
         type: 'video',
@@ -199,6 +201,9 @@ export async function addMedia(selection: MediaSelection | MediaSelection[]) {
         ),
         previewMode: isVideoPreviewAvailable ? 'video' : 'image',
       }
+      if (importProbe.audioStreams.length > 0) {
+        audioState.videoInfoRaw = { audioStreams: importProbe.audioStreams }
+      }
       if (audioInfo?.duration) {
         audioState.videoDuration = audioInfo.duration
       }
@@ -208,11 +213,12 @@ export async function addMedia(selection: MediaSelection | MediaSelection[]) {
       }
       return audioState
     } else if (mediaType === 'video') {
-      const [videoInfo, videoThumbnail, dynamicRangeInfo] = await Promise.all([
-        getVideoBasicInfo(path),
-        generateVideoThumbnail(path),
-        getVideoDynamicRange(path).catch(() => undefined),
-      ])
+      const {
+        basicInfo: videoInfo,
+        audioStreams: probedAudioStreams,
+        dynamicRange: dynamicRangeInfo,
+        thumbnail: videoThumbnail,
+      } = await inspectVideoForImport(path, true)
 
       const videoState: Video & { type: 'video' } = {
         type: 'video',
@@ -258,12 +264,13 @@ export async function addMedia(selection: MediaSelection | MediaSelection[]) {
         }
       }
 
-      // Settings from the default video preset
+      // Settings from the default video preset (reuses already-probed audio streams)
       const { config: presetConfig, audioStreams } =
         await getInitialVideoConfig(videoState.config, {
           sourceExtension: videoState.extension,
           path,
           dimensions: videoState.dimensions,
+          audioStreams: probedAudioStreams,
         })
       videoState.config = presetConfig
       if (audioStreams) {
@@ -277,6 +284,13 @@ export async function addMedia(selection: MediaSelection | MediaSelection[]) {
       }
       return videoState
     } else if (mediaType === 'image') {
+      const extLower = fileMetadata?.extension?.toLowerCase?.()
+      if (
+        (extLower === 'webp' || fileMetadata.mimeType === 'image/webp') &&
+        (await isAnimatedWebp(path).catch(() => false))
+      ) {
+        throw new AnimatedWebpError()
+      }
       let previewPath = path
       let imageDimension: [number, number] | null
       if (needsImagePreview(path)) {
@@ -364,27 +378,65 @@ export async function addMedia(selection: MediaSelection | MediaSelection[]) {
 
   let corruptedFilesCount = 0
   let deniedFilesCount = 0
-  try {
-    for (const { path, relativeDir } of mediaPaths) {
-      try {
-        // A file that never finishes loading (e.g. waiting on the system) is skipped
-        const mediaFile = await withTimeout(
-          loadMediaFile(path, relativeDir),
-          FILE_LOAD_TIMEOUT,
-        )
-        if (mediaFile) {
-          appProxy.state.media.push(mediaFile)
-        } else {
-          corruptedFilesCount++
-        }
-      } catch (error) {
-        if (isPermissionDeniedError(error)) {
-          deniedFilesCount++
-        } else {
-          corruptedFilesCount++
-        }
+  let animatedWebpCount = 0
+  const IMPORT_CONCURRENCY = 4
+  const slotResults: Array<MediaFile | null | undefined> = new Array(
+    mediaPaths.length,
+  )
+  let nextIndex = 0
+  let nextToFlush = 0
+
+  const flushReady = () => {
+    const chunk: MediaFile[] = []
+    while (
+      nextToFlush < slotResults.length &&
+      slotResults[nextToFlush] !== undefined
+    ) {
+      const item = slotResults[nextToFlush]
+      slotResults[nextToFlush] = undefined
+      if (item) {
+        chunk.push(item)
       }
+      nextToFlush++
     }
+    if (chunk.length > 0) {
+      appProxy.state.media.push(...chunk)
+    }
+  }
+
+  try {
+    const workerCount = Math.min(IMPORT_CONCURRENCY, mediaPaths.length)
+    await Promise.all(
+      Array.from({ length: workerCount }, async () => {
+        while (true) {
+          const index = nextIndex++
+          if (index >= mediaPaths.length) return
+          const { path, relativeDir } = mediaPaths[index]
+          try {
+            // A file that never finishes loading (e.g. waiting on the system) is skipped
+            const mediaFile = await withTimeout(
+              loadMediaFile(path, relativeDir),
+              FILE_LOAD_TIMEOUT,
+            )
+            slotResults[index] = mediaFile
+            if (!mediaFile) {
+              corruptedFilesCount++
+            }
+          } catch (error) {
+            slotResults[index] = null
+            if (error instanceof AnimatedWebpError) {
+              animatedWebpCount++
+            } else if (isPermissionDeniedError(error)) {
+              deniedFilesCount++
+            } else {
+              corruptedFilesCount++
+            }
+          }
+          flushReady()
+        }
+      }),
+    )
+    flushReady()
   } finally {
     // Loading always ends, whatever happened to the files
     appProxy.state.isLoadingMediaFiles = false
@@ -399,6 +451,13 @@ export async function addMedia(selection: MediaSelection | MediaSelection[]) {
   if (deniedFilesCount > 0) {
     showAccessDeniedToast(deniedFilesCount)
   }
+  if (animatedWebpCount > 0) {
+    toast.error(
+      mediaPaths.length > 1
+        ? t('media.someAnimatedWebp')
+        : t('media.animatedWebp'),
+    )
+  }
   if (corruptedFilesCount > 0) {
     toast.error(
       mediaPaths.length > 1 ? t('media.someCorrupted') : t('media.corrupted'),
@@ -406,7 +465,8 @@ export async function addMedia(selection: MediaSelection | MediaSelection[]) {
   }
   // Only start over when nothing was selected before
   if (
-    corruptedFilesCount + deniedFilesCount === mediaPaths.length &&
+    corruptedFilesCount + deniedFilesCount + animatedWebpCount ===
+      mediaPaths.length &&
     existingMediaCount === 0
   ) {
     appProxy.resetProxy()

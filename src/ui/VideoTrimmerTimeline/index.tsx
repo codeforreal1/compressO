@@ -17,6 +17,7 @@ import {
   memo,
   useCallback,
   useEffect,
+  useRef,
   useState,
 } from 'react'
 import { Trans } from 'react-i18next'
@@ -24,6 +25,7 @@ import { Trans } from 'react-i18next'
 import { BoundaryRowActionRender, ScaleRender } from '@/components/Timeline'
 import { t } from '@/i18n'
 import type { WaveformData } from '@/types/waveform'
+import { isOverlayOpen, isTextEntryElement } from '@/utils/keyboard'
 import Button from '../../components/Button'
 import Code from '../../components/Code'
 import Icon from '../../components/Icon'
@@ -190,6 +192,18 @@ const VideoTrimmerTimeline = forwardRef(
     }: VideoTrimmerTimelineProps,
     forwardedRef: ForwardedRef<VideoTrimmerTimelineRef>,
   ) => {
+    const timelineRef = useRef<TimelineState | null>(null)
+    const setTimelineRef = useCallback(
+      (instance: TimelineState | null) => {
+        timelineRef.current = instance
+        if (typeof forwardedRef === 'function') {
+          forwardedRef(instance)
+        } else if (forwardedRef) {
+          forwardedRef.current = instance
+        }
+      },
+      [forwardedRef],
+    )
     const [editorData, setEditorData] = useState<TimelineRow[]>(() =>
       getDefaultEditorData({ duration, trimActions: initialTrimActions }),
     )
@@ -359,21 +373,46 @@ const VideoTrimmerTimeline = forwardRef(
       [duration, updateEditorDataWithConstraints],
     )
 
+    const handleSplitAtCursor = useCallback(() => {
+      const splitTime = timelineRef.current?.getTime?.()
+      if (splitTime == null || Number.isNaN(splitTime)) return
+
+      const trimRow = editorData.find((row) => row.id === rowIds.videoTrim)
+      const actionAtCursor = trimRow?.actions.find(
+        (action) => splitTime > action.start && splitTime < action.end,
+      )
+      if (!actionAtCursor) return
+
+      handleSplitAction(actionAtCursor.id, splitTime)
+    }, [editorData, handleSplitAction])
+
     useEffect(() => {
       function handleKeyDown(evt: KeyboardEvent) {
-        if (evt.key == 'Backspace' || evt.key == 'Delete') {
-          handleDeleteAction?.(selectedActionId!)
+        if (
+          evt.metaKey ||
+          evt.ctrlKey ||
+          evt.altKey ||
+          evt.repeat ||
+          isTextEntryElement(evt.target as HTMLElement | null) ||
+          isOverlayOpen()
+        ) {
+          return
+        }
+        if (evt.key === 'Backspace' || evt.key === 'Delete') {
+          if (selectedActionId) {
+            evt.preventDefault()
+            handleDeleteAction(selectedActionId)
+          }
+        } else if (evt.key.toLowerCase() === 'c') {
+          evt.preventDefault()
+          handleSplitAtCursor()
         }
       }
-      if (selectedActionId) {
-        window.addEventListener('keydown', handleKeyDown)
-      } else {
-        window.removeEventListener('keydown', handleKeyDown)
-      }
+      window.addEventListener('keydown', handleKeyDown)
       return () => {
         window.removeEventListener('keydown', handleKeyDown)
       }
-    }, [handleDeleteAction, selectedActionId])
+    }, [handleDeleteAction, handleSplitAtCursor, selectedActionId])
 
     useEffect(() => {
       onEditorDataChange?.(editorData)
@@ -383,7 +422,7 @@ const VideoTrimmerTimeline = forwardRef(
       <div className="w-full space-y-2">
         <Timeline
           key={id}
-          ref={forwardedRef}
+          ref={setTimelineRef}
           editorData={editorData}
           effects={effects}
           autoScroll
@@ -441,6 +480,19 @@ const VideoTrimmerTimeline = forwardRef(
                   <p className="text-md mb-1">{t('trim.controls')}</p>
                   <p className="text-xs">- {t('trim.select')}</p>
                   <p className="text-xs">- {t('trim.split')}</p>
+                  <p className="text-xs">
+                    -{' '}
+                    <Trans
+                      i18nKey="trim.splitAtCursor"
+                      components={{
+                        key: (
+                          <Code size="sm" className="text-xs py-0 px-1">
+                            C
+                          </Code>
+                        ),
+                      }}
+                    />
+                  </p>
                   <p className="text-xs">- {t('trim.add')}</p>
                   <p className="text-xs">
                     -{' '}

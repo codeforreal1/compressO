@@ -1,12 +1,27 @@
 use crate::core::domain::{
     AudioStream, Chapter, ContainerInfo, Disposition, SubtitleStream, VideoInfo, VideoStream,
 };
+use crate::core::image_dynamic_range::DynamicRange;
 use crate::core::media_process::MediaProcessExecutorBuilder;
-use crate::core::video_dynamic_range::VideoColor;
+use crate::core::video_dynamic_range::{
+    self, Operation as DynamicRangeOperation, VideoColor, VideoDynamicRangeInfo,
+};
+use serde::Serialize;
 use serde_json::Value;
 use std::path::Path;
 use std::process::Command;
 use tauri::AppHandle;
+
+#[derive(Serialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct VideoImportProbe {
+    pub basic_info: VideoInfo,
+    pub audio_streams: Vec<AudioStream>,
+    pub dynamic_range: VideoDynamicRangeInfo,
+    pub has_picture: bool,
+    #[serde(skip_serializing)]
+    pub thumbnail_hdr_to_sdr_filter: Option<String>,
+}
 
 pub struct FFPROBE {
     app: AppHandle,
@@ -77,70 +92,45 @@ impl FFPROBE {
         let json: Value = serde_json::from_str(&output.stdout)
             .map_err(|e| format!("Failed to parse ffprobe output: {}", e))?;
 
-        let mut duration: Option<f64> = None;
-        let mut dimensions: Option<(f64, f64)> = None;
-        let mut fps: Option<f32> = None;
+        Ok(parse_video_info(
+            &json,
+            json.get("streams").and_then(|s| s.as_array()).and_then(|s| s.first()),
+        ))
+    }
 
-        // Parse duration from format (in seconds)
-        if let Some(format) = json.get("format") {
-            if let Some(dur) = format.get("duration").and_then(|d| d.as_str()) {
-                if let Ok(parsed) = dur.parse::<f64>() {
-                    duration = Some(parsed);
-                }
-            }
+    /// Probes duration, non-attached video metadata, dynamic range, audio streams, and picture
+    /// presence in a single ffprobe invocation for fast media import.
+    pub async fn inspect_video_import(&mut self, video_path: &str) -> Result<VideoImportProbe, String> {
+        if !Path::exists(Path::new(video_path)) {
+            return Err(String::from("File does not exist in given path."));
         }
 
-        // Parse video stream info
-        if let Some(streams) = json.get("streams").and_then(|s| s.as_array()) {
-            if let Some(stream) = streams.first() {
-                // Parse dimensions
-                if let (Some(w), Some(h)) = (
-                    stream.get("width").and_then(|v| v.as_u64()),
-                    stream.get("height").and_then(|v| v.as_u64()),
-                ) {
-                    // A zero-size stream cannot describe the preview; keep it unknown instead.
-                    if w > 0 && h > 0 {
-                        // Portrait videos from phones are often stored as landscape frames with a
-                        // rotation (which FFmpeg applies when compressing), so the size is reported
-                        // as displayed
-                        dimensions = Some(if is_quarter_turn(get_stream_rotation(stream)) {
-                            (h as f64, w as f64)
-                        } else {
-                            (w as f64, h as f64)
-                        });
-                    }
-                }
+        let mut ffprobe_cmd = self.get_ffprobe_command()?;
+        ffprobe_cmd.args([
+            "-v",
+            "error",
+            "-show_entries",
+            "format=duration:stream=codec_name,codec_long_name,codec_type,profile,width,height,r_frame_rate,avg_frame_rate,pix_fmt,color_space,color_range,color_primaries,color_transfer,channels,channel_layout,sample_rate,sample_fmt,bits_per_sample,bit_rate,duration:stream_tags=rotate,language,title:stream_side_data=rotation,dv_profile:stream_disposition=attached_pic",
+            "-of",
+            "json",
+            video_path,
+        ]);
 
-                // Parse FPS from r_frame_rate (e.g., "30000/1001" or "30/1")
-                if fps.is_none() {
-                    if let Some(r_frame_rate) = stream.get("r_frame_rate").and_then(|v| v.as_str())
-                    {
-                        if let Some((num, den)) = parse_fraction(r_frame_rate) {
-                            fps = Some(num as f32 / den as f32);
-                        }
-                    }
+        let executor = MediaProcessExecutorBuilder::new(self.app.clone())
+            .owner_window_opt(self.owner_window.as_deref())
+            .command(ffprobe_cmd)
+            .build()?;
 
-                    // Fallback to avg_frame_rate
-                    if fps.is_none() {
-                        if let Some(avg_frame_rate) =
-                            stream.get("avg_frame_rate").and_then(|v| v.as_str())
-                        {
-                            if let Some((num, den)) = parse_fraction(avg_frame_rate) {
-                                if den > 0 {
-                                    fps = Some(num as f32 / den as f32);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+        let output = executor.spawn_and_wait_with_output().await?;
+
+        if !output.success() {
+            return Err("Video file is corrupted".to_string());
         }
 
-        Ok(VideoInfo {
-            duration,
-            dimensions,
-            fps,
-        })
+        let json: Value = serde_json::from_str(&output.stdout)
+            .map_err(|e| format!("Failed to parse ffprobe output: {}", e))?;
+
+        Ok(parse_video_import_probe(&json))
     }
 
     // Get all video streams from the source video
@@ -514,113 +504,7 @@ impl FFPROBE {
             .map_err(|e| format!("Failed to parse ffprobe output: {}", e))?;
 
         let streams = if let Some(streams_array) = json.get("streams").and_then(|s| s.as_array()) {
-            let mut result = Vec::new();
-            for stream in streams_array {
-                // Basic codec info
-                let codec = stream
-                    .get("codec_name")
-                    .and_then(|c| c.as_str())
-                    .unwrap_or("")
-                    .to_string();
-
-                let codec_long_name = stream
-                    .get("codec_long_name")
-                    .and_then(|c| c.as_str())
-                    .unwrap_or("")
-                    .to_string();
-
-                let codec_type = stream
-                    .get("codec_type")
-                    .and_then(|c| c.as_str())
-                    .unwrap_or("audio")
-                    .to_string();
-
-                let profile = stream
-                    .get("profile")
-                    .and_then(|p| p.as_str())
-                    .map(|s| s.to_string());
-
-                // Channels and layout
-                let channels = stream
-                    .get("channels")
-                    .and_then(|c| c.as_u64())
-                    .unwrap_or(0)
-                    .to_string();
-
-                let channel_layout = stream
-                    .get("channel_layout")
-                    .and_then(|c| c.as_str())
-                    .unwrap_or("")
-                    .to_string();
-
-                // Sample rate and format
-                let sample_rate = stream
-                    .get("sample_rate")
-                    .and_then(|s| s.as_str())
-                    .unwrap_or("0")
-                    .to_string();
-
-                let sample_fmt = stream
-                    .get("sample_fmt")
-                    .and_then(|s| s.as_str())
-                    .map(|s| s.to_string());
-
-                let bits_per_sample = stream
-                    .get("bits_per_sample")
-                    .and_then(|b| b.as_u64())
-                    .and_then(|b| u32::try_from(b).ok());
-
-                // Bitrate and duration
-                let bit_rate = stream
-                    .get("bit_rate")
-                    .and_then(|b| b.as_str())
-                    .map(|s| s.to_string());
-
-                let duration = stream
-                    .get("duration")
-                    .and_then(|d| d.as_str())
-                    .map(|s| s.to_string());
-
-                let language = stream
-                    .get("tags")
-                    .and_then(|t| t.get("language"))
-                    .and_then(|l| l.as_str())
-                    .map(|s| s.to_string());
-
-                // Tags (language, title, etc.)
-                let tags = if let Some(tags_obj) = stream.get("tags") {
-                    if let Some(tags_map) = tags_obj.as_object() {
-                        let mut tags_vec = Vec::new();
-                        for (key, value) in tags_map.iter() {
-                            if let Some(val_str) = value.as_str() {
-                                tags_vec.push((key.clone(), val_str.to_string()));
-                            }
-                        }
-                        Some(tags_vec)
-                    } else {
-                        None
-                    }
-                } else {
-                    None
-                };
-
-                result.push(AudioStream {
-                    codec,
-                    codec_long_name,
-                    codec_type,
-                    profile,
-                    channels,
-                    channel_layout,
-                    sample_rate,
-                    sample_fmt,
-                    bits_per_sample,
-                    bit_rate,
-                    duration,
-                    language,
-                    tags,
-                });
-            }
-            result
+            streams_array.iter().map(parse_audio_stream).collect()
         } else {
             Vec::new()
         };
@@ -878,5 +762,237 @@ fn video_color(stream: &Value) -> VideoColor {
                     .find_map(|side_data| side_data.get("dv_profile").and_then(|p| p.as_u64()))
             })
             .map(|profile| profile as u32),
+    }
+}
+
+fn parse_video_info(json: &Value, video_stream: Option<&Value>) -> VideoInfo {
+    let duration = json
+        .get("format")
+        .and_then(|format| format.get("duration"))
+        .and_then(|dur| dur.as_str())
+        .and_then(|dur| dur.parse::<f64>().ok());
+
+    let mut dimensions: Option<(f64, f64)> = None;
+    let mut fps: Option<f32> = None;
+
+    if let Some(stream) = video_stream {
+        if let (Some(w), Some(h)) = (
+            stream.get("width").and_then(|v| v.as_u64()),
+            stream.get("height").and_then(|v| v.as_u64()),
+        ) {
+            if w > 0 && h > 0 {
+                dimensions = Some(if is_quarter_turn(get_stream_rotation(stream)) {
+                    (h as f64, w as f64)
+                } else {
+                    (w as f64, h as f64)
+                });
+            }
+        }
+
+        if let Some(r_frame_rate) = stream.get("r_frame_rate").and_then(|v| v.as_str()) {
+            if let Some((num, den)) = parse_fraction(r_frame_rate) {
+                if den > 0 {
+                    fps = Some(num as f32 / den as f32);
+                }
+            }
+        }
+        if fps.is_none() {
+            if let Some(avg_frame_rate) = stream.get("avg_frame_rate").and_then(|v| v.as_str()) {
+                if let Some((num, den)) = parse_fraction(avg_frame_rate) {
+                    if den > 0 {
+                        fps = Some(num as f32 / den as f32);
+                    }
+                }
+            }
+        }
+    }
+
+    VideoInfo {
+        duration,
+        dimensions,
+        fps,
+    }
+}
+
+fn parse_audio_stream(stream: &Value) -> AudioStream {
+    let codec = stream
+        .get("codec_name")
+        .and_then(|c| c.as_str())
+        .unwrap_or("")
+        .to_string();
+    let codec_long_name = stream
+        .get("codec_long_name")
+        .and_then(|c| c.as_str())
+        .unwrap_or("")
+        .to_string();
+    let codec_type = stream
+        .get("codec_type")
+        .and_then(|c| c.as_str())
+        .unwrap_or("audio")
+        .to_string();
+    let profile = stream
+        .get("profile")
+        .and_then(|p| p.as_str())
+        .map(|s| s.to_string());
+    let channels = stream
+        .get("channels")
+        .and_then(|c| c.as_u64())
+        .unwrap_or(0)
+        .to_string();
+    let channel_layout = stream
+        .get("channel_layout")
+        .and_then(|c| c.as_str())
+        .unwrap_or("")
+        .to_string();
+    let sample_rate = stream
+        .get("sample_rate")
+        .and_then(|s| s.as_str())
+        .unwrap_or("0")
+        .to_string();
+    let sample_fmt = stream
+        .get("sample_fmt")
+        .and_then(|s| s.as_str())
+        .map(|s| s.to_string());
+    let bits_per_sample = stream
+        .get("bits_per_sample")
+        .and_then(|b| b.as_u64())
+        .and_then(|b| u32::try_from(b).ok());
+    let bit_rate = stream
+        .get("bit_rate")
+        .and_then(|b| b.as_str())
+        .map(|s| s.to_string());
+    let duration = stream
+        .get("duration")
+        .and_then(|d| d.as_str())
+        .map(|s| s.to_string());
+    let language = stream
+        .get("tags")
+        .and_then(|t| t.get("language"))
+        .and_then(|l| l.as_str())
+        .map(|s| s.to_string());
+    let tags = stream
+        .get("tags")
+        .and_then(|tags_obj| tags_obj.as_object())
+        .map(|tags_map| {
+            tags_map
+                .iter()
+                .filter_map(|(key, value)| {
+                    value.as_str().map(|val_str| (key.clone(), val_str.to_string()))
+                })
+                .collect()
+        });
+
+    AudioStream {
+        codec,
+        codec_long_name,
+        codec_type,
+        profile,
+        channels,
+        channel_layout,
+        sample_rate,
+        sample_fmt,
+        bits_per_sample,
+        bit_rate,
+        duration,
+        language,
+        tags,
+    }
+}
+
+fn is_attached_picture(stream: &Value) -> bool {
+    stream
+        .get("disposition")
+        .and_then(|d| d.get("attached_pic"))
+        .and_then(|v| v.as_i64())
+        .unwrap_or(0)
+        != 0
+}
+
+pub fn parse_video_import_probe(json: &Value) -> VideoImportProbe {
+    let streams = json
+        .get("streams")
+        .and_then(|s| s.as_array())
+        .map(|s| s.as_slice())
+        .unwrap_or(&[]);
+
+    // Skip attached cover-art streams (`V:0` semantics) for dimensions, fps, and HDR metadata,
+    // while keeping any video stream (including cover art) for `has_picture`.
+    let first_picture_stream = streams
+        .iter()
+        .find(|s| s.get("codec_type").and_then(|t| t.as_str()) == Some("video"));
+    let main_video_stream = streams.iter().find(|s| {
+        s.get("codec_type").and_then(|t| t.as_str()) == Some("video") && !is_attached_picture(s)
+    });
+
+    let basic_info = parse_video_info(json, main_video_stream);
+    let audio_streams = streams
+        .iter()
+        .filter(|s| s.get("codec_type").and_then(|t| t.as_str()) == Some("audio"))
+        .map(parse_audio_stream)
+        .collect();
+
+    let dynamic_range = match main_video_stream.map(video_color) {
+        Some(color) => video_dynamic_range::classify(&color),
+        None => VideoDynamicRangeInfo {
+            dynamic_range: DynamicRange::Unknown,
+            format: None,
+        },
+    };
+    let thumbnail_hdr_to_sdr_filter = first_picture_stream
+        .map(video_color)
+        .filter(|color| video_dynamic_range::classify(color).dynamic_range == DynamicRange::Hdr)
+        .and_then(|color| video_dynamic_range::filter(DynamicRangeOperation::ToSdr, &color));
+
+    VideoImportProbe {
+        basic_info,
+        audio_streams,
+        dynamic_range,
+        has_picture: first_picture_stream.is_some(),
+        thumbnail_hdr_to_sdr_filter,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    #[test]
+    fn import_probe_skips_attached_picture_for_video_info_but_keeps_has_picture() {
+        let probe = json!({
+            "format": { "duration": "12.5" },
+            "streams": [
+                {
+                    "codec_type": "video",
+                    "codec_name": "mjpeg",
+                    "width": 0,
+                    "height": 0,
+                    "disposition": { "attached_pic": 1 }
+                },
+                {
+                    "codec_type": "video",
+                    "codec_name": "h264",
+                    "width": 1080,
+                    "height": 1920,
+                    "r_frame_rate": "30/1",
+                    "pix_fmt": "yuv420p",
+                    "disposition": { "attached_pic": 0 }
+                },
+                {
+                    "codec_type": "audio",
+                    "codec_name": "aac",
+                    "channels": 2,
+                    "sample_rate": "48000"
+                }
+            ]
+        });
+
+        let parsed = parse_video_import_probe(&probe);
+        assert!(parsed.has_picture);
+        assert_eq!(parsed.basic_info.duration, Some(12.5));
+        assert_eq!(parsed.basic_info.dimensions, Some((1080.0, 1920.0)));
+        assert_eq!(parsed.basic_info.fps, Some(30.0));
+        assert_eq!(parsed.audio_streams.len(), 1);
+        assert_eq!(parsed.audio_streams[0].codec, "aac");
     }
 }
