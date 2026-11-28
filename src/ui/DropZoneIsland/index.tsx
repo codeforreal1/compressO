@@ -24,6 +24,7 @@ import { deleteFile, showItemInFileManager } from '@/tauri/commands/fs'
 import { needsImagePreview, prepareImagePreview } from '@/tauri/commands/image'
 import { inputExtensions, isAudioFileExtension } from '@/types/compression'
 import {
+  getQueueItemMessage,
   getSummary,
   hasReplacedOriginal,
   isProgressUnknown,
@@ -140,6 +141,8 @@ function IslandTile({
         )
       : null
 
+  const displayMessage = getQueueItemMessage(item)
+
   return (
     <motion.div
       // Only a fade: a layout animation measures positions, which are wrong in a scrolled grid
@@ -151,7 +154,7 @@ function IslandTile({
       title={
         item.status === 'done' && item.originalSize && item.outputSize != null
           ? `${name}: ${t('common.sizeChange', { from: formatBytes(item.originalSize), to: formatBytes(item.outputSize) })}`
-          : (item.message ?? name)
+          : (displayMessage ?? name)
       }
     >
       {src ? (

@@ -1,11 +1,21 @@
+import { snapshot } from 'valtio'
+
+import { toast } from '@/components/Toast'
+import { t } from '@/i18n'
 import { presetsStore } from '@/stores/presetsStore'
+import { settingsDialogStore } from '@/stores/settingsDialogStore'
+import { deleteFile, readFilesFromPaths } from '@/tauri/commands/fs'
 import {
   addHistoryEntries,
   type HistoryEntry,
   type HistorySource,
+  pathsExist,
   setHistoryOutput,
 } from '@/tauri/commands/history'
+import { clearActiveSession } from '@/tauri/commands/session'
 import { STANDARD_PRESET_ID } from '@/types/preset'
+import { addMedia } from './-media'
+import { applyContractToMediaFile, buildContractForMedia } from './-presets'
 import { appProxy } from './-state'
 
 /**
@@ -46,6 +56,7 @@ export function recordMainWindowHistory(batchId: string) {
   for (const mediaFile of appProxy.state.media) {
     const file = mediaFile.compressedFile
     if (!file?.isSuccessful || !mediaFile.pathRaw) continue
+    const contract = buildContractForMedia(mediaFile)
     const clips = mediaFile.type === 'video' ? file.clips : undefined
     if (clips?.length) {
       for (const clip of clips) {
@@ -66,6 +77,7 @@ export function recordMainWindowHistory(batchId: string) {
           outputPath: clip.isSaved ? (clip.savedPath ?? null) : null,
           outputSize: clip.sizeInBytes ?? null,
           presetName: getPresetName(mediaFile.config?.presetId),
+          contract,
         })
       }
       continue
@@ -87,6 +99,7 @@ export function recordMainWindowHistory(batchId: string) {
       outputPath: file.isSaved ? (file.savedPath ?? null) : null,
       outputSize: file.sizeInBytes ?? null,
       presetName: getPresetName(mediaFile.config?.presetId),
+      contract,
     })
   }
   if (entries.length) addHistoryEntries(entries).catch(() => {})
@@ -163,4 +176,75 @@ export function recordQueueHistory({
       presetName: presetName ?? getPresetName(presetId),
     },
   ]).catch(() => {})
+}
+
+/**
+ * Reopens an entry's original file in the main editor with the JSON contract settings recorded for
+ * it, guarding against active compressions and unsaved outputs.
+ */
+export async function reopenHistoryEntryWithSettings(
+  entry: HistoryEntry,
+): Promise<boolean> {
+  if (!entry.contract || !entry.originalPath) return false
+
+  const state = snapshot(appProxy).state
+  if (state.isCompressing) {
+    toast.warning(t('settings.history.cannotReopenWhileCompressing'))
+    return false
+  }
+  const hasUnsavedOutput =
+    state.isProcessCompleted &&
+    state.media.some(
+      (mediaFile) =>
+        mediaFile.compressedFile?.isSuccessful &&
+        !mediaFile.compressedFile?.isSaved,
+    )
+  if (hasUnsavedOutput) {
+    toast.warning(t('settings.history.cannotReopenUnsaved'))
+    return false
+  }
+
+  const [exists] = await pathsExist([entry.originalPath]).catch(() => [false])
+  if (!exists) {
+    toast.error(t('settings.history.missing'))
+    return false
+  }
+
+  let files: Awaited<ReturnType<typeof readFilesFromPaths>>
+  try {
+    // Allow Tauri fs/asset scope for the historical path before loading its webview preview
+    files = await readFilesFromPaths([entry.originalPath])
+  } catch {
+    toast.error(t('media.invalidFiles'))
+    return false
+  }
+  if (!files.length) {
+    toast.error(t('settings.history.missing'))
+    return false
+  }
+
+  const cachePaths = state.media
+    .flatMap((media) => [
+      media.compressedFile?.pathRaw ?? null,
+      ...(media.type === 'video'
+        ? (media.compressedFile?.clips ?? []).map(
+            (clip) => clip.pathRaw ?? null,
+          )
+        : []),
+      media.type === 'video' ? (media.thumbnailPathRaw ?? null) : null,
+    ])
+    .filter((p): p is string => !!p)
+  await Promise.allSettled(cachePaths.map((path) => deleteFile(path)))
+
+  appProxy.resetProxy()
+  clearActiveSession().catch(() => {})
+  settingsDialogStore.isOpen = false
+
+  await addMedia(files)
+  if (!appProxy.state.media.length) return false
+
+  await applyContractToMediaFile(0, entry.contract, entry.presetName)
+  appProxy.state.media[0].isConfigDirty = true
+  toast.success(t('settings.history.reopened'))
+  return true
 }

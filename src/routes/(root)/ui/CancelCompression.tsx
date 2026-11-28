@@ -9,11 +9,13 @@ import ShortcutHint from '@/components/ShortcutHint'
 import { toast } from '@/components/Toast'
 import { useCommandEnterShortcut } from '@/hooks/useCommandEnterShortcut'
 import { useCommandKeyHeld } from '@/hooks/useCommandKeyHeld'
+import { clearActiveSession } from '@/tauri/commands/session'
 import { CustomEvents } from '@/types/compression'
 import {
   autoCopyCompressedMediaToClipboard,
   autoSaveCompressedMedia,
 } from '../-save'
+import { syncCompletedMainSession } from '../-session'
 import { appProxy } from '../-state'
 
 function CancelCompression() {
@@ -65,8 +67,10 @@ function CancelCompression() {
         // unfinished media has no output and is skipped
         await autoSaveCompressedMedia()
         await autoCopyCompressedMediaToClipboard()
+        await syncCompletedMainSession()
       } else {
         appProxy.timeTravel('beforeCompressionStarted')
+        clearActiveSession().catch(() => {})
       }
     } catch {
       toast.error(t('compression.cannotCancel'))

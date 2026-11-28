@@ -79,7 +79,14 @@ export function useCompressionStatusSync() {
     const unsubscribe = subscribe(appProxy, sync)
     return () => {
       unsubscribe()
-      setCompressionStatus(getIdleStatus()).catch(() => {})
+      if (
+        !appProxy.state.isCompressing &&
+        !appProxy.state.media.some(
+          (m) => m.compressedFile?.isSuccessful && !m.compressedFile?.isSaved,
+        )
+      ) {
+        setCompressionStatus(getIdleStatus()).catch(() => {})
+      }
     }
   }, [])
 }

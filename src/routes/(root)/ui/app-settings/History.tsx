@@ -19,6 +19,7 @@ import {
 } from '@/tauri/commands/history'
 import { formatBytes, getParentDirectory } from '@/utils/fs'
 import { cn } from '@/utils/tailwind'
+import { reopenHistoryEntryWithSettings } from '../../-history'
 
 /** Every row has this height, so only the rows in view are drawn (the history grows quickly) */
 const ROW_HEIGHT = 52
@@ -152,13 +153,20 @@ type FileButtonProps = {
   label: string
   /** Why it cannot be shown, when there is no path (e.g. the output was not saved) */
   missingLabel: string
+  icon?: React.ComponentProps<typeof Icon>['name']
 }
 
 /**
  * Shows a file (or folder) in the file manager. Whether it is still there is only checked when it
  * is clicked (not for every row), with a message when it was moved or deleted.
  */
-function FileButton({ path, label, missingLabel }: FileButtonProps) {
+
+function FileButton({
+  path,
+  label,
+  missingLabel,
+  icon = 'fileExplorer',
+}: FileButtonProps) {
   const { t } = useTranslation()
   const tooltip = path ? label : missingLabel
   return (
@@ -166,11 +174,11 @@ function FileButton({ path, label, missingLabel }: FileButtonProps) {
       {/* A disabled button gets no hover, so its wrapper shows the tooltip */}
       <span className="inline-flex">
         <Button
+          isIconOnly
           size="sm"
           variant="light"
           isDisabled={!path}
           aria-label={tooltip}
-          className="h-7 min-w-0 gap-1 px-2 text-[11px] font-normal"
           onPress={async () => {
             if (!path) return
             const [exists] = await pathsExist([path]).catch(() => [true])
@@ -183,8 +191,7 @@ function FileButton({ path, label, missingLabel }: FileButtonProps) {
             })
           }}
         >
-          <Icon name="fileExplorer" size={13} />
-          {label}
+          <Icon name={icon} size={16} />
         </Button>
       </span>
     </Tooltip>
@@ -246,12 +253,67 @@ const dateFormat = () =>
     timeStyle: 'short',
   })
 
+function ReopenButton({
+  entry,
+  isOriginalMissing,
+  onOriginalMissing,
+}: {
+  entry: HistoryEntry
+  isOriginalMissing: boolean
+  onOriginalMissing: () => void
+}) {
+  const { t } = useTranslation()
+  const [isReopening, setIsReopening] = React.useState(false)
+  const tooltip = isOriginalMissing
+    ? t('settings.history.missingOriginal')
+    : t('settings.history.reopenWithSettings')
+  return (
+    <Tooltip content={tooltip} aria-label={tooltip}>
+      {/* A disabled button gets no hover, so its wrapper shows the tooltip */}
+      <span className="inline-flex">
+        <Button
+          isIconOnly
+          size="sm"
+          variant="light"
+          isDisabled={isOriginalMissing}
+          isLoading={isReopening}
+          aria-label={tooltip}
+          onPress={async () => {
+            setIsReopening(true)
+            try {
+              const reopened = await reopenHistoryEntryWithSettings(entry)
+              if (!reopened && entry.originalPath) {
+                const [exists] = await pathsExist([entry.originalPath]).catch(
+                  () => [true],
+                )
+                if (!exists) {
+                  onOriginalMissing()
+                }
+              }
+            } finally {
+              setIsReopening(false)
+            }
+          }}
+        >
+          {!isReopening ? <Icon name="redo" size={16} /> : null}
+        </Button>
+      </span>
+    </Tooltip>
+  )
+}
+
 function EntryRow({
   entry,
   isInFolder,
+  hasContract,
+  isOriginalMissing,
+  onOriginalMissing,
 }: {
   entry: HistoryEntry
   isInFolder: boolean
+  hasContract: boolean
+  isOriginalMissing: boolean
+  onOriginalMissing: () => void
 }) {
   const { t } = useTranslation()
   const name = getName(entry.originalPath)
@@ -277,7 +339,14 @@ function EntryRow({
         originalSize={entry.originalSize}
         outputSize={entry.outputSize}
       />
-      <div className="flex shrink-0 items-center">
+      <div className="flex shrink-0 items-center gap-1">
+        {hasContract ? (
+          <ReopenButton
+            entry={entry}
+            isOriginalMissing={isOriginalMissing}
+            onOriginalMissing={onOriginalMissing}
+          />
+        ) : null}
         <FileButton
           path={entry.originalPath}
           label={t('settings.history.original')}
@@ -287,6 +356,7 @@ function EntryRow({
           path={entry.outputPath}
           label={t('settings.history.output')}
           missingLabel={t('settings.history.notSaved')}
+          icon="externalLink"
         />
       </div>
     </div>
@@ -476,6 +546,46 @@ function History() {
   )
   const visibleRows = rows.slice(firstIndex, lastIndex)
 
+  const [originalExists, setOriginalExists] = React.useState<
+    Record<string, boolean>
+  >({})
+  const lastEntriesRef = React.useRef(entries)
+  if (lastEntriesRef.current !== entries) {
+    lastEntriesRef.current = entries
+    setOriginalExists({})
+  }
+  React.useEffect(() => {
+    const uncheckedPaths = [
+      ...new Set(
+        visibleRows
+          .filter(
+            (row): row is Extract<Row, { type: 'entry' }> =>
+              row.type === 'entry' &&
+              !!row.entry.contract &&
+              !(row.entry.originalPath in originalExists),
+          )
+          .map((row) => row.entry.originalPath),
+      ),
+    ]
+    if (!uncheckedPaths.length) return
+    let isCurrent = true
+    pathsExist(uncheckedPaths)
+      .then((results) => {
+        if (!isCurrent) return
+        setOriginalExists((previous) => {
+          const next = { ...previous }
+          uncheckedPaths.forEach((path, index) => {
+            next[path] = results[index] ?? false
+          })
+          return next
+        })
+      })
+      .catch(() => {})
+    return () => {
+      isCurrent = false
+    }
+  }, [visibleRows, originalExists])
+
   const toggleFolder = (key: string) => {
     setExpandedFolders((previous) => {
       const next = new Set(previous)
@@ -580,7 +690,23 @@ function History() {
                 }}
               >
                 {row.type === 'entry' ? (
-                  <EntryRow entry={row.entry} isInFolder={row.isInFolder} />
+                  <EntryRow
+                    entry={row.entry}
+                    isInFolder={row.isInFolder}
+                    hasContract={!!row.entry.contract}
+                    isOriginalMissing={
+                      !row.entry.originalPath ||
+                      originalExists[row.entry.originalPath] === false
+                    }
+                    onOriginalMissing={() => {
+                      const path = row.entry.originalPath
+                      if (!path) return
+                      setOriginalExists((previous) => ({
+                        ...previous,
+                        [path]: false,
+                      }))
+                    }}
+                  />
                 ) : (
                   <FolderRow
                     group={row.group}

@@ -16,4 +16,3 @@ pub mod presets_bridge;
 pub mod quit;
 pub mod watch_folders;
 pub mod watch_folders_bridge;
-pub mod window_bridge;

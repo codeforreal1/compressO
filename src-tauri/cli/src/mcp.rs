@@ -315,6 +315,36 @@ fn tools() -> Value {
             },
         },
         {
+            "name": "get_settings",
+            "title": "Get CompressO settings",
+            "description": "Returns persistent domain settings stored by CompressO (output saveLocation/saveFolder/filename template, replace/skipLarger/preserveFolderStructure, hardware acceleration, CPU thread limit, drop-zone presets, autoCompress, sleep/clipboard/tray preferences, and watchedFolders), optionally filtered to a single key.",
+            "annotations": { "readOnlyHint": true },
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "key": {
+                        "type": "string",
+                        "description": "Optional setting key to read (returns all domain settings when omitted)",
+                    },
+                },
+            },
+        },
+        {
+            "name": "update_settings",
+            "title": "Update CompressO settings",
+            "description": "Updates one or more persistent CompressO domain settings (outputFileNameTemplate, saveLocation, saveFolder, preserveFolderStructure, saveLargerOutputs, replaceOriginalFiles, copyOutputToClipboard, copyBatchOutputToClipboard, showMenuBarIcon, watchClipboard, playCompletionSound, enableAudioWaveforms, autoCompress, dropZoneVideoPresetId, dropZoneImagePresetId, dropZoneAudioPresetId, useHardwareAcceleration, cpuThreadLimit, retryTargetSizeOnCpu, enableVideoPreviews, preventSleepWhileCompressing, keepScreenOnWhileCompressing, openInMenuBarOnly). Note: UI-only appearance prefs (theme, primaryColor, tintedWindow, tintOpacity, language) stay in UI storage, and watchedFolders should use the watched folder tools.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "patch": {
+                        "type": "object",
+                        "description": "Partial domain settings object containing keys and values to update",
+                    },
+                },
+                "required": ["patch"],
+            },
+        },
+        {
             "name": "get_logs",
             "title": "Get CompressO logs",
             "description": "Returns the current CompressO log file path and recent log lines.",
@@ -773,6 +803,21 @@ async fn call_get_queue(id: Value) {
     respond_system_result(&id, crate::system::queue_status().await);
 }
 
+async fn call_get_settings(id: Value, arguments: Value) {
+    let key = optional_text(&arguments, "key");
+    respond_system_result(&id, crate::system::settings_get(key).await);
+}
+
+async fn call_update_settings(id: Value, arguments: Value) {
+    let Some(patch) = arguments.get("patch").filter(|v| v.is_object()).cloned() else {
+        return respond(
+            &id,
+            tool_error(&CliError::usage("Give a JSON object for `patch`.")),
+        );
+    };
+    respond_system_result(&id, crate::system::settings_update(patch).await);
+}
+
 async fn call_get_logs(id: Value, arguments: Value) {
     let tail = match optional_usize(&arguments, "tail", 0) {
         Ok(v) => v,
@@ -1017,6 +1062,12 @@ async fn serve_messages() -> i32 {
                     "get_queue" => {
                         tokio::task::spawn_local(call_get_queue(id));
                     }
+                    "get_settings" => {
+                        tokio::task::spawn_local(call_get_settings(id, arguments));
+                    }
+                    "update_settings" => {
+                        tokio::task::spawn_local(call_update_settings(id, arguments));
+                    }
                     "get_logs" => {
                         tokio::task::spawn_local(call_get_logs(id, arguments));
                     }
@@ -1097,6 +1148,8 @@ mod tests {
             "clear_history",
             "get_queue",
             "manage_queue",
+            "get_settings",
+            "update_settings",
             "get_logs",
             "about",
             "clear_cache",

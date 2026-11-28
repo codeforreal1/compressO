@@ -20,6 +20,9 @@ fn set_paused(app_handle: &AppHandle, paused: bool) {
     if IS_PAUSED.swap(paused, Ordering::SeqCst) != paused {
         let _ = app_handle.emit(DROP_QUEUE_PAUSED_EVENT, paused);
     }
+    if !paused {
+        crate::core::queue_runner::ensure_started(app_handle);
+    }
 }
 
 /// Pauses the queue after the media being compressed, or resumes it
@@ -175,8 +178,8 @@ pub struct QueueSource {
     pub folder_name: String,
 }
 
-/// Changes to an item, from the popover compressing it
-#[derive(Deserialize, Debug)]
+/// Changes to an item, from the runner or frontend
+#[derive(Deserialize, Default, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct DropQueueItemUpdate {
     pub status: Option<DropQueueItemStatus>,
@@ -199,6 +202,50 @@ pub struct DropQueueState(Mutex<Vec<DropQueueItem>>);
 
 pub fn is_auto_compress_enabled() -> bool {
     IS_AUTO_COMPRESS_ENABLED.load(Ordering::SeqCst)
+}
+
+/// Keeps `IS_AUTO_COMPRESS_ENABLED` aligned with `core::settings` + `core::presets` headlessly.
+pub fn sync_auto_compress_from_core(app_handle: &AppHandle) {
+    let settings = crate::core::settings::get(app_handle);
+    let presets = crate::core::presets::get(app_handle);
+    let can_save_any = [
+        ("video", Some(settings.drop_zone_video_preset_id.as_str())),
+        ("image", Some(settings.drop_zone_image_preset_id.as_str())),
+        ("audio", Some(settings.drop_zone_audio_preset_id.as_str())),
+    ]
+    .into_iter()
+    .any(|(media_type, choice)| {
+        let id = crate::core::planning::resolve_preset_choice_id(choice, media_type, &presets);
+        crate::core::planning::resolve_preset_output(Some(&id), &presets, &settings)
+            .saves_automatically()
+    });
+    IS_AUTO_COMPRESS_ENABLED.store(settings.auto_compress && can_save_any, Ordering::SeqCst);
+}
+
+pub fn is_item_compressing(app_handle: &AppHandle, id: &str) -> bool {
+    app_handle
+        .try_state::<DropQueueState>()
+        .and_then(|state| {
+            state.0.lock().ok().map(|items| {
+                items
+                    .iter()
+                    .any(|item| item.id == id && item.status == DropQueueItemStatus::Compressing)
+            })
+        })
+        .unwrap_or(false)
+}
+
+pub fn has_waiting_items(app_handle: &AppHandle) -> bool {
+    app_handle
+        .try_state::<DropQueueState>()
+        .and_then(|state| {
+            state
+                .0
+                .lock()
+                .ok()
+                .map(|items| items.iter().any(|item| item.status == DropQueueItemStatus::Waiting))
+        })
+        .unwrap_or(false)
 }
 
 /// Changes the queue & sends it to every window
@@ -333,9 +380,6 @@ pub fn add_files_to_queue(
     cli_job: Option<CliJob>,
 ) -> Vec<DropQueueItem> {
     let group_id = nanoid!();
-    // The tray webview compresses the queue (the main window, on Linux or without the tray icon)
-    #[cfg(any(target_os = "macos", windows))]
-    crate::tray_popover::ensure_tray_window(app_handle);
     log::info!("[drop-queue] Adding {} media", files.len());
     let mut added = Vec::new();
     update_queue(app_handle, |items| {
@@ -380,6 +424,9 @@ pub fn add_files_to_queue(
             items.push(item);
         }
     });
+    if !added.is_empty() {
+        crate::core::queue_runner::ensure_started(app_handle);
+    }
     added
 }
 
@@ -397,9 +444,8 @@ pub fn get_drop_queue(app_handle: AppHandle) -> Vec<DropQueueItem> {
         .unwrap_or_default()
 }
 
-#[tauri::command]
-pub fn update_drop_queue_item(app_handle: AppHandle, id: String, update: DropQueueItemUpdate) {
-    update_queue(&app_handle, |items| {
+pub fn update_item(app_handle: &AppHandle, id: &str, update: DropQueueItemUpdate) {
+    update_queue(app_handle, |items| {
         let Some(item) = items.iter_mut().find(|item| item.id == id) else {
             return;
         };
@@ -449,6 +495,11 @@ pub fn update_drop_queue_item(app_handle: AppHandle, id: String, update: DropQue
     });
 }
 
+#[tauri::command]
+pub fn update_drop_queue_item(app_handle: AppHandle, id: String, update: DropQueueItemUpdate) {
+    update_item(&app_handle, &id, update);
+}
+
 /// Compresses an item again (e.g. one that failed or was cancelled), after the media already
 /// waiting; it stays in its place in the queue
 #[tauri::command]
@@ -473,6 +524,7 @@ pub fn retry_drop_queue_item(app_handle: AppHandle, id: String) {
         item.error = None;
         delete_unsaved_output(item);
     });
+    crate::core::queue_runner::ensure_started(&app_handle);
 }
 
 /// Deletes the outputs an item left in the app's cache (not saved), if any. Only the queue's own

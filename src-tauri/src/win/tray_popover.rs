@@ -319,23 +319,10 @@ fn create_tray_window_in_background(app_handle: &AppHandle) {
     });
 }
 
-/// Creates the tray webview again if it is missing (e.g. suspended), while the tray icon is shown:
-/// it compresses the drop zone's queue (see `drop_queue`)
-pub fn ensure_tray_window(app_handle: &AppHandle) {
-    if app_handle.tray_by_id(TRAY_WINDOW_LABEL).is_none()
-        || app_handle.get_webview_window(TRAY_WINDOW_LABEL).is_some()
-    {
-        return;
-    }
-    create_tray_window_in_background(app_handle);
-}
-
 pub fn init(app: &App) {
     app.manage(TrayPopoverState::default());
     app.manage(crate::tauri_commands::tray::DroppedFilesState::default());
-    app.manage(crate::tauri_commands::drop_queue::DropQueueState::default());
     crate::sys::clipboard_watch::init(app.handle());
-    crate::sys::watch_folders::init(app.handle());
 }
 
 /// Shows or removes the tray icon, which toggles the popover. Removing it also destroys the tray

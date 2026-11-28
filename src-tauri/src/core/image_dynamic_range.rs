@@ -59,7 +59,7 @@ pub fn inspect(path: &str) -> Result<ImageDynamicRangeInfo, String> {
 pub async fn inspect_source(
     app: &tauri::AppHandle,
     path: &str,
-    owner: &str,
+    owner: Option<&str>,
     cancel_ids: &[String],
 ) -> Result<(ImageDynamicRangeInfo, String), String> {
     let source = path.to_owned();

@@ -345,6 +345,7 @@
       "original": "Original",
       "output": "Resultado",
       "missing": "Este archivo se movió o eliminó.",
+      "missingOriginal": "El archivo original se movió o eliminó.",
       "notSaved": "Este resultado no se guardó.",
       "fileCount": "Archivos: {{count}}",
       "showFiles": "Mostrar los archivos de {{name}}",
@@ -355,7 +356,12 @@
         "original": "Tamaño original",
         "output": "Tamaño comprimido",
         "reduction": "Reducción media"
-      }
+      },
+      "reopen": "Reabrir",
+      "reopenWithSettings": "Abrir con la misma configuración",
+      "reopened": "Abierto con la configuración de compresión guardada.",
+      "cannotReopenWhileCompressing": "Espera a que termine la compresión actual antes de reabrir desde el historial.",
+      "cannotReopenUnsaved": "Guarda o descarta los archivos comprimidos actuales antes de reabrir desde el historial."
     },
     "commandLine": {
       "terminal": {
@@ -760,6 +766,8 @@
   },
   "preview": {
     "showFailed": "No se pudo mostrar el archivo.",
+    "mutePreview": "Silenciar vista previa",
+    "unmutePreview": "Activar sonido de la vista previa",
     "compare": "Comparar",
     "showEdits": "Mostrar ediciones",
     "smaller": "más pequeño",
@@ -1062,6 +1070,7 @@
     "quit": "Salir",
     "continueCompressing": "Seguir comprimiendo",
     "goBack": "Volver",
+    "openMainApp": "Abrir la app",
     "compressingTitle": "Compresión en curso",
     "compressingMessage": "Todavía se están comprimiendo archivos. Si sale ahora, se cancelará la compresión.",
     "unsavedTitle": "Archivos no guardados",

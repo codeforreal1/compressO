@@ -6,7 +6,7 @@ use crate::core::{
     },
     ffmpeg::{self},
 };
-use crate::sys::fs::delete_stale_files;
+use crate::sys::fs::delete_stale_files_excluding;
 use std::path::Path;
 
 #[tauri::command]
@@ -30,8 +30,12 @@ pub async fn compress_video(
     speed: Option<f32>,
 ) -> Result<VideoCompressionResult, String> {
     let mut ffmpeg = ffmpeg::FFMPEG::new(&app)?;
-    if let Ok(files) =
-        delete_stale_files(ffmpeg.get_asset_dir().as_str(), 24 * 60 * 60 * 1000).await
+    if let Ok(files) = delete_stale_files_excluding(
+        ffmpeg.get_asset_dir().as_str(),
+        24 * 60 * 60 * 1000,
+        &crate::core::session::protected_paths(&app),
+    )
+    .await
     {
         log::debug!(
             "[main] Stale files deleted. Number of deleted files = {}",
@@ -85,8 +89,12 @@ pub async fn compress_videos_batch(
     videos: Vec<VideoCompressionConfig>,
 ) -> Result<BatchCompressionResult, String> {
     let mut ffmpeg = ffmpeg::FFMPEG::new(&app)?;
-    if let Ok(files) =
-        delete_stale_files(ffmpeg.get_asset_dir().as_str(), 24 * 60 * 60 * 1000).await
+    if let Ok(files) = delete_stale_files_excluding(
+        ffmpeg.get_asset_dir().as_str(),
+        24 * 60 * 60 * 1000,
+        &crate::core::session::protected_paths(&app),
+    )
+    .await
     {
         log::debug!(
             "[main] Stale files deleted. Number of deleted files = {}",

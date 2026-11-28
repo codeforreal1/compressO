@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { subscribeKey } from 'valtio/utils'
 
+import { whenCoreStateReady } from '@/hooks/useCoreStateSync'
 import { settingsStore } from '@/stores/settingsStore'
 import {
   getHardwareEncoders,
@@ -13,13 +14,27 @@ import {
  */
 export function useHardwareEncodingSync() {
   useEffect(() => {
+    let isMounted = true
+    let isReady = false
     const apply = () => {
+      if (!isMounted || !isReady) return
       setHardwareEncodingEnabled(settingsStore.useHardwareAcceleration).catch(
         () => {},
       )
     }
-    apply()
-    return subscribeKey(settingsStore, 'useHardwareAcceleration', apply)
+    whenCoreStateReady().then(() => {
+      isReady = true
+      apply()
+    })
+    const unsubscribe = subscribeKey(
+      settingsStore,
+      'useHardwareAcceleration',
+      apply,
+    )
+    return () => {
+      isMounted = false
+      unsubscribe()
+    }
   }, [])
 }
 

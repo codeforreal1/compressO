@@ -143,8 +143,17 @@ fn set_progress(app: &AppHandle, fraction: f64) {
 }
 
 fn show_preparation(app: &AppHandle) -> Result<(), String> {
+    if crate::sys::cli_server::is_background_launch() {
+        return Ok(());
+    }
+    ensure_preparation_window(app)
+}
+
+/// Opens (or focuses) the tool preparation window unconditionally when the GUI asks for it.
+pub fn ensure_preparation_window(app: &AppHandle) -> Result<(), String> {
     if let Some(window) = app.get_webview_window("preparation") {
         let _ = window.show();
+        let _ = window.set_focus();
         return Ok(());
     }
     let builder =
@@ -198,6 +207,11 @@ pub fn prepare_tools(app: AppHandle) {
             .map_err(|e| format!("Tool preparation stopped: {e}"))
             .and_then(|result| result);
         let succeeded = result.is_ok();
+        if succeeded && !crate::sys::cli_server::is_launched_for_cli() {
+            if let Err(error) = crate::tauri_commands::window::create_main_window(&app) {
+                log::error!("Failed to create the main window: {error}");
+            }
+        }
         {
             let state = app.state::<ToolBundleState>();
             let mut inner = state.0.lock().unwrap();
@@ -263,6 +277,11 @@ fn preview_setup(app: &AppHandle, fails: bool) {
         }
     }
     let directory = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("bin");
+    if !crate::sys::cli_server::is_launched_for_cli() {
+        if let Err(error) = crate::tauri_commands::window::create_main_window(app) {
+            log::error!("Failed to create the main window: {error}");
+        }
+    }
     let state = app.state::<ToolBundleState>();
     let mut inner = state.0.lock().unwrap();
     inner.running = false;

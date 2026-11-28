@@ -10,20 +10,25 @@ use tauri::AppHandle;
 
 pub struct FFPROBE {
     app: AppHandle,
-    owner_window: String,
+    owner_window: Option<String>,
 }
 
 impl FFPROBE {
     pub fn new(app: &tauri::AppHandle) -> Result<Self, String> {
         Ok(Self {
             app: app.to_owned(),
-            owner_window: String::from("main"),
+            owner_window: None,
         })
     }
 
-    /// Window the processes belong to (the main window by default), see `MediaProcessExecutorBuilder`
+    /// Window the processes belong to (`None` by default, i.e. detached/headless), see `MediaProcessExecutorBuilder`
     pub fn with_owner_window(mut self, label: &str) -> Self {
-        self.owner_window = label.to_string();
+        self.owner_window = Some(label.to_string());
+        self
+    }
+
+    pub fn with_owner_window_opt(mut self, label: Option<&str>) -> Self {
+        self.owner_window = label.map(str::to_string);
         self
     }
 
@@ -59,7 +64,7 @@ impl FFPROBE {
         ]);
 
         let executor = MediaProcessExecutorBuilder::new(self.app.clone())
-            .owner_window(&self.owner_window)
+            .owner_window_opt(self.owner_window.as_deref())
             .command(ffprobe_cmd)
             .build()?;
 
@@ -154,7 +159,7 @@ impl FFPROBE {
         ]);
 
         let executor = MediaProcessExecutorBuilder::new(self.app.clone())
-            .owner_window(&self.owner_window)
+            .owner_window_opt(self.owner_window.as_deref())
             .command(ffprobe_cmd)
             .build()?;
 
@@ -364,7 +369,7 @@ impl FFPROBE {
         ]);
 
         let executor = MediaProcessExecutorBuilder::new(self.app.clone())
-            .owner_window(&self.owner_window)
+            .owner_window_opt(self.owner_window.as_deref())
             .command(ffprobe_cmd)
             .build()?;
         let output = executor.spawn_and_wait_with_output().await?;
@@ -396,7 +401,7 @@ impl FFPROBE {
         ]);
 
         let executor = MediaProcessExecutorBuilder::new(self.app.clone())
-            .owner_window(&self.owner_window)
+            .owner_window_opt(self.owner_window.as_deref())
             .command(ffprobe_cmd)
             .build()?;
 
@@ -495,7 +500,7 @@ impl FFPROBE {
         ]);
 
         let executor = MediaProcessExecutorBuilder::new(self.app.clone())
-            .owner_window(&self.owner_window)
+            .owner_window_opt(self.owner_window.as_deref())
             .command(ffprobe_cmd)
             .build()?;
 
@@ -642,7 +647,7 @@ impl FFPROBE {
         ]);
 
         let executor = MediaProcessExecutorBuilder::new(self.app.clone())
-            .owner_window(&self.owner_window)
+            .owner_window_opt(self.owner_window.as_deref())
             .command(ffprobe_cmd)
             .build()?;
 
@@ -763,7 +768,7 @@ impl FFPROBE {
         ]);
 
         let executor = MediaProcessExecutorBuilder::new(self.app.clone())
-            .owner_window(&self.owner_window)
+            .owner_window_opt(self.owner_window.as_deref())
             .command(ffprobe_cmd)
             .build()?;
 

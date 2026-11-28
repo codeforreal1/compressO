@@ -27,7 +27,7 @@ use tauri::{AppHandle, Emitter, Listener, Manager};
 pub struct FFMPEG {
     app: AppHandle,
     assets_dir: PathBuf,
-    owner_window: String,
+    owner_window: Option<String>,
     /// Only this part of the input is read (its start & length in seconds), see `with_input_range`
     input_range: Option<(f64, f64)>,
     /// Overrides the hardware acceleration setting, see `with_hardware_acceleration`
@@ -62,6 +62,80 @@ fn audio_output_codec(extension: &str, requested_codec: Option<&str>) -> String 
         Some(codec) if supported_codecs.contains(&codec) => codec.to_string(),
         _ => supported_codecs.first().copied().unwrap_or("copy").to_string(),
     }
+}
+
+/// Container whose capabilities (codecs, subtitles, thumbnails) apply to the extension.
+/// Output bytes required from FFmpeg (`total_size`) before emitting timed progress, so empty
+/// lookahead ticks (`total_size=0`) and tiny container headers (`total_size=48`) keep the UI idle
+/// until encoded media payload starts flushing.
+const MIN_PROGRESS_OUTPUT_BYTES: u64 = 1024;
+
+/// Parses FFmpeg `-progress -` key/value stdout lines across `\n`, `\r`, or `\r\n` boundaries.
+#[derive(Default)]
+struct FfmpegProgressTracker {
+    last_total_size: Option<u64>,
+}
+
+impl FfmpegProgressTracker {
+    fn feed_line(&mut self, line: &str) -> Option<String> {
+        let trimmed = line.trim();
+        if let Some(value) = trimmed.strip_prefix("total_size=") {
+            self.last_total_size = value.trim().parse::<u64>().ok();
+            return None;
+        }
+        let duration = trimmed.strip_prefix("out_time=")?.trim();
+        if !has_positive_ffmpeg_duration(duration) {
+            return None;
+        }
+        if matches!(self.last_total_size, Some(bytes) if bytes < MIN_PROGRESS_OUTPUT_BYTES) {
+            return None;
+        }
+        Some(duration.to_string())
+    }
+}
+
+fn has_positive_ffmpeg_duration(text: &str) -> bool {
+    if text.is_empty() || text.eq_ignore_ascii_case("N/A") || text.starts_with('-') {
+        return false;
+    }
+    let mut seconds = 0.0;
+    for part in text.split(':') {
+        let Ok(value) = part.parse::<f64>() else {
+            return false;
+        };
+        if !value.is_finite() || value < 0.0 {
+            return false;
+        }
+        seconds = seconds * 60.0 + value;
+    }
+    seconds > 0.0
+}
+
+fn build_ffmpeg_progress_callback(
+    app: AppHandle,
+    video_id: String,
+    batch_id: String,
+) -> crate::core::media_process::StdoutCallback {
+    let tracker = std::sync::Mutex::new(FfmpegProgressTracker::default());
+    Arc::new(move |_process_index: usize, stdout_line: String| {
+        let duration = {
+            let Ok(mut guard) = tracker.lock() else {
+                return;
+            };
+            guard.feed_line(&stdout_line)
+        };
+        if let Some(duration) = duration {
+            let video_progress = VideoCompressionProgress {
+                video_id: video_id.clone(),
+                batch_id: batch_id.clone(),
+                current_duration: duration,
+            };
+            let _ = app.emit(
+                CustomEvents::VideoCompressionProgress.as_ref(),
+                video_progress,
+            );
+        }
+    })
 }
 
 /// Container whose capabilities (codecs, subtitles, thumbnails) apply to the extension.
@@ -134,7 +208,7 @@ impl FFMPEG {
         Ok(Self {
             app: app.to_owned(),
             assets_dir,
-            owner_window: String::from("main"),
+            owner_window: None,
             input_range: None,
             hardware_acceleration: None,
             cpu_thread_limit: None,
@@ -154,9 +228,14 @@ impl FFMPEG {
         self
     }
 
-    /// Window the processes belong to (the main window by default), see `MediaProcessExecutorBuilder`
+    /// Window the processes belong to (`None` by default, i.e. detached/headless), see `MediaProcessExecutorBuilder`
     pub fn with_owner_window(mut self, label: &str) -> Self {
-        self.owner_window = label.to_string();
+        self.owner_window = Some(label.to_string());
+        self
+    }
+
+    pub fn with_owner_window_opt(mut self, label: Option<&str>) -> Self {
+        self.owner_window = label.map(str::to_string);
         self
     }
 
@@ -182,7 +261,7 @@ impl FFMPEG {
     async fn source_video_bitrate(&self, video_path: &str) -> Option<u64> {
         let mut ffprobe = FFPROBE::new(&self.app)
             .ok()?
-            .with_owner_window(&self.owner_window);
+            .with_owner_window_opt(self.owner_window.as_deref());
         let stream_bitrate = ffprobe
             .get_video_streams(video_path)
             .await
@@ -253,7 +332,7 @@ impl FFMPEG {
                         .sum(),
                 )
             } else {
-                let mut ffprobe = FFPROBE::new(&self.app)?.with_owner_window(&self.owner_window);
+                let mut ffprobe = FFPROBE::new(&self.app)?.with_owner_window_opt(self.owner_window.as_deref());
                 ffprobe
                     .get_video_basic_info(video_path)
                     .await
@@ -273,7 +352,7 @@ impl FFMPEG {
         let container = output_container(convert_to_extension);
 
         let audio_streams = {
-            let mut ffprobe = FFPROBE::new(&self.app)?.with_owner_window(&self.owner_window);
+            let mut ffprobe = FFPROBE::new(&self.app)?.with_owner_window_opt(self.owner_window.as_deref());
             ffprobe.get_audio_streams(video_path).await?
         };
         let has_audio_stream = !audio_streams.is_empty();
@@ -317,7 +396,7 @@ impl FFMPEG {
             if let Some(subs_config) = subtitles_config {
                 let preserve = subs_config.preserve_existing_subtitles.unwrap_or(false);
                 if preserve {
-                    let mut ffprobe = FFPROBE::new(&self.app)?.with_owner_window(&self.owner_window);
+                    let mut ffprobe = FFPROBE::new(&self.app)?.with_owner_window_opt(self.owner_window.as_deref());
                     let streams = ffprobe.get_subtitle_streams(video_path).await?;
                     let count = streams.len();
                     (count, streams)
@@ -451,7 +530,7 @@ impl FFMPEG {
         let source_color = if is_audio_target {
             None
         } else {
-            let mut ffprobe = FFPROBE::new(&self.app)?.with_owner_window(&self.owner_window);
+            let mut ffprobe = FFPROBE::new(&self.app)?.with_owner_window_opt(self.owner_window.as_deref());
             ffprobe
                 .get_video_color(video_path)
                 .await
@@ -498,7 +577,7 @@ impl FFMPEG {
             } else {
                 if preset_name.is_none() {
                     let source_streams = {
-                        let mut ffprobe = FFPROBE::new(&self.app)?.with_owner_window(&self.owner_window);
+                        let mut ffprobe = FFPROBE::new(&self.app)?.with_owner_window_opt(self.owner_window.as_deref());
                         ffprobe.get_video_streams(video_path).await?
                     };
 
@@ -593,7 +672,7 @@ impl FFMPEG {
         // An attached audio file stands in for the video's own when it has none
         let external_audio_stream: Option<crate::core::domain::AudioStream> =
             if let Some(path) = external_audio_paths.first() {
-                let mut ffprobe = FFPROBE::new(&self.app)?.with_owner_window(&self.owner_window);
+                let mut ffprobe = FFPROBE::new(&self.app)?.with_owner_window_opt(self.owner_window.as_deref());
                 ffprobe
                     .get_audio_streams(path)
                     .await
@@ -844,7 +923,7 @@ impl FFMPEG {
                         .sum(),
                 )
             } else {
-                let mut ffprobe = FFPROBE::new(&self.app)?.with_owner_window(&self.owner_window);
+                let mut ffprobe = FFPROBE::new(&self.app)?.with_owner_window_opt(self.owner_window.as_deref());
                 ffprobe
                     .get_video_basic_info(video_path)
                     .await
@@ -1380,32 +1459,6 @@ impl FFMPEG {
         let app_clone = self.app.clone();
         let video_id_for_progress = video_id.to_string();
         let batch_id_for_progress = batch_id.clone();
-        let re = Regex::new(r"out_time=(?P<out_time>.*?)\n").unwrap();
-
-        let stdout_callback = Arc::new(move |_process_index: usize, stdout_line: String| {
-            if let Some(cap) = re.captures(&stdout_line) {
-                if let Some(out_time) = cap.name("out_time") {
-                    let duration = out_time.as_str();
-                    if !duration.is_empty() {
-                        let video_progress = VideoCompressionProgress {
-                            video_id: video_id_for_progress.clone(),
-                            batch_id: batch_id_for_progress.clone(),
-                            current_duration: duration.to_string(),
-                        };
-                        {
-                            // To the whole app (any window can be compressing)
-                            let window = app_clone.clone();
-                            window
-                                .emit(
-                                    CustomEvents::VideoCompressionProgress.as_ref(),
-                                    video_progress,
-                                )
-                                .ok();
-                        }
-                    }
-                }
-            }
-        });
 
         // With a target size, an output larger than it, or well under it (the encoder kept below
         // the bitrate, e.g. on still footage), is encoded again at a bitrate worked out from the
@@ -1457,15 +1510,16 @@ impl FFMPEG {
                 // Only when the retry leaves the graphics card; without hardware acceleration
                 // (turned off, or none for the codec) every encode is on the CPU anyway
                 let on_cpu = hardware_encoder.is_some() && retry_on_cpu;
-                let _ = self.app.emit_to(
-                    self.owner_window.as_str(),
-                    TARGET_SIZE_RETRY_EVENT,
-                    TargetSizeRetry {
-                        video_id: video_id.to_string(),
-                        pass: size_attempt + 1,
-                        on_cpu,
-                    },
-                );
+                let retry_payload = TargetSizeRetry {
+                    video_id: video_id.to_string(),
+                    pass: size_attempt + 1,
+                    on_cpu,
+                };
+                if let Some(label) = self.owner_window.as_deref() {
+                    let _ = self.app.emit_to(label, TARGET_SIZE_RETRY_EVENT, retry_payload);
+                } else {
+                    let _ = self.app.emit(TARGET_SIZE_RETRY_EVENT, retry_payload);
+                }
             }
 
             let mut round_error: Option<String> = None;
@@ -1478,14 +1532,19 @@ impl FFMPEG {
                 let mut ffmpeg_cmd = self.get_ffmpeg_command()?;
                 ffmpeg_cmd.args(args);
 
+                let stdout_callback = build_ffmpeg_progress_callback(
+                    app_clone.clone(),
+                    video_id_for_progress.clone(),
+                    batch_id_for_progress.clone(),
+                );
                 let executor = MediaProcessExecutorBuilder::new(self.app.clone())
-                    .owner_window(&self.owner_window)
+                    .owner_window_opt(self.owner_window.as_deref())
                     .command(ffmpeg_cmd)
                     .with_cancel_support(
                         vec![video_id.to_string(), batch_id.clone()],
                         Some(cancel_callback.clone()),
                     )
-                    .with_stdout_callback(stdout_callback.clone())
+                    .with_stdout_callback(stdout_callback)
                     .build()?;
 
                 let error = match executor.spawn_and_wait().await {
@@ -1502,7 +1561,11 @@ impl FFMPEG {
                     Err(error) => error,
                 };
                 // The window compressing it was closed (its processes are stopped with it)
-                if self.app.get_webview_window(&self.owner_window).is_none() {
+                if self
+                    .owner_window
+                    .as_deref()
+                    .is_some_and(|label| self.app.get_webview_window(label).is_none())
+                {
                     remove_candidates(&candidates);
                     return Err(error);
                 }
@@ -1786,7 +1849,7 @@ impl FFMPEG {
                 let estimate_id = estimate_id.to_string();
                 running.spawn(async move {
                     let result = FFMPEG::new(&app)?
-                        .with_owner_window(&owner_window)
+                        .with_owner_window_opt(owner_window.as_deref())
                         .with_hardware_acceleration(config.use_hardware_acceleration)
                         .with_cpu_thread_limit(config.cpu_threads)
                         .with_input_range(range)
@@ -1899,7 +1962,7 @@ impl FFMPEG {
                 EventListenerGuard::for_app(app_clone.clone(), event_id)
             };
 
-            let mut ffmpeg_instance = match FFMPEG::new(&self.app).map(|f| f.with_owner_window(&self.owner_window)) {
+            let mut ffmpeg_instance = match FFMPEG::new(&self.app).map(|f| f.with_owner_window_opt(self.owner_window.as_deref())) {
                 Ok(f) => f,
                 Err(e) => return Err(format!("Failed to create ffmpeg instance: {}", e)),
             };
@@ -1995,7 +2058,7 @@ impl FFMPEG {
             .to_str()
             .ok_or_else(|| String::from("Invalid output path."))?;
         let duration = {
-            let mut ffprobe = FFPROBE::new(&self.app)?.with_owner_window(&self.owner_window);
+            let mut ffprobe = FFPROBE::new(&self.app)?.with_owner_window_opt(self.owner_window.as_deref());
             ffprobe
                 .get_video_basic_info(output_path)
                 .await?
@@ -2066,7 +2129,7 @@ impl FFMPEG {
                 None => vec![video_id.to_string()],
             };
             let executor = MediaProcessExecutorBuilder::new(self.app.clone())
-                .owner_window(&self.owner_window)
+                .owner_window_opt(self.owner_window.as_deref())
                 .command(ffmpeg_cmd)
                 .with_cancel_support(cancel_ids, Some(cancel_callback))
                 .build()?;
@@ -2110,7 +2173,7 @@ impl FFMPEG {
         // FFmpeg, whose failure would fill the log
         // (when it cannot be read, FFmpeg is still tried)
         let video_streams = {
-            let mut ffprobe = FFPROBE::new(&self.app)?.with_owner_window(&self.owner_window);
+            let mut ffprobe = FFPROBE::new(&self.app)?.with_owner_window_opt(self.owner_window.as_deref());
             ffprobe.get_video_streams(video_path).await
         };
         if video_streams
@@ -2163,7 +2226,7 @@ impl FFMPEG {
         ]);
 
         let executor = MediaProcessExecutorBuilder::new(self.app.clone())
-            .owner_window(&self.owner_window)
+            .owner_window_opt(self.owner_window.as_deref())
             .command(ffmpeg_cmd)
             .build()?;
 
@@ -2200,7 +2263,7 @@ impl FFMPEG {
             }
         }
 
-        let mut ffprobe = FFPROBE::new(&self.app)?.with_owner_window(&self.owner_window);
+        let mut ffprobe = FFPROBE::new(&self.app)?.with_owner_window_opt(self.owner_window.as_deref());
         let subtitle_streams = ffprobe.get_subtitle_streams(video_path).await?;
 
         let target_stream = match subtitle_streams.iter().find(|s| s.index == stream_index) {
@@ -2246,7 +2309,7 @@ impl FFMPEG {
             .arg("-y");
 
         let executor = MediaProcessExecutorBuilder::new(self.app.clone())
-            .owner_window(&self.owner_window)
+            .owner_window_opt(self.owner_window.as_deref())
             .command(ffmpeg_cmd)
             .build()?;
 
@@ -2287,7 +2350,7 @@ impl FFMPEG {
             .to_string();
 
         let video_duration_seconds = {
-            let mut ffprobe = FFPROBE::new(&self.app)?.with_owner_window(&self.owner_window);
+            let mut ffprobe = FFPROBE::new(&self.app)?.with_owner_window_opt(self.owner_window.as_deref());
             let video_info = ffprobe.get_video_basic_info(video_path).await?;
             video_info.duration.unwrap_or(0.0)
         };
@@ -2332,7 +2395,7 @@ impl FFMPEG {
 
         let gifski_args_refs: Vec<&str> = gifski_args.iter().map(|s| s.as_str()).collect();
 
-        let image_compressor = ImageCompressor::new(&self.app)?.with_owner_window(&self.owner_window);
+        let image_compressor = ImageCompressor::new(&self.app)?.with_owner_window_opt(self.owner_window.as_deref());
         let mut gifski_cmd = image_compressor
             .get_gifski_command()
             .map_err(|e| format!("Gifski command error: {}", e))?;
@@ -2391,7 +2454,7 @@ impl FFMPEG {
         });
 
         let executor = MediaProcessExecutorBuilder::new(self.app.clone())
-            .owner_window(&self.owner_window)
+            .owner_window_opt(self.owner_window.as_deref())
             .commands(vec![ffmpeg_cmd, gifski_cmd])
             .with_piped()
             .with_cancel_support(vec![video_id.to_string()], Some(cancel_callback))
@@ -3212,5 +3275,36 @@ mod clip_tests {
     fn no_clips_when_the_length_covers_the_video() {
         assert!(clip_ranges(120.0, 180.0).is_empty());
         assert!(clip_ranges(120.0, 120.0).is_empty());
+    }
+}
+
+#[cfg(test)]
+mod progress_tests {
+    use super::*;
+
+    #[test]
+    fn ignores_zero_and_header_bytes_until_payload_writes() {
+        let mut tracker = FfmpegProgressTracker::default();
+        assert_eq!(tracker.feed_line("total_size=0\n"), None);
+        assert_eq!(tracker.feed_line("out_time=N/A\n"), None);
+        assert_eq!(tracker.feed_line("total_size=48\n"), None);
+        assert_eq!(tracker.feed_line("out_time=00:00:00.458333\n"), None);
+        assert_eq!(tracker.feed_line("total_size=1024\n"), None);
+        assert_eq!(
+            tracker.feed_line("out_time=00:00:00.458333\n").as_deref(),
+            Some("00:00:00.458333")
+        );
+    }
+
+    #[test]
+    fn handles_cr_and_crlf_and_unknown_total_size() {
+        let mut tracker = FfmpegProgressTracker::default();
+        assert_eq!(tracker.feed_line("out_time=-00:00:00.000000\r"), None);
+        assert_eq!(tracker.feed_line("out_time=00:00:00.000000\r"), None);
+        assert_eq!(tracker.feed_line("total_size=N/A\r\n"), None);
+        assert_eq!(
+            tracker.feed_line("out_time=00:00:01.920000\r").as_deref(),
+            Some("00:00:01.920000")
+        );
     }
 }

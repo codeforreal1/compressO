@@ -344,6 +344,7 @@
       "original": "Original",
       "output": "Output",
       "missing": "This file was moved or deleted.",
+      "missingOriginal": "The original file was moved or deleted.",
       "notSaved": "This output was not saved.",
       "fileCount": "Files: {{count}}",
       "showFiles": "Show the files of {{name}}",
@@ -354,7 +355,12 @@
         "original": "Original size",
         "output": "Compressed size",
         "reduction": "Average reduction"
-      }
+      },
+      "reopen": "Reopen",
+      "reopenWithSettings": "Open with same settings",
+      "reopened": "Opened with saved compression settings.",
+      "cannotReopenWhileCompressing": "Wait for the current compression to finish before reopening from history.",
+      "cannotReopenUnsaved": "Save or discard your current compressed media before reopening from history."
     },
     "commandLine": {
       "terminal": {
@@ -753,6 +759,8 @@
   },
   "preview": {
     "showFailed": "The file could not be shown.",
+    "mutePreview": "Mute preview",
+    "unmutePreview": "Unmute preview",
     "compare": "Compare",
     "showEdits": "Show edits",
     "smaller": "smaller",
@@ -1046,6 +1054,7 @@
     "quit": "Quit",
     "continueCompressing": "Continue Compressing",
     "goBack": "Go Back",
+    "openMainApp": "Open App",
     "compressingTitle": "Compression in progress",
     "compressingMessage": "Media is still being compressed. Quitting now will cancel the compression.",
     "unsavedTitle": "Media not saved",

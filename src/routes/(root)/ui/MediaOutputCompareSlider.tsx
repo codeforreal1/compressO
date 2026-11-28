@@ -19,6 +19,7 @@ import { appProxy } from '../-state'
 
 type MediaOutputCompareSliderProps = {
   mediaIndex: number
+  isMuted?: boolean
 }
 
 type renderImageDefaultType = {
@@ -45,6 +46,7 @@ const platform = getPlatform()
 
 function MediaOutputCompareSlider({
   mediaIndex,
+  isMuted = false,
 }: MediaOutputCompareSliderProps) {
   const { t } = useTranslation()
   if (mediaIndex < 0) return
@@ -164,12 +166,12 @@ function MediaOutputCompareSlider({
                 },
               },
             }}
-            muted={options?.isOriginal}
+            muted={options?.isOriginal || isMuted}
           />
         </div>
       )
     },
-    [videoAspectRatio],
+    [videoAspectRatio, isMuted],
   )
 
   // Saving moves the output out of the cache, so a saved output is loaded from where it was saved

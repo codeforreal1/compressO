@@ -329,8 +329,8 @@ export enum CustomEvents {
   BatchImageIndividualCompressionCompletion = 'BatchImageIndividualCompressionCompletion',
   BatchMediaCompressionProgress = 'BatchMediaCompressionProgress',
   BatchMediaIndividualCompressionCompletion = 'BatchMediaIndividualCompressionCompletion',
-  WatchedFoldersCommand = 'WatchedFoldersCommand',
-  PresetsCommand = 'PresetsCommand',
+  CoreSettingsChanged = 'CoreSettingsChanged',
+  CorePresetsChanged = 'CorePresetsChanged',
 }
 
 export type VideoCompressionProgress = {

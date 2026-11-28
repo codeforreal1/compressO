@@ -345,6 +345,7 @@
       "original": "Original",
       "output": "Résultat",
       "missing": "Ce fichier a été déplacé ou supprimé.",
+      "missingOriginal": "Le fichier d’origine a été déplacé ou supprimé.",
       "notSaved": "Ce résultat n’a pas été enregistré.",
       "fileCount": "Fichiers : {{count}}",
       "showFiles": "Afficher les fichiers de {{name}}",
@@ -355,7 +356,12 @@
         "original": "Taille d’origine",
         "output": "Taille compressée",
         "reduction": "Réduction moyenne"
-      }
+      },
+      "reopen": "Rouvrir",
+      "reopenWithSettings": "Ouvrir avec les mêmes paramètres",
+      "reopened": "Ouvert avec les paramètres de compression enregistrés.",
+      "cannotReopenWhileCompressing": "Attendez la fin de la compression en cours avant de rouvrir depuis l’historique.",
+      "cannotReopenUnsaved": "Enregistrez ou ignorez vos médias compressés actuels avant de rouvrir depuis l’historique."
     },
     "commandLine": {
       "terminal": {
@@ -760,6 +766,8 @@
   },
   "preview": {
     "showFailed": "Le fichier n’a pas pu être affiché.",
+    "mutePreview": "Couper le son de l’aperçu",
+    "unmutePreview": "Rétablir le son de l’aperçu",
     "compare": "Comparer",
     "showEdits": "Afficher les modifications",
     "smaller": "plus petit",
@@ -1062,6 +1070,7 @@
     "quit": "Quitter",
     "continueCompressing": "Continuer la compression",
     "goBack": "Retour",
+    "openMainApp": "Ouvrir l’app",
     "compressingTitle": "Compression en cours",
     "compressingMessage": "Des médias sont encore en cours de compression. Si vous quittez maintenant, la compression sera annulée.",
     "unsavedTitle": "Médias non enregistrés",

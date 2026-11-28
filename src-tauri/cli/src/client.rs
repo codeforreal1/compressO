@@ -39,8 +39,6 @@ pub async fn log_if_running(level: &str, message: &str) {
 
 /// What happens while the app is reached, to tell the user
 pub enum StartupStatus {
-    /// The app was not running & is being started
-    StartingApp,
     /// The app is preparing its compression tools (the first time after an install or update)
     PreparingTools,
 }
@@ -52,8 +50,8 @@ pub struct Connection {
 
 impl Connection {
     /// Connects to the app (started first when it is not running) & waits until it is ready
-    pub async fn open(mut on_status: impl FnMut(StartupStatus)) -> Result<Self, CliError> {
-        let stream = app::connect_or_start(|| on_status(StartupStatus::StartingApp)).await?;
+    pub async fn open(on_status: impl FnMut(StartupStatus)) -> Result<Self, CliError> {
+        let stream = app::connect_or_start().await?;
         let (reader, writer) = tokio::io::split(stream);
         let mut connection = Self {
             reader: BufReader::new(reader).lines(),

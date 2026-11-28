@@ -61,6 +61,27 @@ fn on_off(value: bool) -> &'static str {
     }
 }
 
+fn format_progress_line(files: &[FileResult]) -> String {
+    let done = files
+        .iter()
+        .filter(|file| !matches!(file.status.as_str(), "waiting"))
+        .count();
+    let compressing: Vec<String> = files
+        .iter()
+        .filter(|file| file.status == "waiting" && file.progress > 0)
+        .map(|file| format!("{} {}%", file_name(&file.input), file.progress))
+        .collect();
+    if compressing.is_empty() {
+        format!("{done} of {} done", files.len())
+    } else {
+        format!(
+            "{done} of {} done · {}",
+            files.len(),
+            compressing.join(", ")
+        )
+    }
+}
+
 /// Follows a compression in the terminal
 pub struct HumanOutput {
     quiet: bool,
@@ -109,32 +130,12 @@ impl HumanOutput {
     }
 
     fn show_progress_line(&mut self) {
-        let done = self
-            .files
-            .iter()
-            .filter(|file| !matches!(file.status.as_str(), "waiting"))
-            .count();
-        let compressing: Vec<String> = self
-            .files
-            .iter()
-            .filter(|file| file.status == "waiting" && file.progress > 0)
-            .map(|file| format!("{} {}%", file_name(&file.input), file.progress))
-            .collect();
-        let text = if compressing.is_empty() {
-            format!("{done} of {} done", self.files.len())
-        } else {
-            format!(
-                "{done} of {} done · {}",
-                self.files.len(),
-                compressing.join(", ")
-            )
-        };
+        let text = format_progress_line(&self.files);
         self.status_line(&text);
     }
 
     pub fn on_event(&mut self, event: Event) {
         match event {
-            Event::Startup(StartupStatus::StartingApp) => self.note("Starting CompressO…"),
             Event::Startup(StartupStatus::PreparingTools) => {
                 self.note("CompressO is preparing its compression tools. This may take a moment…")
             }
@@ -507,5 +508,49 @@ mod tests {
         assert_eq!(format_bytes_for(512_000, false), "512.0 KB");
         assert_eq!(format_bytes_for(486_302_795, false), "486.3 MB");
         assert_eq!(format_bytes_for(1_055_668_335, false), "1.1 GB");
+    }
+}
+
+#[cfg(test)]
+mod progress_tests {
+    use super::*;
+
+    fn sample_file(input: &str, status: &str, progress: u8) -> FileResult {
+        FileResult {
+            input: input.to_string(),
+            media_type: "video".to_string(),
+            preset: "Standard".to_string(),
+            status: status.to_string(),
+            output: None,
+            output_folder: None,
+            original_size: None,
+            output_size: None,
+            reason: None,
+            error: None,
+            replaced_original: false,
+            id: "1".to_string(),
+            progress,
+        }
+    }
+
+    #[test]
+    fn hides_percentage_when_progress_is_zero() {
+        let files = vec![sample_file("/tmp/photo.png", "waiting", 0)];
+        assert_eq!(format_progress_line(&files), "0 of 1 done");
+    }
+
+    #[test]
+    fn shows_percentage_once_progress_is_reported() {
+        let files = vec![sample_file("/tmp/sample.mp4", "waiting", 42)];
+        assert_eq!(format_progress_line(&files), "0 of 1 done · sample.mp4 42%");
+    }
+
+    #[test]
+    fn counts_finished_files_and_shows_active_percentage() {
+        let files = vec![
+            sample_file("/tmp/one.jpg", "saved", 100),
+            sample_file("/tmp/two.mp4", "waiting", 65),
+        ];
+        assert_eq!(format_progress_line(&files), "1 of 2 done · two.mp4 65%");
     }
 }

@@ -1,4 +1,70 @@
-use tauri::{Theme, WebviewWindow};
+use tauri::{AppHandle, Manager, Theme, WebviewUrl, WebviewWindow, WebviewWindowBuilder};
+
+pub const MAIN_WINDOW_LABEL: &str = "main";
+
+/// Creates the hidden `"main"` WebView lazily on interactive launches and reattaches.
+pub fn create_main_window(app_handle: &AppHandle) -> Result<WebviewWindow, String> {
+    if let Some(existing) = app_handle.get_webview_window(MAIN_WINDOW_LABEL) {
+        return Ok(existing);
+    }
+    let builder = WebviewWindowBuilder::new(
+        app_handle,
+        MAIN_WINDOW_LABEL,
+        WebviewUrl::App("index.html".into()),
+    )
+    .title("CompressO")
+    .fullscreen(false)
+    .inner_size(1280.0, 992.0)
+    .min_inner_size(1080.0, 800.0)
+    .resizable(true)
+    .visible(false);
+    #[cfg(not(target_os = "linux"))]
+    let builder = builder.transparent(true);
+    #[cfg(target_os = "linux")]
+    let builder = builder
+        .transparent(false)
+        .background_color(tauri::window::Color(255, 255, 255, 255));
+    #[cfg(target_os = "macos")]
+    let builder = builder
+        .title_bar_style(tauri::TitleBarStyle::Overlay)
+        .hidden_title(true);
+
+    builder.build().map_err(|e| e.to_string())
+}
+
+/// Shows & focuses the main window across macOS, Windows, and Linux, recreating it lazily if
+/// detached/destroyed (or opening ToolPreparation if tools are still installing).
+pub fn focus_or_create_main_window(app_handle: &AppHandle) -> Result<(), String> {
+    crate::sys::cli_server::keep_app_open();
+    #[cfg(target_os = "macos")]
+    let _ = app_handle.set_dock_visibility(true);
+    if !crate::core::tool_bundle::is_ready(app_handle) {
+        crate::core::tool_bundle::ensure_preparation_window(app_handle)?;
+        return Ok(());
+    }
+    match app_handle.get_webview_window(MAIN_WINDOW_LABEL) {
+        Some(window) => {
+            window.unminimize().map_err(|e| e.to_string())?;
+            window.show().map_err(|e| e.to_string())?;
+            window.set_focus().map_err(|e| e.to_string())?;
+        }
+        None => {
+            // Created off the synchronous command thread on Windows to avoid WebView2 deadlocks.
+            #[cfg(windows)]
+            {
+                let app_handle = app_handle.clone();
+                std::thread::spawn(move || {
+                    if let Err(err) = create_main_window(&app_handle) {
+                        log::error!("Failed to create the main window: {}", err);
+                    }
+                });
+            }
+            #[cfg(not(windows))]
+            create_main_window(app_handle)?;
+        }
+    }
+    Ok(())
+}
 
 /// Turns the tinted window on or off: the native translucent material behind the (then
 /// semi-transparent) app background, like macOS' own windows. `dark` matches the material to the

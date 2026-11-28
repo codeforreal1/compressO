@@ -33,37 +33,64 @@ pub async fn start_video_server(
     Ok(url)
 }
 
+fn extract_asset_file_path(file_path: &str) -> String {
+    let without_query = file_path.split('?').next().unwrap_or(file_path);
+    let decoded_path: String = match urlencoding::decode(without_query) {
+        Ok(path) => path.into_owned(),
+        Err(e) => {
+            println!("Failed to decode file path: {}, using as-is", e);
+            without_query.to_string()
+        }
+    };
+
+    [
+        "asset://localhost/",
+        "asset://",
+        "http://asset.localhost/",
+        "https://asset.localhost/",
+    ]
+    .iter()
+    .find_map(|prefix| decoded_path.strip_prefix(prefix))
+    .unwrap_or(&decoded_path)
+    .to_string()
+}
+
 #[tauri::command]
 pub fn construct_video_url(
     server: State<VideoServer>,
     file_path: String,
 ) -> Result<String, String> {
     let state = running_server(&server).ok_or("The video server is not running")?;
-
-    let decoded_path: String = match urlencoding::decode(&file_path) {
-        Ok(path) => path.into_owned(),
-        Err(e) => {
-            println!("Failed to decode file path: {}, using as-is", e);
-            file_path.clone()
-        }
-    };
-
-    let actual_path = if decoded_path.starts_with("asset://localhost/") {
-        decoded_path
-            .strip_prefix("asset://localhost/")
-            .unwrap_or(&decoded_path)
-    } else if decoded_path.starts_with("asset://") {
-        decoded_path
-            .strip_prefix("asset://")
-            .unwrap_or(&decoded_path)
-    } else {
-        &decoded_path
-    };
-
-    let encoded_path = urlencoding::encode(actual_path);
+    let actual_path = extract_asset_file_path(&file_path);
+    let encoded_path = urlencoding::encode(&actual_path);
 
     Ok(format!(
         "http://127.0.0.1:{}/video?token={}&path={}",
         state.port, state.token, encoded_path
     ))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::extract_asset_file_path;
+
+    #[test]
+    fn extracts_paths_from_tauri_asset_urls_across_schemes() {
+        assert_eq!(
+            extract_asset_file_path("asset://localhost/%2FUsers%2Fa%2Fclip.mp4"),
+            "/Users/a/clip.mp4"
+        );
+        assert_eq!(
+            extract_asset_file_path("http://asset.localhost/%2Fmedia%2FVMPal%2Fmy%20clip.mp4?v=1"),
+            "/media/VMPal/my clip.mp4"
+        );
+        assert_eq!(
+            extract_asset_file_path("https://asset.localhost/%2Ftmp%2Fwhat%3F.mp4?v=123"),
+            "/tmp/what?.mp4"
+        );
+        assert_eq!(
+            extract_asset_file_path("/home/user/video.mp4"),
+            "/home/user/video.mp4"
+        );
+    }
 }

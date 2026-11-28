@@ -63,7 +63,7 @@ async fn inspect_single_file(app_handle: &AppHandle, path: &str, media_type: &st
         let basic = ImageInfo::get_basic_info(path).ok();
         let ext = image_codecs::extension(path);
         let dimensions = if image_codecs::is_modern(&ext) {
-            match Box::pin(image_codecs::decoded_png(app_handle, path, "main", &[])).await {
+            match Box::pin(image_codecs::decoded_png(app_handle, path, None, &[])).await {
                 Ok(decoded) => decoded
                     .to_str()
                     .and_then(|s| ImageInfo::get_dimensions(s).ok()),
@@ -73,7 +73,7 @@ async fn inspect_single_file(app_handle: &AppHandle, path: &str, media_type: &st
             ImageInfo::get_dimensions(path).ok()
         };
         let dynamic_range = Box::pin(image_dynamic_range::inspect_source(
-            app_handle, path, "main", &[],
+            app_handle, path, None, &[],
         ))
         .await
         .ok()
@@ -306,5 +306,49 @@ pub fn logs(tail: Option<usize>, source: &str) -> Result<Value, (&'static str, S
         "type": "logs",
         "path": path_str,
         "lines": lines,
+    }))
+}
+
+pub fn settings_get(
+    app_handle: &AppHandle,
+    key: Option<&str>,
+    source: &str,
+) -> Result<Value, (&'static str, String)> {
+    let current = crate::core::settings::get(app_handle);
+    if let Some(key) = key {
+        let value = crate::core::settings::read_key(&current, key)?;
+        log::info!("[{source}] Read domain setting `{key}`");
+        return Ok(json!({
+            "type": "domainSetting",
+            "key": key,
+            "value": value,
+            "settings": current,
+        }));
+    }
+    log::info!("[{source}] Read domain settings");
+    Ok(json!({
+        "type": "domainSettings",
+        "settings": current,
+    }))
+}
+
+pub fn settings_update(
+    app_handle: &AppHandle,
+    patch: &Value,
+    source: &str,
+) -> Result<Value, (&'static str, String)> {
+    let keys: Vec<String> = patch
+        .as_object()
+        .map(|obj| obj.keys().cloned().collect())
+        .unwrap_or_default();
+    let updated = crate::core::settings::patch_from_json(app_handle, patch)?;
+    log::info!(
+        "[{source}] Updated domain setting(s): {}",
+        keys.join(", ")
+    );
+    Ok(json!({
+        "type": "domainSettings",
+        "settings": updated,
+        "updatedKeys": keys,
     }))
 }

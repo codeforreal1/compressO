@@ -46,7 +46,7 @@ pub struct VideoTrimSegment {
     pub end: f64,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct VideoCompressionResult {
     pub video_id: String,
@@ -119,8 +119,8 @@ pub enum CustomEvents {
     BatchImageIndividualCompressionCompletion,
     BatchMediaCompressionProgress,
     BatchMediaIndividualCompressionCompletion,
-    WatchedFoldersCommand,
-    PresetsCommand,
+    CoreSettingsChanged,
+    CorePresetsChanged,
 }
 
 #[derive(EnumProperty)]
@@ -543,7 +543,7 @@ pub struct BatchMediaIndividualCompressionResult {
     pub result: MediaCompressionResult,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(tag = "mediaType", rename_all = "lowercase")]
 pub enum MediaCompressionResult {
     Video(VideoCompressionResult),

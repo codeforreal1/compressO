@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { subscribeKey } from 'valtio/utils'
 
+import { whenCoreStateReady } from '@/hooks/useCoreStateSync'
 import { settingsStore } from '@/stores/settingsStore'
 import { getCpuThreadCount, setCpuThreadLimit } from '@/tauri/commands/cpu'
 
@@ -10,11 +11,21 @@ import { getCpuThreadCount, setCpuThreadLimit } from '@/tauri/commands/cpu'
  */
 export function useCpuThreadLimitSync() {
   useEffect(() => {
+    let isMounted = true
+    let isReady = false
     const apply = () => {
+      if (!isMounted || !isReady) return
       setCpuThreadLimit(settingsStore.cpuThreadLimit ?? 0).catch(() => {})
     }
-    apply()
-    return subscribeKey(settingsStore, 'cpuThreadLimit', apply)
+    whenCoreStateReady().then(() => {
+      isReady = true
+      apply()
+    })
+    const unsubscribe = subscribeKey(settingsStore, 'cpuThreadLimit', apply)
+    return () => {
+      isMounted = false
+      unsubscribe()
+    }
   }, [])
 }
 

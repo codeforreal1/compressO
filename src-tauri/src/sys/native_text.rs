@@ -11,6 +11,7 @@ pub struct NativeTexts {
     pub quit: String,
     pub continue_compressing: String,
     pub go_back: String,
+    pub open_main_app: String,
     pub compressing_title: String,
     pub compressing_message: String,
     pub unsaved_title: String,
@@ -49,6 +50,7 @@ impl Default for NativeTexts {
             quit: text("Quit"),
             continue_compressing: text("Continue Compressing"),
             go_back: text("Go Back"),
+            open_main_app: text("Open App"),
             compressing_title: text("Compression in progress"),
             compressing_message: text(
                 "Media is still being compressed. Quitting now will cancel the compression.",

@@ -24,6 +24,8 @@ Usage:
   compresso history [list] [--limit=N] [--json]
   compresso history clear [--json]
   compresso queue [list|pause|resume|clear|cancel] [--json]
+  compresso settings [get] [<key>] [--json]
+  compresso settings set <key>=<value>... [--json]
   compresso logs [--path] [--tail=N] [--json]
   compresso about [--json]
   compresso watch list [--json]
@@ -42,6 +44,7 @@ Commands:
   cache         Manage temporary cache (`clear` only runs while idle with no open media)
   history       List or clear compression history
   queue         Inspect or control the drop/watch compression queue
+  settings      Read or update persistent CompressO app settings
   logs          Show the current log file path or recent log lines
   about         Show version, license, author, website/changelog/GitHub links, and credits
   watch         Manage the folders whose new media is compressed (Settings > Watch Folder)
@@ -127,6 +130,8 @@ Examples:
   compresso cache clear
   compresso history --limit=10
   compresso queue list
+  compresso settings get
+  compresso settings set cpuThreadLimit=4 useHardwareAcceleration=true
   compresso logs --tail=50
   compresso about
   compresso watch list
@@ -146,6 +151,7 @@ pub enum Command {
     Cache(CacheCommand),
     History(HistoryCommand),
     Queue(QueueCommand),
+    Settings(SettingsCommand),
     Logs {
         path_only: bool,
         tail: Option<usize>,
@@ -171,6 +177,12 @@ pub enum HistoryCommand {
 pub enum QueueCommand {
     List { json: bool },
     Action { action: String, json: bool },
+}
+
+/// `compresso settings ...`
+pub enum SettingsCommand {
+    Get { key: Option<String>, json: bool },
+    Set { patch: serde_json::Value, json: bool },
 }
 
 /// `compresso contract ...`
@@ -611,6 +623,105 @@ fn parse_about(args: Vec<String>) -> Result<Command, CliError> {
     Ok(Command::About { json })
 }
 
+fn parse_setting_value(key: &str, raw: &str) -> serde_json::Value {
+    match raw {
+        "true" => serde_json::Value::Bool(true),
+        "false" => serde_json::Value::Bool(false),
+        "null" => serde_json::Value::Null,
+        _ => {
+            if key == "cpuThreadLimit" {
+                if let Ok(n) = raw.parse::<u64>() {
+                    return serde_json::Value::from(n);
+                }
+            }
+            if key == "saveFolder" {
+                let expanded = expand_home(raw);
+                return serde_json::Value::String(
+                    absolute_path(&expanded).to_string_lossy().to_string(),
+                );
+            }
+            serde_json::Value::String(raw.to_string())
+        }
+    }
+}
+
+fn parse_settings(args: Vec<String>) -> Result<Command, CliError> {
+    let mut iter = args.into_iter().peekable();
+    let subcommand = match iter.peek().map(String::as_str) {
+        None => "get".to_string(),
+        Some(first) if first == "-h" || first == "--help" || first == "help" => {
+            return Ok(Command::Help);
+        }
+        Some("get") | Some("set") => iter.next().unwrap(),
+        Some(first) if first.starts_with('-') => "get".to_string(),
+        Some(_) => "get".to_string(),
+    };
+
+    match subcommand.as_str() {
+        "get" => {
+            let mut json = false;
+            let mut key: Option<String> = None;
+            for arg in iter {
+                match arg.as_str() {
+                    "-h" | "--help" => return Ok(Command::Help),
+                    "--json" => json = true,
+                    other if other.starts_with('-') => {
+                        return Err(CliError::usage(format!(
+                            "Unknown option for settings get: {other}"
+                        )));
+                    }
+                    other => {
+                        if key.is_some() {
+                            return Err(CliError::usage(
+                                "settings get takes at most one setting key.",
+                            ));
+                        }
+                        key = Some(other.to_string());
+                    }
+                }
+            }
+            Ok(Command::Settings(SettingsCommand::Get { key, json }))
+        }
+        "set" => {
+            let mut json = false;
+            let mut map = serde_json::Map::new();
+            for arg in iter {
+                match arg.as_str() {
+                    "-h" | "--help" => return Ok(Command::Help),
+                    "--json" => json = true,
+                    other if other.starts_with('-') => {
+                        return Err(CliError::usage(format!(
+                            "Unknown option for settings set: {other}"
+                        )));
+                    }
+                    other => {
+                        let Some((key, value)) = other.split_once('=') else {
+                            return Err(CliError::usage(format!(
+                                "Write each setting as <key>=<value>, not \"{other}\"."
+                            )));
+                        };
+                        let key = key.trim();
+                        if key.is_empty() {
+                            return Err(CliError::usage("Setting key cannot be empty."));
+                        }
+                        map.insert(key.to_string(), parse_setting_value(key, value));
+                    }
+                }
+            }
+            if map.is_empty() {
+                return Err(CliError::usage(
+                    "Give at least one <key>=<value> to update, for example cpuThreadLimit=4.",
+                ));
+            }
+            Ok(Command::Settings(SettingsCommand::Set {
+                patch: serde_json::Value::Object(map),
+                json,
+            }))
+        }
+        _ => unreachable!(),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -812,6 +923,28 @@ mod tests {
             parsed(&["queue", "pause"]),
             Command::Queue(QueueCommand::Action { ref action, .. }) if action == "pause"
         ));
+        assert!(matches!(
+            parsed(&["settings", "get", "cpuThreadLimit", "--json"]),
+            Command::Settings(SettingsCommand::Get {
+                key: Some(ref k),
+                json: true,
+            }) if k == "cpuThreadLimit"
+        ));
+        match parsed(&[
+            "settings",
+            "set",
+            "useHardwareAcceleration=true",
+            "cpuThreadLimit=4",
+            "outputFileNameTemplate={name}",
+        ]) {
+            Command::Settings(SettingsCommand::Set { patch, json }) => {
+                assert!(!json);
+                assert_eq!(patch["useHardwareAcceleration"], true);
+                assert_eq!(patch["cpuThreadLimit"], 4);
+                assert_eq!(patch["outputFileNameTemplate"], "{name}");
+            }
+            _ => panic!("expected settings set"),
+        }
         assert!(matches!(
             parsed(&["logs", "--path"]),
             Command::Logs {
@@ -1085,6 +1218,10 @@ pub fn parse(args: Vec<String>) -> Result<Command, CliError> {
         Some("queue") => {
             args.next();
             return parse_queue(args.collect());
+        }
+        Some("settings") => {
+            args.next();
+            return parse_settings(args.collect());
         }
         Some("logs") => {
             args.next();

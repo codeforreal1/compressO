@@ -83,13 +83,13 @@ impl Drop for Workspace {
 pub async fn run(
     app: &AppHandle,
     command: Command,
-    owner: &str,
+    owner: Option<&str>,
     cancel_ids: &[String],
 ) -> Result<String, String> {
     let output = Arc::new(Mutex::new(String::new()));
     let captured = output.clone();
     let result = MediaProcessExecutorBuilder::new(app.clone())
-        .owner_window(owner)
+        .owner_window_opt(owner)
         .command(command)
         .with_cancel_support(cancel_ids.to_vec(), None)
         .with_stdout_callback(Arc::new(move |_, line| {
@@ -123,7 +123,7 @@ pub async fn run(
 pub async fn decoded_png(
     app: &AppHandle,
     input: &str,
-    owner: &str,
+    owner: Option<&str>,
     cancel_ids: &[String],
 ) -> Result<PathBuf, String> {
     let ext = extension(input);
@@ -230,7 +230,7 @@ pub async fn encode(
     format: &str,
     quality: u8,
     lossless: bool,
-    owner: &str,
+    owner: Option<&str>,
     cancel_ids: &[String],
 ) -> Result<(), String> {
     validate_png_output(Path::new(input), format)?;
@@ -345,7 +345,7 @@ pub async fn transcode_jpeg(
     input: &str,
     output: &str,
     strip_metadata: bool,
-    owner: &str,
+    owner: Option<&str>,
     cancel_ids: &[String],
 ) -> Result<(), String> {
     let work = Workspace::new(app)?;

@@ -8,7 +8,7 @@ use crate::core::{
     image,
     image_info::ImageInfo,
 };
-use crate::sys::fs::delete_stale_files;
+use crate::sys::fs::delete_stale_files_excluding;
 
 #[tauri::command]
 pub async fn get_image_dynamic_range(
@@ -22,7 +22,7 @@ pub async fn get_image_dynamic_range(
     Box::pin(crate::core::image_dynamic_range::inspect_source(
         &app,
         &image_path,
-        window.label(),
+        Some(window.label()),
         &[],
     ))
     .await
@@ -37,9 +37,10 @@ pub async fn compress_images_batch(
 ) -> Result<ImageBatchCompressionResult, String> {
     let mut image_compressor = image::ImageCompressor::new(&app)?;
 
-    if let Ok(files) = delete_stale_files(
+    if let Ok(files) = delete_stale_files_excluding(
         image_compressor.get_asset_dir().as_str(),
         24 * 60 * 60 * 1000,
+        &crate::core::session::protected_paths(&app),
     )
     .await
     {
@@ -96,7 +97,7 @@ pub async fn get_image_dimensions(
         let path = Box::pin(crate::core::image_codecs::decoded_png(
             &app,
             image_path,
-            "main",
+            None,
             &[],
         ))
         .await?;
@@ -114,7 +115,7 @@ pub async fn get_image_color_info(
         let path = Box::pin(crate::core::image_codecs::decoded_png(
             &app,
             image_path,
-            "main",
+            None,
             &[],
         ))
         .await?;
@@ -131,7 +132,7 @@ pub async fn prepare_image_preview(
     Box::pin(crate::core::image_codecs::decoded_png(
         &app,
         image_path,
-        "main",
+        None,
         &[],
     ))
     .await

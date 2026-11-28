@@ -344,6 +344,7 @@
       "original": "Orijinal",
       "output": "Çıktı",
       "missing": "Bu dosya taşındı veya silindi.",
+      "missingOriginal": "Orijinal dosya taşındı veya silindi.",
       "notSaved": "Bu çıktı kaydedilmedi.",
       "fileCount": "Dosyalar: {{count}}",
       "showFiles": "{{name}} dosyalarını göster",
@@ -354,7 +355,12 @@
         "original": "Orijinal boyut",
         "output": "Sıkıştırılmış boyut",
         "reduction": "Ortalama küçülme"
-      }
+      },
+      "reopen": "Yeniden aç",
+      "reopenWithSettings": "Aynı ayarlarla aç",
+      "reopened": "Kayıtlı sıkıştırma ayarlarıyla açıldı.",
+      "cannotReopenWhileCompressing": "Geçmişten yeniden açmadan önce geçerli sıkıştırmanın bitmesini bekleyin.",
+      "cannotReopenUnsaved": "Geçmişten yeniden açmadan önce geçerli sıkıştırılmış medyayı kaydedin veya silin."
     },
     "commandLine": {
       "terminal": {
@@ -753,6 +759,8 @@
   },
   "preview": {
     "showFailed": "Dosya gösterilemedi.",
+    "mutePreview": "Önizleme sesini kapat",
+    "unmutePreview": "Önizleme sesini aç",
     "compare": "Karşılaştır",
     "showEdits": "Düzenlemeleri göster",
     "smaller": "daha küçük",
@@ -1046,6 +1054,7 @@
     "quit": "Çık",
     "continueCompressing": "Sıkıştırmaya Devam Et",
     "goBack": "Geri Dön",
+    "openMainApp": "Uygulamayı Aç",
     "compressingTitle": "Sıkıştırma sürüyor",
     "compressingMessage": "Medya hâlâ sıkıştırılıyor. Şimdi çıkarsanız sıkıştırma iptal edilir.",
     "unsavedTitle": "Medya kaydedilmedi",

@@ -1,5 +1,6 @@
 pub mod app;
 pub mod compression_status;
+pub mod core_state;
 pub mod dock;
 pub mod ffmpeg;
 pub mod ffprobe;

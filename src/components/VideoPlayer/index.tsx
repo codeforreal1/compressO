@@ -20,7 +20,7 @@ import { MediaTransformHistory } from '@/types/compression'
 import type { WaveformData } from '@/types/waveform'
 import { cn } from '@/utils/tailwind'
 import { getTransformPreview } from '@/utils/transform'
-import { constructVideoUrl } from '@/utils/video'
+import { constructVideoUrl, isTauriAssetUrl } from '@/utils/video'
 import Button from '../Button'
 import Icon from '../Icon'
 import { BoundaryRowActionRender, ScaleRender } from '../Timeline'
@@ -382,7 +382,7 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
     useEffect(() => {
       // On platforms like Linux, native Webview does not support accessing local asset like video. We have to serve the video asset via a local server from the backend.
       ;(async () => {
-        if (!url || typeof url !== 'string' || !url?.startsWith('asset://')) {
+        if (!url || typeof url !== 'string' || !isTauriAssetUrl(url)) {
           setVideoUrl(url)
           return
         }

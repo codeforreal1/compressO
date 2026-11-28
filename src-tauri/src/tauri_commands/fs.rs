@@ -23,7 +23,7 @@ pub async fn get_image_dimension(app: AppHandle, image_path: &str) -> Result<(u3
         let path = Box::pin(crate::core::image_codecs::decoded_png(
             &app,
             image_path,
-            "main",
+            None,
             &[],
         ))
         .await?;
@@ -401,10 +401,10 @@ pub async fn copy_file_to_clipboard(app: tauri::AppHandle, file_path: &str) -> R
 #[derive(serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ClipboardFile {
-    path: String,
+    pub path: String,
     /// Name the file should be pasted with. Unsaved outputs live in the cache under generated
     /// names, so they're exposed under this name instead (the original file is kept as is).
-    file_name: Option<String>,
+    pub file_name: Option<String>,
 }
 
 /// Copies several files to the clipboard at once (e.g. all outputs of a batch)

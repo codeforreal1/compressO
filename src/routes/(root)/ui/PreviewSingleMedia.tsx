@@ -28,6 +28,7 @@ import { isOverlayOpen, isTextEntryElement } from '@/utils/keyboard'
 import { isOutputPreviewPending } from '@/utils/outputPreview'
 import { formatDuration } from '@/utils/string'
 import { cn } from '@/utils/tailwind'
+import { isVideoPreviewAvailable } from '@/utils/video'
 import ExitMedia from './ExitMedia'
 import ImageInfo from './ImageInfo'
 import MediaOutputCompareSlider from './MediaOutputCompareSlider'
@@ -127,6 +128,26 @@ function PreviewSingleMedia({
     isCompressing,
     isSaving,
   })
+  const [mutedForPath, setMutedForPath] = useState<string | null>(null)
+  const isPreviewMuted =
+    !!mediaFile?.pathRaw && mutedForPath === mediaFile.pathRaw
+
+  const isAudioOutput =
+    !!isProcessCompleted &&
+    !outputPreviewPending &&
+    isAudioExtension(mediaFile?.compressedFile?.extension)
+  const hasSourceAudio =
+    mediaFile?.type === 'video' &&
+    (mediaFile.isAudioFile ||
+      mediaFile.videoInfoRaw?.audioStreams?.length !== 0)
+  const canMutePreview =
+    mediaFile?.type === 'video' &&
+    isVideoPreviewAvailable &&
+    !outputPreviewPending &&
+    !(isProcessCompleted && mediaFile.compressedFile?.extension === 'gif') &&
+    (mediaFile.previewMode === 'video' || isAudioOutput) &&
+    (isProcessCompleted || hasSourceAudio)
+
   // The original & the output side by side, for a video (in its video preview) or an image
   const canCompare =
     isProcessCompleted &&
@@ -219,9 +240,48 @@ function PreviewSingleMedia({
                       })
                     }
                   }}
-                  className="h-7 w-7 min-w-7"
+                  className="h-6 w-6 min-w-6"
                 >
                   <Icon name="fileExplorer" size={14} />
+                </Button>
+              </Tooltip>
+            ) : null}
+            {canMutePreview ? (
+              <Tooltip
+                content={
+                  isPreviewMuted
+                    ? t('preview.unmutePreview')
+                    : t('preview.mutePreview')
+                }
+                aria-label={
+                  isPreviewMuted
+                    ? t('preview.unmutePreview')
+                    : t('preview.mutePreview')
+                }
+              >
+                <Button
+                  size="sm"
+                  variant="light"
+                  isIconOnly
+                  aria-pressed={isPreviewMuted}
+                  aria-label={
+                    isPreviewMuted
+                      ? t('preview.unmutePreview')
+                      : t('preview.mutePreview')
+                  }
+                  onPress={() =>
+                    setMutedForPath((current) =>
+                      current === mediaFile.pathRaw
+                        ? null
+                        : (mediaFile.pathRaw ?? null),
+                    )
+                  }
+                  className="h-6 w-6 min-w-6"
+                >
+                  <Icon
+                    name={isPreviewMuted ? 'audioMuted' : 'audio'}
+                    size={14}
+                  />
                 </Button>
               </Tooltip>
             ) : null}
@@ -287,11 +347,15 @@ function PreviewSingleMedia({
 
       {mediaFile ? (
         canCompare && compareOutput ? (
-          <MediaOutputCompareSlider mediaIndex={mediaIndex} />
+          <MediaOutputCompareSlider
+            mediaIndex={mediaIndex}
+            isMuted={isPreviewMuted}
+          />
         ) : (
           <MediaThumbnail
             mediaIndex={mediaIndex}
             showOriginal={hasTransformPreview && showOriginal}
+            isMuted={isPreviewMuted}
           />
         )
       ) : null}

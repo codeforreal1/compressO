@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { motion } from 'framer-motion'
+import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSnapshot } from 'valtio'
 
@@ -10,6 +11,7 @@ import Spinner from '@/components/Spinner'
 import { cn } from '@/utils/tailwind'
 import { useCompressionStatusSync } from './-compression-status'
 import { addMedia, openExternalMedia, pickMediaToAdd } from './-media'
+import { useMainSessionReattach } from './-session'
 import { appProxy } from './-state'
 import Setting, { SettingsDialogHost } from './ui/app-settings/Setting'
 import DragAndDropFiles from './ui/DragAndDropFiles'
@@ -25,6 +27,7 @@ function Root() {
   const { t } = useTranslation()
   const { state } = useSnapshot(appProxy)
   useCompressionStatusSync()
+  useEffect(() => useMainSessionReattach(), [])
 
   const {
     media,

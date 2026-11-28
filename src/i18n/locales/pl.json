@@ -346,6 +346,7 @@
       "original": "Oryginał",
       "output": "Wynik",
       "missing": "Ten plik został przeniesiony lub usunięty.",
+      "missingOriginal": "Oryginalny plik został przeniesiony lub usunięty.",
       "notSaved": "Ten wynik nie został zapisany.",
       "fileCount": "Pliki: {{count}}",
       "showFiles": "Pokaż pliki z {{name}}",
@@ -356,7 +357,12 @@
         "original": "Rozmiar oryginalny",
         "output": "Rozmiar po kompresji",
         "reduction": "Średnie zmniejszenie"
-      }
+      },
+      "reopen": "Otwórz ponownie",
+      "reopenWithSettings": "Otwórz z tymi samymi ustawieniami",
+      "reopened": "Otwarto z zapisanymi ustawieniami kompresji.",
+      "cannotReopenWhileCompressing": "Poczekaj na zakończenie bieżącej kompresji przed ponownym otwarciem z historii.",
+      "cannotReopenUnsaved": "Zapisz lub odrzuć bieżące skompresowane multimedia przed ponownym otwarciem z historii."
     },
     "commandLine": {
       "terminal": {
@@ -767,6 +773,8 @@
   },
   "preview": {
     "showFailed": "Nie udało się pokazać pliku.",
+    "mutePreview": "Wycisz podgląd",
+    "unmutePreview": "Włącz dźwięk podglądu",
     "compare": "Porównaj",
     "showEdits": "Pokaż zmiany",
     "smaller": "mniejszy",
@@ -1078,6 +1086,7 @@
     "quit": "Zakończ",
     "continueCompressing": "Kontynuuj kompresję",
     "goBack": "Wróć",
+    "openMainApp": "Otwórz aplikację",
     "compressingTitle": "Trwa kompresja",
     "compressingMessage": "Multimedia są nadal kompresowane. Zakończenie teraz anuluje kompresję.",
     "unsavedTitle": "Multimedia nie zostały zapisane",

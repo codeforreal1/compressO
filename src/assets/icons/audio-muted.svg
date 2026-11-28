@@ -1,9 +1,13 @@
-<svg fill="currentColor" viewBox="-1.5 0 19 19" xmlns="http://www.w3.org/2000/svg" class="cf-icon-svg">
-    <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-    <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
-    <g id="SVGRepo_iconCarrier">
-        <path
-            d="M7.676 4.938v9.63c0 .61-.353.756-.784.325l-2.896-2.896H2.02A1.111 1.111 0 0 1 .911 10.89V8.618a1.112 1.112 0 0 1 1.108-1.109h1.977l2.896-2.896c.43-.43.784-.284.784.325zm7.251 6.888a.554.554 0 1 1-.784.784l-2.072-2.073-2.073 2.073a.554.554 0 1 1-.784-.784l2.073-2.073L9.214 7.68a.554.554 0 0 1 .784-.783L12.07 8.97l2.072-2.073a.554.554 0 0 1 .784.783l-2.072 2.073z">
-        </path>
-    </g>
+<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M16 9a5 5 0 0 1 .95 2.293" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+        stroke-linejoin="round"></path>
+    <path d="M19.364 5.636a9 9 0 0 1 1.889 9.96" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round"></path>
+    <path d="m2 2 20 20" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+        stroke-linejoin="round"></path>
+    <path
+        d="m7 7-.587.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298V11"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+    <path d="M9.828 4.172A.686.686 0 0 1 11 4.657v.686" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round"></path>
 </svg>

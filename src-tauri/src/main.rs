@@ -33,8 +33,8 @@ use tauri_commands::{
         set_open_at_login, take_opened_at_login, OPENED_AT_LOGIN_ARG,
     },
     compression_status::{
-        get_compression_status, has_unsaved_output, is_compressing, set_compression_status,
-        update_compression_status, CompressionStatusState,
+        get_compression_status, set_compression_status, update_compression_status,
+        CompressionStatusState,
     },
     dock::{clear_dock_badge, set_dock_progress},
     ffmpeg::{compress_video, compress_videos_batch, extract_subtitle, generate_video_thumbnail},
@@ -99,6 +99,20 @@ impl PendingFiles {
     fn new() -> Self {
         Self(Arc::new(Mutex::new(Vec::new())))
     }
+}
+
+fn should_keep_running_without_main_window(app_handle: &tauri::AppHandle) -> bool {
+    #[cfg(any(target_os = "macos", windows))]
+    let has_tray = app_handle
+        .tray_by_id(tray_popover::TRAY_WINDOW_LABEL)
+        .is_some();
+    #[cfg(target_os = "linux")]
+    let has_tray = false;
+
+    has_tray
+        || core::session::is_session_compressing()
+        || tauri_commands::drop_queue::is_queue_active(app_handle)
+        || sys::cli_server::has_connections()
 }
 
 fn show_main_window(app_handle: &tauri::AppHandle) {
@@ -262,28 +276,9 @@ fn on_second_instance(app_handle: &tauri::AppHandle, args: Vec<String>, cwd: Str
     }
     log::info!("Another launch of the app, bringing this one forward");
 
-    if !core::tool_bundle::is_ready(app_handle) {
-        if let Some(window) = app_handle.get_webview_window("preparation") {
-            let _ = window.set_focus();
-        }
-        #[cfg(any(windows, target_os = "linux"))]
-        {
-            let urls = urls_from_launch_args(&args, Some(&cwd));
-            let _ = handle_open_with_app(app_handle, urls);
-        }
-        return;
-    }
-
-    // Also when the main window was closed, while the app keeps running in the tray
-    #[cfg(any(target_os = "macos", windows))]
-    if let Err(e) = tauri_commands::tray::focus_or_create_main_window(app_handle) {
+    // Recreate "main" (or "preparation" if tools are still installing) when detached or headless
+    if let Err(e) = tauri_commands::window::focus_or_create_main_window(app_handle) {
         log::error!("Failed to open the main window: {}", e);
-    }
-    #[cfg(target_os = "linux")]
-    if let Some(window) = app_handle.get_webview_window(MAIN_WINDOW_LABEL) {
-        let _ = window.unminimize();
-        let _ = window.show();
-        let _ = window.set_focus();
     }
 
     #[cfg(any(windows, target_os = "linux"))]
@@ -303,7 +298,8 @@ fn on_second_instance(app_handle: &tauri::AppHandle, args: Vec<String>, cwd: Str
 /// the new media would replace
 #[cfg(any(target_os = "macos", windows))]
 fn can_open_files_in_main_window(app_handle: &tauri::AppHandle) -> bool {
-    !is_compressing(app_handle) && !has_unsaved_output(app_handle)
+    !tauri_commands::compression_status::is_compressing(app_handle)
+        && !tauri_commands::compression_status::has_unsaved_output(app_handle)
 }
 
 /// Runs the bundled command line (`compresso-cli`, next to this executable) in place of the app,
@@ -354,6 +350,20 @@ fn main() {
     // The command line, when the app's executable is run with its arguments (see `run_cli_if_asked`)
     #[cfg(any(target_os = "macos", target_os = "linux"))]
     run_cli_if_asked();
+
+    #[cfg(target_os = "linux")]
+    {
+        let has_display = |name: &str| std::env::var_os(name).is_some_and(|value| !value.is_empty());
+        if !has_display("DISPLAY") && !has_display("WAYLAND_DISPLAY") {
+            eprintln!("compressO: cannot open display (set DISPLAY or WAYLAND_DISPLAY)");
+            std::process::exit(1);
+        }
+        // WebKitGTK's DMA-BUF renderer leaks `/dmabuf:` file descriptors on Wayland/virtio-gpu until
+        // EMFILE (1024) stalls IPC; allow explicit user opt-out if WEBKIT_DISABLE_DMABUF_RENDERER is set.
+        if std::env::var_os("WEBKIT_DISABLE_DMABUF_RENDERER").is_none() {
+            std::env::set_var("WEBKIT_DISABLE_DMABUF_RENDERER", "1");
+        }
+    }
 
     let runtime = tokio::runtime::Builder::new_multi_thread()
         .enable_all()
@@ -414,6 +424,9 @@ async fn run() {
             if let Err(err) = sys::logging::start_crash_reporting() {
                 log::error!("Failed to start crash reporting: {}", err);
             }
+            // Mark headless CLI launch before spawning background tasks (such as `prepare_tools`)
+            // so fast tool verification never races ahead and creates `"main"`.
+            sys::cli_server::init_launch_mode();
             // Started by the command line: no Dock icon until a window is shown (see `cli_server`)
             #[cfg(target_os = "macos")]
             if sys::cli_server::is_background_launch() {
@@ -441,15 +454,22 @@ async fn run() {
             app.manage(server::VideoServer::default());
             file_system::setup_app_data_dir(app)?;
             file_system::ensure_assets_dir(&app.app_handle())?;
+            sys::cli_settings::load_from_disk(app.handle());
+            core::session::init(app.handle());
+            app.manage(tauri_commands::drop_queue::DropQueueState::default());
+            sys::watch_folders::init(app.handle());
+            core::settings::init_or_get(app.handle());
 
             // The tray icon itself is added by the frontend, depending on the user's setting
             #[cfg(any(target_os = "macos", windows))]
             tray_popover::init(app);
-            // No tray on Linux: the main window compresses the watched folders' queue
-            #[cfg(target_os = "linux")]
-            {
-                app.manage(tauri_commands::drop_queue::DropQueueState::default());
-                sys::watch_folders::init(app.handle());
+
+            // Only build the hidden "main" WebView for interactive launches; `--background` CLI/MCP
+            // spawns stay 100% WebView-free unless the user explicitly opens the UI.
+            if !sys::cli_server::is_background_launch() {
+                if let Err(err) = tauri_commands::window::create_main_window(app.handle()) {
+                    log::error!("Failed to create the main window: {}", err);
+                }
             }
 
             // The window starts hidden (see `tauri.conf.json`) so the webview isn't shown before it
@@ -530,10 +550,17 @@ async fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             core::tool_bundle::get_tool_status,
+            tauri_commands::core_state::migrate_core_state,
+            tauri_commands::core_state::get_core_settings,
+            tauri_commands::core_state::save_core_settings,
+            tauri_commands::core_state::get_core_presets,
+            tauri_commands::core_state::save_core_presets,
+            core::session::get_active_session,
+            core::session::start_main_session,
+            core::session::update_main_session_state,
+            core::session::clear_active_session,
             sys::cli_settings::sync_cli_settings,
             sys::cli_server::take_background_launch,
-            sys::watch_folders_bridge::complete_watched_folders_command,
-            sys::presets_bridge::complete_presets_command,
             sys::cli_install::get_cli_install_status,
             sys::cli_install::install_cli,
             sys::cli_install::uninstall_cli,
@@ -662,43 +689,36 @@ async fn run() {
             let app_handle = window.app_handle();
             match event {
                 tauri::WindowEvent::CloseRequested { api, .. } => {
-                    if !is_compressing(app_handle) && !has_unsaved_output(app_handle) {
-                        return;
-                    }
-
-                    // With the tray icon, closing the window during a compression (or with unsaved
-                    // outputs) only hides it: the compression continues (its progress shows in the
-                    // tray), nothing is lost & the window comes back from the tray (or the dock)
-                    #[cfg(any(target_os = "macos", windows))]
-                    if app_handle
-                        .tray_by_id(tray_popover::TRAY_WINDOW_LABEL)
-                        .is_some()
-                    {
+                    // Closing "main" detaches the WebView while `core` finishes encoding in the
+                    // background (and `active-session.json` preserves manual-save outputs).
+                    let is_session_compressing = core::session::is_session_compressing();
+                    if is_session_compressing {
+                        core::session::mark_detached(app_handle);
+                        #[cfg(target_os = "macos")]
+                        let _ = app_handle.set_dock_visibility(true);
+                    } else if let Some(reason) = quit::main_window_close_reason(
+                        is_session_compressing,
+                        should_keep_running_without_main_window(app_handle),
+                        quit::quit_reason(app_handle),
+                    ) {
+                        // Keep the open window in place and show "Quit" / "Go Back" immediately,
+                        // instead of destroying it first and falling back to "Open App".
                         api.prevent_close();
-                        let _ = window.hide();
-                        return;
-                    }
-
-                    // Otherwise closing the window loses the compression or the unsaved outputs (&
-                    // quits), so ask first
-                    if let Some(reason) = quit::quit_reason(app_handle) {
-                        api.prevent_close();
-                        let window_to_close = window.clone();
-                        quit::confirm_quit(app_handle, reason, move || {
-                            let _ = window_to_close.destroy();
-                        });
+                        let exit_app_handle = app_handle.clone();
+                        quit::confirm_quit(app_handle, reason, move || exit_app_handle.exit(0));
                     }
                 }
-                // The compression stops with the window, so its progress is cleared
                 tauri::WindowEvent::Destroyed => {
                     // Files opened before a new main window is ready wait for it
                     if let Some(ready_state) = app_handle.try_state::<FrontendReady>() {
                         ready_state.set_not_ready();
                     }
-                    // Also clears the tray's progress
-                    #[cfg(any(target_os = "macos", windows))]
-                    let _ = clear_dock_badge(app_handle.clone());
-                    update_compression_status(app_handle, Default::default());
+                    if !core::session::is_session_compressing() {
+                        #[cfg(any(target_os = "macos", windows))]
+                        let _ = clear_dock_badge(app_handle.clone());
+                        update_compression_status(app_handle, Default::default());
+                    }
+                    core::session::schedule_detached_idle_exit(app_handle);
                 }
                 _ => {}
             }
@@ -719,7 +739,7 @@ async fn run() {
                         && app_handle.get_webview_window(MAIN_WINDOW_LABEL).is_none()
                     {
                         if let Err(e) =
-                            tauri_commands::tray::focus_or_create_main_window(app_handle)
+                            tauri_commands::window::focus_or_create_main_window(app_handle)
                         {
                             log::error!("Failed to open the main window: {}", e);
                         }
@@ -733,9 +753,14 @@ async fn run() {
                     sys::logging::finish_crash_reporting();
                 }
 
-                // Quitting (e.g. from the menu bar popover) cancels the compression or discards unsaved
-                // outputs, so ask first
-                if let tauri::RunEvent::ExitRequested { api, .. } = &event {
+                // Quitting (e.g. Cmd+Q / Tray Quit) asks first when active, whereas closing the
+                // last window (`code.is_none()`) detaches while `core` / queue / tray work remains.
+                if let tauri::RunEvent::ExitRequested { code, api, .. } = &event {
+                    if code.is_none() && should_keep_running_without_main_window(app_handle) {
+                        api.prevent_exit();
+                        return;
+                    }
+
                     if let Some(reason) = quit::quit_reason(app_handle) {
                         api.prevent_exit();
                         let exit_app_handle = app_handle.clone();
@@ -743,15 +768,14 @@ async fn run() {
                     }
                 }
 
-                // The hidden tray window keeps the app alive after the main window is closed, so
-                // clicking the dock icon brings the main window back
+                // Clicking the Dock icon while detached or running in tray brings "main" back.
                 #[cfg(target_os = "macos")]
                 if let tauri::RunEvent::Reopen {
                     has_visible_windows: false,
                     ..
                 } = event
                 {
-                    if let Err(e) = tauri_commands::tray::focus_or_create_main_window(app_handle) {
+                    if let Err(e) = tauri_commands::window::focus_or_create_main_window(app_handle) {
                         log::error!("Failed to reopen the main window: {}", e);
                     }
                 }

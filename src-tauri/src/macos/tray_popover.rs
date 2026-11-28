@@ -206,19 +206,6 @@ fn create_tray_window(app_handle: &AppHandle) -> Result<WebviewWindow, String> {
     .map_err(|err| err.to_string())
 }
 
-/// Creates the tray webview again if it is missing (e.g. suspended), while the tray icon is shown:
-/// it compresses the drop zone's queue (see `drop_queue`)
-pub fn ensure_tray_window(app_handle: &AppHandle) {
-    if app_handle.tray_by_id(TRAY_WINDOW_LABEL).is_none()
-        || app_handle.get_webview_window(TRAY_WINDOW_LABEL).is_some()
-    {
-        return;
-    }
-    if let Err(err) = create_tray_window(app_handle).and_then(|window| window.to_popover()) {
-        log::error!("Failed to create tray window: {}", err);
-    }
-}
-
 static APP_HANDLE: std::sync::OnceLock<AppHandle> = std::sync::OnceLock::new();
 
 /// For callbacks from Swift, which have no access to the app otherwise
@@ -229,10 +216,8 @@ pub fn app_handle() -> Option<AppHandle> {
 pub fn init(app: &App) {
     app.manage(TrayPopoverState(Mutex::new(false)));
     app.manage(crate::tauri_commands::tray::DroppedFilesState::default());
-    app.manage(crate::tauri_commands::drop_queue::DropQueueState::default());
     let _ = APP_HANDLE.set(app.handle().clone());
     crate::sys::clipboard_watch::init(app.handle());
-    crate::sys::watch_folders::init(app.handle());
 }
 
 /// Shows or removes the status bar (tray) icon, which toggles a native popover (NSPopover) hosting

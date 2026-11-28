@@ -343,6 +343,7 @@
       "original": "原始文件",
       "output": "输出文件",
       "missing": "此文件已被移动或删除。",
+      "missingOriginal": "原始文件已被移动或删除。",
       "notSaved": "此输出未保存。",
       "fileCount": "文件：{{count}}",
       "showFiles": "显示 {{name}} 中的文件",
@@ -353,7 +354,12 @@
         "original": "原始大小",
         "output": "压缩后大小",
         "reduction": "平均缩减"
-      }
+      },
+      "reopen": "重新打开",
+      "reopenWithSettings": "使用相同设置打开",
+      "reopened": "已使用保存的压缩设置打开。",
+      "cannotReopenWhileCompressing": "请等待当前压缩完成后再从历史记录重新打开。",
+      "cannotReopenUnsaved": "从历史记录重新打开前，请先保存或放弃当前已压缩的媒体。"
     },
     "commandLine": {
       "terminal": {
@@ -746,6 +752,8 @@
   },
   "preview": {
     "showFailed": "无法显示该文件。",
+    "mutePreview": "静音预览",
+    "unmutePreview": "取消预览静音",
     "compare": "比较",
     "showEdits": "显示编辑",
     "smaller": "更小",
@@ -1030,6 +1038,7 @@
     "quit": "退出",
     "continueCompressing": "继续压缩",
     "goBack": "返回",
+    "openMainApp": "打开应用",
     "compressingTitle": "正在压缩",
     "compressingMessage": "媒体仍在压缩中。现在退出将取消压缩。",
     "unsavedTitle": "媒体未保存",

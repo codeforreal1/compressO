@@ -343,6 +343,7 @@
       "original": "原始檔案",
       "output": "輸出檔案",
       "missing": "此檔案已被移動或刪除。",
+      "missingOriginal": "原始檔案已被移動或刪除。",
       "notSaved": "此輸出未儲存。",
       "fileCount": "檔案：{{count}}",
       "showFiles": "顯示 {{name}} 中的檔案",
@@ -353,7 +354,12 @@
         "original": "原始大小",
         "output": "壓縮後大小",
         "reduction": "平均縮減"
-      }
+      },
+      "reopen": "重新開啟",
+      "reopenWithSettings": "使用相同設定開啟",
+      "reopened": "已使用儲存的壓縮設定開啟。",
+      "cannotReopenWhileCompressing": "從歷史記錄重新開啟前，請先等待目前壓縮完成。",
+      "cannotReopenUnsaved": "從歷史記錄重新開啟前，請先儲存或捨棄目前已壓縮的媒體。"
     },
     "commandLine": {
       "terminal": {
@@ -746,6 +752,8 @@
   },
   "preview": {
     "showFailed": "無法顯示該檔案。",
+    "mutePreview": "靜音預覽",
+    "unmutePreview": "取消預覽靜音",
     "compare": "比較",
     "showEdits": "顯示編輯",
     "smaller": "更小",
@@ -1030,6 +1038,7 @@
     "quit": "結束",
     "continueCompressing": "繼續壓縮",
     "goBack": "返回",
+    "openMainApp": "開啟 App",
     "compressingTitle": "正在壓縮",
     "compressingMessage": "媒體仍在壓縮中。現在結束將取消壓縮。",
     "unsavedTitle": "媒體尚未儲存",

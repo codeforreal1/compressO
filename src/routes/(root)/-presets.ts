@@ -3,6 +3,13 @@ import type { TFunction } from 'i18next'
 import cloneDeep from 'lodash/cloneDeep'
 import isEqual from 'lodash/isEqual'
 
+import {
+  applyOneShotContractOverrides,
+  contractToPreset,
+  imageConfigToContract,
+  videoConfigToContract,
+} from '@/contract'
+import type { MediaContract } from '@/contract/types'
 import { t } from '@/i18n'
 import {
   deletePreset,
@@ -1262,6 +1269,179 @@ function describeTransform(
       }),
     )
   return lines
+}
+
+export function buildContractForConfig(
+  mediaType: PresetMediaType,
+  config: VideoConfig | ImageConfig,
+  {
+    isBatchConfig = false,
+    batchResolution,
+    batchLongerSide,
+  }: {
+    isBatchConfig?: boolean
+    batchResolution?: BatchResolution
+    batchLongerSide?: number | null
+  } = {},
+): MediaContract {
+  const preset =
+    config.presetId && config.presetId !== STANDARD_PRESET_ID
+      ? getStoredPreset(config.presetId)
+      : undefined
+  const baseMeta = {
+    ...(preset?.name ? { name: preset.name } : {}),
+    output: preset?.output ?? null,
+  }
+
+  if (mediaType === 'image') {
+    const imgConfig = config as ImageConfig
+    const resolution = getImageConfigResolution(imgConfig, {
+      isBatchConfig,
+      batchLongerSide,
+    })
+    const transform =
+      imgConfig.batchTransform !== undefined
+        ? imgConfig.batchTransform
+        : imgConfig.shouldTransformImage
+          ? getPortableTransform(imgConfig.transformImageConfig)
+          : null
+    return imageConfigToContract(imgConfig, {
+      ...baseMeta,
+      resolution,
+      transform,
+    })
+  }
+
+  const vidConfig = config as VideoConfig
+  const resolution =
+    mediaType === 'audio'
+      ? null
+      : getVideoConfigResolution(vidConfig, {
+          isBatchConfig,
+          batchResolution,
+        })
+  const transform =
+    mediaType === 'audio'
+      ? null
+      : vidConfig.batchTransform !== undefined
+        ? vidConfig.batchTransform
+        : vidConfig.shouldTransformVideo
+          ? getPortableTransform(vidConfig.transformVideoConfig)
+          : null
+
+  return videoConfigToContract(vidConfig, {
+    ...baseMeta,
+    mediaType,
+    resolution,
+    transform,
+    includeOneShot: true,
+  })
+}
+
+export function buildContractForMedia(media: {
+  type: 'video' | 'image'
+  isAudioFile?: boolean
+  config: VideoConfig | ImageConfig
+}): MediaContract {
+  const mediaType: PresetMediaType =
+    media.type === 'image' ? 'image' : media.isAudioFile ? 'audio' : 'video'
+  return buildContractForConfig(mediaType, media.config, {
+    isBatchConfig: false,
+    batchResolution:
+      appProxy.state.commonConfigForBatchCompression.videoConfig
+        .batchResolution,
+    batchLongerSide:
+      appProxy.state.commonConfigForBatchCompression.imageConfig
+        .batchLongerSide,
+  })
+}
+
+/**
+ * Applies a saved JSON Contract (e.g. from Compression History) onto an already-loaded `media`
+ * item in `appProxy.state`, preserving preset identity when a preset of that name still exists and
+ * restoring one-shot overrides (`metadata.set`, `thumbnail`, `subtitles`).
+ */
+export async function applyContractToMediaFile(
+  mediaIndex: number,
+  contract: MediaContract,
+  presetNameHint?: string | null,
+) {
+  const mediaFile = appProxy.state.media[mediaIndex]
+  if (!mediaFile) return
+  const mediaType: PresetMediaType =
+    mediaFile.type === 'image'
+      ? 'image'
+      : mediaFile.isAudioFile
+        ? 'audio'
+        : 'video'
+  if (contract.mediaType !== mediaType) return
+
+  const targetName = contract.name?.trim() || presetNameHint?.trim() || ''
+  const matchedPreset = targetName
+    ? presetsStore.presets.find(
+        (preset) =>
+          preset.mediaType === mediaType && preset.name === targetName,
+      )
+    : undefined
+  const converted = contractToPreset(
+    matchedPreset?.id ?? STANDARD_PRESET_ID,
+    contract,
+  )
+
+  if (mediaFile.type === 'image' && converted.mediaType === 'image') {
+    mediaFile.config = applyImagePresetToConfig(
+      cloneDeep(imageConfigInitialState),
+      converted,
+      {
+        sourceExtension: mediaFile.extension,
+        dimensions: mediaFile.dimensions,
+      },
+      { isBatchConfig: false },
+    )
+  } else if (
+    mediaFile.type === 'video' &&
+    mediaFile.isAudioFile &&
+    converted.mediaType === 'audio' &&
+    contract.mediaType === 'audio'
+  ) {
+    let nextConfig = applyAudioPresetToConfig(
+      cloneDeep(audioFileConfigInitialState),
+      converted,
+      { sourceExtension: mediaFile.extension },
+      { isBatchConfig: false },
+    )
+    nextConfig = applyOneShotContractOverrides(nextConfig, contract)
+    mediaFile.config = nextConfig
+  } else if (
+    mediaFile.type === 'video' &&
+    !mediaFile.isAudioFile &&
+    converted.mediaType === 'video' &&
+    contract.mediaType === 'video'
+  ) {
+    const hasAudio =
+      mediaFile.videoInfoRaw?.audioStreams != null
+        ? mediaFile.videoInfoRaw.audioStreams.length > 0
+        : await getHasAudio(mediaIndex)
+    const targetVideo = appProxy.state.media[mediaIndex]
+    if (targetVideo?.type !== 'video') return
+    let nextConfig = applyVideoPresetToConfig(
+      cloneDeep(videoConfigInitialState),
+      converted,
+      {
+        sourceExtension: targetVideo.extension,
+        hasAudio,
+        dimensions: targetVideo.dimensions,
+      },
+      { isBatchConfig: false },
+    )
+    nextConfig = applyOneShotContractOverrides(nextConfig, contract)
+    targetVideo.config = nextConfig
+  }
+
+  const updated = appProxy.state.media[mediaIndex]
+  if (updated?.thumbnailPathRaw) {
+    updated.thumbnailPath = core.convertFileSrc(updated.thumbnailPathRaw)
+  }
 }
 
 /**

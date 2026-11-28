@@ -61,6 +61,9 @@ pub fn update_compression_status(app_handle: &AppHandle, status: CompressionStat
     // Files stored in the menu bar's drop zone, waiting for the main window to be free
     #[cfg(any(target_os = "macos", windows))]
     crate::tauri_commands::tray::deliver_dropped_files_if_free(app_handle);
+    if !is_compressing(app_handle) {
+        crate::core::queue_runner::ensure_started(app_handle);
+    }
 }
 
 #[tauri::command]

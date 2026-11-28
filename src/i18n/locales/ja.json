@@ -343,6 +343,7 @@
       "original": "元のファイル",
       "output": "出力",
       "missing": "このファイルは移動または削除されました。",
+      "missingOriginal": "元のファイルは移動または削除されました。",
       "notSaved": "この出力は保存されていません。",
       "fileCount": "ファイル：{{count}}",
       "showFiles": "{{name}} のファイルを表示",
@@ -353,7 +354,12 @@
         "original": "元のサイズ",
         "output": "圧縮後のサイズ",
         "reduction": "平均削減率"
-      }
+      },
+      "reopen": "再度開く",
+      "reopenWithSettings": "同じ設定で開く",
+      "reopened": "保存された圧縮設定で開きました。",
+      "cannotReopenWhileCompressing": "履歴から再度開く前に、現在の圧縮が完了するまでお待ちください。",
+      "cannotReopenUnsaved": "履歴から再度開く前に、現在の圧縮済みメディアを保存または破棄してください。"
     },
     "commandLine": {
       "terminal": {
@@ -746,6 +752,8 @@
   },
   "preview": {
     "showFailed": "ファイルを表示できませんでした。",
+    "mutePreview": "プレビューをミュート",
+    "unmutePreview": "プレビューのミュートを解除",
     "compare": "比較",
     "showEdits": "編集を表示",
     "smaller": "縮小",
@@ -1030,6 +1038,7 @@
     "quit": "終了",
     "continueCompressing": "圧縮を続ける",
     "goBack": "戻る",
+    "openMainApp": "アプリを開く",
     "compressingTitle": "圧縮中です",
     "compressingMessage": "メディアはまだ圧縮中です。今終了すると圧縮はキャンセルされます。",
     "unsavedTitle": "メディアは保存されていません",

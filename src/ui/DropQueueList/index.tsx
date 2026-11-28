@@ -31,6 +31,26 @@ function getName(path: string) {
 }
 
 /** What the queue is doing, e.g. "Compressing 2 of 5" */
+/** Localized message for a queue item, preferring its structured reason over fallback text. */
+export function getQueueItemMessage(
+  item: Pick<DropQueueItem, 'reason' | 'message'>,
+) {
+  switch (item.reason) {
+    case 'larger':
+      return t('queue.notSavedLarger')
+    case 'noSaveLocation':
+      return t('queue.noSaveLocation')
+    case 'saveFailed':
+      return t('queue.saveFailed')
+    case 'accessDenied':
+      return t('queue.accessDenied')
+    case 'compressFailed':
+      return t('queue.compressFailed')
+    default:
+      return item.message ?? null
+  }
+}
+
 /**
  * Whether a done item's output took its original's place (Settings -> Output -> Replace original
  * files), which is then in the Trash: compressing it again would compress the output
@@ -104,6 +124,7 @@ function QueueItem({
         )
       : null
   const iconButtonClassName = isCompact ? 'min-w-4 w-4 h-4' : 'min-w-6 w-6 h-6'
+  const displayMessage = getQueueItemMessage(item)
 
   return (
     <li
@@ -158,14 +179,14 @@ function QueueItem({
               isCompact ? 'text-[10px]' : 'text-xs',
               item.status === 'failed' && 'text-danger',
             )}
-            title={item.message ?? undefined}
+            title={displayMessage ?? undefined}
           >
             {item.status === 'waiting' ? (
               t('queue.status.waiting')
             ) : item.status === 'cancelled' ? (
               t('queue.status.cancelled')
             ) : item.status === 'failed' ? (
-              (item.message ?? t('queue.compressFailed'))
+              (displayMessage ?? t('queue.compressFailed'))
             ) : item.originalSize != null && item.outputSize != null ? (
               <>
                 {t('common.sizeChange', {
@@ -182,10 +203,10 @@ function QueueItem({
                     </span>
                   </>
                 ) : null}
-                {item.message ? `. ${item.message}` : null}
+                {displayMessage ? `. ${displayMessage}` : null}
               </>
             ) : (
-              (item.message ?? t('queue.status.done'))
+              (displayMessage ?? t('queue.status.done'))
             )}
           </p>
         )}

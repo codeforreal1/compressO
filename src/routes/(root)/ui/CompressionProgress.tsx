@@ -222,9 +222,16 @@ function CompressionProgress() {
     return () => {
       compressionProgressUnlistenRef.current?.()
       individualCompressionResultUnlistenRef.current?.()
-      clearDockProgress()
     }
   }, [batchId])
+
+  useEffect(() => {
+    return () => {
+      if (!snapshot(appProxy).state.isCompressing) {
+        clearDockProgress()
+      }
+    }
+  }, [])
 
   return null
 }

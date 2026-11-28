@@ -9,21 +9,17 @@ import Dropdown from '@/components/Dropdown'
 import Icon from '@/components/Icon'
 import { toast } from '@/components/Toast'
 import Tooltip from '@/components/Tooltip'
-import { imageConfigToContract, videoConfigToContract } from '@/contract'
 import type { MediaContract } from '@/contract/types'
 import { flushSyncStates } from '@/hooks/useSyncState'
-import { getStoredPreset } from '@/stores/presetsStore'
 import { logError, logInfo } from '@/tauri/commands/app'
 import { writeTextFile } from '@/tauri/commands/fs'
 import type { ImageConfig, VideoConfig } from '@/types/app'
-import { type PresetMediaType, STANDARD_PRESET_ID } from '@/types/preset'
+import type { PresetMediaType } from '@/types/preset'
 import { splitFileName } from '@/utils/fileNameTemplate'
 import { glassMenuItem } from '@/utils/glass'
-import { getPortableTransform } from '@/utils/transform'
 import {
+  buildContractForConfig,
   getBatchConfigKey,
-  getImageConfigResolution,
-  getVideoConfigResolution,
   isMediaOfPresetType,
 } from '../-presets'
 import { appProxy } from '../-state'
@@ -45,69 +41,18 @@ function buildCurrentContract(
     | VideoConfig
     | ImageConfig
 
-  const preset =
-    config.presetId && config.presetId !== STANDARD_PRESET_ID
-      ? getStoredPreset(config.presetId)
-      : undefined
-
-  const baseMeta = {
-    ...(preset?.name ? { name: preset.name } : {}),
-    output: preset?.output ?? null,
-  }
-
   const rawFileName = mediaFile?.fileName
     ? splitFileName(mediaFile.fileName).stem
     : `${mediaType}-batch`
   const suggestedName = `${rawFileName}.contract.json`
 
-  if (mediaType === 'image') {
-    const imgConfig = config as ImageConfig
-    const resolution = getImageConfigResolution(imgConfig, {
+  return {
+    contract: buildContractForConfig(mediaType, config, {
       isBatchConfig: !mediaFile,
+      batchResolution:
+        state.commonConfigForBatchCompression.videoConfig.batchResolution,
       batchLongerSide:
         state.commonConfigForBatchCompression.imageConfig.batchLongerSide,
-    })
-    const transform =
-      imgConfig.batchTransform !== undefined
-        ? imgConfig.batchTransform
-        : imgConfig.shouldTransformImage
-          ? getPortableTransform(imgConfig.transformImageConfig)
-          : null
-    return {
-      contract: imageConfigToContract(imgConfig, {
-        ...baseMeta,
-        resolution,
-        transform,
-      }),
-      suggestedName,
-    }
-  }
-
-  const vidConfig = config as VideoConfig
-  const resolution =
-    mediaType === 'audio'
-      ? null
-      : getVideoConfigResolution(vidConfig, {
-          isBatchConfig: !mediaFile,
-          batchResolution:
-            state.commonConfigForBatchCompression.videoConfig.batchResolution,
-        })
-  const transform =
-    mediaType === 'audio'
-      ? null
-      : vidConfig.batchTransform !== undefined
-        ? vidConfig.batchTransform
-        : vidConfig.shouldTransformVideo
-          ? getPortableTransform(vidConfig.transformVideoConfig)
-          : null
-
-  return {
-    contract: videoConfigToContract(vidConfig, {
-      ...baseMeta,
-      mediaType,
-      resolution,
-      transform,
-      includeOneShot: true,
     }),
     suggestedName,
   }

@@ -344,6 +344,7 @@
       "original": "Original",
       "output": "Ausgabe",
       "missing": "Diese Datei wurde verschoben oder gelöscht.",
+      "missingOriginal": "Die Originaldatei wurde verschoben oder gelöscht.",
       "notSaved": "Diese Ausgabe wurde nicht gespeichert.",
       "fileCount": "Dateien: {{count}}",
       "showFiles": "Dateien von {{name}} anzeigen",
@@ -354,7 +355,12 @@
         "original": "Originalgröße",
         "output": "Komprimierte Größe",
         "reduction": "Durchschnittliche Verkleinerung"
-      }
+      },
+      "reopen": "Erneut öffnen",
+      "reopenWithSettings": "Mit denselben Einstellungen öffnen",
+      "reopened": "Mit gespeicherten Komprimierungseinstellungen geöffnet.",
+      "cannotReopenWhileCompressing": "Warten Sie, bis die aktuelle Komprimierung abgeschlossen ist, bevor Sie aus dem Verlauf erneut öffnen.",
+      "cannotReopenUnsaved": "Speichern oder verwerfen Sie Ihre aktuell komprimierten Medien, bevor Sie aus dem Verlauf erneut öffnen."
     },
     "commandLine": {
       "terminal": {
@@ -753,6 +759,8 @@
   },
   "preview": {
     "showFailed": "Die Datei konnte nicht angezeigt werden.",
+    "mutePreview": "Vorschau stummschalten",
+    "unmutePreview": "Ton der Vorschau einschalten",
     "compare": "Vergleichen",
     "showEdits": "Änderungen anzeigen",
     "smaller": "kleiner",
@@ -1046,6 +1054,7 @@
     "quit": "Beenden",
     "continueCompressing": "Weiter komprimieren",
     "goBack": "Zurück",
+    "openMainApp": "App öffnen",
     "compressingTitle": "Komprimierung läuft",
     "compressingMessage": "Medien werden noch komprimiert. Wenn Sie jetzt beenden, wird die Komprimierung abgebrochen.",
     "unsavedTitle": "Medien nicht gespeichert",

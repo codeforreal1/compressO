@@ -253,7 +253,7 @@ struct SizeAttempt {
 pub struct ImageCompressor {
     app: AppHandle,
     assets_dir: PathBuf,
-    owner_window: String,
+    owner_window: Option<String>,
 }
 
 impl ImageCompressor {
@@ -263,13 +263,18 @@ impl ImageCompressor {
         Ok(Self {
             app: app.to_owned(),
             assets_dir,
-            owner_window: String::from("main"),
+            owner_window: None,
         })
     }
 
-    /// Window the processes belong to (the main window by default), see `MediaProcessExecutorBuilder`
+    /// Window the processes belong to (`None` by default, i.e. detached/headless), see `MediaProcessExecutorBuilder`
     pub fn with_owner_window(mut self, label: &str) -> Self {
-        self.owner_window = label.to_string();
+        self.owner_window = Some(label.to_string());
+        self
+    }
+
+    pub fn with_owner_window_opt(mut self, label: Option<&str>) -> Self {
+        self.owner_window = label.map(str::to_string);
         self
     }
 
@@ -808,7 +813,7 @@ impl ImageCompressor {
                 let (info, readable_source) = Box::pin(super::image_dynamic_range::inspect_source(
                     &self.app,
                     &config.image_path,
-                    &self.owner_window,
+                    self.owner_window.as_deref(),
                     &cancel_ids,
                 ))
                 .await?;
@@ -1420,7 +1425,7 @@ impl ImageCompressor {
         });
 
         let executor = MediaProcessExecutorBuilder::new(self.app.clone())
-            .owner_window(&self.owner_window)
+            .owner_window_opt(self.owner_window.as_deref())
             .command(pngquant_cmd)
             .with_cancel_support(
                 vec![image_id.to_string(), batch_id.to_string()],
@@ -1472,7 +1477,7 @@ impl ImageCompressor {
         });
 
         let executor = MediaProcessExecutorBuilder::new(self.app.clone())
-            .owner_window(&self.owner_window)
+            .owner_window_opt(self.owner_window.as_deref())
             .command(jpegoptim_cmd)
             .with_cancel_support(
                 vec![image_id.to_string(), batch_id.to_string()],
@@ -1523,7 +1528,7 @@ impl ImageCompressor {
                 input,
                 output.to_str().unwrap(),
                 strip_metadata.unwrap_or(true),
-                &self.owner_window,
+                self.owner_window.as_deref(),
                 &cancel_ids,
             )
             .await?;
@@ -1536,7 +1541,12 @@ impl ImageCompressor {
             });
         }
         let decoded = if super::image_codecs::is_modern(&ext) {
-            super::image_codecs::decoded_png(&self.app, input, &self.owner_window, &cancel_ids)
+            super::image_codecs::decoded_png(
+                &self.app,
+                input,
+                self.owner_window.as_deref(),
+                &cancel_ids,
+            )
                 .await?
         } else if ext == "svg" {
             let path = work.0.join("source.png");
@@ -1660,7 +1670,7 @@ impl ImageCompressor {
             format,
             quality,
             lossless.unwrap_or(true),
-            &self.owner_window,
+            self.owner_window.as_deref(),
             &cancel_ids,
         )
         .await?;
@@ -1731,12 +1741,12 @@ impl ImageCompressor {
         let without_alpha = vec!["-i", input_path, "-frames:v", "1", "-y", output_path];
 
         for cmd_args in [with_alpha, without_alpha] {
-            let ffmpeg = FFMPEG::new(&self.app)?.with_owner_window(&self.owner_window);
+            let ffmpeg = FFMPEG::new(&self.app)?.with_owner_window_opt(self.owner_window.as_deref());
             let mut ffmpeg_cmd = ffmpeg.get_ffmpeg_command()?;
             ffmpeg_cmd.args(&cmd_args);
 
             let executor = MediaProcessExecutorBuilder::new(self.app.clone())
-                .owner_window(&self.owner_window)
+                .owner_window_opt(self.owner_window.as_deref())
                 .command(ffmpeg_cmd)
                 .build()?;
 
@@ -1794,7 +1804,7 @@ impl ImageCompressor {
         });
 
         let executor = MediaProcessExecutorBuilder::new(self.app.clone())
-            .owner_window(&self.owner_window)
+            .owner_window_opt(self.owner_window.as_deref())
             .command(gifski_cmd)
             .with_cancel_support(
                 vec![image_id.to_string(), batch_id.to_string()],
@@ -2040,7 +2050,7 @@ impl ImageCompressor {
 
         log::info!("[ffmpeg-image] conversion command: {:?}", cmd_args);
 
-        let ffmpeg = FFMPEG::new(&self.app)?.with_owner_window(&self.owner_window);
+        let ffmpeg = FFMPEG::new(&self.app)?.with_owner_window_opt(self.owner_window.as_deref());
         let mut ffmpeg_cmd = ffmpeg.get_ffmpeg_command()?;
 
         ffmpeg_cmd.args(&cmd_args);
@@ -2048,7 +2058,7 @@ impl ImageCompressor {
         let conversion_id = format!("img_convert_{}", nanoid!());
 
         let executor = MediaProcessExecutorBuilder::new(self.app.clone())
-            .owner_window(&self.owner_window)
+            .owner_window_opt(self.owner_window.as_deref())
             .command(ffmpeg_cmd)
             .with_cancel_support(vec![conversion_id], None)
             .build()?;
@@ -2204,13 +2214,13 @@ impl ImageCompressor {
 
         log::info!("[image-transform] FFmpeg command: {:?}", cmd_args);
 
-        let ffmpeg = FFMPEG::new(&self.app)?.with_owner_window(&self.owner_window);
+        let ffmpeg = FFMPEG::new(&self.app)?.with_owner_window_opt(self.owner_window.as_deref());
         let mut ffmpeg_cmd = ffmpeg.get_ffmpeg_command()?;
 
         ffmpeg_cmd.args(&cmd_args);
 
         let executor = MediaProcessExecutorBuilder::new(self.app.clone())
-            .owner_window(&self.owner_window)
+            .owner_window_opt(self.owner_window.as_deref())
             .command(ffmpeg_cmd)
             .build()?;
 

@@ -189,28 +189,50 @@ pub async fn delete_file(path: &str) -> std::io::Result<()> {
     tokio::fs::remove_file(path).await
 }
 
-/// Deletes all files that were (now - created) > duration_in_millis
-pub async fn delete_stale_files(
+/// Deletes all files that were (now - created) > duration_in_millis, except any `excluded` paths
+/// still needed by an active/unsaved compression session.
+pub async fn delete_stale_files_excluding(
     path: &str,
     duration_in_millis: u64,
+    excluded: &std::collections::HashSet<PathBuf>,
 ) -> std::io::Result<Vec<PathBuf>> {
+    let canonical_excluded: std::collections::HashSet<PathBuf> = excluded
+        .iter()
+        .filter_map(|p| std::fs::canonicalize(p).ok())
+        .collect();
     let mut entries = tokio::fs::read_dir(path).await?;
     let now = SystemTime::now().duration_since(time::UNIX_EPOCH).unwrap();
     let mut deleted_files: Vec<PathBuf> = vec![];
     while let Some(entry) = entries.next_entry().await? {
+        let entry_path = entry.path();
+        if excluded.contains(&entry_path)
+            || std::fs::canonicalize(&entry_path)
+                .ok()
+                .is_some_and(|c| canonical_excluded.contains(&c))
+        {
+            continue;
+        }
         let metadata = entry.metadata().await?;
         if metadata.is_file() {
             if let Ok(created_at) = metadata.created() {
                 if let Ok(created_at_since_epoch) = created_at.duration_since(time::UNIX_EPOCH) {
                     if (now - created_at_since_epoch) > Duration::from_millis(duration_in_millis) {
-                        tokio::fs::remove_file(entry.path()).await?;
-                        deleted_files.push(entry.path());
+                        tokio::fs::remove_file(&entry_path).await?;
+                        deleted_files.push(entry_path);
                     }
                 }
             }
         }
     }
     Ok(deleted_files)
+}
+
+/// Deletes all files that were (now - created) > duration_in_millis
+pub async fn delete_stale_files(
+    path: &str,
+    duration_in_millis: u64,
+) -> std::io::Result<Vec<PathBuf>> {
+    delete_stale_files_excluding(path, duration_in_millis, &std::collections::HashSet::new()).await
 }
 
 /// First path that doesn't exist yet: `path` itself, then `name (1).ext`, `name (2).ext`, ... (or

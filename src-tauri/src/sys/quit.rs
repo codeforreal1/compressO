@@ -4,20 +4,30 @@
 //! compressed or compressed media is not saved yet, since both would be lost.
 
 use std::sync::atomic::{AtomicBool, Ordering};
-use tauri::AppHandle;
+use tauri::{AppHandle, Manager};
 use tauri_plugin_dialog::{DialogExt, MessageDialogButtons, MessageDialogKind};
 
 use crate::tauri_commands::compression_status::{has_unsaved_output, is_compressing};
 
-/// Whether media of the drop zone's queue (macOS) is waiting or being compressed
-fn is_drop_queue_active(app_handle: &AppHandle) -> bool {
-    #[cfg(any(target_os = "macos", windows))]
-    return crate::tauri_commands::drop_queue::is_queue_active(app_handle);
-    #[cfg(not(any(target_os = "macos", windows)))]
-    {
-        let _ = app_handle;
-        false
+fn is_main_window_visible(app_handle: &AppHandle) -> bool {
+    app_handle
+        .get_webview_window(crate::tauri_commands::window::MAIN_WINDOW_LABEL)
+        .is_some_and(|window| {
+            window.is_visible().unwrap_or(false) && !window.is_minimized().unwrap_or(false)
+        })
+}
+
+fn unsaved_cancel_label(texts: &super::native_text::NativeTexts, is_main_visible: bool) -> String {
+    if is_main_visible {
+        texts.go_back.clone()
+    } else {
+        texts.open_main_app.clone()
     }
+}
+
+/// Whether media of the drop zone's queue is waiting or being compressed
+fn is_drop_queue_active(app_handle: &AppHandle) -> bool {
+    crate::tauri_commands::drop_queue::is_queue_active(app_handle)
 }
 
 /// Set once quitting was confirmed, so the quit that follows isn't asked about again
@@ -36,13 +46,27 @@ pub enum QuitReason {
     DropQueue,
 }
 
+/// When closing the main window, returns the confirmation reason that must keep the window open
+/// instead of closing it: only when nothing keeps the app alive in the background and quitting
+/// would discard active or unsaved work.
+pub fn main_window_close_reason(
+    is_session_compressing: bool,
+    keep_running_without_main: bool,
+    reason: Option<QuitReason>,
+) -> Option<QuitReason> {
+    if is_session_compressing || keep_running_without_main {
+        return None;
+    }
+    reason
+}
+
 /// Why quitting needs a confirmation first, if it does
 pub fn quit_reason(app_handle: &AppHandle) -> Option<QuitReason> {
     if IS_QUIT_CONFIRMED.load(Ordering::SeqCst) {
         None
-    } else if is_compressing(app_handle) {
+    } else if is_compressing(app_handle) || crate::core::session::is_session_compressing() {
         Some(QuitReason::Compressing)
-    } else if has_unsaved_output(app_handle) {
+    } else if has_unsaved_output(app_handle) || crate::core::session::has_session_unsaved_output() {
         Some(QuitReason::UnsavedOutput)
     } else if is_drop_queue_active(app_handle) {
         Some(QuitReason::DropQueue)
@@ -62,13 +86,18 @@ pub fn confirm_quit(
     }
 
     let texts = super::native_text::get();
+    let should_open_app_on_cancel =
+        matches!(reason, QuitReason::UnsavedOutput) && !is_main_window_visible(app_handle);
     let (title, message, cancel_label) = match reason {
         QuitReason::Compressing => (
             texts.compressing_title,
             texts.compressing_message,
             texts.continue_compressing,
         ),
-        QuitReason::UnsavedOutput => (texts.unsaved_title, texts.unsaved_message, texts.go_back),
+        QuitReason::UnsavedOutput => {
+            let label = unsaved_cancel_label(&texts, !should_open_app_on_cancel);
+            (texts.unsaved_title, texts.unsaved_message, label)
+        }
         QuitReason::DropQueue => (
             texts.compressing_title,
             texts.drop_queue_message,
@@ -76,6 +105,7 @@ pub fn confirm_quit(
         ),
     };
 
+    let cancel_app_handle = app_handle.clone();
     app_handle
         .dialog()
         .message(message)
@@ -87,6 +117,12 @@ pub fn confirm_quit(
             if is_confirmed {
                 IS_QUIT_CONFIRMED.store(true, Ordering::SeqCst);
                 on_confirm();
+            } else if should_open_app_on_cancel {
+                if let Err(err) =
+                    crate::tauri_commands::window::focus_or_create_main_window(&cancel_app_handle)
+                {
+                    log::error!("Failed to open the main window: {}", err);
+                }
             }
         });
 }
@@ -140,5 +176,29 @@ pub fn install_macos_quit_confirmation(app_handle: &AppHandle) {
                 "Quit confirmation unavailable: applicationShouldTerminate: already exists"
             );
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{main_window_close_reason, unsaved_cancel_label, QuitReason};
+    use crate::sys::native_text::NativeTexts;
+
+    #[test]
+    fn unsaved_quit_cancel_label_adapts_to_main_window_visibility() {
+        let texts = NativeTexts::default();
+        assert_eq!(unsaved_cancel_label(&texts, true), "Go Back");
+        assert_eq!(unsaved_cancel_label(&texts, false), "Open App");
+    }
+
+    #[test]
+    fn main_window_close_detaches_while_compressing_and_prompts_when_unsaved() {
+        assert!(main_window_close_reason(true, false, Some(QuitReason::UnsavedOutput)).is_none());
+        assert!(main_window_close_reason(false, true, Some(QuitReason::UnsavedOutput)).is_none());
+        assert!(main_window_close_reason(false, false, None).is_none());
+        assert!(matches!(
+            main_window_close_reason(false, false, Some(QuitReason::UnsavedOutput)),
+            Some(QuitReason::UnsavedOutput)
+        ));
     }
 }

@@ -343,6 +343,7 @@
       "original": "Gốc",
       "output": "Đầu ra",
       "missing": "Tệp này đã bị di chuyển hoặc xóa.",
+      "missingOriginal": "Tệp gốc đã bị di chuyển hoặc xóa.",
       "notSaved": "Đầu ra này chưa được lưu.",
       "fileCount": "Tệp: {{count}}",
       "showFiles": "Hiện các tệp của {{name}}",
@@ -353,7 +354,12 @@
         "original": "Kích thước gốc",
         "output": "Kích thước sau nén",
         "reduction": "Mức giảm trung bình"
-      }
+      },
+      "reopen": "Mở lại",
+      "reopenWithSettings": "Mở với cùng cài đặt",
+      "reopened": "Đã mở với cài đặt nén đã lưu.",
+      "cannotReopenWhileCompressing": "Vui lòng đợi quá trình nén hiện tại hoàn tất trước khi mở lại từ lịch sử.",
+      "cannotReopenUnsaved": "Hãy lưu hoặc hủy các tệp đã nén hiện tại trước khi mở lại từ lịch sử."
     },
     "commandLine": {
       "terminal": {
@@ -746,6 +752,8 @@
   },
   "preview": {
     "showFailed": "Không thể hiển thị tệp.",
+    "mutePreview": "Tắt tiếng bản xem trước",
+    "unmutePreview": "Bật tiếng bản xem trước",
     "compare": "So sánh",
     "showEdits": "Hiển thị chỉnh sửa",
     "smaller": "nhỏ hơn",
@@ -1030,6 +1038,7 @@
     "quit": "Thoát",
     "continueCompressing": "Tiếp tục nén",
     "goBack": "Quay lại",
+    "openMainApp": "Mở ứng dụng",
     "compressingTitle": "Đang nén",
     "compressingMessage": "Tệp phương tiện vẫn đang được nén. Nếu thoát bây giờ, quá trình nén sẽ bị hủy.",
     "unsavedTitle": "Tệp chưa được lưu",

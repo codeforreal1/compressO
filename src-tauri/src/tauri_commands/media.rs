@@ -33,6 +33,7 @@ fn set_batch_paused_state(batch_id: &str, paused: bool) {
 #[tauri::command]
 pub fn set_batch_paused(batch_id: String, paused: bool) {
     set_batch_paused_state(&batch_id, paused);
+    crate::core::session::sync_pause_state(&batch_id, paused);
 }
 
 /// About the size a video comes out at with its settings, in bytes (see
@@ -54,8 +55,25 @@ pub async fn estimate_video_size(
 #[tauri::command]
 pub async fn compress_media_batch(
     app: tauri::AppHandle,
-    // The compressions belong to the window that started them (e.g. the menu bar's)
-    window: tauri::WebviewWindow,
+    _window: tauri::WebviewWindow,
+    batch_id: String,
+    media: Vec<MediaItemConfig>,
+) -> Result<MediaBatchCompressionResult, String> {
+    // Runs on an independent runtime task so destroying "main" never drops or cancels active encodes.
+    let (tx, rx) = tokio::sync::oneshot::channel();
+    let task_app = app.clone();
+    let task_batch_id = batch_id.clone();
+    tauri::async_runtime::spawn(async move {
+        let res = compress_media_batch_headless(&task_app, task_batch_id.clone(), media).await;
+        crate::core::session::on_batch_finished(&task_app, &task_batch_id, &res).await;
+        let _ = tx.send(res);
+    });
+    rx.await
+        .unwrap_or_else(|_| Err(String::from("Compression task ended unexpectedly")))
+}
+
+pub async fn compress_media_batch_headless(
+    app: &tauri::AppHandle,
     batch_id: String,
     media: Vec<MediaItemConfig>,
 ) -> Result<MediaBatchCompressionResult, String> {
@@ -90,15 +108,7 @@ pub async fn compress_media_batch(
         EventListenerGuard::for_app(app.clone(), event_id)
     };
 
-    let result = compress_media_items(
-        &app,
-        &window,
-        &batch_id,
-        &media,
-        &mut results,
-        &is_cancelled,
-    )
-    .await;
+    let result = compress_media_items(app, None, &batch_id, &media, &mut results, &is_cancelled).await;
     // A pause left on (e.g. cancelled while paused) is not kept
     set_batch_paused_state(&batch_id, false);
     result?;
@@ -142,7 +152,7 @@ fn get_lane(media_item: &MediaItemConfig) -> Lane {
 /// next media; cancelling stops them all.
 async fn compress_media_items(
     app: &tauri::AppHandle,
-    window: &tauri::WebviewWindow,
+    owner_window: Option<&str>,
     batch_id: &String,
     media: &[MediaItemConfig],
     results: &mut std::collections::HashMap<String, MediaCompressionResult>,
@@ -167,7 +177,7 @@ async fn compress_media_items(
                 }
                 if let Err(error) = compress_media_item(
                     app,
-                    window,
+                    owner_window,
                     batch_id,
                     index,
                     total_count,
@@ -197,7 +207,7 @@ async fn compress_media_items(
 /// logged & left out of the results)
 async fn compress_media_item(
     app: &tauri::AppHandle,
-    window: &tauri::WebviewWindow,
+    owner_window: Option<&str>,
     batch_id: &str,
     index: usize,
     total_count: usize,
@@ -247,13 +257,13 @@ async fn compress_media_item(
         // instead of ending the batch (and losing the media already compressed)
         let config = video_config.clone();
         let task_app = app.clone();
-        let owner_window = window.label().to_string();
+        let owner_window = owner_window.map(str::to_string);
         let task_batch_id = batch_id.clone();
         let compression = tokio::spawn(async move {
             // Failing to prepare ffmpeg also only fails this video
             let mut ffmpeg_instance = FFMPEG::new(&task_app)
                 .map_err(|e| format!("Failed to create ffmpeg instance: {}", e))?
-                .with_owner_window(&owner_window)
+                .with_owner_window_opt(owner_window.as_deref())
                 .with_hardware_acceleration(config.use_hardware_acceleration)
                 .with_cpu_thread_limit(config.cpu_threads);
             ffmpeg_instance
@@ -365,12 +375,12 @@ async fn compress_media_item(
         // In its own task, like videos (see above)
         let config = image_config.clone();
         let task_app = app.clone();
-        let owner_window = window.label().to_string();
+        let owner_window = owner_window.map(str::to_string);
         let task_batch_id = batch_id.clone();
         let compression = tokio::spawn(async move {
             let mut image_compressor = ImageCompressor::new(&task_app)
                 .map_err(|e| format!("Failed to create image compressor instance: {}", e))?
-                .with_owner_window(&owner_window);
+                .with_owner_window_opt(owner_window.as_deref());
             image_compressor
                 .compress_image_config(&config, Some(task_batch_id.as_str()))
                 .await

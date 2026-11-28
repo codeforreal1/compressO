@@ -13,6 +13,7 @@ import { flushSyncStates } from '@/hooks/useSyncState'
 import { settingsStore } from '@/stores/settingsStore'
 import { getDropQueue } from '@/tauri/commands/dropQueue'
 import { compressMediaBatch } from '@/tauri/commands/media'
+import { clearActiveSession } from '@/tauri/commands/session'
 import { playCompletionSound } from '@/tauri/commands/sound'
 import {
   CustomEvents,
@@ -40,6 +41,7 @@ import {
   autoCopyCompressedMediaToClipboard,
   autoSaveCompressedMedia,
 } from '../-save'
+import { beginMainSession, syncCompletedMainSession } from '../-session'
 import {
   estimateTargetSizeVideos,
   needsQualityEstimate,
@@ -161,6 +163,7 @@ function StartCompression() {
 
       const batchId = `${+new Date()}`
       appProxy.state.batchId = batchId
+      await beginMainSession(batchId)
 
       const abortController = new AbortController()
       const unlisten = await event.listen(
@@ -355,10 +358,12 @@ function StartCompression() {
       // Once saved automatically, so the saved outputs are recorded where they were saved
       recordMainWindowHistory(batchId)
       await autoCopyCompressedMediaToClipboard()
+      await syncCompletedMainSession()
     } catch (error) {
       if (error !== 'CANCELLED') {
         toast.error(t('compression.failed'))
         appProxy.timeTravel('beforeCompressionStarted')
+        clearActiveSession().catch(() => {})
       }
     }
   }, [t])

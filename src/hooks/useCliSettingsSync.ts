@@ -6,6 +6,7 @@ import {
   getContractJsonSchema,
   presetToContract,
 } from '@/contract'
+import { whenCoreStateReady } from '@/hooks/useCoreStateSync'
 import i18n from '@/i18n'
 import {
   describeAudioPresetSettings,
@@ -106,17 +107,24 @@ function getCliSettings(): CliSettings {
 export function useCliSettingsSync() {
   useEffect(() => {
     let sent: string | null = null
+    let isMounted = true
+    let isReady = false
     const apply = () => {
+      if (!isMounted || !isReady) return
       const settings = getCliSettings()
       const next = JSON.stringify(settings)
       if (next === sent) return
       sent = next
       syncCliSettings(settings).catch(() => {})
     }
-    apply()
+    whenCoreStateReady().then(() => {
+      isReady = true
+      apply()
+    })
     const unsubscribeSettings = subscribe(settingsStore, apply)
     const unsubscribePresets = subscribe(presetsStore, apply)
     return () => {
+      isMounted = false
       unsubscribeSettings()
       unsubscribePresets()
     }

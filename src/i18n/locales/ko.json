@@ -343,6 +343,7 @@
       "original": "원본",
       "output": "출력",
       "missing": "이 파일은 이동되었거나 삭제되었습니다.",
+      "missingOriginal": "원본 파일이 이동되었거나 삭제되었습니다.",
       "notSaved": "이 출력은 저장되지 않았습니다.",
       "fileCount": "파일: {{count}}",
       "showFiles": "{{name}}의 파일 보기",
@@ -353,7 +354,12 @@
         "original": "원본 크기",
         "output": "압축 후 크기",
         "reduction": "평균 감소율"
-      }
+      },
+      "reopen": "다시 열기",
+      "reopenWithSettings": "동일한 설정으로 열기",
+      "reopened": "저장된 압축 설정으로 열었습니다.",
+      "cannotReopenWhileCompressing": "기록에서 다시 열기 전에 현재 압축이 끝날 때까지 기다리세요.",
+      "cannotReopenUnsaved": "기록에서 다시 열기 전에 현재 압축된 미디어를 저장하거나 버리세요."
     },
     "commandLine": {
       "terminal": {
@@ -746,6 +752,8 @@
   },
   "preview": {
     "showFailed": "파일을 표시할 수 없습니다.",
+    "mutePreview": "미리보기 음소거",
+    "unmutePreview": "미리보기 음소거 해제",
     "compare": "비교",
     "showEdits": "편집 내용 보기",
     "smaller": "감소",
@@ -1030,6 +1038,7 @@
     "quit": "종료",
     "continueCompressing": "계속 압축",
     "goBack": "돌아가기",
+    "openMainApp": "앱 열기",
     "compressingTitle": "압축 진행 중",
     "compressingMessage": "미디어를 아직 압축하는 중입니다. 지금 종료하면 압축이 취소됩니다.",
     "unsavedTitle": "미디어가 저장되지 않음",

@@ -11,8 +11,12 @@ const IDENTIFIER: &str = "com.compresso.app";
 /// Passed to the app when it is started from here: no window, & it quits once done
 const BACKGROUND_ARG: &str = "--background";
 
-/// The app's data folder, as the app has it (Tauri's `app_data_dir`)
+/// The app's data folder, as the app has it (Tauri's `app_data_dir`).
+/// Overridable via `COMPRESSO_DATA_DIR` for isolated dev/CI testing against `com.compresso.dev`.
 pub fn data_dir() -> Option<PathBuf> {
+    if let Some(dir) = std::env::var_os("COMPRESSO_DATA_DIR").filter(|v| !v.is_empty()) {
+        return Some(PathBuf::from(dir));
+    }
     #[cfg(target_os = "macos")]
     {
         let home = std::env::var_os("HOME")?;
@@ -78,12 +82,10 @@ pub async fn connect() -> Option<Stream> {
 }
 
 /// A connection to the app, started in the background first when it is not running.
-/// `on_starting` is called once when it has to be started.
-pub async fn connect_or_start(mut on_starting: impl FnMut()) -> Result<Stream, CliError> {
+pub async fn connect_or_start() -> Result<Stream, CliError> {
     if let Some(stream) = connect().await {
         return Ok(stream);
     }
-    on_starting();
     start_app()?;
     // Usually a second or two; longer when the computer is busy
     let deadline = Instant::now() + Duration::from_secs(60);
@@ -106,12 +108,18 @@ fn current_exe() -> Option<PathBuf> {
 
 /// The app's executable next to this program: in the same folder (inside `CompressO.app`, the
 /// install folder, `/usr/bin` or the AppImage, or a development build), or one folder up
-/// (Windows' `bin`)
+/// (Windows' `bin`, skipping `exe` itself so case-insensitive `bin\compresso.exe` never spawns
+/// itself as `CompressO.exe`).
 fn find_app_executable() -> Option<PathBuf> {
     if let Some(path) = std::env::var_os("COMPRESSO_APP") {
         return Some(PathBuf::from(path));
     }
     let exe = current_exe()?;
+    find_app_executable_from(&exe)
+}
+
+fn find_app_executable_from(exe: &Path) -> Option<PathBuf> {
+    let exe_canonical = std::fs::canonicalize(exe).unwrap_or_else(|_| exe.to_path_buf());
     let directory = exe.parent()?;
     let names: &[&str] = if cfg!(windows) {
         &["CompressO.exe", "compressO.exe"]
@@ -123,7 +131,11 @@ fn find_app_executable() -> Option<PathBuf> {
         .into_iter()
         .flatten()
         .flat_map(|folder| names.iter().map(move |name| folder.join(name)))
-        .find(|path| path.is_file());
+        .find(|path| {
+            path.is_file()
+                && std::fs::canonicalize(path).unwrap_or_else(|_| path.to_path_buf())
+                    != exe_canonical
+        });
     found
 }
 
@@ -140,6 +152,15 @@ fn app_bundle(executable: &Path) -> Option<PathBuf> {
 }
 
 fn start_app() -> Result<(), CliError> {
+    #[cfg(target_os = "linux")]
+    {
+        let has_display = |name: &str| std::env::var_os(name).is_some_and(|value| !value.is_empty());
+        if !has_display("DISPLAY") && !has_display("WAYLAND_DISPLAY") {
+            return Err(CliError::app(
+                "CompressO is not running and no graphical display (DISPLAY or WAYLAND_DISPLAY) is available.",
+            ));
+        }
+    }
     // Linux AppImage: the command line runs inside the image (see `--cli` in the app), which is
     // started again to run the app
     #[cfg(target_os = "linux")]
@@ -201,4 +222,41 @@ fn spawn_detached(executable: &Path) -> Result<(), CliError> {
         .spawn()
         .map(|_| ())
         .map_err(|err| CliError::app(format!("CompressO could not be started: {err}")))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::find_app_executable_from;
+
+    #[test]
+    fn find_app_executable_skips_cli_binary_and_finds_parent_app() {
+        let root = std::env::temp_dir().join(format!(
+            "compresso-cli-find-app-{}",
+            std::process::id()
+        ));
+        let bin = root.join("bin");
+        std::fs::create_dir_all(&bin).unwrap();
+        let cli_name = if cfg!(windows) {
+            "compresso.exe"
+        } else {
+            "compresso"
+        };
+        let app_name = if cfg!(windows) {
+            "compressO.exe"
+        } else {
+            "compressO"
+        };
+        let cli_path = bin.join(cli_name);
+        let app_path = root.join(app_name);
+        std::fs::write(&cli_path, b"cli").unwrap();
+        std::fs::write(&app_path, b"app").unwrap();
+
+        let found = find_app_executable_from(&cli_path).unwrap();
+        assert_eq!(
+            std::fs::canonicalize(&found).unwrap(),
+            std::fs::canonicalize(&app_path).unwrap()
+        );
+
+        let _ = std::fs::remove_dir_all(&root);
+    }
 }

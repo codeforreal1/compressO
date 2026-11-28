@@ -26,6 +26,7 @@ import {
   savesAutomatically,
 } from '@/utils/presetOutput'
 import { recordSavedOutput } from './-history'
+import { syncCompletedMainSession } from './-session'
 import { appProxy } from './-state'
 
 type Media = (Video & { type: 'video' }) | (Image & { type: 'image' })
@@ -265,6 +266,7 @@ async function saveCompressedMedia(
       !mediaFile.compressedFile?.isSuccessful ||
       !!mediaFile.compressedFile?.isSaved,
   )
+  syncCompletedMainSession().catch(() => {})
 }
 
 /**
@@ -414,6 +416,7 @@ export async function saveCompressedMediaWithPrompt(mediaIndex?: number) {
         !item.compressedFile?.isSuccessful || !!item.compressedFile?.isSaved,
     )
     if (savedFile) savedFile.isSaving = false
+    syncCompletedMainSession().catch(() => {})
     return
   }
 
@@ -470,6 +473,7 @@ export async function saveCompressedMediaWithPrompt(mediaIndex?: number) {
     if (isSingle) appProxy.state.isSaving = false
     const file = appProxy.state.media[index]?.compressedFile
     if (file) file.isSaving = false
+    syncCompletedMainSession().catch(() => {})
   }
 }
 

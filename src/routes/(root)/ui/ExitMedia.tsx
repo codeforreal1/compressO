@@ -7,6 +7,7 @@ import Button from '@/components/Button'
 import Icon from '@/components/Icon'
 import Tooltip from '@/components/Tooltip'
 import { deleteFile } from '@/tauri/commands/fs'
+import { clearActiveSession } from '@/tauri/commands/session'
 import AlertDialog, { AlertDialogButton } from '@/ui/Dialogs/AlertDialog'
 import { isOverlayOpen, isTextEntryElement } from '@/utils/keyboard'
 import { cn } from '@/utils/tailwind'
@@ -55,6 +56,7 @@ function ExitMedia({ className }: ExitMediaProps) {
       await Promise.allSettled(deletePromises)
       closeModal?.()
       resetProxy()
+      clearActiveSession().catch(() => {})
     } catch {}
   }
 
@@ -64,6 +66,7 @@ function ExitMedia({ className }: ExitMediaProps) {
       alertDisclosure.onOpen()
     } else {
       resetProxy()
+      clearActiveSession().catch(() => {})
     }
   }
 

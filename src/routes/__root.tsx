@@ -3,23 +3,18 @@ import { TanStackRouterDevtools } from '@tanstack/router-devtools'
 import { event } from '@tauri-apps/api'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { useEffect } from 'react'
-import { useSnapshot } from 'valtio'
 import { subscribeKey } from 'valtio/utils'
 
 import { Toaster } from '@/components/Toast'
-import {
-  useAutoCompressSync,
-  useWatchedFoldersSync,
-} from '@/hooks/useAutoCompressSync'
+import { useAutoCompressSync } from '@/hooks/useAutoCompressSync'
 import { useClipboardWatchSync } from '@/hooks/useClipboardWatchSync'
 import { useCliSettingsSync } from '@/hooks/useCliSettingsSync'
+import { useCoreStateSync } from '@/hooks/useCoreStateSync'
 import { useCpuThreadLimitSync } from '@/hooks/useCpuThreadLimit'
 import { useHardwareEncodingSync } from '@/hooks/useHardwareEncoding'
 import { useKeepAwakeSync } from '@/hooks/useKeepAwakeSync'
-import { usePresetsCommand } from '@/hooks/usePresetsCommand'
 import { watchPrimaryColor } from '@/hooks/usePrimaryColor'
 import { useThemeSync } from '@/hooks/useTheme'
-import { useWatchedFoldersCommand } from '@/hooks/useWatchedFoldersCommand'
 import { useWindowTint } from '@/hooks/useWindowTint'
 import { settingsStore } from '@/stores/settingsStore'
 import { checkForUpdates, setupUpdateListeners } from '@/stores/updateStore'
@@ -35,7 +30,6 @@ import Titlebar from '@/tauri/components/Titlebar'
 import DropZoneIsland from '@/ui/DropZoneIsland'
 import { getPlatform } from '@/utils/fs'
 import { hasTray } from '@/utils/tray'
-import { useDropQueueRunner } from './webviews/tray/-queue'
 import UIProvider from '../providers/UIProvider'
 
 export const Route = createRootRoute({
@@ -61,14 +55,11 @@ function MainRoot() {
   useClipboardWatchSync({ applyOnMount: true })
   useAutoCompressSync()
   // Also from the menu bar's window, which stays open while the main one is closed
-  useWatchedFoldersSync()
+  useCoreStateSync()
   useHardwareEncodingSync()
   useCpuThreadLimitSync()
   useKeepAwakeSync()
-  useWatchedFoldersCommand()
-  usePresetsCommand()
   useCliSettingsSync()
-  const { showMenuBarIcon } = useSnapshot(settingsStore)
 
   useEffect(() => {
     // Also tells the backend to show the window, which starts hidden to avoid a blank flash;
@@ -110,9 +101,6 @@ function MainRoot() {
         {/* The drop zone of the tray, while it has media */}
         {/* The drop zone's queue (on Linux, only that of the watched folders) */}
         <DropZoneIsland />
-        {/* Without a menu bar window (Linux, or the menu bar icon turned off), the main window
-            compresses the queue (the watched folders' & the command line's) */}
-        {hasTray && showMenuBarIcon ? null : <DropQueueRunner />}
       </UIProvider>
       <Toaster />
       {isDev ? <TanStackRouterDevtools position="bottom-right" /> : null}
@@ -120,25 +108,15 @@ function MainRoot() {
   )
 }
 
-/** Compresses the drop zone's queue from this window (see `useDropQueueRunner`) */
-function DropQueueRunner() {
-  useDropQueueRunner()
-  return null
-}
-
 function TrayRoot() {
   useClipboardWatchSync({ applyOnMount: false })
   useAutoCompressSync()
   // Also from the menu bar's window, which stays open while the main one is closed
-  useWatchedFoldersSync()
+  useCoreStateSync()
   useHardwareEncodingSync()
   useCpuThreadLimitSync()
   useKeepAwakeSync()
-  useWatchedFoldersCommand()
-  usePresetsCommand()
   useCliSettingsSync()
-  // The menu bar's window compresses the drop zone's queue
-  useDropQueueRunner()
   // The Windows tray icon's progress ring fills with the accent color
   useEffect(() => {
     if (!isWindows) return

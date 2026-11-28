@@ -7,6 +7,7 @@ import Icon from '@/components/Icon'
 import SettingLink from '@/components/SettingLink'
 import Tooltip from '@/components/Tooltip'
 import { useCommandShiftShortcut } from '@/hooks/useCommandEnterShortcut'
+import { clearActiveSession } from '@/tauri/commands/session'
 import { getPlatform, isSamePath } from '@/utils/fs'
 import { appProxy } from '../-state'
 
@@ -31,6 +32,7 @@ function CompressionActions() {
   const handleReconfigure = () => {
     if (!canReconfigure) return
     appProxy.timeTravel('beforeCompressionStarted')
+    clearActiveSession().catch(() => {})
   }
 
   // ⌘+Shift+R acts like the Reconfigure button

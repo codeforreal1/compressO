@@ -105,7 +105,7 @@ impl MediaProcessExecutorBuilder {
     pub fn new(app: AppHandle) -> Self {
         Self {
             app,
-            owner_window: Some(String::from("main")),
+            owner_window: None,
             commands: Vec::new(),
             cancel_ids: Vec::new(),
             cancel_callback: None,
@@ -146,9 +146,14 @@ impl MediaProcessExecutorBuilder {
         self
     }
 
-    /// Window the processes belong to (the main window by default): they are stopped when it closes
+    /// Window the processes belong to (`None` by default, i.e. detached/headless): when set, they are stopped when it closes
     pub fn owner_window(mut self, label: &str) -> Self {
         self.owner_window = Some(label.to_string());
+        self
+    }
+
+    pub fn owner_window_opt(mut self, label: Option<&str>) -> Self {
+        self.owner_window = label.map(str::to_string);
         self
     }
 
@@ -298,7 +303,7 @@ impl MediaProcessExecutor {
             let callback_clone = self.stderr_callback.clone();
             let tail: ErrorOutputTail = Arc::new(Mutex::new(VecDeque::new()));
             let tail_clone = tail.clone();
-            let reader = tokio::spawn(async move {
+            let reader = tokio::task::spawn_blocking(move || {
                 if let Some(stderr) = proc_clone.take_stderr() {
                     let mut reader = BufReader::new(stderr);
                     loop {
@@ -333,7 +338,7 @@ impl MediaProcessExecutor {
                 let proc = proc.clone();
                 let callback = self.stdout_callback.clone().unwrap();
 
-                let handle = tokio::spawn(async move {
+                let handle = tokio::task::spawn_blocking(move || {
                     if let Some(stdout) = proc.take_stdout() {
                         let mut reader = BufReader::new(stdout);
                         loop {
@@ -367,7 +372,7 @@ impl MediaProcessExecutor {
             if let Some(proc) = processes.last() {
                 let proc = proc.clone();
                 let captured_stdout_clone = captured_stdout.clone();
-                let handle = tokio::spawn(async move {
+                let handle = tokio::task::spawn_blocking(move || {
                     let mut json_str = String::new();
                     if let Some(stdout) = proc.take_stdout() {
                         let reader = std::io::BufReader::new(stdout);
@@ -400,11 +405,9 @@ impl MediaProcessExecutor {
 
             if !has_handle {
                 let proc = proc.clone();
-                let handle = tokio::spawn(async move {
-                    match proc.wait() {
-                        Ok(status) if status.success() => 0u8,
-                        _ => 1u8,
-                    }
+                let handle = tokio::task::spawn_blocking(move || match proc.wait() {
+                    Ok(status) if status.success() => 0u8,
+                    _ => 1u8,
                 });
                 wait_handles.push(handle);
             }
@@ -586,7 +589,7 @@ impl MediaProcessExecutor {
             let callback_clone = self.stderr_callback.clone();
             let tail: ErrorOutputTail = Arc::new(Mutex::new(VecDeque::new()));
             let tail_clone = tail.clone();
-            let reader = tokio::spawn(async move {
+            let reader = tokio::task::spawn_blocking(move || {
                 if let Some(stderr) = proc_clone.take_stderr() {
                     let mut reader = BufReader::new(stderr);
                     loop {
@@ -628,7 +631,7 @@ impl MediaProcessExecutor {
 
             if let Some(proc) = proc_opt {
                 let callback = self.stdout_callback.clone().unwrap();
-                tokio::spawn(async move {
+                tokio::task::spawn_blocking(move || {
                     if let Some(stdout) = proc.take_stdout() {
                         let mut reader = BufReader::new(stdout);
                         loop {

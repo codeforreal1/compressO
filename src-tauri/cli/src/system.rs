@@ -74,6 +74,18 @@ pub async fn logs(tail: Option<usize>) -> Result<Value, CliError> {
         .await
 }
 
+pub async fn settings_get(key: Option<String>) -> Result<Value, CliError> {
+    let mut conn = Connection::open(|_| {}).await?;
+    conn.request(json!({ "type": "getSettingsConfig", "key": key }))
+        .await
+}
+
+pub async fn settings_update(patch: Value) -> Result<Value, CliError> {
+    let mut conn = Connection::open(|_| {}).await?;
+    conn.request(json!({ "type": "updateSettingsConfig", "patch": patch }))
+        .await
+}
+
 pub fn about_info() -> Value {
     json!({
         "name": "CompressO",
@@ -334,5 +346,30 @@ pub fn print_logs(value: &Value, path_only: bool) {
         for line in lines.iter().filter_map(|v| v.as_str()) {
             println!("{line}");
         }
+    }
+}
+
+pub fn print_settings(value: &Value) {
+    if let Some(key) = value["key"].as_str() {
+        println!("{key} = {}", format_setting_value(&value["value"]));
+        return;
+    }
+    if let Some(obj) = value["settings"].as_object() {
+        let mut keys: Vec<&String> = obj.keys().collect();
+        keys.sort();
+        for key in keys {
+            println!("{key} = {}", format_setting_value(&obj[key]));
+        }
+    }
+}
+
+fn format_setting_value(value: &Value) -> String {
+    match value {
+        Value::Null => String::from("null"),
+        Value::Bool(b) => b.to_string(),
+        Value::Number(n) => n.to_string(),
+        Value::String(s) => serde_json::to_string(s).unwrap_or_else(|_| s.clone()),
+        Value::Array(arr) => format!("[{} item(s)]", arr.len()),
+        Value::Object(_) => serde_json::to_string(value).unwrap_or_default(),
     }
 }

@@ -1,5 +1,25 @@
 # Changelog
 
+### 5.0.0
+
+Features:
+
+- **Central Rust `core` & True Headless CLI/MCP**: Presets (`presets.json`), domain settings (`settings.json`), watched folders, JSON Contract planning/validation, target-size math, naming templates, and queue execution now live centrally in the Rust `core` backend rather than inside a hidden WebView. Running `compresso` or `compresso mcp` while CompressO is closed spawns `--background` with **zero WebViews** (`WebKit` / `WebView2` / `WebKitGTK` are never loaded) and exits cleanly once idle.
+- **CLI & MCP Settings Parity**: Read and update persistent CompressO domain settings directly from `compresso settings get [<key>]` / `compresso settings set <key>=<value>...` and MCP `get_settings` / `update_settings`.
+- **Background Detach & Reattach (`active-session.json`)**: Closing the main window mid-compression tears down the WebView while `core` finishes encoding in the background. Reopening CompressO (via the Dock icon on macOS or relaunching on Windows/Linux) reattaches directly to the live session, or restores the completed Save / Compare / Clips view from `active-session.json` when Auto-Save is off. If detached work finishes while closed with unsaved outputs, the close confirmation offers **Quit** or **Open App**; trying to close after reopening prompts immediately (`Quit` / `Go Back`) without closing the window.
+- **Unified Multi-Lane Background Queue**: Tray drops, watched folders, clipboard monitoring, and CLI/MCP compressions share Rust's 3-lane background runner (1 video, 1 audio, 1 image concurrently) with watched folders running headlessly even when the tray popover is closed.
+- **History "Reopen With Same Settings"**: Compression history now records each run's JSON Contract snapshot so eligible entries in **Settings → History** can be reopened into the editor with their exact saved settings (showing a disabled button with tooltip when the original file is missing). **Reopen**, **Original**, and **Output** row actions use compact icon-only buttons.
+- **Preview Audio Mute Toggle**: Added a preview-only mute/unmute toggle button in the single-media preview header without changing compression output settings.
+
+Bug Fixes:
+
+- Fixed Linux video previews and WebKitGTK rendering by defaulting `WEBKIT_DISABLE_DMABUF_RENDERER=1` (overridable), routing Tauri v2 `asset.localhost` URLs through the local `VideoServer`, and surfacing clear GUI/no-display diagnostics when launched from headless SSH sessions.
+- Fixed CLI `--json` progress reporting so percentage progress emits consistently during headless compressions.
+
+Upgrade note:
+
+- Open CompressO once after updating to migrate existing `localStorage` presets and domain settings into `presets.json` and `settings.json` (your original `localStorage` entries remain intact).
+
 ### 4.3.0
 
 Features:

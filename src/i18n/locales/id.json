@@ -343,6 +343,7 @@
       "original": "Asli",
       "output": "Hasil",
       "missing": "File ini telah dipindahkan atau dihapus.",
+      "missingOriginal": "File asli telah dipindahkan atau dihapus.",
       "notSaved": "Hasil ini tidak disimpan.",
       "fileCount": "File: {{count}}",
       "showFiles": "Tampilkan file di {{name}}",
@@ -353,7 +354,12 @@
         "original": "Ukuran asli",
         "output": "Ukuran terkompresi",
         "reduction": "Rata-rata pengurangan"
-      }
+      },
+      "reopen": "Buka lagi",
+      "reopenWithSettings": "Buka dengan pengaturan yang sama",
+      "reopened": "Dibuka dengan pengaturan kompresi tersimpan.",
+      "cannotReopenWhileCompressing": "Tunggu hingga kompresi saat ini selesai sebelum membuka ulang dari riwayat.",
+      "cannotReopenUnsaved": "Simpan atau buang media terkompresi Anda saat ini sebelum membuka ulang dari riwayat."
     },
     "commandLine": {
       "terminal": {
@@ -746,6 +752,8 @@
   },
   "preview": {
     "showFailed": "File tidak dapat ditampilkan.",
+    "mutePreview": "Bisukan pratinjau",
+    "unmutePreview": "Suarakan pratinjau",
     "compare": "Bandingkan",
     "showEdits": "Tampilkan edit",
     "smaller": "lebih kecil",
@@ -1030,6 +1038,7 @@
     "quit": "Keluar",
     "continueCompressing": "Lanjutkan Kompresi",
     "goBack": "Kembali",
+    "openMainApp": "Buka Aplikasi",
     "compressingTitle": "Kompresi sedang berlangsung",
     "compressingMessage": "Media masih dikompresi. Keluar sekarang akan membatalkan kompresi.",
     "unsavedTitle": "Media belum disimpan",

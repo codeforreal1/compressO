@@ -1,9 +1,12 @@
-//! Preset & contract commands sent from the command line / MCP server to the frontend window.
+//! Preset & contract commands asked for by the command line or MCP (`cli_server`): executes
+//! directly inside Rust `core::contract` + `core::presets`, working identically whether WebViews
+//! are open or CompressO is running headlessly.
+
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use tauri::AppHandle;
 
-use crate::core::domain::CustomEvents;
+use crate::core::contract;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(tag = "type")]
@@ -58,57 +61,49 @@ pub enum PresetCommand {
 }
 
 pub async fn forward(app_handle: &AppHandle, command: PresetCommand) -> Result<Value, String> {
-    crate::sys::window_bridge::forward(
-        app_handle,
-        CustomEvents::PresetsCommand.as_ref(),
-        &command,
-        "presets",
-    )
-    .await
-}
-
-#[tauri::command]
-pub fn complete_presets_command(request_id: String, result: Value) {
-    crate::sys::window_bridge::complete(request_id, result);
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use serde_json::json;
-
-    #[test]
-    fn serializes_preset_commands_for_frontend() {
-        let cmd = PresetCommand::CreatePreset {
-            contract: json!({ "version": 1, "mediaType": "video", "name": "Web" }),
-            on_conflict: Some(String::from("rename")),
-        };
-        assert_eq!(
-            serde_json::to_value(cmd).unwrap(),
-            json!({
-                "type": "createPreset",
-                "contract": { "version": 1, "mediaType": "video", "name": "Web" },
-                "onConflict": "rename",
-            })
-        );
-
-        let upd = PresetCommand::UpdatePreset {
-            id_or_name: String::from("Web"),
-            patch: json!({ "settings": { "format": "mp4" } }),
-            media_type: Some(String::from("video")),
-            replace: Some(false),
-            if_revision: Some(2),
-        };
-        assert_eq!(
-            serde_json::to_value(upd).unwrap(),
-            json!({
-                "type": "updatePreset",
-                "idOrName": "Web",
-                "patch": { "settings": { "format": "mp4" } },
-                "mediaType": "video",
-                "replace": false,
-                "ifRevision": 2,
-            })
-        );
+    match command {
+        PresetCommand::GetPreset {
+            id_or_name,
+            media_type,
+        } => Ok(contract::get_preset(
+            app_handle,
+            &id_or_name,
+            media_type.as_deref(),
+        )),
+        PresetCommand::ValidateContract {
+            contract: raw,
+            mode,
+            require_name,
+        } => Ok(contract::validate_contract_value(
+            &raw,
+            mode.as_deref(),
+            require_name,
+        )),
+        PresetCommand::CreatePreset {
+            contract: raw,
+            on_conflict,
+        } => contract::create_preset(app_handle, &raw, on_conflict.as_deref()),
+        PresetCommand::UpdatePreset {
+            id_or_name,
+            patch,
+            media_type,
+            replace,
+            if_revision,
+        } => contract::update_preset(
+            app_handle,
+            &id_or_name,
+            &patch,
+            media_type.as_deref(),
+            replace,
+            if_revision,
+        ),
+        PresetCommand::DeletePreset {
+            id_or_name,
+            media_type,
+        } => contract::delete_preset(app_handle, &id_or_name, media_type.as_deref()),
+        PresetCommand::SetDefaultPreset {
+            id_or_name,
+            media_type,
+        } => contract::set_default_preset(app_handle, &id_or_name, &media_type),
     }
 }

@@ -41,7 +41,23 @@ const PROTOCOL_VERSION: u32 = 3;
 
 /// Started by the command line, & not used by the user since: quits once the command line is done
 static IS_LAUNCHED_FOR_CLI: AtomicBool = AtomicBool::new(false);
+static LAUNCH_MODE_INITIALIZED: AtomicBool = AtomicBool::new(false);
 static CONNECTIONS: AtomicUsize = AtomicUsize::new(0);
+
+/// Initializes `IS_LAUNCHED_FOR_CLI` synchronously from CLI args before background tasks start.
+pub fn init_launch_mode() {
+    if !LAUNCH_MODE_INITIALIZED.swap(true, Ordering::SeqCst) && is_background_launch() {
+        IS_LAUNCHED_FOR_CLI.store(true, Ordering::SeqCst);
+    }
+}
+
+pub fn is_launched_for_cli() -> bool {
+    IS_LAUNCHED_FOR_CLI.load(Ordering::SeqCst)
+}
+
+pub fn has_connections() -> bool {
+    CONNECTIONS.load(Ordering::SeqCst) > 0
+}
 
 /// Whether the app was started by the command line (see `BACKGROUND_ARG`)
 pub fn is_background_launch() -> bool {
@@ -64,8 +80,8 @@ pub fn keep_app_open() {
 
 /// Starts listening for the command line
 pub fn start(app_handle: &AppHandle) {
-    if is_background_launch() {
-        IS_LAUNCHED_FOR_CLI.store(true, Ordering::SeqCst);
+    init_launch_mode();
+    if is_launched_for_cli() {
         // Quits if the command line that started it never connects (e.g. it was stopped)
         schedule_quit_check(app_handle, std::time::Duration::from_secs(60));
     }
@@ -164,6 +180,13 @@ enum Request {
         message: String,
     },
     GetSettings,
+    GetSettingsConfig {
+        #[serde(default)]
+        key: Option<String>,
+    },
+    UpdateSettingsConfig {
+        patch: serde_json::Value,
+    },
     GetCapabilities,
     ClearCache,
     GetHistory {
@@ -342,6 +365,24 @@ where
                     send(&writer, error_message("notReady", message)).await
                 }
             },
+            Request::GetSettingsConfig { key } => {
+                match crate::sys::cli_ops::settings_get(&app_handle, key.as_deref(), source) {
+                    Ok(message) => send(&writer, message).await,
+                    Err((code, message)) => {
+                        log::warn!("[{source}] GetSettingsConfig failed ({code}): {message}");
+                        send(&writer, error_message(code, &message)).await
+                    }
+                }
+            }
+            Request::UpdateSettingsConfig { patch } => {
+                match crate::sys::cli_ops::settings_update(&app_handle, &patch, source) {
+                    Ok(message) => send(&writer, message).await,
+                    Err((code, message)) => {
+                        log::warn!("[{source}] UpdateSettingsConfig failed ({code}): {message}");
+                        send(&writer, error_message(code, &message)).await
+                    }
+                }
+            }
             Request::GetCapabilities => {
                 let message =
                     crate::sys::cli_ops::capabilities(&app_handle, PROTOCOL_VERSION.into(), source)
@@ -1087,12 +1128,13 @@ pub fn schedule_quit_check(app_handle: &AppHandle, delay: std::time::Duration) {
 }
 
 fn should_quit(app_handle: &AppHandle) -> bool {
-    let is_main_window_visible = app_handle
+    let has_main_window = app_handle
         .get_webview_window("main")
-        .is_some_and(|window| window.is_visible().unwrap_or(false));
+        .is_some();
     IS_LAUNCHED_FOR_CLI.load(Ordering::SeqCst)
         && CONNECTIONS.load(Ordering::SeqCst) == 0
         && !drop_queue::is_queue_active(app_handle)
         && !crate::tauri_commands::compression_status::is_compressing(app_handle)
-        && !is_main_window_visible
+        && !crate::core::session::is_session_compressing()
+        && !has_main_window
 }

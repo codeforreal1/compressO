@@ -2,15 +2,13 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Mutex;
 use tauri::{
     menu::{Menu, MenuEvent, MenuItem},
-    utils::config::WindowConfig,
-    webview::PageLoadEvent,
-    AppHandle, Emitter, Manager, Url, WebviewWindowBuilder, Wry,
+    AppHandle, Emitter, Manager, Url, Wry,
 };
 
 // The macOS menu bar popover, or the Windows system tray popover
 use crate::tray_popover::{self, WindowExt, TRAY_WINDOW_LABEL};
 
-pub const MAIN_WINDOW_LABEL: &str = "main";
+pub use crate::tauri_commands::window::{focus_or_create_main_window, MAIN_WINDOW_LABEL};
 
 #[tauri::command]
 pub fn open_tray_popover(app_handle: AppHandle) -> Result<(), String> {
@@ -292,67 +290,4 @@ pub fn handle_tray_icon_menu_event(app_handle: &AppHandle, event: MenuEvent) {
         "quit" => app_handle.exit(0),
         _ => {}
     }
-}
-
-/// Shows & focuses the main window, recreating it if it was closed (the app keeps running while
-/// the tray is alive)
-pub fn focus_or_create_main_window(app_handle: &AppHandle) -> Result<(), String> {
-    // Opened by the user: an app started by the command line stays open, with its Dock icon
-    crate::sys::cli_server::keep_app_open();
-    #[cfg(target_os = "macos")]
-    let _ = app_handle.set_dock_visibility(true);
-    if !crate::core::tool_bundle::is_ready(app_handle) {
-        if let Some(window) = app_handle.get_webview_window("preparation") {
-            window.show().map_err(|e| e.to_string())?;
-            window.set_focus().map_err(|e| e.to_string())?;
-        }
-        return Ok(());
-    }
-    match app_handle.get_webview_window(MAIN_WINDOW_LABEL) {
-        Some(window) => {
-            window.unminimize().map_err(|e| e.to_string())?;
-            window.show().map_err(|e| e.to_string())?;
-            window.set_focus().map_err(|e| e.to_string())?;
-        }
-        None => {
-            let window_config = app_handle
-                .config()
-                .app
-                .windows
-                .iter()
-                .find(|w| w.label == MAIN_WINDOW_LABEL)
-                .cloned()
-                .unwrap_or_default();
-
-            // Created on another thread in Windows: this runs in synchronous commands, on the main
-            // thread, where creating a webview deadlocks there
-            #[cfg(windows)]
-            {
-                let app_handle = app_handle.clone();
-                std::thread::spawn(move || {
-                    if let Err(err) = create_main_window(&app_handle, &window_config) {
-                        log::error!("Failed to create the main window: {}", err);
-                    }
-                });
-            }
-            #[cfg(not(windows))]
-            create_main_window(app_handle, &window_config)?;
-        }
-    }
-    Ok(())
-}
-
-fn create_main_window(app_handle: &AppHandle, window_config: &WindowConfig) -> Result<(), String> {
-    // The window starts hidden (see `tauri.conf.json`), so show it once it has loaded
-    WebviewWindowBuilder::from_config(app_handle, window_config)
-        .map_err(|e| e.to_string())?
-        .on_page_load(|window, payload| {
-            if let PageLoadEvent::Finished = payload.event() {
-                let _ = window.show();
-                let _ = window.set_focus();
-            }
-        })
-        .build()
-        .map_err(|e| e.to_string())?;
-    Ok(())
 }

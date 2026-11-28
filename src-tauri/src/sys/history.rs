@@ -49,6 +49,9 @@ pub struct HistoryEntry {
     pub output_size: Option<u64>,
     #[serde(default)]
     pub preset_name: Option<String>,
+    /// Exact JSON Contract snapshot used for compression (`None` on legacy entries)
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub contract: Option<serde_json::Value>,
 }
 
 /// The entries, newest last (loaded from the data folder the first time they are used)
@@ -105,15 +108,20 @@ pub fn get_history(app_handle: AppHandle) -> Vec<HistoryEntry> {
         .unwrap_or_default()
 }
 
-/// Records compressions (an entry with the id of one already recorded replaces it)
-#[tauri::command]
-pub fn add_history_entries(app_handle: AppHandle, entries: Vec<HistoryEntry>) {
-    update(&app_handle, |stored| {
+/// Records compressions directly from Rust (`queue_runner`), replacing any entry with the same id.
+pub fn add_entries(app_handle: &AppHandle, entries: Vec<HistoryEntry>) {
+    update(app_handle, |stored| {
         for entry in entries {
             stored.retain(|existing| existing.id != entry.id);
             stored.push_back(entry);
         }
     });
+}
+
+/// Records compressions (an entry with the id of one already recorded replaces it)
+#[tauri::command]
+pub fn add_history_entries(app_handle: AppHandle, entries: Vec<HistoryEntry>) {
+    add_entries(&app_handle, entries);
 }
 
 /// Where an output was saved, once it is (e.g. with the Save button, after compressing)
@@ -146,4 +154,34 @@ pub fn paths_exist(paths: Vec<String>) -> Vec<bool> {
         .iter()
         .map(|path| std::path::Path::new(path).exists())
         .collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::HistoryEntry;
+    use serde_json::json;
+
+    #[test]
+    fn legacy_entries_without_contract_deserialize_and_contract_round_trips() {
+        let legacy_json = json!({
+            "id": "legacy-1",
+            "completedAt": 1700000000000i64,
+            "mediaType": "video",
+            "source": "main",
+            "originalPath": "/tmp/in.mp4",
+            "outputPath": "/tmp/out.mp4"
+        });
+        let legacy: HistoryEntry = serde_json::from_value(legacy_json).unwrap();
+        assert!(legacy.contract.is_none());
+        let serialized_legacy = serde_json::to_value(&legacy).unwrap();
+        assert!(serialized_legacy.get("contract").is_none());
+
+        let with_contract = HistoryEntry {
+            contract: Some(json!({ "version": 1, "mediaType": "video" })),
+            ..legacy
+        };
+        let encoded = serde_json::to_string(&with_contract).unwrap();
+        let decoded: HistoryEntry = serde_json::from_str(&encoded).unwrap();
+        assert_eq!(decoded.contract.unwrap()["mediaType"], "video");
+    }
 }

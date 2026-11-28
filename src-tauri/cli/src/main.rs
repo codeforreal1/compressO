@@ -81,6 +81,7 @@ async fn run() -> i32 {
         Command::Cache(command) => cache_cmd(command).await,
         Command::History(command) => history_cmd(command).await,
         Command::Queue(command) => queue_cmd(command).await,
+        Command::Settings(command) => settings_cmd(command).await,
         Command::Logs {
             path_only,
             tail,
@@ -193,6 +194,39 @@ async fn queue_cmd(command: args::QueueCommand) -> i32 {
                     );
                 } else {
                     println!("Queue action '{action}' applied.");
+                }
+                exit_code::SUCCESS
+            }
+            Err(err) => report_error(&err, json),
+        },
+    }
+}
+
+async fn settings_cmd(command: args::SettingsCommand) -> i32 {
+    match command {
+        args::SettingsCommand::Get { key, json } => match system::settings_get(key).await {
+            Ok(value) => {
+                if json {
+                    println!(
+                        "{}",
+                        serde_json::to_string_pretty(&value).unwrap_or_default()
+                    );
+                } else {
+                    system::print_settings(&value);
+                }
+                exit_code::SUCCESS
+            }
+            Err(err) => report_error(&err, json),
+        },
+        args::SettingsCommand::Set { patch, json } => match system::settings_update(patch).await {
+            Ok(value) => {
+                if json {
+                    println!(
+                        "{}",
+                        serde_json::to_string_pretty(&value).unwrap_or_default()
+                    );
+                } else {
+                    system::print_settings(&value);
                 }
                 exit_code::SUCCESS
             }

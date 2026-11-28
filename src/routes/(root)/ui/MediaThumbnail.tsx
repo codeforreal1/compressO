@@ -43,9 +43,14 @@ type MediaThumbnailProps = {
   mediaIndex: number
   /** Shows the media without its transforms (crop, rotation, flip), e.g. to compare */
   showOriginal?: boolean
+  isMuted?: boolean
 }
 
-function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
+function MediaThumbnail({
+  mediaIndex,
+  showOriginal,
+  isMuted = false,
+}: MediaThumbnailProps) {
   const { t } = useTranslation()
   if (mediaIndex < 0) return
 
@@ -551,6 +556,7 @@ function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
               {audioFileBackdrop}
               <VideoPlayer
                 ref={playerRef}
+                muted={isMuted}
                 waveform={waveform}
                 onReady={(player: ReactPlayer) =>
                   setWaveformPlayer(
@@ -697,6 +703,7 @@ function MediaThumbnail({ mediaIndex, showOriginal }: MediaThumbnailProps) {
                 <>
                   <audio
                     ref={attachAudioPlayer}
+                    muted={isMuted}
                     onLoadedMetadata={(event) =>
                       setPlaybackDuration(event.currentTarget.duration)
                     }

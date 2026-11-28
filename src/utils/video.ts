@@ -35,6 +35,14 @@ export async function getServerUrl(): Promise<string | null> {
   }
 }
 
+export function isTauriAssetUrl(url: string): boolean {
+  return (
+    url.startsWith('asset://') ||
+    url.startsWith('http://asset.localhost/') ||
+    url.startsWith('https://asset.localhost/')
+  )
+}
+
 export async function constructVideoUrl(filePath: string): Promise<string> {
   if (getPlatform().isLinux) {
     const serverUrl = await getServerUrl()
@@ -44,7 +52,13 @@ export async function constructVideoUrl(filePath: string): Promise<string> {
     }
 
     try {
-      return await invoke<string>('construct_video_url', { filePath })
+      const [assetPath, query] = filePath.split('?')
+      const serverSrc = await invoke<string>('construct_video_url', {
+        filePath: assetPath,
+      })
+      return query
+        ? `${serverSrc}${serverSrc.includes('?') ? '&' : '?'}${query}`
+        : serverSrc
     } catch (error) {
       // Links are only made by the backend, with the server's secret
       // biome-ignore lint/suspicious/noConsole: <>

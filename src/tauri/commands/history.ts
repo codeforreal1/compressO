@@ -1,5 +1,7 @@
 import { core } from '@tauri-apps/api'
 
+import type { MediaContract } from '@/contract/types'
+
 /** Sent to every window when the history changes */
 export const HISTORY_EVENT = 'history-changed'
 
@@ -31,6 +33,8 @@ export type HistoryEntry = {
   outputSize?: number | null
   /** `null` for the Standard preset */
   presetName?: string | null
+  /** Exact JSON Contract snapshot used for compression (`null` on legacy entries) */
+  contract?: MediaContract | null
 }
 
 /** Every entry, newest last */

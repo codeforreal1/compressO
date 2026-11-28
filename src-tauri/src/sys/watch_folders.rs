@@ -68,9 +68,52 @@ static FOLDERS: Mutex<Vec<FolderState>> = Mutex::new(Vec::new());
 static SUPPORTED_EXTENSIONS: Mutex<Vec<String>> = Mutex::new(Vec::new());
 static WATCHER: Mutex<Option<Debouncer<RecommendedWatcher>>> = Mutex::new(None);
 
+/// All extensions CompressO can pick up in watched folders.
+const ALL_WATCHED_EXTENSIONS: [&str; 35] = [
+    "mp4", "mov", "mkv", "webm", "avi", "ts", "gif", "m4v", "mts", "m2ts", "png", "jpg", "jpeg",
+    "webp", "svg", "avif", "jxl", "heic", "heif", "bmp", "tiff", "tif", "mp3", "m4a", "wav",
+    "flac", "ogg", "opus", "aac", "m4b", "aiff", "aif", "wma", "oga", "mp2",
+];
+
+fn folder_display_name(path: &str) -> String {
+    Path::new(path)
+        .file_name()
+        .and_then(|n| n.to_str())
+        .filter(|s| !s.is_empty())
+        .map(str::to_string)
+        .unwrap_or_else(|| path.to_string())
+}
+
+/// Synchronizes OS folder watchers directly from `core::settings` + `core::presets` without any WebView.
+pub fn sync_from_core(app_handle: &AppHandle) {
+    if APP_HANDLE.get().is_none() || crate::sys::cli_server::is_launched_for_cli() {
+        return;
+    }
+    let settings = crate::core::settings::get(app_handle);
+    let presets = crate::core::presets::get(app_handle);
+    let folders: Vec<WatchedFolder> = settings
+        .watched_folders
+        .iter()
+        .filter(|folder| {
+            folder.is_enabled && crate::core::planning::can_watched_folder_save(folder, &presets, &settings)
+        })
+        .map(|folder| WatchedFolder {
+            id: folder.id.clone(),
+            path: folder.path.clone(),
+            name: folder_display_name(&folder.path),
+        })
+        .collect();
+    let extensions = ALL_WATCHED_EXTENSIONS
+        .iter()
+        .map(|ext| (*ext).to_string())
+        .collect();
+    set_watched_folders(folders, extensions);
+}
+
 /// Keeps the app, to queue media from the system's changes
 pub fn init(app_handle: &AppHandle) {
     let _ = APP_HANDLE.set(app_handle.clone());
+    sync_from_core(app_handle);
 }
 
 /// Paths that no longer name directories. Checked when Watch Folder settings open and before a
@@ -244,14 +287,6 @@ fn handle_changes(result: DebounceEventResult) {
     let Ok(events) = result else {
         return;
     };
-    // Its media is compressed by the menu bar's window (the main window, on Linux)
-    #[cfg(any(target_os = "macos", windows))]
-    if app_handle
-        .tray_by_id(crate::tray_popover::TRAY_WINDOW_LABEL)
-        .is_none()
-    {
-        return;
-    }
 
     let mut queued: Vec<(WatchedFolder, String)> = Vec::new();
     {
