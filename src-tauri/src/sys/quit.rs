@@ -47,17 +47,22 @@ pub enum QuitReason {
 }
 
 /// When closing the main window, returns the confirmation reason that must keep the window open
-/// instead of closing it: only when nothing keeps the app alive in the background and quitting
-/// would discard active or unsaved work.
+/// instead of closing it: closing during active main-window compression detaches cleanly, while
+/// unsaved compressed outputs always prompt (even when the tray stays alive in the background), and
+/// other reasons (such as an active drop queue) only prompt when closing would quit the app.
 pub fn main_window_close_reason(
     is_session_compressing: bool,
     keep_running_without_main: bool,
     reason: Option<QuitReason>,
 ) -> Option<QuitReason> {
-    if is_session_compressing || keep_running_without_main {
+    if is_session_compressing {
         return None;
     }
-    reason
+    match reason {
+        Some(QuitReason::UnsavedOutput) => Some(QuitReason::UnsavedOutput),
+        Some(_) if !keep_running_without_main => reason,
+        _ => None,
+    }
 }
 
 /// Why quitting needs a confirmation first, if it does
@@ -194,7 +199,16 @@ mod tests {
     #[test]
     fn main_window_close_detaches_while_compressing_and_prompts_when_unsaved() {
         assert!(main_window_close_reason(true, false, Some(QuitReason::UnsavedOutput)).is_none());
-        assert!(main_window_close_reason(false, true, Some(QuitReason::UnsavedOutput)).is_none());
+        assert!(main_window_close_reason(true, true, Some(QuitReason::Compressing)).is_none());
+        assert!(matches!(
+            main_window_close_reason(false, true, Some(QuitReason::UnsavedOutput)),
+            Some(QuitReason::UnsavedOutput)
+        ));
+        assert!(main_window_close_reason(false, true, Some(QuitReason::DropQueue)).is_none());
+        assert!(matches!(
+            main_window_close_reason(false, false, Some(QuitReason::DropQueue)),
+            Some(QuitReason::DropQueue)
+        ));
         assert!(main_window_close_reason(false, false, None).is_none());
         assert!(matches!(
             main_window_close_reason(false, false, Some(QuitReason::UnsavedOutput)),

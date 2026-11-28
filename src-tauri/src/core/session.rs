@@ -76,6 +76,10 @@ pub struct ActiveSession {
     pub is_paused: bool,
     #[serde(default)]
     pub detached: bool,
+    /// Remains `true` once the originating main window detached during this batch so natural
+    /// completion is still finalized in Rust even after the user reopens the window.
+    #[serde(default)]
+    pub ever_detached: bool,
     #[serde(default)]
     pub items: Vec<MainSessionItemInfo>,
     pub app_state: Value,
@@ -380,6 +384,7 @@ pub fn mark_detached(app_handle: &AppHandle) {
     if let Some(session) = guard.as_mut() {
         if session.status == MainSessionStatus::Compressing {
             session.detached = true;
+            session.ever_detached = true;
             let _ = write_session_file(app_handle, session);
         }
     }
@@ -454,14 +459,21 @@ pub fn protected_paths(app_handle: &AppHandle) -> HashSet<PathBuf> {
 #[tauri::command]
 pub fn get_active_session(app_handle: AppHandle) -> Option<ActiveSession> {
     init(&app_handle);
+    let mut reattached_completed = false;
     let session = {
         let mut guard = SESSION_STATE.lock().ok()?;
         let session = guard.as_mut()?;
         if session.detached && app_handle.get_webview_window("main").is_some() {
-            // The user reopened the UI; once it hydrates, keep `detached` marker accurate
+            // The user reopened the UI; clear `detached` so background progress stops overriding
+            // the open window and cancelling does not wipe completed partial outputs.
+            session.detached = false;
+            reattached_completed = session.status == MainSessionStatus::Completed;
         }
         session.clone()
     };
+    if reattached_completed {
+        update_compression_status(&app_handle, Default::default());
+    }
     allow_session_asset_paths(&app_handle, &session);
     Some(session)
 }
@@ -478,6 +490,7 @@ pub fn start_main_session(
         status: MainSessionStatus::Compressing,
         is_paused: false,
         detached: false,
+        ever_detached: false,
         items: payload.items,
         app_state: payload.app_state,
         progress: HashMap::new(),
@@ -524,6 +537,7 @@ pub fn update_main_session_state(
                 status: MainSessionStatus::Completed,
                 is_paused: false,
                 detached: false,
+                ever_detached: false,
                 items: Vec::new(),
                 app_state,
                 progress: HashMap::new(),
@@ -1133,6 +1147,30 @@ async fn save_session_outputs_headless(
     let _ = ensure_assets_dir(app_handle);
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum BatchFinishAction {
+    /// Original main window session is still live and awaits `compress_media_batch`.
+    SkipForLiveCaller,
+    /// Open UI (including a reattached one) or already-completed session owns cancellation cleanup.
+    SkipCancelForAttachedUi,
+    /// Detached run finished in the background (or after reattach) and needs Rust finalization.
+    FinalizeDetached,
+}
+
+fn classify_batch_finish(
+    session: &ActiveSession,
+    has_main_window: bool,
+    batch_succeeded: bool,
+) -> BatchFinishAction {
+    if !session.detached && !session.ever_detached && has_main_window {
+        return BatchFinishAction::SkipForLiveCaller;
+    }
+    if !batch_succeeded && (has_main_window || session.status == MainSessionStatus::Completed) {
+        return BatchFinishAction::SkipCancelForAttachedUi;
+    }
+    BatchFinishAction::FinalizeDetached
+}
+
 /// Called when `compress_media_batch_headless` completes. If the session was detached (UI closed
 /// during encoding), finalizes outputs/saving/history/sound/`active-session.json` in Rust and
 /// exits cleanly once idle.
@@ -1141,7 +1179,8 @@ pub async fn on_batch_finished(
     batch_id: &str,
     batch_result: &Result<crate::core::domain::MediaBatchCompressionResult, String>,
 ) {
-    let session_opt = {
+    let has_main_window = app_handle.get_webview_window("main").is_some();
+    let (action, session_opt) = {
         let Ok(mut guard) = SESSION_STATE.lock() else {
             return;
         };
@@ -1151,13 +1190,34 @@ pub async fn on_batch_finished(
         if session.batch_id != batch_id {
             return;
         }
-        if !session.detached && app_handle.get_webview_window("main").is_some() {
-            if let Ok(res) = batch_result {
-                session.results = res.results.clone();
+        let action = classify_batch_finish(session, has_main_window, batch_result.is_ok());
+        match action {
+            BatchFinishAction::SkipForLiveCaller => {
+                if let Ok(res) = batch_result {
+                    session.results = res.results.clone();
+                }
+                (action, None)
+            }
+            BatchFinishAction::SkipCancelForAttachedUi => (action, None),
+            BatchFinishAction::FinalizeDetached => (action, Some(session.clone())),
+        }
+    };
+
+    match action {
+        BatchFinishAction::SkipForLiveCaller => return,
+        BatchFinishAction::SkipCancelForAttachedUi => {
+            if has_main_window {
+                #[cfg(any(target_os = "macos", windows))]
+                let _ = clear_dock_badge(app_handle.clone());
+                update_compression_status(app_handle, Default::default());
             }
             return;
         }
-        session.clone()
+        BatchFinishAction::FinalizeDetached => {}
+    }
+
+    let Some(mut session) = session_opt else {
+        return;
     };
 
     let Ok(res) = batch_result else {
@@ -1170,7 +1230,6 @@ pub async fn on_batch_finished(
         return;
     };
 
-    let mut session = session_opt;
     session.results = res.results.clone();
     session.is_paused = false;
     session.status = MainSessionStatus::Completed;
@@ -1261,7 +1320,11 @@ pub async fn on_batch_finished(
     } else {
         update_compression_status(app_handle, Default::default());
         clear_active_session(app_handle.clone());
-        let _ = app_handle.emit(MAIN_SESSION_COMPLETED_EVENT, Option::<ActiveSession>::None);
+        if app_handle.get_webview_window("main").is_some() {
+            let _ = app_handle.emit(MAIN_SESSION_COMPLETED_EVENT, Some(session));
+        } else {
+            let _ = app_handle.emit(MAIN_SESSION_COMPLETED_EVENT, Option::<ActiveSession>::None);
+        }
     }
 
     schedule_detached_idle_exit(app_handle);
@@ -1316,6 +1379,7 @@ mod tests {
             status: MainSessionStatus::Completed,
             is_paused: false,
             detached: false,
+            ever_detached: false,
             items: Vec::new(),
             app_state: json!({
                 "media": [{
@@ -1347,6 +1411,7 @@ mod tests {
             status: MainSessionStatus::Completed,
             is_paused: false,
             detached: false,
+            ever_detached: false,
             items: Vec::new(),
             app_state: json!({
                 "batchId": "b-unsaved",
@@ -1391,6 +1456,7 @@ mod tests {
             status: MainSessionStatus::Completed,
             is_paused: false,
             detached: false,
+            ever_detached: false,
             items: vec![MainSessionItemInfo {
                 id: String::from("v1"),
                 media_type: String::from("video"),
@@ -1423,5 +1489,68 @@ mod tests {
         assert!(collected.contains(&PathBuf::from(thumb)));
         assert!(collected.contains(&PathBuf::from(out_p)));
         assert!(collected.contains(&PathBuf::from(clip_p)));
+    }
+
+    fn dummy_session(
+        status: MainSessionStatus,
+        detached: bool,
+        ever_detached: bool,
+    ) -> ActiveSession {
+        ActiveSession {
+            batch_id: String::from("b-test"),
+            status,
+            is_paused: false,
+            detached,
+            ever_detached,
+            items: Vec::new(),
+            app_state: json!({}),
+            progress: HashMap::new(),
+            results: HashMap::new(),
+            has_unsaved_output: false,
+        }
+    }
+
+    #[test]
+    fn reattached_cancel_keeps_partial_outputs_instead_of_clearing_session() {
+        // After closing and reopening the main window (`detached == false`, `ever_detached == true`),
+        // cancelling must NOT clear the session or reset the UI (`FinalizeDetached` on Err).
+        let reattached = dummy_session(MainSessionStatus::Compressing, false, true);
+        assert_eq!(
+            classify_batch_finish(&reattached, true, false),
+            BatchFinishAction::SkipCancelForAttachedUi
+        );
+
+        // Even if the UI immediately completed partial outputs (`Completed`) before closing,
+        // `on_batch_finished` must preserve that completed-unsaved session.
+        let finalized_by_ui = dummy_session(MainSessionStatus::Completed, true, true);
+        assert_eq!(
+            classify_batch_finish(&finalized_by_ui, false, false),
+            BatchFinishAction::SkipCancelForAttachedUi
+        );
+
+        // When the user does NOT cancel after reopening and the batch finishes normally, Rust
+        // still finalizes results/auto-save because the original caller promise disappeared on close.
+        assert_eq!(
+            classify_batch_finish(&reattached, true, true),
+            BatchFinishAction::FinalizeDetached
+        );
+
+        // Non-detached live window keeps delegating completion/cancel to StartCompression.
+        let live = dummy_session(MainSessionStatus::Compressing, false, false);
+        assert_eq!(
+            classify_batch_finish(&live, true, true),
+            BatchFinishAction::SkipForLiveCaller
+        );
+        assert_eq!(
+            classify_batch_finish(&live, true, false),
+            BatchFinishAction::SkipForLiveCaller
+        );
+
+        // Truly detached error while main window is still closed finalizes/clears in Rust.
+        let detached = dummy_session(MainSessionStatus::Compressing, true, true);
+        assert_eq!(
+            classify_batch_finish(&detached, false, false),
+            BatchFinishAction::FinalizeDetached
+        );
     }
 }
